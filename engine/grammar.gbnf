@@ -1,0 +1,18 @@
+root ::= ws "{" ws "\"narration\"" ws ":" ws string ws "," ws "\"choices\"" ws ":" ws choices ws "," ws "\"state_delta\"" ws ":" ws "{" ws "\"hp\"" ws ":" ws hp ws "," ws "\"add_items\"" ws ":" ws string-list ws "," ws "\"remove_items\"" ws ":" ws string-list ws "," ws "\"location\"" ws ":" ws string ws "," ws "\"add_flags\"" ws ":" ws string-list ws "}" ws "," ws "\"is_ending\"" ws ":" ws boolean ws "," ws "\"ending_type\"" ws ":" ws ending-type ws "}" ws
+
+choices ::= "[" ws string ws "," ws string ws "," ws string ws "]"
+
+string-list ::= "[" ws "]" | "[" ws string ws "]" | "[" ws string ws "," ws string ws "]" | "[" ws string ws "," ws string ws "," ws string ws "]"
+
+hp ::= "-10" | "-" one-to-nine | "0" | one-to-nine | "10"
+one-to-nine ::= "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
+
+boolean ::= "true" | "false"
+ending-type ::= "null" | "\"victory\"" | "\"death\"" | "\"bittersweet\""
+
+string ::= "\"" string-char* "\""
+string-char ::= [^"\\\n\r] | "\\" escape
+escape ::= "\"" | "\\" | "/" | "b" | "f" | "n" | "r" | "t" | "u" hex hex hex hex
+hex ::= "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" | "a" | "b" | "c" | "d" | "e" | "f" | "A" | "B" | "C" | "D" | "E" | "F"
+
+ws ::= (" " | "\n")?
