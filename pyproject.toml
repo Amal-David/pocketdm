@@ -11,6 +11,10 @@ dependencies = [
 pocketdm-repl = "engine.repl:main"
 
 [dependency-groups]
+data = [
+    "better-profanity>=0.7.0",
+    "sentence-transformers>=3.4.0",
+]
 dev = [
     "pytest>=8",
 ]
