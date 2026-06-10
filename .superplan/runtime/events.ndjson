@@ -1,3 +1,4 @@
 {"ts":1781089069121,"type":"overlay.ensure","command":"task scaffold batch","workflow_phase":"overlay","source":"unknown","outcome":"success","detail_code":"disabled"}
 {"ts":1781089077464,"type":"task.started","task_id":"T-0001","run_id":"run-20260610105757-xf74ih","command":"run","workflow_phase":"execution","source":"unknown","outcome":"success"}
 {"ts":1781089077478,"type":"overlay.ensure","run_id":"run-20260610105757-xf74ih","command":"run","workflow_phase":"overlay","source":"unknown","outcome":"success","detail_code":"disabled"}
+{"ts":1781090768467,"type":"overlay.ensure","run_id":"run-20260610105757-xf74ih","command":"run","workflow_phase":"overlay","source":"unknown","outcome":"success","detail_code":"disabled"}

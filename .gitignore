@@ -7,3 +7,14 @@ __pycache__/
 data/raw/
 wandb/
 .DS_Store
+
+# local agent-host config (not for publishing)
+.claude/
+.codex/
+.cursor/
+.agents/
+.amazonq/
+.gemini/
+.opencode/
+CLAUDE.md
+AGENTS.md
