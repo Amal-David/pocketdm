@@ -35,7 +35,7 @@ ADV_GATE_MIN_TURNS = "min_6_turns"
 ADV_GATE_DROPPED = "max_1_dropped_turn"
 ADVENTURE_GATES = (ADV_GATE_ENDING, ADV_GATE_MIN_TURNS, ADV_GATE_DROPPED)
 
-SENTENCE_RE = re.compile(r"[.!?]+")
+SENTENCE_RE = re.compile(r"[.!?—–]+")
 TOKEN_RE = re.compile(r"[a-z0-9]+")
 NON_DELTA_ERROR_PREFIXES = (
     "turn must offer exactly 3 choices",

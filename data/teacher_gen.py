@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 import json
 import math
 import random
@@ -12,7 +13,8 @@ from typing import Any, Iterable
 
 import modal
 
-from engine.generate import DEFAULT_TEMPERATURE
+from engine.generate import DEFAULT_TEMPERATURE, RETRY_TEMPERATURE_DELTA
+from engine.pressure import next_turn_number
 from engine.prompt import GENRE_FLAVORS, build_messages
 from engine.schema import Turn
 from engine.state import GameState, apply_delta, validate_turn
@@ -21,6 +23,7 @@ MODEL_ID = "Qwen/Qwen3-32B"
 CACHE_DIR = "/cache"
 HF_HOME = f"{CACHE_DIR}/huggingface"
 DEFAULT_WAVE_SIZE = 64
+DEFAULT_MAX_TOKENS = 320
 MAX_TURNS = 15
 H100_RATE_PER_HOUR = 3.95
 A100_80GB_RATE_PER_HOUR = 2.50
@@ -140,6 +143,19 @@ GREEDY_TERMS = {
 }
 
 TOKEN_RE = re.compile(r"[a-z0-9]+")
+TURN_SCHEMA = Turn.model_json_schema()
+FORCED_ENDING_TURN_SCHEMA = copy.deepcopy(TURN_SCHEMA)
+FORCED_ENDING_TURN_SCHEMA["properties"]["is_ending"] = {
+    **FORCED_ENDING_TURN_SCHEMA["properties"]["is_ending"],
+    "const": True,
+}
+FORCED_ENDING_TURN_SCHEMA["properties"]["ending_type"] = {
+    "enum": ["victory", "death", "bittersweet"],
+    "title": FORCED_ENDING_TURN_SCHEMA["properties"]["ending_type"].get(
+        "title", "Ending Type"
+    ),
+    "type": "string",
+}
 
 
 @dataclass
@@ -153,6 +169,14 @@ class AdventureRuntime:
     state: GameState
     turns: list[dict[str, Any]] = field(default_factory=list)
     done: bool = False
+
+
+@dataclass(frozen=True)
+class SamplingParamVariants:
+    normal: Any
+    normal_retry: Any
+    forced_ending: Any
+    forced_ending_retry: Any
 
 
 def _make_adventure(index: int) -> AdventureRuntime:
@@ -303,6 +327,8 @@ def _cost_line(
     turns: int,
     duration_seconds: float,
     schema_failures: int,
+    validation_failures: int,
+    retried: int,
     gpu_name: str,
 ) -> str:
     rate = A100_80GB_RATE_PER_HOUR if gpu_name == "A100-80GB" else H100_RATE_PER_HOUR
@@ -312,21 +338,65 @@ def _cost_line(
         f"| {date.today().isoformat()} | WP-3 teacher gen ({adventures} adventures) | "
         f"Modal {gpu_name} | {minutes:.1f} min | {cost:.2f} | "
         f"{turns} turns; schema_failures={schema_failures}; "
+        f"validation_failures={validation_failures}; retried={retried}; "
         f"{(adventures / minutes) if minutes else 0.0:.2f} adventures/min |"
     )
 
 
-def _sampling_params() -> Any:
+def _sampling_params(
+    *,
+    schema: dict[str, Any],
+    temperature: float,
+    max_tokens: int,
+    rep_penalty: float,
+) -> Any:
     from vllm.sampling_params import SamplingParams, StructuredOutputsParams
 
+    kwargs: dict[str, Any] = {}
+    if rep_penalty > 0:
+        kwargs["repetition_penalty"] = rep_penalty
+
     return SamplingParams(
-        temperature=DEFAULT_TEMPERATURE,
+        temperature=temperature,
         top_p=0.95,
-        repetition_penalty=1.15,
-        max_tokens=512,
+        max_tokens=max_tokens,
         structured_outputs=StructuredOutputsParams(
-            json=Turn.model_json_schema(),
+            json=schema,
             disable_additional_properties=True,
+        ),
+        **kwargs,
+    )
+
+
+def _sampling_param_variants(
+    max_tokens: int,
+    rep_penalty: float,
+) -> SamplingParamVariants:
+    retry_temperature = round(DEFAULT_TEMPERATURE + RETRY_TEMPERATURE_DELTA, 2)
+    return SamplingParamVariants(
+        normal=_sampling_params(
+            schema=TURN_SCHEMA,
+            temperature=DEFAULT_TEMPERATURE,
+            max_tokens=max_tokens,
+            rep_penalty=rep_penalty,
+        ),
+        normal_retry=_sampling_params(
+            schema=TURN_SCHEMA,
+            temperature=retry_temperature,
+            max_tokens=max_tokens,
+            rep_penalty=rep_penalty,
+        ),
+        forced_ending=_sampling_params(
+            schema=FORCED_ENDING_TURN_SCHEMA,
+            temperature=DEFAULT_TEMPERATURE,
+            max_tokens=max_tokens,
+            rep_penalty=rep_penalty,
+        ),
+        forced_ending_retry=_sampling_params(
+            schema=FORCED_ENDING_TURN_SCHEMA,
+            temperature=retry_temperature,
+            max_tokens=max_tokens,
+            rep_penalty=rep_penalty,
         ),
     )
 
@@ -343,15 +413,84 @@ def _load_llm() -> Any:
         gpu_memory_utilization=0.92,
         generation_config="vllm",
         structured_outputs_config={"backend": "xgrammar"},
+        disable_log_stats=False,
     )
 
 
-def _run_remote(adventures: int, wave_size: int, gpu_name: str) -> dict[str, Any]:
+def _needs_forced_ending(state: GameState) -> bool:
+    return next_turn_number(state) >= 14 or state.hp <= 0
+
+
+def _params_for_state(
+    variants: SamplingParamVariants,
+    state: GameState,
+    *,
+    retry: bool = False,
+) -> Any:
+    if _needs_forced_ending(state):
+        return variants.forced_ending_retry if retry else variants.forced_ending
+    return variants.normal_retry if retry else variants.normal
+
+
+def _generate_grouped(
+    llm: Any,
+    requests: list[tuple[AdventureRuntime, list[dict[str, str]], Any]],
+) -> list[tuple[AdventureRuntime, list[dict[str, str]], Any]]:
+    results: list[tuple[AdventureRuntime, list[dict[str, str]], Any]] = []
+    grouped: dict[
+        int,
+        tuple[Any, list[tuple[AdventureRuntime, list[dict[str, str]]]]],
+    ] = {}
+    for runtime, messages, sampling_params in requests:
+        key = id(sampling_params)
+        if key not in grouped:
+            grouped[key] = (sampling_params, [])
+        grouped[key][1].append((runtime, messages))
+
+    for sampling_params, entries in grouped.values():
+        outputs = llm.chat(
+            [messages for _, messages in entries],
+            sampling_params=sampling_params,
+            use_tqdm=False,
+            chat_template_kwargs={"enable_thinking": False},
+        )
+        for (runtime, messages), output in zip(entries, outputs, strict=True):
+            results.append((runtime, messages, output))
+
+    return results
+
+
+def _accept_turn(
+    runtime: AdventureRuntime,
+    *,
+    messages: list[dict[str, str]],
+    turn: Turn,
+) -> None:
+    action_taken = _choose_action(runtime, turn)
+    _record_turn(
+        runtime,
+        messages=messages,
+        turn=turn,
+        action_taken=action_taken,
+    )
+    _advance(runtime, turn, action_taken)
+
+
+def _run_remote(
+    adventures: int,
+    wave_size: int,
+    gpu_name: str,
+    max_tokens: int,
+    rep_penalty: float,
+) -> dict[str, Any]:
     llm = _load_llm()
-    sampling_params = _sampling_params()
+    sampling_params = _sampling_param_variants(max_tokens, rep_penalty)
     runtimes = [_make_adventure(index) for index in range(adventures)]
     schema_failures = 0
     validation_failures = 0
+    retried = 0
+    cumulative_turns = 0
+    wave_index = 0
     started = time.monotonic()
 
     while True:
@@ -359,34 +498,66 @@ def _run_remote(adventures: int, wave_size: int, gpu_name: str) -> dict[str, Any
         if not active:
             break
 
+        wave_index += 1
+        wave_started = time.monotonic()
         wave = active[: max(1, wave_size)]
-        message_batch = [build_messages(runtime.state) for runtime in wave]
-        outputs = llm.chat(
-            message_batch,
-            sampling_params=sampling_params,
-            use_tqdm=False,
-            chat_template_kwargs={"enable_thinking": False},
-        )
+        requests = [
+            (
+                runtime,
+                build_messages(runtime.state),
+                _params_for_state(sampling_params, runtime.state),
+            )
+            for runtime in wave
+        ]
+        outputs = _generate_grouped(llm, requests)
+        retry_requests: list[tuple[AdventureRuntime, list[dict[str, str]], Any]] = []
 
-        for runtime, messages, output in zip(wave, message_batch, outputs, strict=True):
+        for runtime, messages, output in outputs:
             raw = output.outputs[0].text.strip()
-            turn, errors, schema_failed = _parse_turn(raw, runtime.state)
+            turn, _errors, schema_failed = _parse_turn(raw, runtime.state)
             if turn is None:
                 if schema_failed:
                     schema_failures += 1
                 else:
                     validation_failures += 1
-                runtime.done = True
+                retried += 1
+                retry_requests.append(
+                    (
+                        runtime,
+                        messages,
+                        _params_for_state(
+                            sampling_params,
+                            runtime.state,
+                            retry=True,
+                        ),
+                    )
+                )
                 continue
 
-            action_taken = _choose_action(runtime, turn)
-            _record_turn(
-                runtime,
-                messages=messages,
-                turn=turn,
-                action_taken=action_taken,
-            )
-            _advance(runtime, turn, action_taken)
+            _accept_turn(runtime, messages=messages, turn=turn)
+            cumulative_turns += 1
+
+        if retry_requests:
+            for runtime, messages, output in _generate_grouped(llm, retry_requests):
+                raw = output.outputs[0].text.strip()
+                turn, _errors, schema_failed = _parse_turn(raw, runtime.state)
+                if turn is None:
+                    if schema_failed:
+                        schema_failures += 1
+                    else:
+                        validation_failures += 1
+                    runtime.done = True
+                    continue
+
+                _accept_turn(runtime, messages=messages, turn=turn)
+                cumulative_turns += 1
+
+        wave_seconds = time.monotonic() - wave_started
+        print(
+            f"wave {wave_index}: active={len(wave)} seconds={wave_seconds:.1f} "
+            f"cumulative_turns={cumulative_turns}",
+            flush=True,
+        )
 
     duration_seconds = time.monotonic() - started
     turn_count = sum(len(runtime.turns) for runtime in runtimes)
@@ -397,12 +568,15 @@ def _run_remote(adventures: int, wave_size: int, gpu_name: str) -> dict[str, Any
         "duration_seconds": duration_seconds,
         "schema_failures": schema_failures,
         "validation_failures": validation_failures,
+        "retried": retried,
         "gpu_name": gpu_name,
         "cost_line": _cost_line(
             adventures=adventures,
             turns=turn_count,
             duration_seconds=duration_seconds,
             schema_failures=schema_failures,
+            validation_failures=validation_failures,
+            retried=retried,
             gpu_name=gpu_name,
         ),
     }
@@ -414,8 +588,13 @@ def _run_remote(adventures: int, wave_size: int, gpu_name: str) -> dict[str, Any
     timeout=60 * 60 * 4,
     volumes={CACHE_DIR: hf_cache},
 )
-def generate_h100(adventures: int, wave_size: int) -> dict[str, Any]:
-    result = _run_remote(adventures, wave_size, "H100")
+def generate_h100(
+    adventures: int,
+    wave_size: int,
+    max_tokens: int,
+    rep_penalty: float,
+) -> dict[str, Any]:
+    result = _run_remote(adventures, wave_size, "H100", max_tokens, rep_penalty)
     hf_cache.commit()
     return result
 
@@ -426,8 +605,13 @@ def generate_h100(adventures: int, wave_size: int) -> dict[str, Any]:
     timeout=60 * 60 * 4,
     volumes={CACHE_DIR: hf_cache},
 )
-def generate_a100(adventures: int, wave_size: int) -> dict[str, Any]:
-    result = _run_remote(adventures, wave_size, "A100-80GB")
+def generate_a100(
+    adventures: int,
+    wave_size: int,
+    max_tokens: int,
+    rep_penalty: float,
+) -> dict[str, Any]:
+    result = _run_remote(adventures, wave_size, "A100-80GB", max_tokens, rep_penalty)
     hf_cache.commit()
     return result
 
@@ -437,17 +621,23 @@ def main(
     adventures: int = 50,
     out: str = "data/out/smoke.jsonl",
     wave_size: int = DEFAULT_WAVE_SIZE,
+    max_tokens: int = DEFAULT_MAX_TOKENS,
+    rep_penalty: float = 0.0,
     gpu: str = "H100",
 ) -> None:
     if adventures <= 0:
         raise ValueError("--adventures must be positive")
     if wave_size <= 0:
         raise ValueError("--wave-size must be positive")
+    if max_tokens <= 0:
+        raise ValueError("--max-tokens must be positive")
+    if rep_penalty < 0:
+        raise ValueError("--rep-penalty must be non-negative")
     if gpu not in {"H100", "A100-80GB"}:
         raise ValueError("--gpu must be H100 or A100-80GB")
 
     remote = generate_a100 if gpu == "A100-80GB" else generate_h100
-    result = remote.remote(adventures, wave_size)
+    result = remote.remote(adventures, wave_size, max_tokens, rep_penalty)
 
     out_path = Path(out)
     out_path.parent.mkdir(parents=True, exist_ok=True)
@@ -455,7 +645,12 @@ def main(
 
     minutes = result["duration_seconds"] / 60.0
     adventures_per_min = result["adventures"] / minutes if minutes else 0.0
-    print(f"wrote {result['adventures']} adventures / {result['turns']} turns to {out_path}")
+    print(
+        f"wrote {result['adventures']} adventures / {result['turns']} turns to "
+        f"{out_path}"
+    )
     print(f"adventures/min: {adventures_per_min:.2f}")
     print(f"schema-failure count: {result['schema_failures']}")
+    print(f"validation-failure count: {result['validation_failures']}")
+    print(f"retried count: {result['retried']}")
     print(result["cost_line"])

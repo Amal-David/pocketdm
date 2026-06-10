@@ -18,11 +18,11 @@ def story_pressure(state: object) -> str:
     elif turn <= 10:
         parts = ["Act 2: raise stakes, complicate."]
     elif turn <= 13:
-        parts = ["Finale: move decisively toward a climax."]
-    elif turn == 14:
-        parts = ["Turn 14: next turn MUST end the story."]
+        parts = ["Finale: move decisively toward the climax."]
     else:
-        parts = ["Turn 15: set is_ending: true."]
+        parts = [
+            "This is the FINAL turn: set is_ending=true and ending_type, wrap the story."
+        ]
 
     if hp <= 0:
         parts.append("HP is 0: demand a funny, not bleak, death ending.")

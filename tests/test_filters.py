@@ -84,6 +84,7 @@ def turn_record(turn: Turn | dict[str, object]) -> dict[str, object]:
 def test_sentence_count_uses_terminal_punctuation() -> None:
     assert sentence_count("One. Two! Three?") == 3
     assert sentence_count("No terminal punctuation") == 1
+    assert sentence_count("The glade shivers—roots unfurl beneath your feet.") == 2
 
 
 def test_schema_gate_rejects_missing_required_fields() -> None:

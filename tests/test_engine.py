@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+
 from engine.bridges import BRIDGE_TURNS
 from engine.generate import MockBackend, next_turn
 from engine.pressure import story_pressure
@@ -103,9 +105,11 @@ def test_validate_turn_requires_death_ending_when_hp_hits_zero() -> None:
 def test_pressure_schedule_and_forced_turn_15_validation() -> None:
     assert "Act 1" in story_pressure(GameState(turn_count=0))
     assert "Act 2" in story_pressure(GameState(turn_count=5))
-    assert "Finale" in story_pressure(GameState(turn_count=10))
-    assert "next turn MUST end" in story_pressure(GameState(turn_count=13))
-    assert "is_ending: true" in story_pressure(GameState(turn_count=14))
+    assert "move decisively toward the climax" in story_pressure(
+        GameState(turn_count=10)
+    )
+    assert "FINAL turn" in story_pressure(GameState(turn_count=13))
+    assert "is_ending=true and ending_type" in story_pressure(GameState(turn_count=14))
     assert "near death" in story_pressure(GameState(turn_count=3, hp=2))
 
     state = GameState(turn_count=14)
@@ -148,10 +152,38 @@ def test_prompt_budget_worst_case_and_stable_prefix() -> None:
 
     messages = build_messages(state)
     rendered = render_messages(messages)
-    other_messages = build_messages(GameState(genre="cursed_dungeon", location="Elsewhere"))
+    other_messages = build_messages(
+        GameState(genre="cursed_dungeon", location="Elsewhere")
+    )
+    history_json = messages[1]["content"].split("History=", 1)[1].split(
+        "\nRespond",
+        1,
+    )[0]
+    history = json.loads(history_json)
 
-    assert len(rendered) <= 1400
+    assert len(rendered) <= 1250
     assert messages[0]["content"] == other_messages[0]["content"]
+    assert "~" not in rendered
+    assert history == [
+        {
+            "n": (
+                "A long prior narration keeps talking without mercy "
+                "A long prior narration keeps talking"
+            ),
+            "d": {"hp": 0, "loc": "Old Extremely"},
+            "a": "The player chose a long careful action",
+        },
+        {
+            "n": (
+                "Another long prior narration tries to consume context "
+                "Another long prior narration tries"
+            ),
+            "d": {"hp": 0, "loc": "Second Extremely"},
+            "a": "The player then tried another wordy",
+        },
+    ]
+    assert "Choice alpha" not in rendered
+    assert "Choice delta" not in rendered
 
 
 def test_retry_then_bridge_path() -> None:

@@ -81,7 +81,6 @@ def _dynamic_suffix(state: object) -> str:
         history.append(
             {
                 "n": _clip(_first_sentence(turn.narration), 90),
-                "c": [_clip(choice, 18) for choice in turn.choices],
                 "d": {
                     "hp": turn.state_delta.hp,
                     "loc": _clip(turn.state_delta.location, 18),
@@ -106,6 +105,11 @@ def _clip(text: str, max_len: int) -> str:
     compact = " ".join(text.split())
     if len(compact) <= max_len:
         return compact
-    if max_len <= 1:
-        return compact[:max_len]
-    return compact[: max_len - 1].rstrip() + "~"
+    if max_len <= 0:
+        return ""
+
+    clipped = compact[:max_len].rstrip()
+    boundary = clipped.rfind(" ")
+    if boundary > 0:
+        return clipped[:boundary].rstrip()
+    return clipped
