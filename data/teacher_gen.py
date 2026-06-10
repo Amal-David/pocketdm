@@ -29,8 +29,13 @@ app = modal.App("pocketdm-wp3-teacher")
 hf_cache = modal.Volume.from_name("pocketdm-hf-cache", create_if_missing=True)
 
 teacher_image = (
-    modal.Image.from_registry("vllm/vllm-openai:v0.10.2")
+    modal.Image.from_registry(
+        "nvidia/cuda:12.8.1-devel-ubuntu22.04",
+        add_python="3.12",
+    )
+    .entrypoint([])
     .pip_install(
+        "vllm==0.11.2",
         "pydantic>=2",
         "transformers>=4.51.0",
         "xgrammar>=0.1.18",
