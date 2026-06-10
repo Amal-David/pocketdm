@@ -7,13 +7,26 @@ dependencies = [
     "pydantic>=2",
 ]
 
+[project.scripts]
+pocketdm-repl = "engine.repl:main"
+
 [dependency-groups]
 dev = [
     "pytest>=8",
 ]
+repl = [
+    "openai>=1",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [tool.uv]
-package = false
+package = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["engine"]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
