@@ -1,0 +1,164 @@
+{
+  "workspace_path": "/Users/amal/listenowl/experiments/build-small",
+  "session_id": "workspace:/Users/amal/listenowl/experiments/build-small",
+  "updated_at": "2026-06-10T10:57:57.467Z",
+  "focused_change": {
+    "change_id": "pocketdm",
+    "title": "PocketDM — offline voiced tiny-model Dungeon Master (Build Small hackathon)",
+    "status": "in_progress",
+    "task_total": 16,
+    "task_done": 0,
+    "updated_at": "2026-06-10T10:57:57.461Z"
+  },
+  "active_task": {
+    "task_id": "T-0001",
+    "title": "Bootstrap: public GitHub repo, PRD.md committed with section 5.1 updated to the Qwen3.5-2B ladder, specs/PLAN.md, tasks/lessons.md seeded, codex exec wired and first Codex-attributed commit verified via git log author metadata.",
+    "status": "in_progress",
+    "completed_acceptance_criteria": 0,
+    "total_acceptance_criteria": 3,
+    "progress_percent": 0,
+    "started_at": "2026-06-10T10:57:57.461Z",
+    "updated_at": "2026-06-10T10:57:57.461Z"
+  },
+  "board": {
+    "in_progress": [
+      {
+        "task_id": "T-0001",
+        "title": "Bootstrap: public GitHub repo, PRD.md committed with section 5.1 updated to the Qwen3.5-2B ladder, specs/PLAN.md, tasks/lessons.md seeded, codex exec wired and first Codex-attributed commit verified via git log author metadata.",
+        "status": "in_progress",
+        "completed_acceptance_criteria": 0,
+        "total_acceptance_criteria": 3,
+        "progress_percent": 0,
+        "started_at": "2026-06-10T10:57:57.461Z",
+        "updated_at": "2026-06-10T10:57:57.461Z"
+      }
+    ],
+    "backlog": [
+      {
+        "task_id": "T-0002",
+        "title": "WP-1: engine/schema.py pydantic turn schema (narration, 3 choices, state_delta, is_ending, ending_type) + hand-written engine/grammar.gbnf pinned to it + round-trip tests (valid samples accepted, invalid rejected, GBNF accepts every schema-valid sample).",
+        "status": "backlog",
+        "completed_acceptance_criteria": 0,
+        "total_acceptance_criteria": 3,
+        "progress_percent": 0
+      },
+      {
+        "task_id": "T-0003",
+        "title": "WP-2: engine/state.py deterministic state machine — hp 0-10 clamp, inventory max 6, delta legality, story-pressure prompt injection by turn count, force is_ending by turn 15, retry-then-canned-bridge fallback. CLI REPL playable against any backend (teacher API or llama.cpp).",
+        "status": "backlog",
+        "completed_acceptance_criteria": 0,
+        "total_acceptance_criteria": 2,
+        "progress_percent": 0
+      },
+      {
+        "task_id": "T-0004",
+        "title": "WP-0: throwaway free-tier HF Space running stock unsloth/Qwen3.5-2B-GGUF Q4_K_M under llama.cpp; measure sustained decode tok/s and first-token latency on 2 vCPU. Decision recorded: 2B stays primary iff >=10 tok/s, else 0.8B.",
+        "status": "backlog",
+        "completed_acceptance_criteria": 0,
+        "total_acceptance_criteria": 2,
+        "progress_percent": 0
+      },
+      {
+        "task_id": "T-0005",
+        "title": "WP-3: data/teacher_gen.py Modal app (vLLM Qwen3-32B, xgrammar guided JSON, DM + 3 player personas, full adventures in frozen schema) + data/filters.py gates (schema-valid, narration 2-4 sentences, pairwise choice cosine <0.85, delta legality, profanity). Smoke 50 adventures, inspect, then ~2k overnight.",
+        "status": "backlog",
+        "completed_acceptance_criteria": 0,
+        "total_acceptance_criteria": 3,
+        "progress_percent": 0
+      },
+      {
+        "task_id": "T-0006",
+        "title": "WP-4: train/finetune.py Unsloth fine-tune of Qwen3.5-2B (full FT preferred, LoRA fallback; completion-only loss, packed sequences, 2-3 epochs, thinking off) on Modal + export_gguf.py producing Q4_K_M (ship) and Q8_0 (comparison). Cost logged.",
+        "status": "backlog",
+        "completed_acceptance_criteria": 0,
+        "total_acceptance_criteria": 2,
+        "progress_percent": 0
+      },
+      {
+        "task_id": "T-0008",
+        "title": "WP-6: eval/sessions.py — 50 automated grammar-constrained sessions against llama-server (pinned fresh build, Qwen3.5 arch) must complete with zero grammar failures and zero engine fallbacks beyond budget. Runs in CI.",
+        "status": "backlog",
+        "completed_acceptance_criteria": 0,
+        "total_acceptance_criteria": 2,
+        "progress_percent": 0
+      },
+      {
+        "task_id": "T-0011",
+        "title": "WP-7: app/server.py gr.Server (Gradio >=6.10) — @app.api endpoints new_game / take_turn (streaming) / tts; llama.cpp with GBNF grammar; kokoro-onnx TTS strictly sequential after decode; engine owns state; no network calls at inference.",
+        "status": "backlog",
+        "completed_acceptance_criteria": 0,
+        "total_acceptance_criteria": 2,
+        "progress_percent": 0
+      },
+      {
+        "task_id": "T-0012",
+        "title": "WP-8: custom parchment frontend served at / — typewriter streaming via @gradio/client SSE, wax-seal choice buttons, HP hearts, inventory margin, d20 dice animation, proof-of-tininess badge with live tok/s, mute toggle, Begin-adventure click gate for autoplay, mobile responsive.",
+        "status": "backlog",
+        "completed_acceptance_criteria": 0,
+        "total_acceptance_criteria": 3,
+        "progress_percent": 0
+      },
+      {
+        "task_id": "T-0013",
+        "title": "Deploy to build-small-hackathon org Space (Gradio SDK, sdk_version >=6.10, Q4_K_M GGUF + voices baked in). Measure live tok/s; if streamed turn feels broken (<~8 tok/s) execute 0.8B fallback retrain same day.",
+        "status": "backlog",
+        "completed_acceptance_criteria": 0,
+        "total_acceptance_criteria": 2,
+        "progress_percent": 0
+      },
+      {
+        "task_id": "T-0016",
+        "title": "Submission: verify canonical track-/badge- tag strings in the auth-gated registration app, README frontmatter complete (video + social links), traces dataset published, social post with teaser clip, submit with buffer, re-scan org for near-duplicates.",
+        "status": "backlog",
+        "completed_acceptance_criteria": 0,
+        "total_acceptance_criteria": 3,
+        "progress_percent": 0
+      },
+      {
+        "task_id": "T-0007",
+        "title": "WP-5: eval/harness.py — automated metrics (schema-valid without grammar, choice distinctness, delta legality, fallback rate, tokens/turn) + LLM-judge rubric (coherence, choice meaningfulness, ending satisfaction 1-5) as Modal batch on 50 held-out seeds. Base-vs-finetuned table output.",
+        "status": "backlog",
+        "completed_acceptance_criteria": 0,
+        "total_acceptance_criteria": 2,
+        "progress_percent": 0
+      },
+      {
+        "task_id": "T-0009",
+        "title": "Publish HF model repo (safetensors + GGUF, apache-2.0, model card with base-vs-finetuned eval table) and dataset repo (filtered synthetic turns + held-out seeds + generation/training traces).",
+        "status": "backlog",
+        "completed_acceptance_criteria": 0,
+        "total_acceptance_criteria": 2,
+        "progress_percent": 0
+      },
+      {
+        "task_id": "T-0010",
+        "title": "WP-V: app/voices/build_lore_voice.py — blend Kokoro female voice tensors (start 0.45 bf_emma / 0.35 af_heart / 0.20 af_nicole), audition grid over weights x speeds with a fixed script, pick winner by listening, pedalboard reverb in TTS path for this voice only, save artifact + rebuild kokoro-onnx voices.bin. Blend only from Kokoro voice packs — never game audio.",
+        "status": "backlog",
+        "completed_acceptance_criteria": 0,
+        "total_acceptance_criteria": 3,
+        "progress_percent": 0
+      },
+      {
+        "task_id": "T-0014",
+        "title": "Polish + playtests: scripted sessions + 3 human testers; fixes via Codex. run_local.sh one-liner verified with Wi-Fi off for the demo video beat.",
+        "status": "backlog",
+        "completed_acceptance_criteria": 0,
+        "total_acceptance_criteria": 2,
+        "progress_percent": 0
+      },
+      {
+        "task_id": "T-0015",
+        "title": "Demo video <=2:00 per PRD storyboard (cold open, turn, reveal badge, Wi-Fi-off beat, montage, receipts, close) + Field Notes blog draft with real cost numbers.",
+        "status": "backlog",
+        "completed_acceptance_criteria": 0,
+        "total_acceptance_criteria": 2,
+        "progress_percent": 0
+      }
+    ],
+    "done": [],
+    "blocked": [],
+    "needs_feedback": []
+  },
+  "attention_state": "normal",
+  "events": []
+}
