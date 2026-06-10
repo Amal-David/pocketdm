@@ -4,6 +4,8 @@ __pycache__/
 .env
 *.gguf
 *.wav
+app/voices/auditions/
+app/voices/models/
 data/raw/
 wandb/
 .DS_Store

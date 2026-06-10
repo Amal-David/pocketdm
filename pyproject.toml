@@ -21,6 +21,17 @@ dev = [
 repl = [
     "openai>=1",
 ]
+tts = [
+    "kokoro-onnx",
+    "numpy",
+    "pedalboard",
+    "soundfile",
+]
+voicebuild = [
+    "huggingface-hub",
+    "numpy",
+    "torch",
+]
 
 [build-system]
 requires = ["hatchling"]
@@ -30,10 +41,13 @@ build-backend = "hatchling.build"
 package = true
 
 [tool.hatch.build.targets.wheel]
-packages = ["engine"]
+packages = ["engine", "app"]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
 testpaths = [
     "tests",
+]
+markers = [
+    "slow: requires local model artifacts or heavier runtime dependencies",
 ]
