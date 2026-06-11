@@ -36,7 +36,7 @@ _GENRE_ALIASES = {
 SYSTEM_BASE = (
     "You are PocketDM. Return only JSON keys narration, choices, state_delta, "
     "is_ending, ending_type. Narration: 2 short sentences. Choices: 3 actions. "
-    "Legal deltas only. Never use avoid_choices. If must_end true, set "
+    "Legal deltas only. Never reuse forbidden_choices. If must_end true, set "
     "is_ending true and ending_type. No absent-item removes, quotes, ellipsis, "
     "markdown, kill/blood/dead/drunk/snatch/snuff."
 )
@@ -80,7 +80,7 @@ def _dynamic_suffix(state: object) -> str:
 
     recent_turns = list(getattr(state, "recent_turns", []))
     history = []
-    avoid_choices = [
+    forbidden_choices = [
         _clip(choice, 42)
         for choice in (
             recent_turns[-1][0].choices
@@ -102,10 +102,12 @@ def _dynamic_suffix(state: object) -> str:
 
     state_json = json.dumps(summary, ensure_ascii=True, separators=(",", ":"))
     history_json = json.dumps(history, ensure_ascii=True, separators=(",", ":"))
-    avoid_json = json.dumps(avoid_choices, ensure_ascii=True, separators=(",", ":"))
+    forbidden_json = json.dumps(forbidden_choices, ensure_ascii=True, separators=(",", ":"))
     return (
         f"State={state_json}\nHistory={history_json}\n"
-        f"avoid_choices={avoid_json}\nRespond with ONLY the turn JSON."
+        f"forbidden_choices={forbidden_json}\n"
+        "Every choice must be new, concrete, and not in forbidden_choices.\n"
+        "Respond with ONLY the turn JSON."
     )
 
 

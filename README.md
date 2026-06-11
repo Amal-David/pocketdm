@@ -74,6 +74,20 @@ To try the experimental Gemma 4 E2B backend after downloading its GGUF:
 POCKETDM_GGUF=models/gemma-4-e2b-it/gguf/gemma-4-E2B-it-Q4_K_M.gguf POCKETDM_LLAMA_THREADS=8 uv run --group eval --group tts python app.py
 ```
 
+For the faster Gemma 4 MTP path, run a recent llama.cpp server with the
+matching drafter, then point PocketDM at the OpenAI-compatible local endpoint:
+
+```bash
+/Users/amal/.cache/pocketdm-mtp/llama.cpp/build/bin/llama-server \
+  --model /Users/amal/listenowl/experiments/build-small/models/gemma-4-e2b-it/gguf/gemma-4-E2B-it-Q4_K_M.gguf \
+  --model-draft /Users/amal/listenowl/experiments/build-small/models/gemma-4-e2b-it/gguf/mtp-gemma-4-E2B-it.gguf \
+  --spec-type draft-mtp --spec-draft-n-max 1 --spec-draft-ngl 999 \
+  --ctx-size 2048 --threads 8 -ngl 999 -fa on \
+  --host 127.0.0.1 --port 8081 --reasoning off
+
+POCKETDM_LLAMA_SERVER_URL=http://127.0.0.1:8081 POCKETDM_LLAMA_SERVER_LABEL="Gemma 4 E2B Q4_K_M MTP llama.cpp server" uv run --group eval --group tts python app.py
+```
+
 For a less-compressed Gemma 4 E2B test that is still much lighter than BF16:
 
 ```bash

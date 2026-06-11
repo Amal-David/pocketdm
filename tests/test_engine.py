@@ -171,17 +171,17 @@ def test_prompt_budget_worst_case_and_stable_prefix() -> None:
         GameState(genre="cursed_dungeon", location="Elsewhere")
     )
     history_json = messages[1]["content"].split("History=", 1)[1].split(
-        "\navoid_choices=",
+        "\nforbidden_choices=",
         1,
     )[0]
-    avoid_json = messages[1]["content"].split("avoid_choices=", 1)[1].split(
-        "\nRespond",
+    forbidden_json = messages[1]["content"].split("forbidden_choices=", 1)[1].split(
+        "\nEvery choice",
         1,
     )[0]
     history = json.loads(history_json)
-    avoid_choices = json.loads(avoid_json)
+    forbidden_choices = json.loads(forbidden_json)
 
-    assert len(rendered) <= 1450
+    assert len(rendered) <= 1525
     assert messages[0]["content"] == other_messages[0]["content"]
     assert "~" not in rendered
     assert history == [
@@ -202,7 +202,7 @@ def test_prompt_budget_worst_case_and_stable_prefix() -> None:
             "a": "The player then tried another wordy",
         },
     ]
-    assert avoid_choices == [
+    assert forbidden_choices == [
         "Choice delta Choice delta Choice delta",
         "Choice epsilon Choice epsilon Choice",
         "Choice zeta Choice zeta Choice zeta",

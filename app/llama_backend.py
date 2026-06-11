@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+import json
 import os
 from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
+from urllib import error as urlerror
+from urllib import request as urlrequest
 
 from engine.generate import TurnBackend
 
@@ -18,6 +21,15 @@ class LlamaBackendConfig:
     n_threads: int = 2
     max_tokens: int = 340
     use_chat_template: bool = False
+
+
+@dataclass(frozen=True)
+class LlamaServerConfig:
+    base_url: str
+    grammar_path: Path = DEFAULT_GRAMMAR_PATH
+    model: str = "pocketdm"
+    max_tokens: int = 340
+    timeout_seconds: float = 120.0
 
 
 class LlamaCppBackend:
@@ -52,7 +64,50 @@ class LlamaCppBackend:
         return str(response["choices"][0]["text"]).strip()
 
 
+class LlamaServerBackend:
+    def __init__(self, config: LlamaServerConfig) -> None:
+        self.config = config
+        self.model_label = os.environ.get("POCKETDM_LLAMA_SERVER_LABEL", "llama.cpp server")
+        self._grammar = config.grammar_path.read_text()
+
+    def complete(self, messages: list[dict[str, str]], *, temperature: float) -> str:
+        payload = {
+            "model": self.config.model,
+            "messages": messages,
+            "max_tokens": self.config.max_tokens,
+            "temperature": temperature,
+            "grammar": self._grammar,
+            "stop": ["<turn|>", "<|im_end|>"],
+        }
+        request = urlrequest.Request(
+            f"{self.config.base_url.rstrip('/')}/v1/chat/completions",
+            data=json.dumps(payload).encode("utf-8"),
+            headers={"content-type": "application/json"},
+        )
+        try:
+            with urlrequest.urlopen(request, timeout=self.config.timeout_seconds) as response:
+                result = json.loads(response.read().decode("utf-8"))
+        except urlerror.HTTPError as exc:
+            detail = exc.read().decode("utf-8", errors="replace")
+            raise RuntimeError(f"llama.cpp server error {exc.code}: {detail}") from exc
+        except urlerror.URLError as exc:
+            raise RuntimeError(f"llama.cpp server unavailable: {exc.reason}") from exc
+
+        return str(result["choices"][0]["message"]["content"]).strip()
+
+
 def configured_backend() -> TurnBackend | None:
+    raw_server_url = os.environ.get("POCKETDM_LLAMA_SERVER_URL")
+    if raw_server_url:
+        grammar_path = Path(os.environ.get("POCKETDM_GRAMMAR", str(DEFAULT_GRAMMAR_PATH)))
+        return LlamaServerBackend(
+            LlamaServerConfig(
+                base_url=raw_server_url,
+                grammar_path=grammar_path,
+                model=os.environ.get("POCKETDM_LLAMA_SERVER_MODEL", "pocketdm"),
+            )
+        )
+
     raw_model_path = os.environ.get("POCKETDM_GGUF") or os.environ.get("POCKETDM_GGUF_MODEL")
     if not raw_model_path:
         return None
