@@ -105,6 +105,45 @@ def training_text(row: dict[str, Any], tokenizer: ChatTemplateTokenizer) -> str:
         )
 
 
+def prompt_text(row: dict[str, Any], tokenizer: ChatTemplateTokenizer) -> str:
+    validate_training_row(row)
+    messages = [
+        {"role": str(message["role"]), "content": str(message["content"])}
+        for message in row["messages"]
+    ]
+    try:
+        return tokenizer.apply_chat_template(
+            messages,
+            tokenize=False,
+            add_generation_prompt=True,
+            enable_thinking=False,
+        )
+    except TypeError:
+        return tokenizer.apply_chat_template(
+            messages,
+            tokenize=False,
+            add_generation_prompt=True,
+        )
+
+
+def completion_text(row: dict[str, Any], tokenizer: ChatTemplateTokenizer) -> str:
+    full_text = training_text(row, tokenizer)
+    rendered_prompt = prompt_text(row, tokenizer)
+    if full_text.startswith(rendered_prompt):
+        return full_text[len(rendered_prompt) :]
+    return fallback_completion_text(row)
+
+
+def prompt_completion_pair(
+    row: dict[str, Any],
+    tokenizer: ChatTemplateTokenizer,
+) -> dict[str, str]:
+    return {
+        "prompt": prompt_text(row, tokenizer),
+        "completion": completion_text(row, tokenizer),
+    }
+
+
 def fallback_training_text(row: dict[str, Any]) -> str:
     validate_training_row(row)
     parts = []
@@ -112,3 +151,8 @@ def fallback_training_text(row: dict[str, Any]) -> str:
         parts.append(f"<|im_start|>{message['role']}\n{message['content']}<|im_end|>")
     parts.append(f"{ASSISTANT_HEADER}{row['completion']}<|im_end|>")
     return "\n".join(parts)
+
+
+def fallback_completion_text(row: dict[str, Any]) -> str:
+    validate_training_row(row)
+    return f"{row['completion']}<|im_end|>"

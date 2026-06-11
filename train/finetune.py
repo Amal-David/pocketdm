@@ -27,7 +27,7 @@ train_image = (
     .pip_install(
         "unsloth>=2026.2.0",
         "transformers>=4.51.0",
-        "trl>=0.14.0",
+        "trl>=0.25.0,<1.0.0",
         "datasets>=3.2.0",
         "accelerate>=1.2.0",
         "bitsandbytes>=0.45.0",
@@ -58,9 +58,8 @@ def fine_tune_remote(
 ) -> dict[str, Any]:
     import torch
     from datasets import Dataset
-    from train.data import ASSISTANT_HEADER, parse_training_jsonl, split_train_eval, training_text
-    from transformers import TrainingArguments
-    from trl import DataCollatorForCompletionOnlyLM, SFTTrainer
+    from train.data import parse_training_jsonl, prompt_completion_pair, split_train_eval
+    from trl import SFTConfig, SFTTrainer
     from unsloth import FastLanguageModel
 
     started = time.monotonic()
@@ -96,15 +95,18 @@ def fine_tune_remote(
             max_seq_length=max_seq_length,
         )
 
+    if tokenizer.pad_token is None:
+        tokenizer.pad_token = tokenizer.eos_token
+
     train_rows, eval_rows = split_train_eval(rows, eval_fraction=0.02, seed=seed)
     train_dataset = Dataset.from_list(
-        [{"text": training_text(row, tokenizer)} for row in train_rows]
+        [prompt_completion_pair(row, tokenizer) for row in train_rows]
     )
     eval_dataset = Dataset.from_list(
-        [{"text": training_text(row, tokenizer)} for row in eval_rows]
+        [prompt_completion_pair(row, tokenizer) for row in eval_rows]
     )
     lr = learning_rate if learning_rate is not None else (2e-4 if lora else 2e-5)
-    args = TrainingArguments(
+    args = SFTConfig(
         output_dir=f"{MODEL_DIR}/{run_name}/checkpoints",
         per_device_train_batch_size=1,
         gradient_accumulation_steps=4,
@@ -122,20 +124,15 @@ def fine_tune_remote(
         bf16=torch.cuda.is_available() and torch.cuda.is_bf16_supported(),
         fp16=torch.cuda.is_available() and not torch.cuda.is_bf16_supported(),
         report_to=[],
-    )
-    collator = DataCollatorForCompletionOnlyLM(
-        response_template=ASSISTANT_HEADER,
-        tokenizer=tokenizer,
+        max_length=max_seq_length,
+        packing=True,
+        completion_only_loss=True,
     )
     trainer = SFTTrainer(
         model=model,
-        tokenizer=tokenizer,
+        processing_class=tokenizer,
         train_dataset=train_dataset,
         eval_dataset=eval_dataset if eval_rows else None,
-        dataset_text_field="text",
-        max_seq_length=max_seq_length,
-        packing=True,
-        data_collator=collator,
         args=args,
     )
     train_result = trainer.train()

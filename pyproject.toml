@@ -28,7 +28,7 @@ eval = [
 ]
 train = [
     "datasets>=3.2.0",
-    "trl>=0.14.0",
+    "trl>=0.25.0,<1.0.0",
 ]
 tts = [
     "kokoro-onnx",

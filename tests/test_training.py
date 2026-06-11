@@ -4,8 +4,11 @@ import pytest
 
 from train.data import (
     ASSISTANT_HEADER,
+    completion_text,
     fallback_training_text,
     parse_training_jsonl,
+    prompt_completion_pair,
+    prompt_text,
     split_train_eval,
     training_text,
 )
@@ -17,6 +20,19 @@ class FakeTokenizer:
         assert add_generation_prompt is False
         assert kwargs.get("enable_thinking") is False
         return "\n".join(f"{message['role']}:{message['content']}" for message in conversation)
+
+
+class FakePromptTokenizer:
+    def apply_chat_template(self, conversation, *, tokenize, add_generation_prompt, **kwargs):
+        assert tokenize is False
+        assert kwargs.get("enable_thinking") is False
+        rendered = "\n".join(
+            f"<|im_start|>{message['role']}\n{message['content']}<|im_end|>"
+            for message in conversation
+        )
+        if add_generation_prompt:
+            return f"{rendered}\n{ASSISTANT_HEADER}"
+        return rendered
 
 
 def row(index: int = 1) -> dict[str, object]:
@@ -50,6 +66,15 @@ def test_fallback_training_text_uses_qwen_style_assistant_marker() -> None:
 
     assert ASSISTANT_HEADER in rendered
     assert row()["completion"] in rendered
+
+
+def test_prompt_completion_pair_splits_at_generation_prompt() -> None:
+    pair = prompt_completion_pair(row(), FakePromptTokenizer())
+
+    assert pair["prompt"].endswith(ASSISTANT_HEADER)
+    assert not pair["completion"].startswith(ASSISTANT_HEADER)
+    assert pair["completion"] == completion_text(row(), FakePromptTokenizer())
+    assert pair["prompt"] == prompt_text(row(), FakePromptTokenizer())
 
 
 def test_split_train_eval_is_deterministic_and_keeps_training_rows() -> None:
