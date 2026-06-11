@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from app.llama_backend import configured_backend, render_prompt
+from pathlib import Path
+
+from app.llama_backend import _model_label, configured_backend, render_prompt
 
 
 def test_render_prompt_uses_qwen_chat_markers_and_generation_prompt() -> None:
@@ -20,3 +22,14 @@ def test_configured_backend_stays_none_without_existing_model(monkeypatch) -> No
     monkeypatch.setenv("POCKETDM_GGUF", "/tmp/definitely-missing-pocketdm.gguf")
 
     assert configured_backend() is None
+
+
+def test_model_label_distinguishes_gemma_quantization() -> None:
+    assert (
+        _model_label(Path("models/gemma-4-e2b-it/gguf/gemma-4-E2B-it-Q4_K_M.gguf"))
+        == "Gemma 4 E2B Q4_K_M GGUF"
+    )
+    assert (
+        _model_label(Path("models/gemma-4-e2b-it/gguf/gemma-4-E2B-it-BF16.gguf"))
+        == "Gemma 4 E2B BF16 GGUF"
+    )

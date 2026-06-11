@@ -92,6 +92,8 @@ def _use_chat_template(model_path: Path) -> bool:
 
 def _model_label(model_path: Path) -> str:
     name = model_path.name.casefold()
+    if "gemma-4-e2b" in name and "bf16" in name:
+        return "Gemma 4 E2B BF16 GGUF"
     if "gemma-4-e2b" in name:
         return "Gemma 4 E2B Q4_K_M GGUF"
     if "gemma" in name:
