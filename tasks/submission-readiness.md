@@ -13,13 +13,14 @@
 - WP-4/WP-5 command surfaces exist for Modal fine-tuning, GGUF export, local smoke inference, automated eval, Modal judge scoring, and report generation.
 - WP-4 0.8B LoRA smoke training ran end to end on Modal: 20 steps, 978 train rows, 20 eval rows, train_loss=1.555, eval_loss=1.284, merged model saved in the `pocketdm-models` volume.
 - WP-4 smoke GGUF export ran end to end: Q4_K_M artifact SHA256 `02f57aca6929095f80b359d63760cbcd7e4d16ad4ce8d83b4af2d2c5c0355dc8`; local `train/smoke_infer.py --turns 3` loads it through llama.cpp and emits valid turn JSON.
+- The app can run with the smoke GGUF enabled: `POCKETDM_GGUF=models/0p8b-smoke-lora-20/merged.Q4_K_M.gguf uv run python app.py`, `/api/start` returned a valid llama.cpp-backed turn in ~16s with `used_bridge=false`, and `agent-browser` captured the custom UI at `/tmp/pocketdm-gguf-home.png`.
 - A local offline smoke test proves the scripted play loop, Ember assistant, and dragon sprite asset do not open outbound sockets.
 
 ## Honest Gaps Before Final Submission
 
 - WP-3 teacher pipeline still needs the full generation run: >=5k filtered turns and 100 held-out eval seeds.
 - The final fine-tuned Qwen3.5 student model and GGUF export are not complete yet.
-- The live app currently defaults to a scripted backend because no trained GGUF artifact is available yet.
+- The live app defaults to a scripted backend unless `POCKETDM_GGUF` points at a GGUF; the current 0.8B GGUF is a plumbing smoke artifact, not the final submission model.
 - Kokoro sequential TTS works locally when model files and dependencies are present, but live Space timing and full runtime no-network proof are still pending.
 - Base-vs-finetuned eval and LLM judge scores are not complete yet; `eval/report.py` now keeps the ship gate failed unless judge scores are supplied.
 - Demo video, social post, model repo, dataset repo, and trace publication are still TODO.
