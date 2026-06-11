@@ -25,9 +25,10 @@ local sprite sheet, hints, speech, and fire.
 
 The first-cut app is a reliable playable demo while the fine-tuned student
 model pipeline finishes. It uses the frozen engine contract and a scripted local
-backend so judges can play a complete adventure immediately. The target runtime
-is a Qwen3.5-2B Q4_K_M llama.cpp model plus Kokoro narration, all under the
-32B rule and designed for offline play.
+backend so judges can play a complete adventure immediately. The same server can
+switch to a llama.cpp backend when `POCKETDM_GGUF` points at the trained GGUF.
+The target runtime is a Qwen3.5-2B Q4_K_M llama.cpp model plus Kokoro narration,
+all under the 32B rule and designed for offline play.
 
 ## Why It Fits Build Small
 
@@ -39,11 +40,12 @@ is a Qwen3.5-2B Q4_K_M llama.cpp model plus Kokoro narration, all under the
   not stock Gradio blocks.
 - Offline story: runtime is designed for local llama.cpp plus local Kokoro TTS;
   no cloud inference is needed once the model artifact is baked in.
-- Voice: narration uses the local Kokoro path when installed; Ember's quick
-  chatter uses browser speech synthesis so the assistant stays responsive.
+- Voice: narration uses the local Kokoro path when installed, including a
+  custom-blended Lore Narrator voice artifact; Ember's quick chatter uses
+  browser speech synthesis so the assistant stays responsive.
 - Evidence path: Modal data-generation costs are logged in `tasks/costs.md`,
-  smoke data lives under `data/out/`, and filtered traces/dataset publishing are
-  the next submission artifacts.
+  smoke data lives under `data/out/`, and the train/eval scripts are in place
+  for the model/export/report path once the full teacher run lands.
 
 ## Local app
 
@@ -57,6 +59,13 @@ The app serves a `gradio.Server` backend with a custom HTML/CSS/JS frontend. The
 fixed Ember dragon assistant uses a local sprite sheet at
 `app/static/dragon-sprites.png`; it talks through browser speech synthesis and
 does not call an external API.
+
+By default the app reports `Backend: Scripted` and uses deterministic turns for
+the playable checkpoint. To use a trained GGUF model once exported:
+
+```bash
+POCKETDM_GGUF=models/pocketdm-2b-Q4_K_M.gguf uv run --group eval python app.py
+```
 
 Narration audio is a progressive enhancement. If Kokoro dependencies and local
 model files are available, `/api/tts` returns WAV audio for each turn. If they
