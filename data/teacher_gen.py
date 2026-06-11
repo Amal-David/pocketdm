@@ -24,6 +24,7 @@ from engine.state import GameState, apply_delta, drop_missing_remove_items, vali
 MODEL_ID = "Qwen/Qwen3-32B"
 CACHE_DIR = "/cache"
 HF_HOME = f"{CACHE_DIR}/huggingface"
+OUTPUT_DIR = "/teacher-output"
 DEFAULT_WAVE_SIZE = 64
 DEFAULT_MAX_TOKENS = 340
 MAX_REPAIR_ATTEMPTS = 3
@@ -33,6 +34,7 @@ A100_80GB_RATE_PER_HOUR = 2.50
 
 app = modal.App("pocketdm-wp3-teacher")
 hf_cache = modal.Volume.from_name("pocketdm-hf-cache", create_if_missing=True)
+teacher_output = modal.Volume.from_name("pocketdm-teacher-output", create_if_missing=True)
 
 teacher_image = (
     modal.Image.from_registry(
@@ -728,6 +730,28 @@ def _run_remote(
     }
 
 
+def _persist_remote_result(result: dict[str, Any], remote_out: str | None) -> None:
+    if not remote_out:
+        return
+
+    output_path = _safe_remote_output_path(remote_out)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text("\n".join(result["lines"]) + "\n")
+    metadata_path = output_path.with_suffix(output_path.suffix + ".meta.json")
+    metadata = {key: value for key, value in result.items() if key != "lines"}
+    metadata["remote_out"] = remote_out
+    metadata_path.write_text(json.dumps(metadata, indent=2, sort_keys=True) + "\n")
+
+
+def _safe_remote_output_path(remote_out: str) -> Path:
+    relative = Path(remote_out)
+    if relative.is_absolute() or ".." in relative.parts:
+        raise ValueError("--remote-out must be a relative path inside the Modal output volume")
+    if not relative.name:
+        raise ValueError("--remote-out must name an output file")
+    return Path(OUTPUT_DIR) / relative
+
+
 def _prefer_control_plane_invocation(function: Any) -> None:
     if os.environ.get("POCKETDM_MODAL_INPUT_PLANE") == "1":
         return
@@ -746,7 +770,7 @@ def _prefer_control_plane_invocation(function: Any) -> None:
     image=teacher_image,
     gpu="H100",
     timeout=60 * 60 * 4,
-    volumes={CACHE_DIR: hf_cache},
+    volumes={CACHE_DIR: hf_cache, OUTPUT_DIR: teacher_output},
 )
 def generate_h100(
     adventures: int,
@@ -754,6 +778,7 @@ def generate_h100(
     wave_size: int,
     max_tokens: int,
     rep_penalty: float,
+    remote_out: str | None = None,
 ) -> dict[str, Any]:
     result = _run_remote(
         adventures,
@@ -763,7 +788,9 @@ def generate_h100(
         max_tokens,
         rep_penalty,
     )
+    _persist_remote_result(result, remote_out)
     hf_cache.commit()
+    teacher_output.commit()
     return result
 
 
@@ -771,7 +798,7 @@ def generate_h100(
     image=teacher_image,
     gpu="A100-80GB",
     timeout=60 * 60 * 4,
-    volumes={CACHE_DIR: hf_cache},
+    volumes={CACHE_DIR: hf_cache, OUTPUT_DIR: teacher_output},
 )
 def generate_a100(
     adventures: int,
@@ -779,6 +806,7 @@ def generate_a100(
     wave_size: int,
     max_tokens: int,
     rep_penalty: float,
+    remote_out: str | None = None,
 ) -> dict[str, Any]:
     result = _run_remote(
         adventures,
@@ -788,7 +816,9 @@ def generate_a100(
         max_tokens,
         rep_penalty,
     )
+    _persist_remote_result(result, remote_out)
     hf_cache.commit()
+    teacher_output.commit()
     return result
 
 
@@ -801,6 +831,7 @@ def main(
     max_tokens: int = DEFAULT_MAX_TOKENS,
     rep_penalty: float = 0.0,
     gpu: str = "H100",
+    remote_out: str = "",
 ) -> None:
     if adventures <= 0:
         raise ValueError("--adventures must be positive")
@@ -817,7 +848,14 @@ def main(
 
     remote = generate_a100 if gpu == "A100-80GB" else generate_h100
     _prefer_control_plane_invocation(remote)
-    result = remote.remote(adventures, start_index, wave_size, max_tokens, rep_penalty)
+    result = remote.remote(
+        adventures,
+        start_index,
+        wave_size,
+        max_tokens,
+        rep_penalty,
+        remote_out or None,
+    )
 
     out_path = Path(out)
     out_path.parent.mkdir(parents=True, exist_ok=True)

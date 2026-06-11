@@ -19,6 +19,7 @@
 ## Honest Gaps Before Final Submission
 
 - WP-3 teacher pipeline still needs the full generation run: >=5k filtered turns and 100 held-out eval seeds.
+- The first 6x75 full-generation fanout was canceled by Modal local-client heartbeat failures before any chunk JSONL landed; the generator now supports `--remote-out` Modal Volume persistence, but the durable chunk rerun is still pending.
 - The final fine-tuned Qwen3.5 student model and GGUF export are not complete yet.
 - The live app defaults to a scripted backend unless `POCKETDM_GGUF` points at a GGUF; the current 0.8B GGUF is a plumbing smoke artifact, not the final submission model.
 - Kokoro sequential TTS works locally when model files and dependencies are present, but live Space timing and full runtime no-network proof are still pending.
