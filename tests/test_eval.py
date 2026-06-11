@@ -57,6 +57,22 @@ def test_aggregate_metrics_exposes_rates_that_fail_when_business_logic_breaks() 
     assert metrics["mean_wall_seconds_per_turn"] == 0.5
 
 
+def test_schema_valid_rate_uses_grammar_free_raw_output_when_present() -> None:
+    valid_raw = '{"narration":"Raw works. It has shape.","choices":["A","B","C"],"state_delta":{"hp":0,"add_items":[],"remove_items":[],"location":"Room","add_flags":[]},"is_ending":false,"ending_type":null}'
+    session = {
+        "genre": "cursed_dungeon",
+        "turns": [
+            {**turn(1), "raw": valid_raw},
+            {**turn(2, ending=True), "raw": "not json"},
+        ],
+    }
+
+    metrics = aggregate_metrics([session])
+
+    assert metrics["schema_valid_rate"] == 0.5
+    assert metrics["delta_legal_rate"] == 1.0
+
+
 def test_eval_report_ship_gate_requires_judge_scores() -> None:
     result = {
         "model": "mock",

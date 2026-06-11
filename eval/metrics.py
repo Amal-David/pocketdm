@@ -37,12 +37,13 @@ def compute_session_metrics(session: dict[str, Any]) -> SessionMetrics:
             bridge_turns += 1
         token_total += int(record.get("tokens") or _rough_tokens(record.get("raw") or ""))
         wall_total += float(record.get("wall_seconds") or 0.0)
+        if _grammar_free_schema_valid(record):
+            schema_valid += 1
         try:
             turn = Turn.model_validate(record.get("turn_json"))
         except Exception:
             continue
         parsed_turns += 1
-        schema_valid += 1
         if len({_choice_key(choice) for choice in turn.choices}) == 3:
             choice_distinct += 1
         if not validate_turn(state, turn):
@@ -107,6 +108,21 @@ def _choice_key(choice: str) -> str:
 
 def _rough_tokens(text: str) -> int:
     return max(0, len(str(text).split()))
+
+
+def _grammar_free_schema_valid(record: dict[str, Any]) -> bool:
+    raw = record.get("raw")
+    if isinstance(raw, str) and raw.strip():
+        try:
+            Turn.model_validate_json(raw)
+            return True
+        except Exception:
+            return False
+    try:
+        Turn.model_validate(record.get("turn_json"))
+        return True
+    except Exception:
+        return False
 
 
 def mean_sd(values: list[float]) -> tuple[float, float]:
