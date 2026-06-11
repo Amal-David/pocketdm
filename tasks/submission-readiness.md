@@ -11,13 +11,14 @@
 - Unit/integration tests pass locally: `53 passed, 1 skipped`.
 - WP-3 50-adventure acceptance smoke passed turn-level filters: 632 clean turns, 2 bridge fallbacks, all turn gates >=99.1%.
 - WP-4/WP-5 command surfaces exist for Modal fine-tuning, GGUF export, local smoke inference, automated eval, Modal judge scoring, and report generation.
+- A local offline smoke test proves the scripted play loop, Ember assistant, and dragon sprite asset do not open outbound sockets.
 
 ## Honest Gaps Before Final Submission
 
 - WP-3 teacher pipeline still needs the full generation run: >=5k filtered turns and 100 held-out eval seeds.
 - The fine-tuned Qwen3.5 student model and GGUF export are not complete yet.
 - The live app currently defaults to a scripted backend because no trained GGUF artifact is available yet.
-- Kokoro sequential TTS works locally when model files and dependencies are present, but live Space timing and no-network proof are still pending.
+- Kokoro sequential TTS works locally when model files and dependencies are present, but live Space timing and full runtime no-network proof are still pending.
 - Base-vs-finetuned eval and LLM judge scores are not complete yet; `eval/report.py` now keeps the ship gate failed unless judge scores are supplied.
 - Demo video, social post, model repo, dataset repo, and trace publication are still TODO.
 - README frontmatter tag strings should be verified against the registration app before final submission.
