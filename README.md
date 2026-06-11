@@ -41,8 +41,9 @@ all under the 32B rule and designed for offline play.
 - Offline story: runtime is designed for local llama.cpp plus local Kokoro TTS;
   no cloud inference is needed once the model artifact is baked in.
 - Voice: narration uses the local Kokoro path when installed, including a
-  custom-blended Lore Narrator voice artifact; Ember's quick chatter uses
-  browser speech synthesis so the assistant stays responsive.
+  custom-blended Lore Narrator voice artifact. Lore Narrator is a Kokoro tensor
+  blend, not a TTS fine-tune. Ember's quick chatter uses browser speech
+  synthesis so the assistant stays responsive.
 - Evidence path: Modal data-generation costs are logged in `tasks/costs.md`,
   smoke data lives under `data/out/`, and the train/eval scripts are in place
   for the model/export/report path once the full teacher run lands.
@@ -61,10 +62,10 @@ fixed Ember dragon assistant uses a local sprite sheet at
 does not call an external API.
 
 By default the app reports `Backend: Scripted` and uses deterministic turns for
-the playable checkpoint. To use a trained GGUF model once exported:
+the playable checkpoint. To use the local trained GGUF model:
 
 ```bash
-POCKETDM_GGUF=models/pocketdm-2b-Q4_K_M.gguf uv run --group eval python app.py
+POCKETDM_GGUF=models/2b-v1-lora/gguf/merged.Q4_K_M.gguf uv run --group eval --group tts python app.py
 ```
 
 Narration audio is a progressive enhancement. If Kokoro dependencies and local

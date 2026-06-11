@@ -1,14 +1,14 @@
 {
   "workspace_path": "/Users/amal/listenowl/experiments/build-small",
   "session_id": "workspace:/Users/amal/listenowl/experiments/build-small",
-  "updated_at": "2026-06-11T13:42:53.069Z",
+  "updated_at": "2026-06-11T13:45:21.695Z",
   "focused_change": {
     "change_id": "pocketdm",
     "title": "PocketDM — offline voiced tiny-model Dungeon Master (Build Small hackathon)",
     "status": "blocked",
     "task_total": 16,
-    "task_done": 8,
-    "updated_at": "2026-06-11T13:42:53.063Z"
+    "task_done": 9,
+    "updated_at": "2026-06-11T13:45:21.690Z"
   },
   "active_task": null,
   "board": {
@@ -44,14 +44,6 @@
         "status": "backlog",
         "completed_acceptance_criteria": 0,
         "total_acceptance_criteria": 2,
-        "progress_percent": 0
-      },
-      {
-        "task_id": "T-0010",
-        "title": "WP-V: app/voices/build_lore_voice.py — blend Kokoro female voice tensors (start 0.45 bf_emma / 0.35 af_heart / 0.20 af_nicole), audition grid over weights x speeds with a fixed script, pick winner by listening, pedalboard reverb in TTS path for this voice only, save artifact + rebuild kokoro-onnx voices.bin. Blend only from Kokoro voice packs — never game audio.",
-        "status": "backlog",
-        "completed_acceptance_criteria": 0,
-        "total_acceptance_criteria": 3,
         "progress_percent": 0
       },
       {
@@ -153,6 +145,17 @@
         "started_at": "2026-06-11T13:21:40.742Z",
         "completed_at": "2026-06-11T13:42:53.063Z",
         "updated_at": "2026-06-11T13:42:53.063Z"
+      },
+      {
+        "task_id": "T-0010",
+        "title": "WP-V: app/voices/build_lore_voice.py — blend Kokoro female voice tensors (start 0.45 bf_emma / 0.35 af_heart / 0.20 af_nicole), audition grid over weights x speeds with a fixed script, pick winner by listening, pedalboard reverb in TTS path for this voice only, save artifact + rebuild kokoro-onnx voices.bin. Blend only from Kokoro voice packs — never game audio.",
+        "status": "done",
+        "completed_acceptance_criteria": 3,
+        "total_acceptance_criteria": 3,
+        "progress_percent": 100,
+        "started_at": "2026-06-11T13:44:07.047Z",
+        "completed_at": "2026-06-11T13:45:21.690Z",
+        "updated_at": "2026-06-11T13:45:21.690Z"
       }
     ],
     "blocked": [
