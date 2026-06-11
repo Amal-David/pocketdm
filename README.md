@@ -74,6 +74,12 @@ To try the experimental Gemma 4 E2B backend after downloading its GGUF:
 POCKETDM_GGUF=models/gemma-4-e2b-it/gguf/gemma-4-E2B-it-Q4_K_M.gguf POCKETDM_LLAMA_THREADS=8 uv run --group eval --group tts python app.py
 ```
 
+For a less-compressed Gemma 4 E2B test that is still much lighter than BF16:
+
+```bash
+POCKETDM_GGUF=models/gemma-4-e2b-it/gguf/gemma-4-E2B-it-Q6_K.gguf POCKETDM_LLAMA_THREADS=8 uv run --group eval --group tts python app.py
+```
+
 The BF16 GGUF also loads locally, but it is a quality experiment rather than a
 demo runtime on CPU:
 

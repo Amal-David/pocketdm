@@ -30,6 +30,10 @@ def test_model_label_distinguishes_gemma_quantization() -> None:
         == "Gemma 4 E2B Q4_K_M GGUF"
     )
     assert (
+        _model_label(Path("models/gemma-4-e2b-it/gguf/gemma-4-E2B-it-Q6_K.gguf"))
+        == "Gemma 4 E2B Q6_K GGUF"
+    )
+    assert (
         _model_label(Path("models/gemma-4-e2b-it/gguf/gemma-4-E2B-it-BF16.gguf"))
         == "Gemma 4 E2B BF16 GGUF"
     )
