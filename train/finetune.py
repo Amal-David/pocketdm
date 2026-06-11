@@ -27,7 +27,7 @@ train_image = (
     .pip_install(
         "unsloth>=2026.2.0",
         "transformers>=4.51.0",
-        "trl>=0.25.0,<1.0.0",
+        "trl>=0.18.2,<=0.24.0,!=0.19.0",
         "datasets>=3.2.0",
         "accelerate>=1.2.0",
         "bitsandbytes>=0.45.0",
@@ -59,8 +59,8 @@ def fine_tune_remote(
     import torch
     from datasets import Dataset
     from train.data import parse_training_jsonl, prompt_completion_pair, split_train_eval
-    from trl import SFTConfig, SFTTrainer
     from unsloth import FastLanguageModel
+    from trl import SFTConfig, SFTTrainer
 
     started = time.monotonic()
     rows = parse_training_jsonl(data_jsonl)
@@ -127,6 +127,7 @@ def fine_tune_remote(
         max_length=max_seq_length,
         packing=True,
         completion_only_loss=True,
+        eos_token=tokenizer.eos_token,
     )
     trainer = SFTTrainer(
         model=model,
@@ -170,7 +171,7 @@ def fine_tune_remote(
 
 @app.local_entrypoint()
 def main(
-    base: str = "Qwen/Qwen3.5-2B",
+    base: str = "principled-intelligence/Qwen3.5-2B-text-only",
     data: str = "data/clean/train.jsonl",
     run_name: str = "2b-v1",
     epochs: float = 2.0,
@@ -212,7 +213,10 @@ def main(
 
 def cli() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--base", default="Qwen/Qwen3.5-2B")
+    parser.add_argument(
+        "--base",
+        default="principled-intelligence/Qwen3.5-2B-text-only",
+    )
     parser.add_argument("--data", default="data/clean/train.jsonl")
     parser.add_argument("--run-name", default="2b-v1")
     parser.add_argument("--epochs", type=float, default=2.0)

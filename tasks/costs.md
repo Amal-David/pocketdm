@@ -15,5 +15,7 @@ Every run gets a line. This table feeds the Field Notes blog's "total cost" clai
 | 2026-06-11 | WP-3 smoke v8 (6 adv, multi-retry probe) | Modal H100 | 16.6 min | 1.09 | 76 turns; 4/6 clean adventures; 4 bridge fallbacks, all missing remove_items; reached_real_ending 6/6 |
 | 2026-06-11 | WP-3 smoke v9 (6 adv, deterministic remove repair) | Modal H100 | 13.6 min | 0.90 | 78 turns; 6/6 clean adventures; 0 bridge fallbacks; 4 auto-repaired missing remove_items; all filter gates 100% |
 | 2026-06-11 | WP-3 smoke v10 (50 adv, acceptance smoke) | Modal H100 | 109.9 min | 7.24 | 644 turns; 45/50 clean adventures; 632 clean turns; 2 bridge fallbacks; 16 auto-repaired turns; turn gates all >=99.1% |
+| 2026-06-11 | WP-4 0.8B LoRA smoke attempt (dependency conflict) | Modal image build | n/a | 0.00 | Failed before GPU training: Unsloth requires trl<=0.24.0 |
+| 2026-06-11 | WP-4 fine-tune (0p8b-smoke-lora-20) | Modal A100-40GB | 4.8 min | 0.09 | 20-step LoRA smoke; 978 train rows; 20 eval rows; train_loss=1.555; eval_loss=1.284; merged model saved to pocketdm-models volume |
 
-**Running total: ~$31.92**
+**Running total: ~$32.01**
