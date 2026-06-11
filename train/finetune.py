@@ -170,7 +170,7 @@ def fine_tune_remote(
 
 @app.local_entrypoint()
 def main(
-    base: str = "unsloth/Qwen3.5-2B",
+    base: str = "Qwen/Qwen3.5-2B",
     data: str = "data/clean/train.jsonl",
     run_name: str = "2b-v1",
     epochs: float = 2.0,
@@ -212,7 +212,7 @@ def main(
 
 def cli() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--base", default="unsloth/Qwen3.5-2B")
+    parser.add_argument("--base", default="Qwen/Qwen3.5-2B")
     parser.add_argument("--data", default="data/clean/train.jsonl")
     parser.add_argument("--run-name", default="2b-v1")
     parser.add_argument("--epochs", type=float, default=2.0)
