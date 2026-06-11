@@ -13,6 +13,7 @@ from fastapi.staticfiles import StaticFiles
 from gradio import Server
 
 from engine.generate import MockBackend, next_turn
+from engine.generate import TurnBackend
 from engine.schema import StateDelta, Turn
 from engine.state import GameState, apply_delta
 
@@ -29,7 +30,8 @@ GENRE_LABELS = {
 @dataclass
 class PlaySession:
     state: GameState
-    backend: MockBackend
+    backend: TurnBackend
+    backend_label: str
     voice_id: str | None = None
     last_turn: Turn | None = None
     transcript: list[dict[str, Any]] = field(default_factory=list)
@@ -56,9 +58,11 @@ async def start_adventure(request: Request) -> JSONResponse:
     payload = await request.json()
     genre = _genre(payload.get("genre"))
     premise = _clean_text(payload.get("premise"), limit=140) or None
+    backend, backend_label = _backend_for_adventure(genre, premise)
     session = PlaySession(
         state=GameState(genre=genre, premise=premise),
-        backend=MockBackend(_scripted_turns(genre, premise)),
+        backend=backend,
+        backend_label=backend_label,
         voice_id=_voice_id(payload.get("voice"), genre),
     )
     session_id = uuid.uuid4().hex
@@ -68,7 +72,7 @@ async def start_adventure(request: Request) -> JSONResponse:
         {
             "session_id": session_id,
             "turn": turn_payload,
-            "state": _state_payload(session.state, _voice_for_session(session)),
+            "state": _state_payload(session),
             "assistant": _assistant_opening(genre),
         }
     )
@@ -86,7 +90,7 @@ async def choose_action(request: Request) -> JSONResponse:
         return JSONResponse(
             {
                 "turn": _turn_payload(session.last_turn),
-                "state": _state_payload(session.state, _voice_for_session(session)),
+                "state": _state_payload(session),
                 "assistant": _assistant_for_turn(session, action),
             }
         )
@@ -105,7 +109,7 @@ async def choose_action(request: Request) -> JSONResponse:
     return JSONResponse(
         {
             "turn": turn_payload,
-            "state": _state_payload(session.state, _voice_for_session(session)),
+            "state": _state_payload(session),
             "assistant": _assistant_for_turn(session, action),
         }
     )
@@ -151,6 +155,7 @@ def start_demo_adventure(genre: str = "cursed_dungeon", premise: str = "") -> di
     session = PlaySession(
         state=GameState(genre=_genre(genre), premise=_clean_text(premise, limit=140) or None),
         backend=MockBackend(_scripted_turns(_genre(genre), premise or None)),
+        backend_label="scripted",
     )
     return _advance_to_next_turn(session)
 
@@ -175,7 +180,8 @@ def _turn_payload(turn: Turn, used_bridge: bool = False) -> dict[str, Any]:
     }
 
 
-def _state_payload(state: GameState, voice_id: str | None = None) -> dict[str, Any]:
+def _state_payload(session: PlaySession) -> dict[str, Any]:
+    state = session.state
     return {
         "hp": state.hp,
         "inventory": list(state.inventory),
@@ -183,7 +189,8 @@ def _state_payload(state: GameState, voice_id: str | None = None) -> dict[str, A
         "turn_count": state.turn_count,
         "genre": state.genre,
         "premise": state.premise,
-        "voice": voice_id or _voice_for_genre(state.genre),
+        "voice": _voice_for_session(session),
+        "backend": session.backend_label,
     }
 
 
@@ -277,6 +284,15 @@ def _voice_id(raw_voice: Any, genre: str) -> str | None:
 
 def _voice_for_session(session: PlaySession) -> str:
     return session.voice_id or _voice_for_genre(session.state.genre)
+
+
+def _backend_for_adventure(genre: str, premise: str | None) -> tuple[TurnBackend, str]:
+    from app.llama_backend import configured_backend
+
+    backend = configured_backend()
+    if backend is not None:
+        return backend, "llama.cpp"
+    return MockBackend(_scripted_turns(genre, premise)), "scripted"
 
 
 def _recommended_choice(session: PlaySession) -> str:

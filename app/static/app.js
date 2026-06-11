@@ -21,6 +21,7 @@ const els = {
   location: document.querySelector("#location"),
   inventory: document.querySelector("#inventory"),
   voiceState: document.querySelector("#voice-state"),
+  backendState: document.querySelector("#backend-state"),
   freeformForm: document.querySelector("#freeform-form"),
   freeformInput: document.querySelector("#freeform-input"),
   freeformButton: document.querySelector("#freeform-form button"),
@@ -117,6 +118,7 @@ function renderTurn(turn, gameState) {
   els.location.textContent = gameState.location;
   els.inventory.textContent = gameState.inventory.length ? gameState.inventory.join(", ") : "-";
   els.voiceState.textContent = voiceLabel(gameState.voice);
+  els.backendState.textContent = gameState.backend === "llama.cpp" ? "llama.cpp" : "Scripted";
   playNarration(turn.narration);
 }
 

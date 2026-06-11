@@ -18,6 +18,7 @@ def test_custom_server_starts_adventure_and_dragon_hint() -> None:
     assert body["turn"]["choices"]
     assert body["state"]["turn_count"] == 1
     assert body["state"]["voice"] == "dungeon"
+    assert body["state"]["backend"] == "scripted"
     assert "Ember" in body["assistant"]
 
     hint = client.post(
