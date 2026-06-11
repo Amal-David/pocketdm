@@ -8,10 +8,11 @@
 - Ember is persistent across the viewport, uses `app/static/dragon-sprites.png`, flaps continuously, gives state-aware hints, speaks through browser speech synthesis, and fires on notable replies.
 - Narration has selectable `Auto`, `Dungeon`, `Wood`, `Starship`, and `Lore Narrator` modes; `app/voices/lore_narrator.npy` smoke-synthesizes locally at 24 kHz.
 - The app can switch to an optional llama.cpp backend when `POCKETDM_GGUF` points at a GGUF model; without that artifact, it honestly reports the current `Scripted` backend.
-- Unit/integration tests pass locally: `56 passed, 1 skipped`.
+- Unit/integration tests pass locally: `57 passed`.
 - WP-3 50-adventure acceptance smoke passed turn-level filters: 632 clean turns, 2 bridge fallbacks, all turn gates >=99.1%.
 - WP-4/WP-5 command surfaces exist for Modal fine-tuning, GGUF export, local smoke inference, automated eval, Modal judge scoring, and report generation.
 - WP-4 0.8B LoRA smoke training ran end to end on Modal: 20 steps, 978 train rows, 20 eval rows, train_loss=1.555, eval_loss=1.284, merged model saved in the `pocketdm-models` volume.
+- WP-4 smoke GGUF export ran end to end: Q4_K_M artifact SHA256 `02f57aca6929095f80b359d63760cbcd7e4d16ad4ce8d83b4af2d2c5c0355dc8`; local `train/smoke_infer.py --turns 3` loads it through llama.cpp and emits valid turn JSON.
 - A local offline smoke test proves the scripted play loop, Ember assistant, and dragon sprite asset do not open outbound sockets.
 
 ## Honest Gaps Before Final Submission

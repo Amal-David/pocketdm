@@ -13,7 +13,7 @@ from train.data import parse_training_jsonl
 APP_NAME = "pocketdm-wp4-training"
 MODEL_VOLUME_NAME = "pocketdm-models"
 MODEL_DIR = "/models"
-A100_40GB_RATE_PER_HOUR = 1.10
+A100_40GB_RATE_PER_HOUR = 2.10
 
 app = modal.App(APP_NAME)
 model_volume = modal.Volume.from_name(MODEL_VOLUME_NAME, create_if_missing=True)

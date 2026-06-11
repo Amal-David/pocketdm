@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import shutil
 import time
 from pathlib import Path
 from typing import Any
@@ -22,6 +23,14 @@ export_image = (
         add_python="3.12",
     )
     .entrypoint([])
+    .apt_install(
+        "build-essential",
+        "cmake",
+        "curl",
+        "git",
+        "libcurl4-openssl-dev",
+        "libssl-dev",
+    )
     .pip_install(
         "unsloth>=2026.2.0",
         "transformers>=4.51.0",
@@ -43,6 +52,7 @@ def export_remote(*, run_name: str, quantizations: list[str]) -> dict[str, Any]:
     started = time.monotonic()
     merged_dir = f"{MODEL_DIR}/{run_name}/merged"
     output_dir = f"{MODEL_DIR}/{run_name}/gguf"
+    config_patch = _disable_missing_mtp_layers(Path(merged_dir) / "config.json")
     model, tokenizer = FastLanguageModel.from_pretrained(
         model_name=merged_dir,
         max_seq_length=2048,
@@ -56,7 +66,12 @@ def export_remote(*, run_name: str, quantizations: list[str]) -> dict[str, Any]:
             tokenizer,
             quantization_method=quantization.lower(),
         )
-        artifacts.extend(_artifact_info(Path(target)))
+    artifacts.extend(
+        _copy_gguf_artifacts(
+            source=Path(f"{merged_dir}_gguf"),
+            target=Path(output_dir),
+        )
+    )
     model_volume.commit()
     return {
         "run_name": run_name,
@@ -64,11 +79,35 @@ def export_remote(*, run_name: str, quantizations: list[str]) -> dict[str, Any]:
         "output_dir": output_dir,
         "duration_seconds": round(time.monotonic() - started, 1),
         "artifacts": artifacts,
+        "config_patch": config_patch,
         "download_hint": (
             f"modal volume get {MODEL_VOLUME_NAME} {run_name}/gguf "
             f"models/{run_name}/gguf"
         ),
     }
+
+
+def _disable_missing_mtp_layers(config_path: Path) -> dict[str, Any]:
+    config = json.loads(config_path.read_text())
+    original = config.get("mtp_num_hidden_layers")
+    if original:
+        config["mtp_num_hidden_layers"] = 0
+        config_path.write_text(json.dumps(config, indent=4, sort_keys=False) + "\n")
+    return {
+        "path": str(config_path),
+        "mtp_num_hidden_layers_before": original,
+        "mtp_num_hidden_layers_after": config.get("mtp_num_hidden_layers"),
+    }
+
+
+def _copy_gguf_artifacts(*, source: Path, target: Path) -> list[dict[str, Any]]:
+    generated = sorted(source.rglob("*.gguf"))
+    if not generated:
+        raise RuntimeError(f"no GGUF artifacts found under {source}")
+    target.mkdir(parents=True, exist_ok=True)
+    for path in generated:
+        shutil.copy2(path, target / path.name)
+    return _artifact_info(target)
 
 
 def _artifact_info(root: Path) -> list[dict[str, Any]]:
