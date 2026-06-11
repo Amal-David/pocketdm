@@ -81,10 +81,16 @@ def turn_record(turn: Turn | dict[str, object]) -> dict[str, object]:
     }
 
 
+def bridge_record(turn: Turn) -> dict[str, object]:
+    record = turn_record(turn)
+    record["used_bridge"] = True
+    return record
+
+
 def test_sentence_count_uses_terminal_punctuation() -> None:
     assert sentence_count("One. Two! Three?") == 3
     assert sentence_count("No terminal punctuation") == 1
-    assert sentence_count("The glade shivers—roots unfurl beneath your feet.") == 2
+    assert sentence_count("The glade shivers—roots unfurl beneath your feet.") == 1
 
 
 def test_schema_gate_rejects_missing_required_fields() -> None:
@@ -309,3 +315,49 @@ def test_adventure_gate_limits_dropped_turns() -> None:
     assert result.passed is False
     assert result.dropped_turns == 2
     assert result.adventure_gate_passes[ADV_GATE_DROPPED] == 0
+
+
+def test_bridge_turn_is_dropped_but_keeps_state_history_aligned() -> None:
+    bridge = make_turn(
+        narration="Mist covers the stalled moment. A safer path opens.",
+        choices=["Cross the mist", "Mark the stone", "Ask the silence"],
+        location="Bridge Room",
+    )
+    clean_turns = [
+        turn_record(
+            make_turn(
+                narration=f"You cross chamber {index}. The exit keeps moving.",
+                choices=[
+                    f"Advance {index}A",
+                    f"Search {index}B",
+                    f"Rest {index}C",
+                ],
+                location=f"Room {index}",
+                is_ending=index == 6,
+                ending_type="victory" if index == 6 else None,
+            )
+        )
+        for index in range(1, 7)
+    ]
+    adventure = {
+        "adventure_id": "adv-bridge",
+        "genre": "cursed_dungeon",
+        "premise": None,
+        "persona": "curious",
+        "seed": 3,
+        "turns": [clean_turns[0], bridge_record(bridge), *clean_turns[1:]],
+    }
+
+    result = filter_adventure(
+        adventure,
+        encoder=FakeEncoder(),
+        profanity_checker=FakeProfanityChecker(),
+        config=FilterConfig(max_dropped_turns=1),
+    )
+
+    assert result.passed is True
+    assert result.clean_turns == 6
+    assert result.dropped_turns == 1
+    assert result.bridge_turns == 1
+    assert result.adventure is not None
+    assert len(result.adventure["turns"]) == 6

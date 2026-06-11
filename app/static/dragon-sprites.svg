@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="128" viewBox="0 0 1024 128">
+  <defs>
+    <linearGradient id="body" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#6bbf79"/>
+      <stop offset="1" stop-color="#235f4b"/>
+    </linearGradient>
+    <linearGradient id="wing" x1="0" x2="1">
+      <stop offset="0" stop-color="#f0ba5b"/>
+      <stop offset="1" stop-color="#b75232"/>
+    </linearGradient>
+    <radialGradient id="flame" cx="0.3" cy="0.5" r="0.8">
+      <stop offset="0" stop-color="#fff0a8"/>
+      <stop offset="0.45" stop-color="#f07f2e"/>
+      <stop offset="1" stop-color="#c1261b" stop-opacity="0"/>
+    </radialGradient>
+    <g id="dragon">
+      <ellipse cx="58" cy="70" rx="31" ry="24" fill="url(#body)"/>
+      <path d="M37 65 C16 42 12 29 31 22 C50 29 54 45 49 64 Z" fill="url(#wing)" stroke="#3c241c" stroke-width="3"/>
+      <path d="M63 63 C78 47 101 45 111 59 C98 65 85 70 70 75 Z" fill="url(#wing)" stroke="#3c241c" stroke-width="3"/>
+      <circle cx="80" cy="50" r="22" fill="url(#body)" stroke="#15392e" stroke-width="3"/>
+      <path d="M65 32 L70 13 L80 30 Z" fill="#f0ba5b" stroke="#3c241c" stroke-width="3"/>
+      <path d="M86 31 L99 16 L96 38 Z" fill="#f0ba5b" stroke="#3c241c" stroke-width="3"/>
+      <circle cx="87" cy="46" r="4" fill="#fff7df"/>
+      <circle cx="89" cy="46" r="2" fill="#171717"/>
+      <path d="M74 58 C82 65 93 63 99 56" fill="none" stroke="#171717" stroke-width="3" stroke-linecap="round"/>
+      <path d="M31 77 C14 83 10 94 28 98 C43 101 52 88 53 78" fill="none" stroke="#235f4b" stroke-width="8" stroke-linecap="round"/>
+      <path d="M47 91 L37 111 L58 98 Z" fill="#235f4b" stroke="#15392e" stroke-width="3"/>
+      <path d="M65 91 L60 114 L78 99 Z" fill="#235f4b" stroke="#15392e" stroke-width="3"/>
+    </g>
+  </defs>
+
+  <rect width="1024" height="128" fill="none"/>
+  <g transform="translate(0 0)"><use href="#dragon"/></g>
+  <g transform="translate(128 0) scale(1 0.96) translate(0 3)"><use href="#dragon"/></g>
+  <g transform="translate(256 0) scale(1 0.92) translate(0 6)"><use href="#dragon"/></g>
+  <g transform="translate(384 0) scale(1 0.98) translate(0 1)"><use href="#dragon"/></g>
+  <g transform="translate(512 0)"><use href="#dragon"/></g>
+  <g transform="translate(640 0)"><use href="#dragon"/><ellipse cx="119" cy="54" rx="18" ry="9" fill="url(#flame)"/></g>
+  <g transform="translate(768 0)"><use href="#dragon"/><ellipse cx="124" cy="54" rx="28" ry="12" fill="url(#flame)"/></g>
+  <g transform="translate(896 0)"><use href="#dragon"/><ellipse cx="118" cy="54" rx="15" ry="8" fill="url(#flame)"/></g>
+</svg>

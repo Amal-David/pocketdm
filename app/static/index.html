@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PocketDM</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <header class="topbar">
+        <div>
+          <p class="kicker">PocketDM</p>
+          <h1>A tiny offline Dungeon Master with a hovering dragon aide.</h1>
+        </div>
+        <div class="proof-badge" aria-label="Runtime proof">
+          <span>Engine demo</span>
+          <span>Local assets</span>
+          <span>Model path ready</span>
+        </div>
+        <button
+          id="voice-toggle"
+          class="voice-toggle"
+          type="button"
+          aria-pressed="true"
+          aria-label="Toggle narration voice"
+          title="Toggle narration voice"
+        >
+          Voice
+        </button>
+      </header>
+
+      <section class="play-surface" aria-label="Adventure">
+        <aside class="setup-panel">
+          <label>
+            Genre
+            <select id="genre">
+              <option value="cursed_dungeon">Cursed Dungeon</option>
+              <option value="whispering_wood">Whispering Wood</option>
+              <option value="derelict_starship">Derelict Starship</option>
+            </select>
+          </label>
+          <label>
+            Premise
+            <textarea id="premise" maxlength="140" placeholder="A tiny quest hook"></textarea>
+          </label>
+          <button id="new-adventure" class="primary-button" type="button">
+            New Adventure
+          </button>
+          <dl class="state-grid" id="state-grid">
+            <div><dt>HP</dt><dd id="hp">10/10</dd></div>
+            <div><dt>Turn</dt><dd id="turn-count">0</dd></div>
+            <div><dt>Location</dt><dd id="location">Starting Point</dd></div>
+            <div><dt>Inventory</dt><dd id="inventory">-</dd></div>
+          </dl>
+        </aside>
+
+        <article class="scroll" aria-live="polite">
+          <p class="scene-label" id="scene-label">Awaiting adventure</p>
+          <div class="narration" id="narration">
+            Pick a genre and begin. Ember will stay over the screen, flap, chatter,
+            and breathe fire when the tale calls for it.
+          </div>
+          <div class="choices" id="choices"></div>
+          <form class="freeform" id="freeform-form">
+            <input id="freeform-input" type="text" placeholder="Or type a freeform action" />
+            <button type="submit">Send</button>
+          </form>
+        </article>
+      </section>
+    </main>
+
+    <section class="dragon-assistant" aria-label="Dragon assistant">
+      <div class="dragon-speech" id="dragon-speech">
+        I am Ember. Start a tale and I will hover helpfully.
+      </div>
+      <div class="dragon-row">
+        <button class="dragon-avatar" id="dragon-avatar" type="button" aria-label="Ask Ember for a hint">
+          <span class="dragon-sprite" aria-hidden="true"></span>
+        </button>
+        <form class="dragon-chat" id="dragon-form">
+          <input id="dragon-input" type="text" placeholder="Ask Ember for a hint" />
+          <button type="submit">Ask</button>
+        </form>
+      </div>
+    </section>
+
+    <script src="/static/app.js" type="module"></script>
+  </body>
+</html>

@@ -9,7 +9,7 @@ from pydantic import ValidationError
 from engine.bridges import bridge_turn
 from engine.prompt import build_messages
 from engine.schema import Turn
-from engine.state import GameState, validate_turn
+from engine.state import GameState, drop_missing_remove_items, validate_turn
 
 DEFAULT_TEMPERATURE = 0.8
 RETRY_TEMPERATURE_DELTA = 0.15
@@ -49,6 +49,18 @@ def next_turn(
             raw_attempts.append(raw)
             turn = Turn.model_validate_json(raw)
             validation_errors = validate_turn(state, turn)
+            if validation_errors and any(
+                error.startswith("remove_items missing from inventory:")
+                for error in validation_errors
+            ):
+                repaired_turn = drop_missing_remove_items(state, turn)
+                repaired_errors = validate_turn(state, repaired_turn)
+                if not repaired_errors:
+                    return TurnResult(
+                        turn=repaired_turn,
+                        used_bridge=False,
+                        raw_attempts=raw_attempts,
+                    )
             if validation_errors:
                 raise ValueError("; ".join(validation_errors))
             return TurnResult(turn=turn, used_bridge=False, raw_attempts=raw_attempts)

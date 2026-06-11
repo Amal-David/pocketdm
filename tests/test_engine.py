@@ -7,7 +7,12 @@ from engine.generate import MockBackend, next_turn
 from engine.pressure import story_pressure
 from engine.prompt import build_messages
 from engine.schema import StateDelta, Turn
-from engine.state import GameState, apply_delta, validate_turn
+from engine.state import (
+    GameState,
+    apply_delta,
+    drop_missing_remove_items,
+    validate_turn,
+)
 
 
 def make_turn(
@@ -87,6 +92,16 @@ def test_validate_turn_reports_semantic_failures() -> None:
     assert "choice repeats a choice offered last turn" in errors
     assert "narration repeats the last narration too closely" in errors
     assert any(error.startswith("remove_items missing") for error in errors)
+
+
+def test_drop_missing_remove_items_removes_only_absent_inventory() -> None:
+    state = GameState(inventory=["key", "coin"])
+    turn = make_turn(remove_items=["missing", "KEY", "coin"])
+
+    repaired = drop_missing_remove_items(state, turn)
+
+    assert repaired.state_delta.remove_items == ["KEY", "coin"]
+    assert validate_turn(state, repaired) == []
 
 
 def test_validate_turn_requires_death_ending_when_hp_hits_zero() -> None:
@@ -206,6 +221,18 @@ def test_retry_then_bridge_path() -> None:
         )
         for bridge in BRIDGE_TURNS["whispering_wood"]
     ]
+
+
+def test_missing_remove_items_are_repaired_without_retry() -> None:
+    state = GameState(inventory=["key"])
+    backend = MockBackend([make_turn(remove_items=["missing"])])
+
+    result = next_turn(state, backend)
+
+    assert result.used_bridge is False
+    assert result.turn.state_delta.remove_items == []
+    assert len(result.raw_attempts) == 1
+    assert backend.temperatures == [0.8]
 
 
 def test_full_scripted_10_turn_mock_backend_game_reaches_ending() -> None:

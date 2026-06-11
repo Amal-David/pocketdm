@@ -3,6 +3,7 @@ from __future__ import annotations
 import copy
 import json
 import math
+import os
 import random
 import re
 import time
@@ -13,17 +14,19 @@ from typing import Any, Iterable
 
 import modal
 
+from engine.bridges import bridge_turn
 from engine.generate import DEFAULT_TEMPERATURE, RETRY_TEMPERATURE_DELTA
 from engine.pressure import next_turn_number
 from engine.prompt import GENRE_FLAVORS, build_messages
 from engine.schema import Turn
-from engine.state import GameState, apply_delta, validate_turn
+from engine.state import GameState, apply_delta, drop_missing_remove_items, validate_turn
 
 MODEL_ID = "Qwen/Qwen3-32B"
 CACHE_DIR = "/cache"
 HF_HOME = f"{CACHE_DIR}/huggingface"
 DEFAULT_WAVE_SIZE = 64
-DEFAULT_MAX_TOKENS = 320
+DEFAULT_MAX_TOKENS = 340
+MAX_REPAIR_ATTEMPTS = 3
 MAX_TURNS = 15
 H100_RATE_PER_HOUR = 3.95
 A100_80GB_RATE_PER_HOUR = 2.50
@@ -208,16 +211,24 @@ def _state_summary(state: GameState) -> dict[str, Any]:
     }
 
 
-def _parse_turn(raw: str, state: GameState) -> tuple[Turn | None, list[str], bool]:
+def _parse_turn(raw: str, state: GameState) -> tuple[Turn | None, list[str], bool, bool]:
     try:
         turn = Turn.model_validate_json(raw)
     except Exception as exc:
-        return None, [f"schema: {type(exc).__name__}: {exc}"], True
+        return None, [f"schema: {type(exc).__name__}: {exc}"], True, False
 
     errors = validate_turn(state, turn)
+    if errors and any(
+        error.startswith("remove_items missing from inventory:") for error in errors
+    ):
+        repaired_turn = drop_missing_remove_items(state, turn)
+        repaired_errors = validate_turn(state, repaired_turn)
+        if not repaired_errors:
+            return repaired_turn, [], False, True
+
     if errors:
-        return None, errors, False
-    return turn, [], False
+        return None, errors, False, False
+    return turn, [], False, False
 
 
 def _record_turn(
@@ -226,15 +237,25 @@ def _record_turn(
     messages: list[dict[str, str]],
     turn: Turn,
     action_taken: str | None,
+    used_bridge: bool = False,
+    auto_repaired: bool = False,
+    bridge_errors: list[str] | None = None,
+    bridge_schema_failed: bool | None = None,
 ) -> None:
-    runtime.turns.append(
-        {
-            "state_summary": _state_summary(runtime.state),
-            "messages": messages,
-            "turn_json": turn.model_dump(mode="json"),
-            "action_taken": action_taken,
-        }
-    )
+    record = {
+        "state_summary": _state_summary(runtime.state),
+        "messages": messages,
+        "turn_json": turn.model_dump(mode="json"),
+        "action_taken": action_taken,
+        "used_bridge": used_bridge,
+    }
+    if auto_repaired:
+        record["auto_repaired"] = True
+    if bridge_errors is not None:
+        record["bridge_errors"] = bridge_errors
+    if bridge_schema_failed is not None:
+        record["bridge_schema_failed"] = bridge_schema_failed
+    runtime.turns.append(record)
 
 
 def _advance(runtime: AdventureRuntime, turn: Turn, action_taken: str | None) -> None:
@@ -329,6 +350,8 @@ def _cost_line(
     schema_failures: int,
     validation_failures: int,
     retried: int,
+    bridged: int,
+    repaired: int,
     gpu_name: str,
 ) -> str:
     rate = A100_80GB_RATE_PER_HOUR if gpu_name == "A100-80GB" else H100_RATE_PER_HOUR
@@ -339,6 +362,7 @@ def _cost_line(
         f"Modal {gpu_name} | {minutes:.1f} min | {cost:.2f} | "
         f"{turns} turns; schema_failures={schema_failures}; "
         f"validation_failures={validation_failures}; retried={retried}; "
+        f"bridged={bridged}; repaired={repaired}; "
         f"{(adventures / minutes) if minutes else 0.0:.2f} adventures/min |"
     )
 
@@ -460,11 +484,50 @@ def _generate_grouped(
     return results
 
 
+def _retry_messages(
+    messages: list[dict[str, str]],
+    *,
+    errors: list[str],
+    schema_failed: bool,
+    attempt: int,
+) -> list[dict[str, str]]:
+    if schema_failed:
+        reason = "Previous output was invalid or incomplete JSON."
+    else:
+        reason = f"Previous output broke engine rule: {_clip_error_text('; '.join(errors))}."
+
+    urgency = "Final repair attempt. " if attempt >= MAX_REPAIR_ATTEMPTS - 1 else ""
+    return [
+        *messages,
+        {
+            "role": "user",
+            "content": (
+                f"{urgency}{reason} Return one fixed compact JSON object only. Keep "
+                "2-4 narration sentences, 3 new distinct choices, legal "
+                "state_delta, and an ending when the pressure requires it. "
+                "Avoid repeated text, absent-item removes, and risky words "
+                "dead, drunk, snatch, snuff, kill, blood."
+            ),
+        },
+    ]
+
+
+def _clip_error_text(text: str, limit: int = 180) -> str:
+    compact = " ".join(text.split())
+    if len(compact) <= limit:
+        return compact
+    return compact[:limit].rstrip()
+
+
 def _accept_turn(
     runtime: AdventureRuntime,
     *,
     messages: list[dict[str, str]],
     turn: Turn,
+    used_bridge: bool = False,
+    auto_repaired: bool = False,
+    bridge_errors: list[str] | None = None,
+    bridge_schema_failed: bool | None = None,
 ) -> None:
     action_taken = _choose_action(runtime, turn)
     _record_turn(
@@ -472,6 +535,10 @@ def _accept_turn(
         messages=messages,
         turn=turn,
         action_taken=action_taken,
+        used_bridge=used_bridge,
+        auto_repaired=auto_repaired,
+        bridge_errors=bridge_errors,
+        bridge_schema_failed=bridge_schema_failed,
     )
     _advance(runtime, turn, action_taken)
 
@@ -489,6 +556,8 @@ def _run_remote(
     schema_failures = 0
     validation_failures = 0
     retried = 0
+    bridged = 0
+    repaired = 0
     cumulative_turns = 0
     wave_index = 0
     started = time.monotonic()
@@ -510,11 +579,13 @@ def _run_remote(
             for runtime in wave
         ]
         outputs = _generate_grouped(llm, requests)
-        retry_requests: list[tuple[AdventureRuntime, list[dict[str, str]], Any]] = []
+        retry_requests: list[
+            tuple[AdventureRuntime, list[dict[str, str]], Any, list[str], bool]
+        ] = []
 
         for runtime, messages, output in outputs:
             raw = output.outputs[0].text.strip()
-            turn, _errors, schema_failed = _parse_turn(raw, runtime.state)
+            turn, errors, schema_failed, auto_repaired = _parse_turn(raw, runtime.state)
             if turn is None:
                 if schema_failed:
                     schema_failures += 1
@@ -524,33 +595,103 @@ def _run_remote(
                 retry_requests.append(
                     (
                         runtime,
-                        messages,
+                        _retry_messages(
+                            messages,
+                            errors=errors,
+                            schema_failed=schema_failed,
+                            attempt=1,
+                        ),
                         _params_for_state(
                             sampling_params,
                             runtime.state,
                             retry=True,
                         ),
+                        errors,
+                        schema_failed,
                     )
                 )
                 continue
 
-            _accept_turn(runtime, messages=messages, turn=turn)
+            if auto_repaired:
+                repaired += 1
+            _accept_turn(
+                runtime,
+                messages=messages,
+                turn=turn,
+                auto_repaired=auto_repaired,
+            )
             cumulative_turns += 1
 
-        if retry_requests:
-            for runtime, messages, output in _generate_grouped(llm, retry_requests):
+        for attempt in range(1, MAX_REPAIR_ATTEMPTS):
+            if not retry_requests:
+                break
+
+            grouped_requests = [
+                (runtime, messages, params)
+                for runtime, messages, params, _errors, _schema_failed in retry_requests
+            ]
+            retry_outputs = _generate_grouped(llm, grouped_requests)
+            next_retry_requests: list[
+                tuple[AdventureRuntime, list[dict[str, str]], Any, list[str], bool]
+            ] = []
+
+            for runtime, messages, output in retry_outputs:
                 raw = output.outputs[0].text.strip()
-                turn, _errors, schema_failed = _parse_turn(raw, runtime.state)
+                turn, errors, schema_failed, auto_repaired = _parse_turn(
+                    raw,
+                    runtime.state,
+                )
                 if turn is None:
                     if schema_failed:
                         schema_failures += 1
                     else:
                         validation_failures += 1
-                    runtime.done = True
+                    if attempt + 1 < MAX_REPAIR_ATTEMPTS:
+                        retried += 1
+                        next_retry_requests.append(
+                            (
+                                runtime,
+                                _retry_messages(
+                                    messages,
+                                    errors=errors,
+                                    schema_failed=schema_failed,
+                                    attempt=attempt + 1,
+                                ),
+                                _params_for_state(
+                                    sampling_params,
+                                    runtime.state,
+                                    retry=True,
+                                ),
+                                errors,
+                                schema_failed,
+                            )
+                        )
+                        continue
+
+                    bridged += 1
+                    bridge = bridge_turn(runtime.state)
+                    _accept_turn(
+                        runtime,
+                        messages=messages,
+                        turn=bridge,
+                        used_bridge=True,
+                        bridge_errors=errors,
+                        bridge_schema_failed=schema_failed,
+                    )
+                    cumulative_turns += 1
                     continue
 
-                _accept_turn(runtime, messages=messages, turn=turn)
+                if auto_repaired:
+                    repaired += 1
+                _accept_turn(
+                    runtime,
+                    messages=messages,
+                    turn=turn,
+                    auto_repaired=auto_repaired,
+                )
                 cumulative_turns += 1
+
+            retry_requests = next_retry_requests
 
         wave_seconds = time.monotonic() - wave_started
         print(
@@ -569,6 +710,8 @@ def _run_remote(
         "schema_failures": schema_failures,
         "validation_failures": validation_failures,
         "retried": retried,
+        "bridged": bridged,
+        "repaired": repaired,
         "gpu_name": gpu_name,
         "cost_line": _cost_line(
             adventures=adventures,
@@ -577,9 +720,25 @@ def _run_remote(
             schema_failures=schema_failures,
             validation_failures=validation_failures,
             retried=retried,
+            bridged=bridged,
+            repaired=repaired,
             gpu_name=gpu_name,
         ),
     }
+
+
+def _prefer_control_plane_invocation(function: Any) -> None:
+    if os.environ.get("POCKETDM_MODAL_INPUT_PLANE") == "1":
+        return
+
+    # Modal 1.5.0 can return an input-plane URL that fails local DNS resolution
+    # in this environment. Teacher generation is one remote call, so the regular
+    # control-plane path is simpler and reliable enough here.
+    if getattr(function, "_input_plane_url", None):
+        function._input_plane_url = None
+    metadata = getattr(function, "_metadata", None)
+    if metadata is not None and hasattr(metadata, "input_plane_url"):
+        metadata.input_plane_url = ""
 
 
 @app.function(
@@ -637,6 +796,7 @@ def main(
         raise ValueError("--gpu must be H100 or A100-80GB")
 
     remote = generate_a100 if gpu == "A100-80GB" else generate_h100
+    _prefer_control_plane_invocation(remote)
     result = remote.remote(adventures, wave_size, max_tokens, rep_penalty)
 
     out_path = Path(out)
@@ -653,4 +813,6 @@ def main(
     print(f"schema-failure count: {result['schema_failures']}")
     print(f"validation-failure count: {result['validation_failures']}")
     print(f"retried count: {result['retried']}")
+    print(f"bridge-fallback count: {result['bridged']}")
+    print(f"auto-repaired count: {result['repaired']}")
     print(result["cost_line"])
