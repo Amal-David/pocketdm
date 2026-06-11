@@ -36,6 +36,15 @@ def test_scripted_play_loop_and_dragon_need_no_outbound_sockets(monkeypatch) -> 
     )
     assert choice.status_code == 200
 
+    tts = client.post(
+        "/api/tts",
+        json={
+            "session_id": body["session_id"],
+            "text": body["turn"]["narration"],
+        },
+    )
+    assert tts.status_code in {200, 204}
+
     sprite = client.get("/static/dragon-sprites.png")
     assert sprite.status_code == 200
     assert not attempted

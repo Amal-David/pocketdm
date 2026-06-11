@@ -4,6 +4,7 @@ import html
 import io
 import os
 import uuid
+from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -28,6 +29,12 @@ GENRE_LABELS = {
 }
 
 
+@asynccontextmanager
+async def lifespan(_app: Server):
+    _prepare_optional_tts_assets()
+    yield
+
+
 @dataclass
 class PlaySession:
     state: GameState
@@ -38,14 +45,13 @@ class PlaySession:
     transcript: list[dict[str, Any]] = field(default_factory=list)
 
 
-app = Server()
+app = Server(lifespan=lifespan)
 app.mount("/static", StaticFiles(directory=STATIC_ROOT), name="static")
 
 _SESSIONS: dict[str, PlaySession] = {}
 
 
-@app.on_event("startup")
-async def prepare_optional_tts_assets() -> None:
+def _prepare_optional_tts_assets() -> None:
     """Best-effort Kokoro asset warmup for Space startup, never for turn-time play."""
     if not _truthy_env("POCKETDM_TTS_PRELOAD"):
         return
