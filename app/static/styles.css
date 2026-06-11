@@ -338,9 +338,10 @@ dd {
 }
 
 @media (min-width: 980px) {
+  .narration,
   .choices,
   .freeform {
-    margin-right: 330px;
+    margin-right: clamp(220px, 24vw, 330px);
   }
 }
 
@@ -348,7 +349,7 @@ dd {
   .shell {
     width: min(100vw - 20px, 620px);
     padding-top: 16px;
-    padding-bottom: 142px;
+    padding-bottom: 96px;
   }
 
   .topbar,
@@ -381,44 +382,31 @@ dd {
   }
 
   .dragon-row {
-    grid-template-columns: 86px minmax(0, 1fr);
+    grid-template-columns: 74px;
+    gap: 0;
   }
 
   .dragon-assistant {
     right: max(8px, env(safe-area-inset-right));
     bottom: max(8px, env(safe-area-inset-bottom));
-    width: min(322px, calc(100vw - 16px));
+    width: 74px;
   }
 
   .dragon-speech {
-    max-width: 244px;
-    min-height: 0;
-    max-height: 58px;
-    overflow: hidden;
-    font-size: 0.8rem;
+    display: none;
   }
 
   .dragon-avatar {
-    width: 86px;
-    height: 86px;
+    width: 74px;
+    height: 74px;
   }
 
   .dragon-sprite {
-    --dragon-frame: 82px;
+    --dragon-frame: 70px;
   }
 
   .dragon-chat {
-    grid-template-columns: minmax(0, 1fr) 54px;
-    gap: 6px;
-    padding: 6px;
-  }
-
-  .dragon-chat input {
-    height: 36px;
-  }
-
-  .dragon-chat button {
-    font-size: 0.68rem;
+    display: none;
   }
 }
 

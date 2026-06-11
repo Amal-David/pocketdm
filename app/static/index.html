@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>PocketDM</title>
-    <link rel="stylesheet" href="/static/styles.css" />
+    <link rel="stylesheet" href="/static/styles.css?v=20260611-proof3" />
   </head>
   <body>
     <main class="shell">
@@ -14,10 +14,10 @@
           <h1>A tiny offline Dungeon Master with a hovering dragon aide.</h1>
         </div>
         <div class="proof-badge" aria-label="Runtime proof">
-          <span>Scripted checkpoint</span>
-          <span>2B Q4 path</span>
-          <span>10.8 tok/s CPU bench</span>
-          <span>llama.cpp next</span>
+          <span id="proof-backend">Runtime checkpoint</span>
+          <span id="proof-model">Scripted by default</span>
+          <span id="proof-voice">GGUF switches on</span>
+          <span id="proof-network">No API calls in play</span>
         </div>
         <button
           id="voice-toggle"
@@ -98,6 +98,6 @@
       </div>
     </section>
 
-    <script src="/static/app.js" type="module"></script>
+    <script src="/static/app.js?v=20260611-proof3" type="module"></script>
   </body>
 </html>

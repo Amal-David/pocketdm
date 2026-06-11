@@ -22,6 +22,10 @@ const els = {
   inventory: document.querySelector("#inventory"),
   voiceState: document.querySelector("#voice-state"),
   backendState: document.querySelector("#backend-state"),
+  proofBackend: document.querySelector("#proof-backend"),
+  proofModel: document.querySelector("#proof-model"),
+  proofVoice: document.querySelector("#proof-voice"),
+  proofNetwork: document.querySelector("#proof-network"),
   freeformForm: document.querySelector("#freeform-form"),
   freeformInput: document.querySelector("#freeform-input"),
   freeformButton: document.querySelector("#freeform-form button"),
@@ -119,7 +123,16 @@ function renderTurn(turn, gameState) {
   els.inventory.textContent = gameState.inventory.length ? gameState.inventory.join(", ") : "-";
   els.voiceState.textContent = voiceLabel(gameState.voice);
   els.backendState.textContent = gameState.backend === "llama.cpp" ? "llama.cpp" : "Scripted";
+  renderRuntimeProof(gameState);
   playNarration(turn.narration);
+}
+
+function renderRuntimeProof(gameState) {
+  const isLlama = gameState.backend === "llama.cpp";
+  els.proofBackend.textContent = isLlama ? "llama.cpp active" : "Scripted demo";
+  els.proofModel.textContent = isLlama ? "GGUF backend" : "Engine fallback";
+  els.proofVoice.textContent = `${voiceLabel(gameState.voice)} voice`;
+  els.proofNetwork.textContent = "No API calls in play";
 }
 
 function voiceLabel(voice) {

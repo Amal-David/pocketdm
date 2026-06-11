@@ -13,7 +13,7 @@
 - WP-4/WP-5 command surfaces exist for Modal fine-tuning, GGUF export, local smoke inference, automated eval, Modal judge scoring, and report generation.
 - WP-4 0.8B LoRA smoke training ran end to end on Modal: 20 steps, 978 train rows, 20 eval rows, train_loss=1.555, eval_loss=1.284, merged model saved in the `pocketdm-models` volume.
 - WP-4 smoke GGUF export ran end to end: Q4_K_M artifact SHA256 `02f57aca6929095f80b359d63760cbcd7e4d16ad4ce8d83b4af2d2c5c0355dc8`; local `train/smoke_infer.py --turns 3` loads it through llama.cpp and emits valid turn JSON.
-- The app can run with the smoke GGUF enabled: `POCKETDM_GGUF=models/0p8b-smoke-lora-20/merged.Q4_K_M.gguf uv run python app.py`, `/api/start` returned a valid llama.cpp-backed turn in ~16s with `used_bridge=false`, and `agent-browser` captured the custom UI at `/tmp/pocketdm-gguf-home.png`.
+- The app can run with the smoke GGUF enabled: `POCKETDM_GGUF=models/0p8b-smoke-lora-20/merged.Q4_K_M.gguf uv run python app.py`, `/api/start` returned valid llama.cpp-backed turns with `used_bridge=false`, and `agent-browser` captured proof-badge/UI screenshots at `/tmp/pocketdm-gguf-started-proof3.png` and `/tmp/pocketdm-mobile-idle-fixed2.png`.
 - A local offline smoke test proves the scripted play loop, Ember assistant, and dragon sprite asset do not open outbound sockets.
 
 ## Honest Gaps Before Final Submission
