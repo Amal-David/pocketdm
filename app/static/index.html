@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>PocketDM</title>
-    <link rel="stylesheet" href="/static/styles.css?v=20260611-proof3" />
+    <link rel="stylesheet" href="/static/styles.css?v=20260611-proof4" />
   </head>
   <body>
     <main class="shell">
@@ -15,9 +15,9 @@
         </div>
         <div class="proof-badge" aria-label="Runtime proof">
           <span id="proof-backend">Runtime checkpoint</span>
-          <span id="proof-model">Scripted by default</span>
-          <span id="proof-voice">GGUF when active</span>
-          <span id="proof-network">No external inference</span>
+          <span id="proof-model">Model: waiting</span>
+          <span id="proof-voice">Voice: waiting</span>
+          <span id="proof-network">Speed: start a turn</span>
         </div>
         <button
           id="voice-toggle"
@@ -56,7 +56,7 @@
             <textarea id="premise" maxlength="140" placeholder="A tiny quest hook"></textarea>
           </label>
           <button id="new-adventure" class="primary-button" type="button">
-            New Adventure
+            Begin Adventure
           </button>
           <dl class="state-grid" id="state-grid">
             <div><dt>HP</dt><dd id="hp">10/10</dd></div>
@@ -70,6 +70,7 @@
 
         <article class="scroll" aria-live="polite">
           <p class="scene-label" id="scene-label">Awaiting adventure</p>
+          <div class="dice-roll" id="dice-roll" aria-hidden="true">d20</div>
           <div class="narration" id="narration">
             Pick a genre and begin. Ember will stay over the screen, flap, chatter,
             read your state, and breathe fire when the tale calls for it.
@@ -98,6 +99,6 @@
       </div>
     </section>
 
-    <script src="/static/app.js?v=20260611-proof3" type="module"></script>
+    <script src="/static/app.js?v=20260611-proof4" type="module"></script>
   </body>
 </html>

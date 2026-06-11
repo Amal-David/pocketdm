@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
 
-from app.server import _truthy_env, app
+from app.server import _truthy_env, app, new_game, take_turn
 
 
 def test_custom_server_starts_adventure_and_dragon_hint() -> None:
@@ -19,6 +19,10 @@ def test_custom_server_starts_adventure_and_dragon_hint() -> None:
     assert body["state"]["turn_count"] == 1
     assert body["state"]["voice"] == "dungeon"
     assert body["state"]["backend"] == "scripted"
+    assert body["state"]["model"] == "Scripted safety mode"
+    assert body["state"]["last_turn_seconds"] > 0
+    assert body["state"]["last_turn_tokens"] > 0
+    assert body["state"]["last_turn_tokens_per_second"] is None
     assert "Ember" in body["assistant"]
 
     hint = client.post(
@@ -48,6 +52,27 @@ def test_custom_server_accepts_explicit_lore_voice_selection() -> None:
 
     assert start.status_code == 200
     assert start.json()["state"]["voice"] == "lore"
+
+
+def test_named_gradio_api_wrappers_share_session_flow() -> None:
+    first = new_game(
+        genre="derelict_starship",
+        premise="The hatch is judging us.",
+        voice="lore",
+    )
+
+    assert first["session_id"]
+    assert first["state"]["voice"] == "lore"
+    assert first["turn"]["choices"]
+
+    second = take_turn(
+        session_id=first["session_id"],
+        action=first["turn"]["choices"][0],
+    )
+
+    assert second["state"]["turn_count"] == 2
+    assert second["state"]["last_turn_tokens_per_second"] is None
+    assert second["turn"]["choices"]
 
 
 def test_custom_server_rejects_unknown_session() -> None:

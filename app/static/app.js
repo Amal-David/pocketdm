@@ -6,6 +6,8 @@ const state = {
   typewriterFrame: null,
   isBusy: false,
   isTyping: false,
+  audioUnlocked: false,
+  currentVoice: "auto",
 };
 
 const els = {
@@ -26,6 +28,7 @@ const els = {
   proofModel: document.querySelector("#proof-model"),
   proofVoice: document.querySelector("#proof-voice"),
   proofNetwork: document.querySelector("#proof-network"),
+  diceRoll: document.querySelector("#dice-roll"),
   freeformForm: document.querySelector("#freeform-form"),
   freeformInput: document.querySelector("#freeform-input"),
   freeformButton: document.querySelector("#freeform-form button"),
@@ -54,12 +57,14 @@ els.location.addEventListener("click", () => askDragon("status"));
 els.voiceToggle.addEventListener("click", () => {
   state.voiceEnabled = !state.voiceEnabled;
   els.voiceToggle.setAttribute("aria-pressed", String(state.voiceEnabled));
+  els.voiceToggle.textContent = state.voiceEnabled ? "Voice" : "Muted";
   if (!state.voiceEnabled && state.narrationAudio) {
     state.narrationAudio.pause();
   }
 });
 
 async function startAdventure() {
+  state.audioUnlocked = true;
   setBusy(true);
   try {
     const payload = await postJSON("/api/start", {
@@ -70,6 +75,7 @@ async function startAdventure() {
     state.sessionId = payload.session_id;
     renderTurn(payload.turn, payload.state);
     dragonSay(payload.assistant, { fire: true });
+    focusAdventureOnSmallScreens();
   } catch (error) {
     dragonSay(`I lost the trail: ${error.message}`, { fire: true });
   } finally {
@@ -112,12 +118,14 @@ async function askDragon(message) {
 
 function renderTurn(turn, gameState) {
   state.lastTurn = turn;
+  state.currentVoice = gameState.voice;
   els.sceneLabel.textContent = turn.is_ending
     ? `Ending: ${turn.ending_type || "complete"}`
     : `Turn ${gameState.turn_count} · ${gameState.location}`;
+  rollDice();
   typeText(els.narration, turn.narration);
   renderChoices(turn);
-  els.hp.textContent = `${gameState.hp}/10`;
+  renderHp(gameState.hp);
   els.turnCount.textContent = String(gameState.turn_count);
   els.location.textContent = gameState.location;
   els.inventory.textContent = gameState.inventory.length ? gameState.inventory.join(", ") : "-";
@@ -130,9 +138,19 @@ function renderTurn(turn, gameState) {
 function renderRuntimeProof(gameState) {
   const isLlama = gameState.backend === "llama.cpp";
   els.proofBackend.textContent = isLlama ? "llama.cpp active" : "Scripted demo";
-  els.proofModel.textContent = isLlama ? "Local GGUF" : "Validated engine";
+  els.proofModel.textContent = gameState.model || (isLlama ? "2B Q4 GGUF" : "Validated engine");
   els.proofVoice.textContent = `${voiceLabel(gameState.voice)} voice`;
-  els.proofNetwork.textContent = "No external inference";
+  els.proofNetwork.textContent = formatTurnSpeed(gameState);
+}
+
+function focusAdventureOnSmallScreens() {
+  if (!window.matchMedia("(max-width: 760px)").matches) return;
+  requestAnimationFrame(() => {
+    document.querySelector(".scroll")?.scrollIntoView({
+      block: "start",
+      behavior: "smooth",
+    });
+  });
 }
 
 function voiceLabel(voice) {
@@ -142,6 +160,35 @@ function voiceLabel(voice) {
     starship: "Starship",
     lore: "Lore Narrator",
   }[voice] || "Auto";
+}
+
+function formatTurnSpeed(gameState) {
+  if (gameState.backend !== "llama.cpp") return "Scripted: no model speed";
+  const rate = Number(gameState.last_turn_tokens_per_second || 0);
+  const seconds = Number(gameState.last_turn_seconds || 0);
+  if (!rate || !seconds) return "No external inference";
+  return `${rate.toFixed(1)} est tok/s · ${seconds.toFixed(2)}s`;
+}
+
+function renderHp(hp) {
+  const label = document.createElement("span");
+  label.className = "hp-label";
+  label.textContent = `${hp}/10`;
+  const hearts = document.createElement("span");
+  hearts.className = "heart-row";
+  for (let index = 1; index <= 10; index += 1) {
+    const heart = document.createElement("span");
+    heart.className = index <= hp ? "heart" : "heart is-empty";
+    heart.textContent = "♥";
+    hearts.append(heart);
+  }
+  els.hp.replaceChildren(label, hearts);
+}
+
+function rollDice() {
+  els.diceRoll.classList.remove("is-rolling");
+  void els.diceRoll.offsetWidth;
+  els.diceRoll.classList.add("is-rolling");
 }
 
 function renderChoices(turn) {
@@ -216,14 +263,23 @@ async function playNarration(text) {
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ session_id: state.sessionId, text }),
     });
-    if (response.status === 204) return;
-    if (!response.ok) return;
+    if (response.status === 204) {
+      els.proofVoice.textContent = `${voiceLabel(state.currentVoice)} TTS unavailable`;
+      return;
+    }
+    if (!response.ok) {
+      els.proofVoice.textContent = `${voiceLabel(state.currentVoice)} voice pending`;
+      return;
+    }
     const blob = await response.blob();
     if (state.narrationAudio) state.narrationAudio.pause();
     state.narrationAudio = new Audio(URL.createObjectURL(blob));
     await state.narrationAudio.play();
+    els.proofVoice.textContent = `${voiceLabel(state.currentVoice)} voice on`;
   } catch (_error) {
-    // Voice is a progressive enhancement; text-first play must never block.
+    els.proofVoice.textContent = state.audioUnlocked
+      ? `${voiceLabel(state.currentVoice)} click to unmute`
+      : `${voiceLabel(state.currentVoice)} voice gated`;
   }
 }
 

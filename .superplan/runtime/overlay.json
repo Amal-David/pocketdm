@@ -1,101 +1,25 @@
 {
   "workspace_path": "/Users/amal/listenowl/experiments/build-small",
   "session_id": "workspace:/Users/amal/listenowl/experiments/build-small",
-  "updated_at": "2026-06-10T11:26:08.462Z",
+  "updated_at": "2026-06-11T13:42:53.069Z",
   "focused_change": {
     "change_id": "pocketdm",
     "title": "PocketDM — offline voiced tiny-model Dungeon Master (Build Small hackathon)",
-    "status": "in_progress",
+    "status": "blocked",
     "task_total": 16,
-    "task_done": 0,
-    "updated_at": "2026-06-10T10:57:57.461Z"
+    "task_done": 8,
+    "updated_at": "2026-06-11T13:42:53.063Z"
   },
-  "active_task": {
-    "task_id": "T-0001",
-    "title": "Bootstrap: public GitHub repo, PRD.md committed with section 5.1 updated to the Qwen3.5-2B ladder, specs/PLAN.md, tasks/lessons.md seeded, codex exec wired and first Codex-attributed commit verified via git log author metadata.",
-    "status": "in_progress",
-    "completed_acceptance_criteria": 0,
-    "total_acceptance_criteria": 3,
-    "progress_percent": 0,
-    "started_at": "2026-06-10T10:57:57.461Z",
-    "updated_at": "2026-06-10T10:57:57.461Z"
-  },
+  "active_task": null,
   "board": {
-    "in_progress": [
-      {
-        "task_id": "T-0001",
-        "title": "Bootstrap: public GitHub repo, PRD.md committed with section 5.1 updated to the Qwen3.5-2B ladder, specs/PLAN.md, tasks/lessons.md seeded, codex exec wired and first Codex-attributed commit verified via git log author metadata.",
-        "status": "in_progress",
-        "completed_acceptance_criteria": 0,
-        "total_acceptance_criteria": 3,
-        "progress_percent": 0,
-        "started_at": "2026-06-10T10:57:57.461Z",
-        "updated_at": "2026-06-10T10:57:57.461Z"
-      }
-    ],
+    "in_progress": [],
     "backlog": [
-      {
-        "task_id": "T-0002",
-        "title": "WP-1: engine/schema.py pydantic turn schema (narration, 3 choices, state_delta, is_ending, ending_type) + hand-written engine/grammar.gbnf pinned to it + round-trip tests (valid samples accepted, invalid rejected, GBNF accepts every schema-valid sample).",
-        "status": "backlog",
-        "completed_acceptance_criteria": 0,
-        "total_acceptance_criteria": 3,
-        "progress_percent": 0
-      },
-      {
-        "task_id": "T-0003",
-        "title": "WP-2: engine/state.py deterministic state machine — hp 0-10 clamp, inventory max 6, delta legality, story-pressure prompt injection by turn count, force is_ending by turn 15, retry-then-canned-bridge fallback. CLI REPL playable against any backend (teacher API or llama.cpp).",
-        "status": "backlog",
-        "completed_acceptance_criteria": 0,
-        "total_acceptance_criteria": 2,
-        "progress_percent": 0
-      },
-      {
-        "task_id": "T-0004",
-        "title": "WP-0: throwaway free-tier HF Space running stock unsloth/Qwen3.5-2B-GGUF Q4_K_M under llama.cpp; measure sustained decode tok/s and first-token latency on 2 vCPU. Decision recorded: 2B stays primary iff >=10 tok/s, else 0.8B.",
-        "status": "backlog",
-        "completed_acceptance_criteria": 0,
-        "total_acceptance_criteria": 2,
-        "progress_percent": 0
-      },
-      {
-        "task_id": "T-0005",
-        "title": "WP-3: data/teacher_gen.py Modal app (vLLM Qwen3-32B, xgrammar guided JSON, DM + 3 player personas, full adventures in frozen schema) + data/filters.py gates (schema-valid, narration 2-4 sentences, pairwise choice cosine <0.85, delta legality, profanity). Smoke 50 adventures, inspect, then ~2k overnight.",
-        "status": "backlog",
-        "completed_acceptance_criteria": 0,
-        "total_acceptance_criteria": 3,
-        "progress_percent": 0
-      },
-      {
-        "task_id": "T-0006",
-        "title": "WP-4: train/finetune.py Unsloth fine-tune of Qwen3.5-2B (full FT preferred, LoRA fallback; completion-only loss, packed sequences, 2-3 epochs, thinking off) on Modal + export_gguf.py producing Q4_K_M (ship) and Q8_0 (comparison). Cost logged.",
-        "status": "backlog",
-        "completed_acceptance_criteria": 0,
-        "total_acceptance_criteria": 2,
-        "progress_percent": 0
-      },
       {
         "task_id": "T-0008",
         "title": "WP-6: eval/sessions.py — 50 automated grammar-constrained sessions against llama-server (pinned fresh build, Qwen3.5 arch) must complete with zero grammar failures and zero engine fallbacks beyond budget. Runs in CI.",
         "status": "backlog",
         "completed_acceptance_criteria": 0,
         "total_acceptance_criteria": 2,
-        "progress_percent": 0
-      },
-      {
-        "task_id": "T-0011",
-        "title": "WP-7: app/server.py gr.Server (Gradio >=6.10) — @app.api endpoints new_game / take_turn (streaming) / tts; llama.cpp with GBNF grammar; kokoro-onnx TTS strictly sequential after decode; engine owns state; no network calls at inference.",
-        "status": "backlog",
-        "completed_acceptance_criteria": 0,
-        "total_acceptance_criteria": 2,
-        "progress_percent": 0
-      },
-      {
-        "task_id": "T-0012",
-        "title": "WP-8: custom parchment frontend served at / — typewriter streaming via @gradio/client SSE, wax-seal choice buttons, HP hearts, inventory margin, d20 dice animation, proof-of-tininess badge with live tok/s, mute toggle, Begin-adventure click gate for autoplay, mobile responsive.",
-        "status": "backlog",
-        "completed_acceptance_criteria": 0,
-        "total_acceptance_criteria": 3,
         "progress_percent": 0
       },
       {
@@ -112,14 +36,6 @@
         "status": "backlog",
         "completed_acceptance_criteria": 0,
         "total_acceptance_criteria": 3,
-        "progress_percent": 0
-      },
-      {
-        "task_id": "T-0007",
-        "title": "WP-5: eval/harness.py — automated metrics (schema-valid without grammar, choice distinctness, delta legality, fallback rate, tokens/turn) + LLM-judge rubric (coherence, choice meaningfulness, ending satisfaction 1-5) as Modal batch on 50 held-out seeds. Base-vs-finetuned table output.",
-        "status": "backlog",
-        "completed_acceptance_criteria": 0,
-        "total_acceptance_criteria": 2,
         "progress_percent": 0
       },
       {
@@ -155,8 +71,103 @@
         "progress_percent": 0
       }
     ],
-    "done": [],
-    "blocked": [],
+    "done": [
+      {
+        "task_id": "T-0001",
+        "title": "Bootstrap: public GitHub repo, PRD.md committed with section 5.1 updated to the Qwen3.5-2B ladder, specs/PLAN.md, tasks/lessons.md seeded, codex exec wired and first Codex-attributed commit verified via git log author metadata.",
+        "status": "done",
+        "completed_acceptance_criteria": 3,
+        "total_acceptance_criteria": 3,
+        "progress_percent": 100,
+        "started_at": "2026-06-10T10:57:57.461Z",
+        "completed_at": "2026-06-10T11:30:29.931Z",
+        "updated_at": "2026-06-10T11:30:29.931Z"
+      },
+      {
+        "task_id": "T-0002",
+        "title": "WP-1: engine/schema.py pydantic turn schema (narration, 3 choices, state_delta, is_ending, ending_type) + hand-written engine/grammar.gbnf pinned to it + round-trip tests (valid samples accepted, invalid rejected, GBNF accepts every schema-valid sample).",
+        "status": "done",
+        "completed_acceptance_criteria": 3,
+        "total_acceptance_criteria": 3,
+        "progress_percent": 100
+      },
+      {
+        "task_id": "T-0003",
+        "title": "WP-2: engine/state.py deterministic state machine — hp 0-10 clamp, inventory max 6, delta legality, story-pressure prompt injection by turn count, force is_ending by turn 15, retry-then-canned-bridge fallback. CLI REPL playable against any backend (teacher API or llama.cpp).",
+        "status": "done",
+        "completed_acceptance_criteria": 2,
+        "total_acceptance_criteria": 2,
+        "progress_percent": 100,
+        "started_at": "2026-06-10T11:30:52.286Z",
+        "completed_at": "2026-06-10T11:50:28.875Z",
+        "updated_at": "2026-06-10T11:50:28.875Z"
+      },
+      {
+        "task_id": "T-0004",
+        "title": "WP-0: throwaway free-tier HF Space running stock unsloth/Qwen3.5-2B-GGUF Q4_K_M under llama.cpp; measure sustained decode tok/s and first-token latency on 2 vCPU. Decision recorded: 2B stays primary iff >=10 tok/s, else 0.8B.",
+        "status": "done",
+        "completed_acceptance_criteria": 2,
+        "total_acceptance_criteria": 2,
+        "progress_percent": 100
+      },
+      {
+        "task_id": "T-0005",
+        "title": "WP-3: data/teacher_gen.py Modal app (vLLM Qwen3-32B, xgrammar guided JSON, DM + 3 player personas, full adventures in frozen schema) + data/filters.py gates (schema-valid, narration 2-4 sentences, pairwise choice cosine <0.85, delta legality, profanity). Smoke 50 adventures, inspect, then ~2k overnight.",
+        "status": "done",
+        "completed_acceptance_criteria": 3,
+        "total_acceptance_criteria": 3,
+        "progress_percent": 100,
+        "started_at": "2026-06-10T11:50:50.497Z",
+        "completed_at": "2026-06-11T09:32:44.054Z",
+        "updated_at": "2026-06-11T09:32:44.054Z"
+      },
+      {
+        "task_id": "T-0006",
+        "title": "WP-4: train/finetune.py Unsloth fine-tune of Qwen3.5-2B (full FT preferred, LoRA fallback; completion-only loss, packed sequences, 2-3 epochs, thinking off) on Modal + export_gguf.py producing Q4_K_M (ship) and Q8_0 (comparison). Cost logged.",
+        "status": "done",
+        "completed_acceptance_criteria": 2,
+        "total_acceptance_criteria": 2,
+        "progress_percent": 100,
+        "started_at": "2026-06-11T09:32:52.824Z",
+        "completed_at": "2026-06-11T10:42:00.309Z",
+        "updated_at": "2026-06-11T10:42:00.309Z"
+      },
+      {
+        "task_id": "T-0011",
+        "title": "WP-7: app/server.py gr.Server (Gradio >=6.10) — @app.api endpoints new_game / take_turn (streaming) / tts; llama.cpp with GBNF grammar; kokoro-onnx TTS strictly sequential after decode; engine owns state; no network calls at inference.",
+        "status": "done",
+        "completed_acceptance_criteria": 2,
+        "total_acceptance_criteria": 2,
+        "progress_percent": 100,
+        "started_at": "2026-06-11T13:02:02.581Z",
+        "completed_at": "2026-06-11T13:20:41.346Z",
+        "updated_at": "2026-06-11T13:20:41.346Z"
+      },
+      {
+        "task_id": "T-0012",
+        "title": "WP-8: custom parchment frontend served at / — typewriter streaming via @gradio/client SSE, wax-seal choice buttons, HP hearts, inventory margin, d20 dice animation, proof-of-tininess badge with live tok/s, mute toggle, Begin-adventure click gate for autoplay, mobile responsive.",
+        "status": "done",
+        "completed_acceptance_criteria": 3,
+        "total_acceptance_criteria": 3,
+        "progress_percent": 100,
+        "started_at": "2026-06-11T13:21:40.742Z",
+        "completed_at": "2026-06-11T13:42:53.063Z",
+        "updated_at": "2026-06-11T13:42:53.063Z"
+      }
+    ],
+    "blocked": [
+      {
+        "task_id": "T-0007",
+        "title": "WP-5: eval/harness.py — automated metrics (schema-valid without grammar, choice distinctness, delta legality, fallback rate, tokens/turn) + LLM-judge rubric (coherence, choice meaningfulness, ending satisfaction 1-5) as Modal batch on 50 held-out seeds. Base-vs-finetuned table output.",
+        "status": "blocked",
+        "completed_acceptance_criteria": 0,
+        "total_acceptance_criteria": 2,
+        "progress_percent": 0,
+        "started_at": "2026-06-11T10:42:10.329Z",
+        "updated_at": "2026-06-11T12:59:20.291Z",
+        "reason": "Eval gate fails for current 2B GGUF. Corrected 50-session judge on full run reports coherence 2.52 (<3.5) with zero-bridge 92%; app-mirrored harness samples using next_turn show zero-bridge 60% then 20%, so current model/runtime needs another data/training iteration before this task can pass."
+      }
+    ],
     "needs_feedback": []
   },
   "attention_state": "normal",

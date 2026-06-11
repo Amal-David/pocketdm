@@ -70,6 +70,10 @@ h1 {
   text-transform: uppercase;
 }
 
+.proof-badge span {
+  overflow-wrap: anywhere;
+}
+
 .voice-toggle {
   width: 76px;
   height: 42px;
@@ -182,6 +186,24 @@ dd {
   word-break: break-word;
 }
 
+.hp-label {
+  display: inline-block;
+  min-width: 42px;
+}
+
+.heart-row {
+  display: inline-flex;
+  gap: 1px;
+  margin-left: 8px;
+  color: #e55a4d;
+  font-size: 0.82rem;
+  vertical-align: 0.04em;
+}
+
+.heart.is-empty {
+  color: rgba(216, 226, 223, 0.18);
+}
+
 .scroll {
   min-height: 620px;
   padding: clamp(22px, 4vw, 46px);
@@ -196,6 +218,26 @@ dd {
   color: #6a3c22;
   font: 800 0.75rem/1 ui-sans-serif, system-ui, sans-serif;
   text-transform: uppercase;
+}
+
+.dice-roll {
+  float: right;
+  display: grid;
+  place-items: center;
+  width: 58px;
+  height: 58px;
+  margin: -8px 0 12px 18px;
+  border: 2px solid rgba(106, 60, 34, 0.42);
+  clip-path: polygon(50% 0%, 92% 25%, 92% 75%, 50% 100%, 8% 75%, 8% 25%);
+  color: #fff4d3;
+  background: linear-gradient(145deg, #8b2d21, #d9983e);
+  font: 900 0.76rem/1 ui-sans-serif, system-ui, sans-serif;
+  text-transform: uppercase;
+  box-shadow: 0 12px 28px rgba(95, 28, 23, 0.28);
+}
+
+.dice-roll.is-rolling {
+  animation: dice-roll 0.62s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .narration {
@@ -337,6 +379,18 @@ dd {
   }
 }
 
+@keyframes dice-roll {
+  0% {
+    transform: rotate(-18deg) scale(0.86);
+  }
+  45% {
+    transform: rotate(18deg) scale(1.14);
+  }
+  100% {
+    transform: rotate(0deg) scale(1);
+  }
+}
+
 @media (min-width: 980px) {
   .narration,
   .choices,
@@ -349,7 +403,7 @@ dd {
   .shell {
     width: min(100vw - 20px, 620px);
     padding-top: 16px;
-    padding-bottom: 96px;
+    padding-bottom: 172px;
   }
 
   .topbar,
@@ -370,6 +424,8 @@ dd {
 
   .scroll {
     min-height: 500px;
+    scroll-margin-top: 12px;
+    scroll-margin-bottom: 178px;
   }
 
   h1 {
@@ -382,37 +438,65 @@ dd {
   }
 
   .dragon-row {
-    grid-template-columns: 74px;
-    gap: 0;
+    grid-template-columns: 58px minmax(0, 1fr);
+    gap: 7px;
   }
 
   .dragon-assistant {
     right: max(8px, env(safe-area-inset-right));
     bottom: max(8px, env(safe-area-inset-bottom));
-    width: 74px;
+    width: min(420px, calc(100vw - 16px));
   }
 
   .dragon-speech {
-    display: none;
+    display: block;
+    max-width: none;
+    min-height: 40px;
+    max-height: 48px;
+    margin-bottom: 6px;
+    padding: 9px 10px;
+    font-size: 0.78rem;
+    overflow: auto;
   }
 
   .dragon-avatar {
-    width: 74px;
-    height: 74px;
+    width: 58px;
+    height: 58px;
   }
 
   .dragon-sprite {
-    --dragon-frame: 70px;
+    --dragon-frame: 56px;
   }
 
   .dragon-chat {
-    display: none;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 58px;
+    gap: 6px;
+    padding: 6px;
+  }
+
+  .dragon-chat input {
+    height: 34px;
+    padding: 0 8px;
+    font-size: 0.82rem;
+  }
+
+  .dragon-chat button {
+    font-size: 0.7rem;
+  }
+
+  .dice-roll {
+    width: 46px;
+    height: 46px;
+    margin-left: 12px;
+    font-size: 0.66rem;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .dragon-sprite,
-  .dragon-avatar.is-fire::after {
+  .dragon-avatar.is-fire::after,
+  .dice-roll.is-rolling {
     animation: none;
   }
 }

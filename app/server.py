@@ -3,6 +3,7 @@ from __future__ import annotations
 import html
 import io
 import os
+import time
 import uuid
 from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
@@ -42,6 +43,8 @@ class PlaySession:
     backend_label: str
     voice_id: str | None = None
     last_turn: Turn | None = None
+    last_turn_seconds: float = 0.0
+    last_turn_tokens: int = 0
     transcript: list[dict[str, Any]] = field(default_factory=list)
 
 
@@ -79,63 +82,13 @@ async def health() -> dict[str, str]:
 @app.post("/api/start")
 async def start_adventure(request: Request) -> JSONResponse:
     payload = await request.json()
-    genre = _genre(payload.get("genre"))
-    premise = _clean_text(payload.get("premise"), limit=140) or None
-    backend, backend_label = _backend_for_adventure(genre, premise)
-    session = PlaySession(
-        state=GameState(genre=genre, premise=premise),
-        backend=backend,
-        backend_label=backend_label,
-        voice_id=_voice_id(payload.get("voice"), genre),
-    )
-    session_id = uuid.uuid4().hex
-    _SESSIONS[session_id] = session
-    turn_payload = _advance_to_next_turn(session)
-    return JSONResponse(
-        {
-            "session_id": session_id,
-            "turn": turn_payload,
-            "state": _state_payload(session),
-            "assistant": _assistant_opening(genre),
-        }
-    )
+    return JSONResponse(_start_payload(payload))
 
 
 @app.post("/api/choose")
 async def choose_action(request: Request) -> JSONResponse:
     payload = await request.json()
-    session = _session(payload.get("session_id"))
-    action = _clean_text(payload.get("action"), limit=120)
-    if not action and session.last_turn is not None:
-        action = session.last_turn.choices[0]
-
-    if session.last_turn is not None and session.last_turn.is_ending:
-        return JSONResponse(
-            {
-                "turn": _turn_payload(session.last_turn),
-                "state": _state_payload(session),
-                "assistant": _assistant_for_turn(session, action),
-            }
-        )
-
-    if session.last_turn is not None and not session.last_turn.is_ending:
-        session.state = session.state.model_copy(
-            update={
-                "recent_turns": [
-                    *session.state.recent_turns,
-                    (session.last_turn, action),
-                ][-2:]
-            }
-        )
-
-    turn_payload = _advance_to_next_turn(session)
-    return JSONResponse(
-        {
-            "turn": turn_payload,
-            "state": _state_payload(session),
-            "assistant": _assistant_for_turn(session, action),
-        }
-    )
+    return JSONResponse(_choose_payload(payload.get("session_id"), payload.get("action")))
 
 
 @app.post("/api/assistant")
@@ -183,9 +136,80 @@ def start_demo_adventure(genre: str = "cursed_dungeon", premise: str = "") -> di
     return _advance_to_next_turn(session)
 
 
+@app.api(name="new_game")
+def new_game(
+    genre: str = "cursed_dungeon",
+    premise: str = "",
+    voice: str = "auto",
+) -> dict[str, Any]:
+    """Named Gradio API wrapper; the custom frontend uses /api/start."""
+    return _start_payload({"genre": genre, "premise": premise, "voice": voice})
+
+
+@app.api(name="take_turn")
+def take_turn(session_id: str, action: str = "") -> dict[str, Any]:
+    """Named Gradio API wrapper; the custom frontend uses /api/choose."""
+    return _choose_payload(session_id, action)
+
+
+def _start_payload(payload: dict[str, Any]) -> dict[str, Any]:
+    genre = _genre(payload.get("genre"))
+    premise = _clean_text(payload.get("premise"), limit=140) or None
+    backend, backend_label = _backend_for_adventure(genre, premise)
+    session = PlaySession(
+        state=GameState(genre=genre, premise=premise),
+        backend=backend,
+        backend_label=backend_label,
+        voice_id=_voice_id(payload.get("voice"), genre),
+    )
+    session_id = uuid.uuid4().hex
+    _SESSIONS[session_id] = session
+    turn_payload = _advance_to_next_turn(session)
+    return {
+        "session_id": session_id,
+        "turn": turn_payload,
+        "state": _state_payload(session),
+        "assistant": _assistant_opening(genre),
+    }
+
+
+def _choose_payload(raw_session_id: Any, raw_action: Any) -> dict[str, Any]:
+    session = _session(raw_session_id)
+    action = _clean_text(raw_action, limit=120)
+    if not action and session.last_turn is not None:
+        action = session.last_turn.choices[0]
+
+    if session.last_turn is not None and session.last_turn.is_ending:
+        return {
+            "turn": _turn_payload(session.last_turn),
+            "state": _state_payload(session),
+            "assistant": _assistant_for_turn(session, action),
+        }
+
+    if session.last_turn is not None and not session.last_turn.is_ending:
+        session.state = session.state.model_copy(
+            update={
+                "recent_turns": [
+                    *session.state.recent_turns,
+                    (session.last_turn, action),
+                ][-2:]
+            }
+        )
+
+    turn_payload = _advance_to_next_turn(session)
+    return {
+        "turn": turn_payload,
+        "state": _state_payload(session),
+        "assistant": _assistant_for_turn(session, action),
+    }
+
+
 def _advance_to_next_turn(session: PlaySession) -> dict[str, Any]:
+    started = time.perf_counter()
     result = next_turn(session.state, session.backend)
+    session.last_turn_seconds = max(time.perf_counter() - started, 0.001)
     turn = result.turn
+    session.last_turn_tokens = _estimated_turn_tokens(turn)
     session.state = apply_delta(session.state, turn)
     session.last_turn = turn
     payload = _turn_payload(turn, result.used_bridge)
@@ -214,6 +238,10 @@ def _state_payload(session: PlaySession) -> dict[str, Any]:
         "premise": state.premise,
         "voice": _voice_for_session(session),
         "backend": session.backend_label,
+        "model": _model_label(session),
+        "last_turn_seconds": max(0.01, round(session.last_turn_seconds, 2)),
+        "last_turn_tokens": session.last_turn_tokens,
+        "last_turn_tokens_per_second": _turn_tokens_per_second(session),
     }
 
 
@@ -320,6 +348,23 @@ def _backend_for_adventure(genre: str, premise: str | None) -> tuple[TurnBackend
     if backend is not None:
         return backend, "llama.cpp"
     return MockBackend(_scripted_turns(genre, premise)), "scripted"
+
+
+def _model_label(session: PlaySession) -> str:
+    if session.backend_label == "llama.cpp":
+        return "2B Q4_K_M GGUF"
+    return "Scripted safety mode"
+
+
+def _estimated_turn_tokens(turn: Turn) -> int:
+    text = " ".join([turn.narration, *turn.choices])
+    return max(1, len(text.split()))
+
+
+def _turn_tokens_per_second(session: PlaySession) -> float | None:
+    if session.backend_label != "llama.cpp":
+        return None
+    return round(session.last_turn_tokens / session.last_turn_seconds, 1)
 
 
 def _recommended_choice(session: PlaySession) -> str:

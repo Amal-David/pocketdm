@@ -1,9 +1,46 @@
 {
   "tasks": {
     "T-0001": {
-      "status": "in_progress",
+      "status": "done",
       "started_at": "2026-06-10T10:57:57.461Z",
-      "updated_at": "2026-06-10T10:57:57.461Z"
+      "updated_at": "2026-06-10T11:30:29.931Z",
+      "completed_at": "2026-06-10T11:30:29.931Z"
+    },
+    "T-0003": {
+      "status": "done",
+      "started_at": "2026-06-10T11:30:52.286Z",
+      "updated_at": "2026-06-10T11:50:28.875Z",
+      "completed_at": "2026-06-10T11:50:28.875Z"
+    },
+    "T-0005": {
+      "status": "done",
+      "started_at": "2026-06-10T11:50:50.497Z",
+      "updated_at": "2026-06-11T09:32:44.054Z",
+      "completed_at": "2026-06-11T09:32:44.054Z"
+    },
+    "T-0006": {
+      "status": "done",
+      "started_at": "2026-06-11T09:32:52.824Z",
+      "updated_at": "2026-06-11T10:42:00.309Z",
+      "completed_at": "2026-06-11T10:42:00.309Z"
+    },
+    "T-0007": {
+      "status": "blocked",
+      "started_at": "2026-06-11T10:42:10.329Z",
+      "updated_at": "2026-06-11T12:59:20.291Z",
+      "reason": "Eval gate fails for current 2B GGUF. Corrected 50-session judge on full run reports coherence 2.52 (<3.5) with zero-bridge 92%; app-mirrored harness samples using next_turn show zero-bridge 60% then 20%, so current model/runtime needs another data/training iteration before this task can pass."
+    },
+    "T-0011": {
+      "status": "done",
+      "started_at": "2026-06-11T13:02:02.581Z",
+      "updated_at": "2026-06-11T13:20:41.346Z",
+      "completed_at": "2026-06-11T13:20:41.346Z"
+    },
+    "T-0012": {
+      "status": "done",
+      "started_at": "2026-06-11T13:21:40.742Z",
+      "updated_at": "2026-06-11T13:42:53.063Z",
+      "completed_at": "2026-06-11T13:42:53.063Z"
     }
   }
 }
