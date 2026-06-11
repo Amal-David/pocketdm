@@ -14,5 +14,6 @@ Every run gets a line. This table feeds the Field Notes blog's "total cost" clai
 | 2026-06-10 | WP-3 smoke v7 (50 adv, acceptance attempt) | Modal H100 | 118.6 min | 7.81 | 669 turns; 38/50 clean adventures; 622 clean turns; 41 bridge fallbacks; reached_real_ending 46/50; failed acceptance |
 | 2026-06-11 | WP-3 smoke v8 (6 adv, multi-retry probe) | Modal H100 | 16.6 min | 1.09 | 76 turns; 4/6 clean adventures; 4 bridge fallbacks, all missing remove_items; reached_real_ending 6/6 |
 | 2026-06-11 | WP-3 smoke v9 (6 adv, deterministic remove repair) | Modal H100 | 13.6 min | 0.90 | 78 turns; 6/6 clean adventures; 0 bridge fallbacks; 4 auto-repaired missing remove_items; all filter gates 100% |
+| 2026-06-11 | WP-3 smoke v10 (50 adv, acceptance smoke) | Modal H100 | 109.9 min | 7.24 | 644 turns; 45/50 clean adventures; 632 clean turns; 2 bridge fallbacks; 16 auto-repaired turns; turn gates all >=99.1% |
 
-**Running total: ~$24.68**
+**Running total: ~$31.92**

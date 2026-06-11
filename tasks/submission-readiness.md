@@ -6,11 +6,12 @@
 - `/health` returns `{"status":"ok"}` on port 7860.
 - The app plays a complete scripted adventure through the frozen engine state contract.
 - Ember is persistent across the viewport, uses `app/static/dragon-sprites.png`, flaps continuously, speaks through browser speech synthesis, and fires on notable replies.
-- Unit/integration tests pass locally: `39 passed, 1 skipped`.
+- Unit/integration tests pass locally: `42 passed, 1 skipped`.
+- WP-3 50-adventure acceptance smoke passed turn-level filters: 632 clean turns, 2 bridge fallbacks, all turn gates >=99.1%.
 
 ## Honest Gaps Before Final Submission
 
-- WP-3 teacher pipeline is still validating data quality; the active smoke probe must pass filters before scaling.
+- WP-3 teacher pipeline still needs the full generation run: >=5k filtered turns and 100 held-out eval seeds.
 - The fine-tuned Qwen3.5 student model and GGUF export are not complete yet.
 - The live app currently uses a scripted backend, not the trained llama.cpp runtime.
 - Kokoro voice blending and sequential TTS are still pending.
