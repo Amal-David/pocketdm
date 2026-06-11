@@ -17,3 +17,13 @@ A `cd` into a subdirectory in a prior command silently scoped a later `codex exe
 workspace-write sandbox to that subdir (it reported the whole repo as read-only).
 **Rule:** always pass `-C <repo-root>` explicitly to `codex exec`; verify the
 `workdir:` line in its output header before trusting a run.
+
+## 2026-06-11 — When the user says "speed" on Gemma 4, check MTP first
+The "not too quantized" path improved quality knobs but missed the user's screenshot:
+Gemma 4 MTP/speculative decoding is the speed lever. The working local path needs
+native recent llama.cpp `llama-server`/`llama-cli` support with `--spec-type draft-mtp`;
+`llama-cpp-python` alone cannot load the Gemma4Assistant drafter because it needs
+`ctx_other` shared with the target context.
+**Rule:** for Gemma 4 latency work, prioritize MTP server/CLI proof, tune
+`--spec-draft-n-max` on the actual hardware, and keep the Python binding as the
+fallback quality/smoke path.

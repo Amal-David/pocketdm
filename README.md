@@ -74,8 +74,20 @@ To try the experimental Gemma 4 E2B backend after downloading its GGUF:
 POCKETDM_GGUF=models/gemma-4-e2b-it/gguf/gemma-4-E2B-it-Q4_K_M.gguf POCKETDM_LLAMA_THREADS=8 uv run --group eval --group tts python app.py
 ```
 
-For the faster Gemma 4 MTP path, run a recent llama.cpp server with the
-matching drafter, then point PocketDM at the OpenAI-compatible local endpoint:
+For the faster Gemma 4 MTP path, PocketDM can manage a recent llama.cpp server
+process with the matching drafter:
+
+```bash
+POCKETDM_LLAMA_SERVER_BIN=/Users/amal/.cache/pocketdm-mtp/llama.cpp/build/bin/llama-server \
+POCKETDM_GGUF=/Users/amal/listenowl/experiments/build-small/models/gemma-4-e2b-it/gguf/gemma-4-E2B-it-Q4_K_M.gguf \
+POCKETDM_LLAMA_DRAFT_GGUF=/Users/amal/listenowl/experiments/build-small/models/gemma-4-e2b-it/gguf/mtp-gemma-4-E2B-it.gguf \
+POCKETDM_LLAMA_SPEC_DRAFT_N=1 \
+POCKETDM_LLAMA_SERVER_LABEL="Gemma 4 E2B Q4_K_M MTP managed llama.cpp server" \
+uv run --group eval --group tts python app.py
+```
+
+Or run the server yourself and point PocketDM at the OpenAI-compatible local
+endpoint:
 
 ```bash
 /Users/amal/.cache/pocketdm-mtp/llama.cpp/build/bin/llama-server \
@@ -83,10 +95,22 @@ matching drafter, then point PocketDM at the OpenAI-compatible local endpoint:
   --model-draft /Users/amal/listenowl/experiments/build-small/models/gemma-4-e2b-it/gguf/mtp-gemma-4-E2B-it.gguf \
   --spec-type draft-mtp --spec-draft-n-max 1 --spec-draft-ngl 999 \
   --ctx-size 2048 --threads 8 -ngl 999 -fa on \
-  --host 127.0.0.1 --port 8081 --reasoning off
+  --host 127.0.0.1 --port 8081 --no-ui
 
 POCKETDM_LLAMA_SERVER_URL=http://127.0.0.1:8081 POCKETDM_LLAMA_SERVER_LABEL="Gemma 4 E2B Q4_K_M MTP llama.cpp server" uv run --group eval --group tts python app.py
 ```
+
+To prove the MTP speed path from the native CLI, run:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 uv run python scripts/bench_llama_mtp.py --format both --n-predict 64 --threads 8 --draft-values 1,2,4 --timeout 180 -- --gpu-layers 999 --flash-attn on
+```
+
+A short local CLI benchmark showed `--spec-draft-n-max 1` at `80.6 tok/s`
+generation throughput versus `40.8 tok/s` without MTP; a longer run favored the
+baseline, so treat MTP as a native runtime path to verify and tune on the demo
+machine, not a blanket speedup claim. The detailed runbook is in
+`/Users/amal/listenowl/experiments/build-small/docs/mtp-runtime-runbook.md`.
 
 For a less-compressed Gemma 4 E2B test that is still much lighter than BF16:
 
