@@ -25,6 +25,15 @@ def test_custom_server_starts_adventure_and_dragon_hint() -> None:
     )
     assert hint.status_code == 200
     assert "My hint" in hint.json()["reply"]
+    assert "precise" in hint.json()["reply"] or "state" in hint.json()["reply"]
+
+    status = client.post(
+        "/api/assistant",
+        json={"session_id": body["session_id"], "message": "status"},
+    )
+    assert status.status_code == 200
+    assert "10/10 HP" in status.json()["reply"]
+    assert "Turn 1" in status.json()["reply"]
 
 
 def test_custom_server_rejects_unknown_session() -> None:

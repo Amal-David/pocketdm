@@ -14,9 +14,10 @@
           <h1>A tiny offline Dungeon Master with a hovering dragon aide.</h1>
         </div>
         <div class="proof-badge" aria-label="Runtime proof">
-          <span>Engine demo</span>
-          <span>Local assets</span>
-          <span>Model path ready</span>
+          <span>Scripted checkpoint</span>
+          <span>2B Q4 path</span>
+          <span>10.8 tok/s CPU bench</span>
+          <span>llama.cpp next</span>
         </div>
         <button
           id="voice-toggle"
@@ -59,7 +60,7 @@
           <p class="scene-label" id="scene-label">Awaiting adventure</p>
           <div class="narration" id="narration">
             Pick a genre and begin. Ember will stay over the screen, flap, chatter,
-            and breathe fire when the tale calls for it.
+            read your state, and breathe fire when the tale calls for it.
           </div>
           <div class="choices" id="choices"></div>
           <form class="freeform" id="freeform-form">
@@ -72,14 +73,14 @@
 
     <section class="dragon-assistant" aria-label="Dragon assistant">
       <div class="dragon-speech" id="dragon-speech">
-        I am Ember. Start a tale and I will hover helpfully.
+        I am Ember. Start a tale and I will read HP, inventory, and choices.
       </div>
       <div class="dragon-row">
         <button class="dragon-avatar" id="dragon-avatar" type="button" aria-label="Ask Ember for a hint">
           <span class="dragon-sprite" aria-hidden="true"></span>
         </button>
         <form class="dragon-chat" id="dragon-form">
-          <input id="dragon-input" type="text" placeholder="Ask Ember for a hint" />
+          <input id="dragon-input" type="text" placeholder="Ask for hint or status" />
           <button type="submit">Ask</button>
         </form>
       </div>

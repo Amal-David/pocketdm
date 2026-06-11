@@ -43,6 +43,7 @@ els.dragonForm.addEventListener("submit", async (event) => {
   els.dragonInput.value = "";
 });
 els.dragonAvatar.addEventListener("click", () => askDragon("hint"));
+els.location.addEventListener("click", () => askDragon("status"));
 els.voiceToggle.addEventListener("click", () => {
   state.voiceEnabled = !state.voiceEnabled;
   els.voiceToggle.setAttribute("aria-pressed", String(state.voiceEnabled));
@@ -170,6 +171,7 @@ function dragonSay(text, options = {}) {
 }
 
 function speak(text) {
+  if (!state.voiceEnabled) return;
   if (!("speechSynthesis" in window)) return;
   window.speechSynthesis.cancel();
   const utterance = new SpeechSynthesisUtterance(text);

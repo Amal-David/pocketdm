@@ -217,10 +217,20 @@ def _assistant_for_turn(session: PlaySession, action: str) -> str:
     if session.last_turn.is_ending:
         return "That is a proper ending. I am doing a tiny victory scorch."
     if session.state.hp <= 3:
-        return "Careful. Your hearts are getting crisp around the edges."
+        return (
+            f"Careful: {session.state.hp}/10 HP at {session.state.location}. "
+            f"I would avoid swagger and pick: {_recommended_choice(session)}"
+        )
     if "inspect" in action.casefold() or "search" in action.casefold():
-        return "Good instinct. Small models love clear intent and shiny clues."
-    return "Choice logged. Wings flapping. Narrative pressure rising."
+        inventory = _inventory_hint(session)
+        return (
+            "Good instinct. Inspection gives the engine a concrete next move"
+            f"{inventory}."
+        )
+    return (
+        "Choice logged. Wings flapping. "
+        f"My current read: {_choice_reason(session, _recommended_choice(session))}"
+    )
 
 
 def _dragon_reply(session: PlaySession, message: str) -> str:
@@ -228,10 +238,16 @@ def _dragon_reply(session: PlaySession, message: str) -> str:
     turn = session.last_turn
     if turn is None:
         return "Start an adventure and I will start hovering."
+    if "status" in lowered or "hp" in lowered or "inventory" in lowered:
+        return (
+            f"Status: {session.state.hp}/10 HP, location {session.state.location}, "
+            f"inventory {_inventory_list(session)}. Turn {session.state.turn_count}."
+        )
     if "hint" in lowered or "help" in lowered or "what" in lowered:
         if turn.is_ending:
             return "The tale has landed. Start a fresh scroll if you want another flight."
-        return f"My hint: try '{turn.choices[0]}'. It gives the engine a clean next move."
+        choice = _recommended_choice(session)
+        return f"My hint: try '{choice}'. {_choice_reason(session, choice)}"
     if "fire" in lowered or "flame" in lowered:
         return "A tasteful puff of fire, then. We are dramatic, not reckless."
     if "offline" in lowered or "tiny" in lowered:
@@ -245,6 +261,53 @@ def _voice_for_genre(genre: str) -> str:
     if genre == "derelict_starship":
         return "starship"
     return "dungeon"
+
+
+def _recommended_choice(session: PlaySession) -> str:
+    turn = session.last_turn
+    if turn is None:
+        return "start the tale"
+    choices = list(turn.choices)
+    if session.state.hp <= 3:
+        safe_terms = ("rest", "shield", "duck", "cautious", "safe", "steady", "mark")
+        for choice in choices:
+            if any(term in choice.casefold() for term in safe_terms):
+                return choice
+    if session.state.inventory:
+        item_terms = tuple(item.casefold() for item in session.state.inventory)
+        for choice in choices:
+            lowered = choice.casefold()
+            if any(item in lowered for item in item_terms):
+                return choice
+    info_terms = ("study", "inspect", "search", "read", "question", "trace")
+    for choice in choices:
+        if any(term in choice.casefold() for term in info_terms):
+            return choice
+    return choices[0]
+
+
+def _choice_reason(session: PlaySession, choice: str) -> str:
+    lowered = choice.casefold()
+    if session.state.hp <= 3:
+        return "Low HP makes a defensive or information-gathering move safer than a flashy one."
+    if session.state.inventory:
+        inventory = _inventory_list(session)
+        if any(item.casefold() in lowered for item in session.state.inventory):
+            return f"It uses what you already have ({inventory}), so the state can pay off."
+        return f"You have {inventory}; a clear clue-finding action may reveal where to use it."
+    if any(term in lowered for term in ("study", "inspect", "search", "read", "question")):
+        return "It gives the model a precise investigation verb, which usually keeps turns grounded."
+    return "It is specific enough for the engine to validate cleanly and move the scene forward."
+
+
+def _inventory_hint(session: PlaySession) -> str:
+    if not session.state.inventory:
+        return ""
+    return f"; you can now look for a payoff for {_inventory_list(session)}"
+
+
+def _inventory_list(session: PlaySession) -> str:
+    return ", ".join(session.state.inventory) if session.state.inventory else "empty"
 
 
 def _scripted_turns(genre: str, premise: str | None) -> list[Turn]:

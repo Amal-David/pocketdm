@@ -23,6 +23,13 @@ dev = [
 repl = [
     "openai>=1",
 ]
+eval = [
+    "llama-cpp-python>=0.3.0",
+]
+train = [
+    "datasets>=3.2.0",
+    "trl>=0.14.0",
+]
 tts = [
     "kokoro-onnx",
     "numpy",
@@ -43,7 +50,7 @@ build-backend = "hatchling.build"
 package = true
 
 [tool.hatch.build.targets.wheel]
-packages = ["engine", "app"]
+packages = ["engine", "app", "train", "eval"]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
