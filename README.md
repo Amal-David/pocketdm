@@ -9,10 +9,10 @@ app_file: app.py
 pinned: false
 tags:
   - build-small-hackathon
-  - track-thousand-token-wood
-  - badge-off-brand
-  - codex
-  - modal
+  - track:wood
+  - sponsor:openai
+  - sponsor:modal
+  - achievement:offbrand
 ---
 
 # PocketDM
@@ -95,6 +95,6 @@ Then open `http://127.0.0.1:7860`.
 - Sharing Is Caring: add after dataset and Codex traces are published.
 - Field Notes: add after the public build write-up is linked.
 
-Before final submission, verify the exact canonical `track-*` and `badge-*`
-frontmatter tags in the registration app. The current tags are intentional
-working guesses based on the public field guide.
+Before final submission, rerun the registration app tag generator and add only
+earned final tags such as `achievement:offgrid`, `achievement:welltuned`,
+`achievement:llama`, `achievement:sharing`, and `achievement:fieldnotes`.

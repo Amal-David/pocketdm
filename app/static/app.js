@@ -130,9 +130,9 @@ function renderTurn(turn, gameState) {
 function renderRuntimeProof(gameState) {
   const isLlama = gameState.backend === "llama.cpp";
   els.proofBackend.textContent = isLlama ? "llama.cpp active" : "Scripted demo";
-  els.proofModel.textContent = isLlama ? "GGUF backend" : "Engine fallback";
+  els.proofModel.textContent = isLlama ? "Local GGUF" : "Validated engine";
   els.proofVoice.textContent = `${voiceLabel(gameState.voice)} voice`;
-  els.proofNetwork.textContent = "No API calls in play";
+  els.proofNetwork.textContent = "No external inference";
 }
 
 function voiceLabel(voice) {
