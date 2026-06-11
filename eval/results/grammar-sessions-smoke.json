@@ -1,0 +1,501 @@
+{
+  "model": "models/2b-v1-lora/gguf/merged.Q4_K_M.gguf",
+  "seeds": "data/clean/holdout_seeds.jsonl",
+  "grammar": "engine/grammar.gbnf",
+  "max_turns": 15,
+  "sessions": [
+    {
+      "adventure_id": "adv-000001",
+      "genre": "whispering_wood",
+      "premise": null,
+      "seed": 10001,
+      "turns": [
+        {
+          "turn_json": {
+            "narration": "A whisper curls through the trees, promising a hidden path. Moonlight glints on the roots of a gnarled oak, beckoning you forward.",
+            "choices": [
+              "Follow the whisper into the thicket",
+              "Touch the gnarled oak",
+              "Ask the roots for a bargain"
+            ],
+            "state_delta": {
+              "hp": 0,
+              "add_items": [],
+              "remove_items": [],
+              "location": "Starting Point",
+              "add_flags": [
+                "whisper_heard",
+                "oak_present",
+                "act_1_progress"
+              ]
+            },
+            "is_ending": false,
+            "ending_type": null
+          },
+          "raw": "{\"narration\":\"A whisper curls through the trees, promising a hidden path. Moonlight glints on the roots of a gnarled oak, beckoning you forward.\",\"choices\":[\"Follow the whisper into the thicket\",\"Touch the gnarled oak\",\"Ask the roots for a bargain\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"whisper_heard\",\"oak_present\",\"act_1_progress\"]},\"is_ending\":false,\"ending_type\":null}",
+          "grammar_raw": "{\"narration\":\"A whisper curls through the trees, promising a hidden path. Moonlight glints on the roots of a gnarled oak, beckoning you forward.\",\"choices\":[\"Follow the whisper into the thicket\",\"Touch the gnarled oak\",\"Ask the roots for a bargain\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"whisper_heard\",\"oak_present\",\"act_1_progress\"]},\"is_ending\":false,\"ending_type\":null}",
+          "raw_attempts": [
+            "{\"narration\":\"A whisper curls through the trees, promising a hidden path. Moonlight glints on the roots of a gnarled oak, beckoning you forward.\",\"choices\":[\"Follow the whisper into the thicket\",\"Touch the gnarled oak\",\"Ask the roots for a bargain\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"whisper_heard\",\"oak_present\",\"act_1_progress\"]},\"is_ending\":false,\"ending_type\":null}"
+          ],
+          "raw_schema_failures": 0,
+          "action_taken": "Ask the roots for a bargain",
+          "used_bridge": false,
+          "tokens": 36,
+          "wall_seconds": 7.472247417084873,
+          "validation_errors": []
+        },
+        {
+          "turn_json": {
+            "narration": "The roots shift, offering a hidden path wrapped in moss and moss. A flicker of moonlight reveals a glowing oak ahead.",
+            "choices": [
+              "Follow the glowing oak",
+              "Follow the mossy root path",
+              "Call out to the whisper again"
+            ],
+            "state_delta": {
+              "hp": 0,
+              "add_items": [],
+              "remove_items": [],
+              "location": "Starting Point",
+              "add_flags": [
+                "oak_seen"
+              ]
+            },
+            "is_ending": false,
+            "ending_type": null
+          },
+          "raw": "{\"narration\":\"The roots shift, offering a hidden path wrapped in moss and moss. A flicker of moonlight reveals a glowing oak ahead.\",\"choices\":[\"Follow the glowing oak\",\"Follow the mossy root path\",\"Call out to the whisper again\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"oak_seen\"]},\"is_ending\":false,\"ending_type\":null}",
+          "grammar_raw": "{\"narration\":\"The roots shift, offering a hidden path wrapped in moss and moss. A flicker of moonlight reveals a glowing oak ahead.\",\"choices\":[\"Follow the glowing oak\",\"Follow the mossy root path\",\"Call out to the whisper again\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"oak_seen\"]},\"is_ending\":false,\"ending_type\":null}",
+          "raw_attempts": [
+            "{\"narration\":\"The roots shift, offering a hidden path wrapped in moss and moss. A flicker of moonlight reveals a glowing oak ahead.\",\"choices\":[\"Follow the glowing oak\",\"Follow the mossy root path\",\"Call out to the whisper again\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"oak_seen\"]},\"is_ending\":false,\"ending_type\":null}"
+          ],
+          "raw_schema_failures": 0,
+          "action_taken": "Follow the glowing oak",
+          "used_bridge": false,
+          "tokens": 34,
+          "wall_seconds": 5.896984749939293,
+          "validation_errors": []
+        },
+        {
+          "turn_json": {
+            "narration": "The oak glows softly, its branches brushing your face with a warm glow. A sly sprite perches on its trunk, offering a riddle in exchange for a favor.",
+            "choices": [
+              "Accept the riddle",
+              "Offer a favor of your choosing",
+              "Ignore the sprite and proceed"
+            ],
+            "state_delta": {
+              "hp": 0,
+              "add_items": [],
+              "remove_items": [],
+              "location": "Starting Point",
+              "add_flags": [
+                "sprite_present",
+                "act_1_progress"
+              ]
+            },
+            "is_ending": false,
+            "ending_type": null
+          },
+          "raw": "{\"narration\":\"The oak glows softly, its branches brushing your face with a warm glow. A sly sprite perches on its trunk, offering a riddle in exchange for a favor.\",\"choices\":[\"Accept the riddle\",\"Offer a favor of your choosing\",\"Ignore the sprite and proceed\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"sprite_present\",\"act_1_progress\"]},\"is_ending\":false,\"ending_type\":null}",
+          "grammar_raw": "{\"narration\":\"The oak glows softly, its branches brushing your face with a warm glow. A sly sprite perches on its trunk, offering a riddle in exchange for a favor.\",\"choices\":[\"Accept the riddle\",\"Offer a favor of your choosing\",\"Ignore the sprite and proceed\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"sprite_present\",\"act_1_progress\"]},\"is_ending\":false,\"ending_type\":null}",
+          "raw_attempts": [
+            "{\"narration\":\"The oak glows softly, its branches brushing your face with a warm glow. A sly sprite perches on its trunk, offering a riddle in exchange for a favor.\",\"choices\":[\"Accept the riddle\",\"Offer a favor of your choosing\",\"Ignore the sprite and proceed\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"sprite_present\",\"act_1_progress\"]},\"is_ending\":false,\"ending_type\":null}"
+          ],
+          "raw_schema_failures": 0,
+          "action_taken": "Offer a favor of your choosing",
+          "used_bridge": false,
+          "tokens": 40,
+          "wall_seconds": 7.369262500200421,
+          "validation_errors": []
+        },
+        {
+          "turn_json": {
+            "narration": "The oak hums a low, melodic note. A sprite perches on its branch, watching with amusement.",
+            "choices": [
+              "Ask the oak for a favor",
+              "Follow the sprite's gaze",
+              "Press the oak for a bargain"
+            ],
+            "state_delta": {
+              "hp": 0,
+              "add_items": [],
+              "remove_items": [],
+              "location": "Starting Point",
+              "add_flags": [
+                "sprite_present",
+                "act_2_progress"
+              ]
+            },
+            "is_ending": false,
+            "ending_type": null
+          },
+          "raw": "{\"narration\":\"The oak hums a low, melodic note. A sprite perches on its branch, watching with amusement.\",\"choices\":[\"Ask the oak for a favor\",\"Follow the sprite's gaze\",\"Press the oak for a bargain\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"sprite_present\",\"act_2_progress\"]},\"is_ending\":false,\"ending_type\":null}",
+          "grammar_raw": "{\"narration\":\"The oak hums a low, melodic note. A sprite perches on its branch, watching with amusement.\",\"choices\":[\"Ask the oak for a favor\",\"Follow the sprite's gaze\",\"Press the oak for a bargain\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"sprite_present\",\"act_2_progress\"]},\"is_ending\":false,\"ending_type\":null}",
+          "raw_attempts": [
+            "{\"narration\":\"The oak hums a low, melodic tune that makes your bones feel lighter. A sprite perches on its trunk, watching you with curious eyes.\",\"choices\":[\"Offer a favor of your choosing\",\"Follow the glowing oak\",\"Ask the sprite a question\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"act_2_progress\",\"oak_heard_song\",\"sprite_present\"]},\"is_ending\":false,\"ending_type\":null}",
+            "{\"narration\":\"The oak hums a low, melodic note. A sprite perches on its branch, watching with amusement.\",\"choices\":[\"Ask the oak for a favor\",\"Follow the sprite's gaze\",\"Press the oak for a bargain\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"sprite_present\",\"act_2_progress\"]},\"is_ending\":false,\"ending_type\":null}"
+          ],
+          "raw_schema_failures": 0,
+          "action_taken": "Press the oak for a bargain",
+          "used_bridge": false,
+          "tokens": 30,
+          "wall_seconds": 13.196606375044212,
+          "validation_errors": []
+        },
+        {
+          "turn_json": {
+            "narration": "The oak glows softly, its branches brushing your face with a warm glow. A sly sprite flits nearby, offering a riddle in exchange for guidance.",
+            "choices": [
+              "Accept the riddle challenge",
+              "Follow the sprite\u2019s movement",
+              "Examine the oak\u2019s glowing branches"
+            ],
+            "state_delta": {
+              "hp": 0,
+              "add_items": [],
+              "remove_items": [],
+              "location": "Starting Point",
+              "add_flags": [
+                "act_1_progress",
+                "oak_seen",
+                "sprite_present"
+              ]
+            },
+            "is_ending": false,
+            "ending_type": null
+          },
+          "raw": "{\"narration\":\"The oak glows softly, its branches brushing your face with a warm glow. A sly sprite flits nearby, offering a riddle in exchange for guidance.\",\"choices\":[\"Accept the riddle challenge\",\"Follow the sprite\u2019s movement\",\"Examine the oak\u2019s glowing branches\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"act_1_progress\",\"oak_seen\",\"sprite_present\"]},\"is_ending\":false,\"ending_type\":null}",
+          "grammar_raw": "{\"narration\":\"The oak glows softly, its branches brushing your face with a warm glow. A sly sprite flits nearby, offering a riddle in exchange for guidance.\",\"choices\":[\"Accept the riddle challenge\",\"Follow the sprite\u2019s movement\",\"Examine the oak\u2019s glowing branches\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"act_1_progress\",\"oak_seen\",\"sprite_present\"]},\"is_ending\":false,\"ending_type\":null}",
+          "raw_attempts": [
+            "{\"narration\":\"The oak glows softly, its branches brushing your face with a warm glow. A sly sprite flits nearby, offering a riddle in exchange for guidance.\",\"choices\":[\"Accept the riddle challenge\",\"Follow the sprite\u2019s movement\",\"Examine the oak\u2019s glowing branches\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"act_1_progress\",\"oak_seen\",\"sprite_present\"]},\"is_ending\":false,\"ending_type\":null}"
+          ],
+          "raw_schema_failures": 0,
+          "action_taken": "Accept the riddle challenge",
+          "used_bridge": false,
+          "tokens": 36,
+          "wall_seconds": 6.389194082934409,
+          "validation_errors": []
+        },
+        {
+          "turn_json": {
+            "narration": "The air thickens with the scent of damp earth and forgotten promises. A sprite flits between the trees, its form shifting like smoke.",
+            "choices": [
+              "Follow the sprite deeper into the grove",
+              "Challenge the oak with a different bargain",
+              "Offer a trinket from your inventory"
+            ],
+            "state_delta": {
+              "hp": 0,
+              "add_items": [],
+              "remove_items": [],
+              "location": "Starting Point",
+              "add_flags": [
+                "bargain_offered",
+                "bargain_accepted",
+                "act_2_progress"
+              ]
+            },
+            "is_ending": false,
+            "ending_type": null
+          },
+          "raw": "{\"narration\":\"The air thickens with the scent of damp earth and forgotten promises. A sprite flits between the trees, its form shifting like smoke.\",\"choices\":[\"Follow the sprite deeper into the grove\",\"Challenge the oak with a different bargain\",\"Offer a trinket from your inventory\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"bargain_offered\",\"bargain_accepted\",\"act_2_progress\"]},\"is_ending\":false,\"ending_type\":null}",
+          "grammar_raw": "{\"narration\":\"The air thickens with the scent of damp earth and forgotten promises. A sprite flits between the trees, its form shifting like smoke.\",\"choices\":[\"Follow the sprite deeper into the grove\",\"Challenge the oak with a different bargain\",\"Offer a trinket from your inventory\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"bargain_offered\",\"bargain_accepted\",\"act_2_progress\"]},\"is_ending\":false,\"ending_type\":null}",
+          "raw_attempts": [
+            "{\"narration\":\"The air thickens with the scent of damp earth and forgotten promises. A sprite flits between the trees, its form shifting like smoke.\",\"choices\":[\"Follow the sprite deeper into the grove\",\"Challenge the oak with a different bargain\",\"Offer a trinket from your inventory\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"bargain_offered\",\"bargain_accepted\",\"act_2_progress\"]},\"is_ending\":false,\"ending_type\":null}"
+          ],
+          "raw_schema_failures": 0,
+          "action_taken": "Challenge the oak with a different bargain",
+          "used_bridge": false,
+          "tokens": 41,
+          "wall_seconds": 7.13996966695413,
+          "validation_errors": []
+        },
+        {
+          "turn_json": {
+            "narration": "The roots shift beneath your feet, whispering of a hidden path ahead. A sly sprite perches on your shoulder, offering a cryptic riddle in exchange for a favor.",
+            "choices": [
+              "Follow the whispering roots deeper",
+              "Ask the sprite for a bargain",
+              "Offer a favor to the sprite"
+            ],
+            "state_delta": {
+              "hp": 0,
+              "add_items": [],
+              "remove_items": [],
+              "location": "Starting Point",
+              "add_flags": [
+                "act_2_complete",
+                "bargain_offered_to_sprite"
+              ]
+            },
+            "is_ending": false,
+            "ending_type": null
+          },
+          "raw": "{\"narration\":\"The roots shift beneath your feet, whispering of a hidden path ahead. A sly sprite perches on your shoulder, offering a cryptic riddle in exchange for a favor.\",\"choices\":[\"Follow the whispering roots deeper\",\"Ask the sprite for a bargain\",\"Offer a favor to the sprite\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"act_2_complete\",\"bargain_offered_to_sprite\"]},\"is_ending\":false,\"ending_type\":null}",
+          "grammar_raw": "{\"narration\":\"The roots shift beneath your feet, whispering of a hidden path ahead. A sly sprite perches on your shoulder, offering a cryptic riddle in exchange for a favor.\",\"choices\":[\"Follow the whispering roots deeper\",\"Ask the sprite for a bargain\",\"Offer a favor to the sprite\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"act_2_complete\",\"bargain_offered_to_sprite\"]},\"is_ending\":false,\"ending_type\":null}",
+          "raw_attempts": [
+            "{\"narration\":\"The roots shift beneath your feet, whispering of a hidden path ahead. A sly sprite perches on your shoulder, offering a cryptic riddle in exchange for a favor.\",\"choices\":[\"Follow the whispering roots deeper\",\"Ask the sprite for a bargain\",\"Offer a favor to the sprite\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"act_2_complete\",\"bargain_offered_to_sprite\"]},\"is_ending\":false,\"ending_type\":null}"
+          ],
+          "raw_schema_failures": 0,
+          "action_taken": "Offer a favor to the sprite",
+          "used_bridge": false,
+          "tokens": 43,
+          "wall_seconds": 6.765901999780908,
+          "validation_errors": []
+        },
+        {
+          "turn_json": {
+            "narration": "A flickering firefly drifts toward you, humming a tune you almost remember. The path ahead splits, one glowing blue, one glowing red.",
+            "choices": [
+              "Follow the blue path",
+              "Follow the red path",
+              "Ask the firefly for a favor"
+            ],
+            "state_delta": {
+              "hp": 0,
+              "add_items": [],
+              "remove_items": [],
+              "location": "Starting Point",
+              "add_flags": [
+                "act_2_complete",
+                "bargain_offered_",
+                "act_2_complete_2"
+              ]
+            },
+            "is_ending": false,
+            "ending_type": null
+          },
+          "raw": "{\"narration\":\"A flickering firefly drifts toward you, humming a tune you almost remember. The path ahead splits, one glowing blue, one glowing red.\",\"choices\":[\"Follow the blue path\",\"Follow the red path\",\"Ask the firefly for a favor\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"act_2_complete\",\"bargain_offered_\",\"act_2_complete_2\"]},\"is_ending\":false,\"ending_type\":null}",
+          "grammar_raw": "{\"narration\":\"A flickering firefly drifts toward you, humming a tune you almost remember. The path ahead splits, one glowing blue, one glowing red.\",\"choices\":[\"Follow the blue path\",\"Follow the red path\",\"Ask the firefly for a favor\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"act_2_complete\",\"bargain_offered_\",\"act_2_complete_2\"]},\"is_ending\":false,\"ending_type\":null}",
+          "raw_attempts": [
+            "{\"narration\":\"A flickering firefly drifts toward you, humming a tune you almost remember. The path ahead splits, one glowing blue, one glowing red.\",\"choices\":[\"Follow the blue path\",\"Follow the red path\",\"Ask the firefly for a favor\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"act_2_complete\",\"bargain_offered_\",\"act_2_complete_2\"]},\"is_ending\":false,\"ending_type\":null}"
+          ],
+          "raw_schema_failures": 0,
+          "action_taken": "Follow the blue path",
+          "used_bridge": false,
+          "tokens": 34,
+          "wall_seconds": 6.706749083008617,
+          "validation_errors": []
+        },
+        {
+          "turn_json": {
+            "narration": "The air grows thick with the scent of old promises. A root curls around your ankle, offering a cryptic nod.",
+            "choices": [
+              "Accept the root's nod",
+              "Offer a trade for the firefly\u2019s song",
+              "Follow the firefly silently"
+            ],
+            "state_delta": {
+              "hp": 0,
+              "add_items": [],
+              "remove_items": [],
+              "location": "Starting Point",
+              "add_flags": [
+                "root_offered_nod_2"
+              ]
+            },
+            "is_ending": false,
+            "ending_type": null
+          },
+          "raw": "{\"narration\":\"The air grows thick with the scent of old promises. A root curls around your ankle, offering a cryptic nod.\",\"choices\":[\"Accept the root's nod\",\"Offer a trade for the firefly\u2019s song\",\"Follow the firefly silently\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"root_offered_nod_2\"]},\"is_ending\":false,\"ending_type\":null}",
+          "grammar_raw": "{\"narration\":\"The air grows thick with the scent of old promises. A root curls around your ankle, offering a cryptic nod.\",\"choices\":[\"Accept the root's nod\",\"Offer a trade for the firefly\u2019s song\",\"Follow the firefly silently\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"root_offered_nod_2\"]},\"is_ending\":false,\"ending_type\":null}",
+          "raw_attempts": [
+            "{\"narration\":\"The air grows thick with the scent of old promises. A root curls around your ankle, offering a cryptic nod.\",\"choices\":[\"Accept the root's nod\",\"Offer a trade for the firefly\u2019s song\",\"Follow the firefly silently\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"root_offered_nod_2\"]},\"is_ending\":false,\"ending_type\":null}"
+          ],
+          "raw_schema_failures": 0,
+          "action_taken": "Offer a trade for the firefly\u2019s song",
+          "used_bridge": false,
+          "tokens": 33,
+          "wall_seconds": 6.979057499906048,
+          "validation_errors": []
+        },
+        {
+          "turn_json": {
+            "narration": "A whisper curls through the roots, offering a hidden root for your next step. The moonlight shifts, revealing a narrow trail deeper into the wood.",
+            "choices": [
+              "Accept the root\u2019s trade",
+              "Follow the moonlit trail",
+              "Call out to the whispering roots"
+            ],
+            "state_delta": {
+              "hp": 0,
+              "add_items": [],
+              "remove_items": [],
+              "location": "Starting Point",
+              "add_flags": [
+                "root_offered_nod"
+              ]
+            },
+            "is_ending": false,
+            "ending_type": null
+          },
+          "raw": "{\"narration\":\"A whisper curls through the roots, offering a hidden root for your next step. The moonlight shifts, revealing a narrow trail deeper into the wood.\",\"choices\":[\"Accept the root\u2019s trade\",\"Follow the moonlit trail\",\"Call out to the whispering roots\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"root_offered_nod\"]},\"is_ending\":false,\"ending_type\":null}",
+          "grammar_raw": "{\"narration\":\"A whisper curls through the roots, offering a hidden root for your next step. The moonlight shifts, revealing a narrow trail deeper into the wood.\",\"choices\":[\"Accept the root\u2019s trade\",\"Follow the moonlit trail\",\"Call out to the whispering roots\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"root_offered_nod\"]},\"is_ending\":false,\"ending_type\":null}",
+          "raw_attempts": [
+            "{\"narration\":\"A whisper curls through the roots, offering a hidden root for your next step. The moonlight shifts, revealing a narrow trail deeper into the wood.\",\"choices\":[\"Accept the root\u2019s trade\",\"Follow the moonlit trail\",\"Call out to the whispering roots\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"root_offered_nod\"]},\"is_ending\":false,\"ending_type\":null}"
+          ],
+          "raw_schema_failures": 0,
+          "action_taken": "Call out to the whispering roots",
+          "used_bridge": false,
+          "tokens": 37,
+          "wall_seconds": 6.02056200010702,
+          "validation_errors": []
+        },
+        {
+          "turn_json": {
+            "narration": "The roots coil tighter, their voices a hushed hum. A final choice lies at your threshold.",
+            "choices": [
+              "Follow the roots deeper into the wood",
+              "Offer your own root for safe passage",
+              "Press onward toward the moonlit glade"
+            ],
+            "state_delta": {
+              "hp": 0,
+              "add_items": [],
+              "remove_items": [],
+              "location": "Starting Point",
+              "add_flags": [
+                "act_2_complete_2"
+              ]
+            },
+            "is_ending": false,
+            "ending_type": null
+          },
+          "raw": "{\"narration\":\"The roots coil tighter, their voices a hushed hum. A final choice lies at your threshold.\",\"choices\":[\"Follow the roots deeper into the wood\",\"Offer your own root for safe passage\",\"Press onward toward the moonlit glade\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"act_2_complete_2\"]},\"is_ending\":false,\"ending_type\":null}",
+          "grammar_raw": "{\"narration\":\"The roots coil tighter, their voices a hushed hum. A final choice lies at your threshold.\",\"choices\":[\"Follow the roots deeper into the wood\",\"Offer your own root for safe passage\",\"Press onward toward the moonlit glade\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"act_2_complete_2\"]},\"is_ending\":false,\"ending_type\":null}",
+          "raw_attempts": [
+            "{\"narration\":\"The roots coil tighter, their voices a hushed hum. A final choice lies at your threshold.\",\"choices\":[\"Follow the roots deeper into the wood\",\"Offer your own root for safe passage\",\"Press onward toward the moonlit glade\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"act_2_complete_2\"]},\"is_ending\":false,\"ending_type\":null}"
+          ],
+          "raw_schema_failures": 0,
+          "action_taken": "Follow the roots deeper into the wood",
+          "used_bridge": false,
+          "tokens": 34,
+          "wall_seconds": 6.1824857499450445,
+          "validation_errors": []
+        },
+        {
+          "turn_json": {
+            "narration": "The moonlight tightens the air, and the roots part for a final choice. A single root glows with promise, beckoning you forward.",
+            "choices": [
+              "Accept the glowing root",
+              "Step forward into the glimmering path",
+              "Retreat and reevaluate the bargain"
+            ],
+            "state_delta": {
+              "hp": 0,
+              "add_items": [],
+              "remove_items": [],
+              "location": "Starting Point",
+              "add_flags": [
+                "act_2_complete_2",
+                "root_offered_nod"
+              ]
+            },
+            "is_ending": false,
+            "ending_type": null
+          },
+          "raw": "{\"narration\":\"The moonlight tightens the air, and the roots part for a final choice. A single root glows with promise, beckoning you forward.\",\"choices\":[\"Accept the glowing root\",\"Step forward into the glimmering path\",\"Retreat and reevaluate the bargain\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"act_2_complete_2\",\"root_offered_nod\"]},\"is_ending\":false,\"ending_type\":null}",
+          "grammar_raw": "{\"narration\":\"The moonlight tightens the air, and the roots part for a final choice. A single root glows with promise, beckoning you forward.\",\"choices\":[\"Accept the glowing root\",\"Step forward into the glimmering path\",\"Retreat and reevaluate the bargain\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"act_2_complete_2\",\"root_offered_nod\"]},\"is_ending\":false,\"ending_type\":null}",
+          "raw_attempts": [
+            "{\"narration\":\"The moonlight tightens the air, and the roots part for a final choice. A single root glows with promise, beckoning you forward.\",\"choices\":[\"Accept the glowing root\",\"Step forward into the glimmering path\",\"Retreat and reevaluate the bargain\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"act_2_complete_2\",\"root_offered_nod\"]},\"is_ending\":false,\"ending_type\":null}"
+          ],
+          "raw_schema_failures": 0,
+          "action_taken": "Step forward into the glimmering path",
+          "used_bridge": false,
+          "tokens": 35,
+          "wall_seconds": 6.088643665891141,
+          "validation_errors": []
+        },
+        {
+          "turn_json": {
+            "narration": "The roots whisper a final bargain: a name or a memory, and the wood will reveal its secrets. The moonlight hums with anticipation.",
+            "choices": [
+              "Offer a memory of the forest",
+              "Call out to the moonlight",
+              "Press forward without hesitation"
+            ],
+            "state_delta": {
+              "hp": 0,
+              "add_items": [],
+              "remove_items": [],
+              "location": "Starting Point",
+              "add_flags": [
+                "act_2_complete_3",
+                "bargain_offered_2"
+              ]
+            },
+            "is_ending": false,
+            "ending_type": null
+          },
+          "raw": "{\"narration\":\"The roots whisper a final bargain: a name or a memory, and the wood will reveal its secrets. The moonlight hums with anticipation.\",\"choices\":[\"Offer a memory of the forest\",\"Call out to the moonlight\",\"Press forward without hesitation\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"act_2_complete_3\",\"bargain_offered_2\"]},\"is_ending\":false,\"ending_type\":null}",
+          "grammar_raw": "{\"narration\":\"The roots whisper a final bargain: a name or a memory, and the wood will reveal its secrets. The moonlight hums with anticipation.\",\"choices\":[\"Offer a memory of the forest\",\"Call out to the moonlight\",\"Press forward without hesitation\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"act_2_complete_3\",\"bargain_offered_2\"]},\"is_ending\":false,\"ending_type\":null}",
+          "raw_attempts": [
+            "{\"narration\":\"The roots whisper a final bargain: a name or a memory, and the wood will reveal its secrets. The moonlight hums with anticipation.\",\"choices\":[\"Offer a memory of the forest\",\"Call out to the moonlight\",\"Press forward without hesitation\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"act_2_complete_3\",\"bargain_offered_2\"]},\"is_ending\":false,\"ending_type\":null}"
+          ],
+          "raw_schema_failures": 0,
+          "action_taken": "Press forward without hesitation",
+          "used_bridge": false,
+          "tokens": 36,
+          "wall_seconds": 7.22616787510924,
+          "validation_errors": []
+        },
+        {
+          "turn_json": {
+            "narration": "The roots part for a final bargain: a name or a memory, and the wood will reveal its final truth. One choice remains\u2014take the bargain or walk without.",
+            "choices": [
+              "Give the name you carry",
+              "Offer a memory from your past",
+              "Step forward without a bargain"
+            ],
+            "state_delta": {
+              "hp": 0,
+              "add_items": [],
+              "remove_items": [],
+              "location": "Ending",
+              "add_flags": [
+                "act_2_complete_3",
+                "bargain_offered_"
+              ]
+            },
+            "is_ending": true,
+            "ending_type": "bittersweet"
+          },
+          "raw": "{\"narration\":\"The roots part for a final bargain: a name or a memory, and the wood will reveal its final truth. One choice remains\u2014take the bargain or walk without.\",\"choices\":[\"Give the name you carry\",\"Offer a memory from your past\",\"Step forward without a bargain\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Ending\",\"add_flags\":[\"act_2_complete_3\",\"bargain_offered_\"]},\"is_ending\":true,\"ending_type\":\"bittersweet\"}",
+          "grammar_raw": "{\"narration\":\"The roots part for a final bargain: a name or a memory, and the wood will reveal its final truth. One choice remains\u2014take the bargain or walk without.\",\"choices\":[\"Give the name you carry\",\"Offer a memory from your past\",\"Step forward without a bargain\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Ending\",\"add_flags\":[\"act_2_complete_3\",\"bargain_offered_\"]},\"is_ending\":true,\"ending_type\":\"bittersweet\"}",
+          "raw_attempts": [
+            "{\"narration\":\"The roots part for a final bargain: a name or a memory, and the wood will reveal its final truth. One choice remains\u2014take the bargain or walk without.\",\"choices\":[\"Give the name you carry\",\"Offer a memory from your past\",\"Step forward without a bargain\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Ending\",\"add_flags\":[\"act_2_complete_3\",\"bargain_offered_\"]},\"is_ending\":true,\"ending_type\":\"bittersweet\"}"
+          ],
+          "raw_schema_failures": 0,
+          "action_taken": null,
+          "used_bridge": false,
+          "tokens": 41,
+          "wall_seconds": 6.276385582983494,
+          "validation_errors": []
+        }
+      ]
+    }
+  ],
+  "metrics": {
+    "sessions": 1.0,
+    "turns": 14.0,
+    "schema_valid_rate": 1.0,
+    "choice_distinct_rate": 1.0,
+    "delta_legal_rate": 1.0,
+    "zero_bridge_complete_rate": 1.0,
+    "mean_tokens_per_turn": 36.42857142857143,
+    "mean_wall_seconds_per_turn": 7.122158446349204
+  },
+  "gate": {
+    "required_sessions": 1,
+    "sessions": 1,
+    "completed_sessions": 1,
+    "grammar_clean_sessions": 1,
+    "bridge_turns": 0,
+    "max_bridge_turns": 0,
+    "raw_schema_failures": 0,
+    "retry_turns": 1,
+    "turns": 14,
+    "passed": true
+  }
+}

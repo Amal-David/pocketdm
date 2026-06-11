@@ -11,3 +11,9 @@ is 5.1B *total* params — naming generations from memory is hazardous.
 ## 2026-06-10 — Licenses propagate through outputs, not just weights
 Llama-3.3's license forces models trained on its *outputs* to carry "Llama" in the name.
 **Rule:** check the teacher's license before generating synthetic data, not after.
+
+## 2026-06-10 — codex exec inherits the shell's cwd as its sandbox root
+A `cd` into a subdirectory in a prior command silently scoped a later `codex exec`
+workspace-write sandbox to that subdir (it reported the whole repo as read-only).
+**Rule:** always pass `-C <repo-root>` explicitly to `codex exec`; verify the
+`workdir:` line in its output header before trusting a run.

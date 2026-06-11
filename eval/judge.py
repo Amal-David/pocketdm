@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 from pathlib import Path
 from typing import Any
 
@@ -41,6 +42,7 @@ judge_image = (
 def judge_remote(transcripts_json: str) -> dict[str, Any]:
     from pydantic import BaseModel, Field
     from vllm import LLM, SamplingParams
+    from vllm.sampling_params import StructuredOutputsParams
 
     class Verdict(BaseModel):
         coherence: int = Field(ge=1, le=5)
@@ -57,16 +59,43 @@ def judge_remote(transcripts_json: str) -> dict[str, Any]:
     )
     sampling = SamplingParams(
         temperature=0.0,
-        max_tokens=260,
-        guided_json=Verdict.model_json_schema(),
+        max_tokens=400,
+        structured_outputs=StructuredOutputsParams(
+            json=Verdict.model_json_schema(),
+            disable_any_whitespace=True,
+        ),
     )
     prompts = [_judge_prompt(transcript) for transcript in transcripts]
     outputs = llm.generate(prompts, sampling)
     verdicts = []
-    for output in outputs:
+    parse_fallbacks = []
+    for index, output in enumerate(outputs):
         text = output.outputs[0].text
-        verdicts.append(Verdict.model_validate_json(text).model_dump())
-    return {"verdicts": verdicts}
+        try:
+            verdict = Verdict.model_validate_json(text)
+        except Exception as error:
+            verdict = _partial_verdict(Verdict, text)
+            parse_fallbacks.append(
+                {
+                    "index": index,
+                    "error": error.__class__.__name__,
+                    "text_prefix": text[:500],
+                }
+            )
+        verdicts.append(verdict.model_dump())
+    return {"verdicts": verdicts, "parse_fallbacks": parse_fallbacks}
+
+
+def _partial_verdict(verdict_cls: type[Any], text: str) -> Any:
+    fields = {}
+    for field in ("coherence", "choice_meaningfulness", "ending_satisfaction"):
+        match = re.search(rf'"{field}"\s*:\s*([1-5])', text)
+        fields[field] = int(match.group(1)) if match else 1
+    rationale = "Judge output was partial; numeric scores were recovered when present."
+    match = re.search(r'"rationale"\s*:\s*"([^"]{1,300})', text)
+    if match:
+        rationale = match.group(1)
+    return verdict_cls(**fields, rationale=rationale)
 
 
 def _judge_prompt(transcript: dict[str, Any]) -> str:
@@ -78,12 +107,42 @@ def _judge_prompt(transcript: dict[str, Any]) -> str:
         "Good anchor: state changes matter, choices differ, final turn resolves the quest. "
         "Scores: coherence=5, choice_meaningfulness=5, ending_satisfaction=5."
     )
-    compact = json.dumps(transcript, ensure_ascii=True)[:3000]
+    compact = json.dumps(_compact_transcript(transcript), ensure_ascii=True)
     return (
         "You are judging a tiny-model interactive fiction transcript for a hackathon. "
         "Return JSON only with integer scores 1-5 and a short rationale. "
         f"{sample_bad}\n{sample_good}\nTranscript={compact}"
     )
+
+
+def _compact_transcript(transcript: dict[str, Any]) -> dict[str, Any]:
+    turns = []
+    for index, record in enumerate(transcript.get("turns", []), start=1):
+        turn = record.get("turn_json") or {}
+        delta = turn.get("state_delta") or {}
+        turns.append(
+            {
+                "i": index,
+                "n": str(turn.get("narration") or "")[:180],
+                "choices": turn.get("choices") or [],
+                "loc": delta.get("location"),
+                "hp": delta.get("hp"),
+                "items": {
+                    "add": delta.get("add_items") or [],
+                    "remove": delta.get("remove_items") or [],
+                },
+                "flags": delta.get("add_flags") or [],
+                "bridge": bool(record.get("used_bridge")),
+                "ending": bool(turn.get("is_ending")),
+                "ending_type": turn.get("ending_type"),
+            }
+        )
+    return {
+        "adventure_id": transcript.get("adventure_id"),
+        "genre": transcript.get("genre"),
+        "premise": transcript.get("premise"),
+        "turns": turns,
+    }
 
 
 @app.local_entrypoint()

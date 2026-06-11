@@ -1,0 +1,984 @@
+{
+  "model": "models/2b-v1-lora/gguf/merged.Q4_K_M.gguf",
+  "seeds": "data/clean/holdout_seeds.jsonl",
+  "grammar": "engine/grammar.gbnf",
+  "seed": 3407,
+  "max_turns": 15,
+  "sessions": [
+    {
+      "adventure_id": "adv-000001",
+      "genre": "whispering_wood",
+      "premise": null,
+      "seed": 10001,
+      "turns": [
+        {
+          "turn_json": {
+            "narration": "The whispering trees part for a path ahead. A faint glow beckons from the undergrowth.",
+            "choices": [
+              "Follow the path deeper into the woods",
+              "Investigate the glowing undergrowth",
+              "Call out to the trees for guidance"
+            ],
+            "state_delta": {
+              "hp": 0,
+              "add_items": [],
+              "remove_items": [],
+              "location": "Starting Point",
+              "add_flags": [
+                "path_visible",
+                "glow_visible",
+                "trees_happy"
+              ]
+            },
+            "is_ending": false,
+            "ending_type": null
+          },
+          "raw": "{\"narration\":\"The whispering trees part for a path ahead. A faint glow beckons from the undergrowth.\",\"choices\":[\"Follow the path deeper into the woods\",\"Investigate the glowing undergrowth\",\"Call out to the trees for guidance\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"path_visible\",\"glow_visible\",\"trees_happy\"]},\"is_ending\":false,\"ending_type\":null}",
+          "grammar_raw": "{\"narration\":\"The whispering trees part for a path ahead. A faint glow beckons from the undergrowth.\",\"choices\":[\"Follow the path deeper into the woods\",\"Investigate the glowing undergrowth\",\"Call out to the trees for guidance\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"path_visible\",\"glow_visible\",\"trees_happy\"]},\"is_ending\":false,\"ending_type\":null}",
+          "raw_attempts": [
+            "{\"narration\":\"The whispering trees part for a path ahead. A faint glow beckons from the undergrowth.\",\"choices\":[\"Follow the path deeper into the woods\",\"Investigate the glowing undergrowth\",\"Call out to the trees for guidance\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"path_visible\",\"glow_visible\",\"trees_happy\"]},\"is_ending\":false,\"ending_type\":null}"
+          ],
+          "raw_schema_failures": 0,
+          "action_taken": "Call out to the trees for guidance",
+          "used_bridge": false,
+          "tokens": 31,
+          "wall_seconds": 8.811289165867493,
+          "validation_errors": []
+        },
+        {
+          "turn_json": {
+            "narration": "The moonlight reveals glowing mushrooms beneath your feet. A soft voice hums from the undergrowth.",
+            "choices": [
+              "Follow the glowing mushrooms",
+              "Sit and listen to the voice",
+              "Trace the path the trees opened"
+            ],
+            "state_delta": {
+              "hp": 0,
+              "add_items": [],
+              "remove_items": [],
+              "location": "Starting Point",
+              "add_flags": [
+                "mushrooms_visible",
+                "voice_heard",
+                "trees_trusting"
+              ]
+            },
+            "is_ending": false,
+            "ending_type": null
+          },
+          "raw": "{\"narration\":\"The moonlight reveals glowing mushrooms beneath your feet. A soft voice hums from the undergrowth.\",\"choices\":[\"Follow the glowing mushrooms\",\"Sit and listen to the voice\",\"Trace the path the trees opened\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"mushrooms_visible\",\"voice_heard\",\"trees_trusting\"]},\"is_ending\":false,\"ending_type\":null}",
+          "grammar_raw": "{\"narration\":\"The moonlight reveals glowing mushrooms beneath your feet. A soft voice hums from the undergrowth.\",\"choices\":[\"Follow the glowing mushrooms\",\"Sit and listen to the voice\",\"Trace the path the trees opened\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"mushrooms_visible\",\"voice_heard\",\"trees_trusting\"]},\"is_ending\":false,\"ending_type\":null}",
+          "raw_attempts": [
+            "{\"narration\":\"The moonlight reveals glowing mushrooms beneath your feet. A soft voice hums from the undergrowth.\",\"choices\":[\"Follow the glowing mushrooms\",\"Sit and listen to the voice\",\"Trace the path the trees opened\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"mushrooms_visible\",\"voice_heard\",\"trees_trusting\"]},\"is_ending\":false,\"ending_type\":null}"
+          ],
+          "raw_schema_failures": 0,
+          "action_taken": "Follow the glowing mushrooms",
+          "used_bridge": false,
+          "tokens": 29,
+          "wall_seconds": 8.186417500022799,
+          "validation_errors": []
+        },
+        {
+          "turn_json": {
+            "narration": "The trees lean closer, their voices harmonizing with the path. A warm breeze carries the scent of wildflowers.",
+            "choices": [
+              "Offer a trinket from your pack to the trees",
+              "Sit quietly and listen to the whispering voices",
+              "Follow the scent of wildflowers deeper into the woods"
+            ],
+            "state_delta": {
+              "hp": 0,
+              "add_items": [],
+              "remove_items": [],
+              "location": "Starting Point",
+              "add_flags": [
+                "trees_more_trusting",
+                "mood_warm",
+                "scent_noticed"
+              ]
+            },
+            "is_ending": false,
+            "ending_type": null
+          },
+          "raw": "{\"narration\":\"The trees lean closer, their voices harmonizing with the path. A warm breeze carries the scent of wildflowers.\",\"choices\":[\"Offer a trinket from your pack to the trees\",\"Sit quietly and listen to the whispering voices\",\"Follow the scent of wildflowers deeper into the woods\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"trees_more_trusting\",\"mood_warm\",\"scent_noticed\"]},\"is_ending\":false,\"ending_type\":null}",
+          "grammar_raw": "{\"narration\":\"The trees lean closer, their voices harmonizing with the path. A warm breeze carries the scent of wildflowers.\",\"choices\":[\"Offer a trinket from your pack to the trees\",\"Sit quietly and listen to the whispering voices\",\"Follow the scent of wildflowers deeper into the woods\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"trees_more_trusting\",\"mood_warm\",\"scent_noticed\"]},\"is_ending\":false,\"ending_type\":null}",
+          "raw_attempts": [
+            "{\"narration\":\"The trees lean closer, their voices harmonizing with the path. A warm breeze carries the scent of wildflowers.\",\"choices\":[\"Offer a trinket from your pack to the trees\",\"Sit quietly and listen to the whispering voices\",\"Follow the scent of wildflowers deeper into the woods\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"trees_more_trusting\",\"mood_warm\",\"scent_noticed\"]},\"is_ending\":false,\"ending_type\":null}"
+          ],
+          "raw_schema_failures": 0,
+          "action_taken": "Sit quietly and listen to the whispering voices",
+          "used_bridge": false,
+          "tokens": 42,
+          "wall_seconds": 7.5917641669511795,
+          "validation_errors": []
+        },
+        {
+          "turn_json": {
+            "narration": "The scent of wild herbs lingers in the air, curling around your ankles. A soft path splits before you, one to the left, one to the right.",
+            "choices": [
+              "Take the left path",
+              "Take the right path",
+              "Follow the scent deeper into the wood"
+            ],
+            "state_delta": {
+              "hp": 0,
+              "add_items": [],
+              "remove_items": [],
+              "location": "Starting Point",
+              "add_flags": [
+                "path_split_seen",
+                "herbs_scented"
+              ]
+            },
+            "is_ending": false,
+            "ending_type": null
+          },
+          "raw": "{\"narration\":\"The scent of wild herbs lingers in the air, curling around your ankles. A soft path splits before you, one to the left, one to the right.\",\"choices\":[\"Take the left path\",\"Take the right path\",\"Follow the scent deeper into the wood\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"path_split_seen\",\"herbs_scented\"]},\"is_ending\":false,\"ending_type\":null}",
+          "grammar_raw": "{\"narration\":\"The scent of wild herbs lingers in the air, curling around your ankles. A soft path splits before you, one to the left, one to the right.\",\"choices\":[\"Take the left path\",\"Take the right path\",\"Follow the scent deeper into the wood\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"path_split_seen\",\"herbs_scented\"]},\"is_ending\":false,\"ending_type\":null}",
+          "raw_attempts": [
+            "{\"narration\":\"The scent of wild herbs lingers in the air, curling around your ankles. A soft path splits before you, one to the left, one to the right.\",\"choices\":[\"Take the left path\",\"Take the right path\",\"Follow the scent deeper into the wood\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"path_split_seen\",\"herbs_scented\"]},\"is_ending\":false,\"ending_type\":null}"
+          ],
+          "raw_schema_failures": 0,
+          "action_taken": "Follow the scent deeper into the wood",
+          "used_bridge": false,
+          "tokens": 40,
+          "wall_seconds": 7.692146416986361,
+          "validation_errors": []
+        },
+        {
+          "turn_json": {
+            "narration": "The roots curl beneath your feet, offering a hidden path to the left. A sly sprite flits from your shoulder, humming a tune only you can hear.",
+            "choices": [
+              "Take the path the roots offer",
+              "Follow the sprite\u2019s tune",
+              "Press forward cautiously"
+            ],
+            "state_delta": {
+              "hp": 0,
+              "add_items": [],
+              "remove_items": [],
+              "location": "Starting Point",
+              "add_flags": [
+                "root_path_seen",
+                "sprite_seen",
+                "tune_heard"
+              ]
+            },
+            "is_ending": false,
+            "ending_type": null
+          },
+          "raw": "{\"narration\":\"The roots curl beneath your feet, offering a hidden path to the left. A sly sprite flits from your shoulder, humming a tune only you can hear.\",\"choices\":[\"Take the path the roots offer\",\"Follow the sprite\u2019s tune\",\"Press forward cautiously\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"root_path_seen\",\"sprite_seen\",\"tune_heard\"]},\"is_ending\":false,\"ending_type\":null}",
+          "grammar_raw": "{\"narration\":\"The roots curl beneath your feet, offering a hidden path to the left. A sly sprite flits from your shoulder, humming a tune only you can hear.\",\"choices\":[\"Take the path the roots offer\",\"Follow the sprite\u2019s tune\",\"Press forward cautiously\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"root_path_seen\",\"sprite_seen\",\"tune_heard\"]},\"is_ending\":false,\"ending_type\":null}",
+          "raw_attempts": [
+            "{\"narration\":\"The roots curl beneath your feet, offering a hidden path to the left. A sly sprite flits from your shoulder, humming a tune only you can hear.\",\"choices\":[\"Take the path the roots offer\",\"Follow the sprite\u2019s tune\",\"Press forward cautiously\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"root_path_seen\",\"sprite_seen\",\"tune_heard\"]},\"is_ending\":false,\"ending_type\":null}"
+          ],
+          "raw_schema_failures": 0,
+          "action_taken": "Take the path the roots offer",
+          "used_bridge": false,
+          "tokens": 38,
+          "wall_seconds": 7.872978166909888,
+          "validation_errors": []
+        },
+        {
+          "turn_json": {
+            "narration": "The air hums with a tune only the trees understand. A faint glow pulses from the moonlit clearing ahead.",
+            "choices": [
+              "Follow the glowing moonlight",
+              "Call out to the sprite",
+              "Chant the tune to the trees"
+            ],
+            "state_delta": {
+              "hp": 0,
+              "add_items": [],
+              "remove_items": [],
+              "location": "Starting Point",
+              "add_flags": [
+                "moonlit_clearing_seen",
+                "tune_heard",
+                "sprite_seen"
+              ]
+            },
+            "is_ending": false,
+            "ending_type": null
+          },
+          "raw": "{\"narration\":\"The air hums with a tune only the trees understand. A faint glow pulses from the moonlit clearing ahead.\",\"choices\":[\"Follow the glowing moonlight\",\"Call out to the sprite\",\"Chant the tune to the trees\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"moonlit_clearing_seen\",\"tune_heard\",\"sprite_seen\"]},\"is_ending\":false,\"ending_type\":null}",
+          "grammar_raw": "{\"narration\":\"The air hums with a tune only the trees understand. A faint glow pulses from the moonlit clearing ahead.\",\"choices\":[\"Follow the glowing moonlight\",\"Call out to the sprite\",\"Chant the tune to the trees\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"moonlit_clearing_seen\",\"tune_heard\",\"sprite_seen\"]},\"is_ending\":false,\"ending_type\":null}",
+          "raw_attempts": [
+            "{\"narration\":\"The air hums with a tune only the trees understand. A faint glow pulses from the moonlit clearing ahead.\",\"choices\":[\"Follow the glowing moonlight\",\"Call out to the sprite\",\"Chant the tune to the trees\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"moonlit_clearing_seen\",\"tune_heard\",\"sprite_seen\"]},\"is_ending\":false,\"ending_type\":null}"
+          ],
+          "raw_schema_failures": 0,
+          "action_taken": "Call out to the sprite",
+          "used_bridge": false,
+          "tokens": 32,
+          "wall_seconds": 6.489641499938443,
+          "validation_errors": []
+        },
+        {
+          "turn_json": {
+            "narration": "The sprite flits closer, its laughter blending with the wind. A soft light beckons from the clearing ahead.",
+            "choices": [
+              "Follow the sprite into the clearing",
+              "Bargain with the roots for safe passage",
+              "Follow the tune to its source"
+            ],
+            "state_delta": {
+              "hp": 0,
+              "add_items": [],
+              "remove_items": [],
+              "location": "Starting Point",
+              "add_flags": [
+                "bargain_sought",
+                "sprite_followed",
+                "clearing_approached"
+              ]
+            },
+            "is_ending": false,
+            "ending_type": null
+          },
+          "raw": "{\"narration\":\"The sprite flits closer, its laughter blending with the wind. A soft light beckons from the clearing ahead.\",\"choices\":[\"Follow the sprite into the clearing\",\"Bargain with the roots for safe passage\",\"Follow the tune to its source\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"bargain_sought\",\"sprite_followed\",\"clearing_approached\"]},\"is_ending\":false,\"ending_type\":null}",
+          "grammar_raw": "{\"narration\":\"The sprite flits closer, its laughter blending with the wind. A soft light beckons from the clearing ahead.\",\"choices\":[\"Follow the sprite into the clearing\",\"Bargain with the roots for safe passage\",\"Follow the tune to its source\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"bargain_sought\",\"sprite_followed\",\"clearing_approached\"]},\"is_ending\":false,\"ending_type\":null}",
+          "raw_attempts": [
+            "{\"narration\":\"The sprite flits closer, its laughter blending with the wind. A soft light beckons from the clearing ahead.\",\"choices\":[\"Follow the sprite into the clearing\",\"Bargain with the roots for safe passage\",\"Follow the tune to its source\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"bargain_sought\",\"sprite_followed\",\"clearing_approached\"]},\"is_ending\":false,\"ending_type\":null}"
+          ],
+          "raw_schema_failures": 0,
+          "action_taken": "Follow the tune to its source",
+          "used_bridge": false,
+          "tokens": 35,
+          "wall_seconds": 7.557776167057455,
+          "validation_errors": []
+        },
+        {
+          "turn_json": {
+            "narration": "The sprite pauses, its laughter fading into a whisper. A root tugs at your sleeve, beckoning you forward.",
+            "choices": [
+              "Accept the root's offer",
+              "Step into the clearing",
+              "Return to the Starting Point"
+            ],
+            "state_delta": {
+              "hp": 0,
+              "add_items": [],
+              "remove_items": [],
+              "location": "Starting Point",
+              "add_flags": [
+                "root_offered",
+                "clearing_entered"
+              ]
+            },
+            "is_ending": false,
+            "ending_type": null
+          },
+          "raw": "{\"narration\":\"The sprite pauses, its laughter fading into a whisper. A root tugs at your sleeve, beckoning you forward.\",\"choices\":[\"Accept the root's offer\",\"Step into the clearing\",\"Return to the Starting Point\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"root_offered\",\"clearing_entered\"]},\"is_ending\":false,\"ending_type\":null}",
+          "grammar_raw": "{\"narration\":\"The sprite pauses, its laughter fading into a whisper. A root tugs at your sleeve, beckoning you forward.\",\"choices\":[\"Accept the root's offer\",\"Step into the clearing\",\"Return to the Starting Point\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"root_offered\",\"clearing_entered\"]},\"is_ending\":false,\"ending_type\":null}",
+          "raw_attempts": [
+            "{\"narration\":\"The sprite pauses, its laughter fading into a whisper. A root tugs at your sleeve, beckoning you forward.\",\"choices\":[\"Accept the root's offer\",\"Step into the clearing\",\"Return to the Starting Point\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"root_offered\",\"clearing_entered\"]},\"is_ending\":false,\"ending_type\":null}"
+          ],
+          "raw_schema_failures": 0,
+          "action_taken": "Accept the root's offer",
+          "used_bridge": false,
+          "tokens": 29,
+          "wall_seconds": 7.045928666833788,
+          "validation_errors": []
+        },
+        {
+          "turn_json": {
+            "narration": "The root hums with a secret, waiting for you to choose. The air shimmers with the weight of choices ahead.",
+            "choices": [
+              "Follow the melody to the next clearing",
+              "Ask the root for a favor in return",
+              "Turn away and walk into the shadows"
+            ],
+            "state_delta": {
+              "hp": 0,
+              "add_items": [],
+              "remove_items": [],
+              "location": "Starting Point",
+              "add_flags": [
+                "root_offered_chose",
+                "clearing_entered",
+                "turn_9_complete"
+              ]
+            },
+            "is_ending": false,
+            "ending_type": null
+          },
+          "raw": "{\"narration\":\"The root hums with a secret, waiting for you to choose. The air shimmers with the weight of choices ahead.\",\"choices\":[\"Follow the melody to the next clearing\",\"Ask the root for a favor in return\",\"Turn away and walk into the shadows\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"root_offered_chose\",\"clearing_entered\",\"turn_9_complete\"]},\"is_ending\":false,\"ending_type\":null}",
+          "grammar_raw": "{\"narration\":\"The root hums with a secret, waiting for you to choose. The air shimmers with the weight of choices ahead.\",\"choices\":[\"Follow the melody to the next clearing\",\"Ask the root for a favor in return\",\"Turn away and walk into the shadows\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"root_offered_chose\",\"clearing_entered\",\"turn_9_complete\"]},\"is_ending\":false,\"ending_type\":null}",
+          "raw_attempts": [
+            "{\"narration\":\"The root hums with a secret, waiting for you to choose. The air shimmers with the weight of choices ahead.\",\"choices\":[\"Follow the melody to the next clearing\",\"Ask the root for a favor in return\",\"Turn away and walk into the shadows\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"root_offered_chose\",\"clearing_entered\",\"turn_9_complete\"]},\"is_ending\":false,\"ending_type\":null}"
+          ],
+          "raw_schema_failures": 0,
+          "action_taken": "Ask the root for a favor in return",
+          "used_bridge": false,
+          "tokens": 40,
+          "wall_seconds": 7.96096120798029,
+          "validation_errors": []
+        },
+        {
+          "turn_json": {
+            "narration": "The root dips its roots into the earth, revealing a glowing path ahead. A hidden door creaks open in the underbrush.",
+            "choices": [
+              "Follow the glowing path",
+              "Enter the hidden door",
+              "Question the root for more"
+            ],
+            "state_delta": {
+              "hp": 0,
+              "add_items": [],
+              "remove_items": [],
+              "location": "Starting Point",
+              "add_flags": [
+                "path_revealed",
+                "door_opened"
+              ]
+            },
+            "is_ending": false,
+            "ending_type": null
+          },
+          "raw": "{\"narration\":\"The root dips its roots into the earth, revealing a glowing path ahead. A hidden door creaks open in the underbrush.\",\"choices\":[\"Follow the glowing path\",\"Enter the hidden door\",\"Question the root for more\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"path_revealed\",\"door_opened\"]},\"is_ending\":false,\"ending_type\":null}",
+          "grammar_raw": "{\"narration\":\"The root dips its roots into the earth, revealing a glowing path ahead. A hidden door creaks open in the underbrush.\",\"choices\":[\"Follow the glowing path\",\"Enter the hidden door\",\"Question the root for more\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"path_revealed\",\"door_opened\"]},\"is_ending\":false,\"ending_type\":null}",
+          "raw_attempts": [
+            "{\"narration\":\"The root dips its roots into the earth, revealing a glowing path ahead. A hidden door creaks open in the underbrush.\",\"choices\":[\"Follow the glowing path\",\"Enter the hidden door\",\"Question the root for more\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"path_revealed\",\"door_opened\"]},\"is_ending\":false,\"ending_type\":null}"
+          ],
+          "raw_schema_failures": 0,
+          "action_taken": "Question the root for more",
+          "used_bridge": false,
+          "tokens": 32,
+          "wall_seconds": 6.367987833218649,
+          "validation_errors": []
+        },
+        {
+          "turn_json": {
+            "narration": "The glowing path glimmers with an invitation to a deeper mystery. A door at the end of the path creaks open, revealing a glimmering core.",
+            "choices": [
+              "Step through the door",
+              "Trace the glowing path with your eyes",
+              "Offer the glimmering core to the root"
+            ],
+            "state_delta": {
+              "hp": 0,
+              "add_items": [],
+              "remove_items": [],
+              "location": "Starting Point",
+              "add_flags": [
+                "core_discovered_cho",
+                "path_revealed_cho",
+                "door_opened_cho"
+              ]
+            },
+            "is_ending": false,
+            "ending_type": null
+          },
+          "raw": "{\"narration\":\"The glowing path glimmers with an invitation to a deeper mystery. A door at the end of the path creaks open, revealing a glimmering core.\",\"choices\":[\"Step through the door\",\"Trace the glowing path with your eyes\",\"Offer the glimmering core to the root\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"core_discovered_cho\",\"path_revealed_cho\",\"door_opened_cho\"]},\"is_ending\":false,\"ending_type\":null}",
+          "grammar_raw": "{\"narration\":\"The glowing path glimmers with an invitation to a deeper mystery. A door at the end of the path creaks open, revealing a glimmering core.\",\"choices\":[\"Step through the door\",\"Trace the glowing path with your eyes\",\"Offer the glimmering core to the root\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"core_discovered_cho\",\"path_revealed_cho\",\"door_opened_cho\"]},\"is_ending\":false,\"ending_type\":null}",
+          "raw_attempts": [
+            "{\"narration\":\"The glowing path glimmers with an invitation to a deeper mystery. A door at the end of the path creaks open, revealing a glimmering core.\",\"choices\":[\"Step through the door\",\"Trace the glowing path with your eyes\",\"Offer the glimmering core to the root\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"core_discovered_cho\",\"path_revealed_cho\",\"door_opened_cho\"]},\"is_ending\":false,\"ending_type\":null}"
+          ],
+          "raw_schema_failures": 0,
+          "action_taken": "Step through the door",
+          "used_bridge": false,
+          "tokens": 41,
+          "wall_seconds": 9.06707508303225,
+          "validation_errors": []
+        },
+        {
+          "turn_json": {
+            "narration": "The roots shift, forming a hidden door. A sly sprite offers a cryptic riddle in exchange for passage.",
+            "choices": [
+              "Offer the riddle in exchange for passage",
+              "Press forward without answering",
+              "Call out to the sprite for guidance"
+            ],
+            "state_delta": {
+              "hp": 0,
+              "add_items": [],
+              "remove_items": [],
+              "location": "Starting Point",
+              "add_flags": [
+                "sprite_riddle_given_cho",
+                "path_revealed_ch",
+                "door_opened_cho"
+              ]
+            },
+            "is_ending": false,
+            "ending_type": null
+          },
+          "raw": "{\"narration\":\"The roots shift, forming a hidden door. A sly sprite offers a cryptic riddle in exchange for passage.\",\"choices\":[\"Offer the riddle in exchange for passage\",\"Press forward without answering\",\"Call out to the sprite for guidance\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"sprite_riddle_given_cho\",\"path_revealed_ch\",\"door_opened_cho\"]},\"is_ending\":false,\"ending_type\":null}",
+          "grammar_raw": "{\"narration\":\"The roots shift, forming a hidden door. A sly sprite offers a cryptic riddle in exchange for passage.\",\"choices\":[\"Offer the riddle in exchange for passage\",\"Press forward without answering\",\"Call out to the sprite for guidance\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"sprite_riddle_given_cho\",\"path_revealed_ch\",\"door_opened_cho\"]},\"is_ending\":false,\"ending_type\":null}",
+          "raw_attempts": [
+            "{\"narration\":\"The roots shift, forming a hidden door. A sly sprite offers a cryptic riddle in exchange for passage.\",\"choices\":[\"Offer the riddle in exchange for passage\",\"Press forward without answering\",\"Call out to the sprite for guidance\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"sprite_riddle_given_cho\",\"path_revealed_ch\",\"door_opened_cho\"]},\"is_ending\":false,\"ending_type\":null}"
+          ],
+          "raw_schema_failures": 0,
+          "action_taken": "Press forward without answering",
+          "used_bridge": false,
+          "tokens": 34,
+          "wall_seconds": 6.740068125072867,
+          "validation_errors": []
+        },
+        {
+          "turn_json": {
+            "narration": "The air hums with the promise of a choice long overdue. A sprite winks at you, offering a riddle for the moonlit bargain.",
+            "choices": [
+              "Accept the riddle",
+              "Offer a trade of memories",
+              "Follow the moonlit trail"
+            ],
+            "state_delta": {
+              "hp": 0,
+              "add_items": [],
+              "remove_items": [],
+              "location": "Starting Point",
+              "add_flags": [
+                "riddle_received_ch",
+                "bargain_chosen_ch"
+              ]
+            },
+            "is_ending": false,
+            "ending_type": null
+          },
+          "raw": "{\"narration\":\"The air hums with the promise of a choice long overdue. A sprite winks at you, offering a riddle for the moonlit bargain.\",\"choices\":[\"Accept the riddle\",\"Offer a trade of memories\",\"Follow the moonlit trail\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"riddle_received_ch\",\"bargain_chosen_ch\"]},\"is_ending\":false,\"ending_type\":null}",
+          "grammar_raw": "{\"narration\":\"The air hums with the promise of a choice long overdue. A sprite winks at you, offering a riddle for the moonlit bargain.\",\"choices\":[\"Accept the riddle\",\"Offer a trade of memories\",\"Follow the moonlit trail\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"riddle_received_ch\",\"bargain_chosen_ch\"]},\"is_ending\":false,\"ending_type\":null}",
+          "raw_attempts": [
+            "{\"narration\":\"The air hums with the promise of a choice long overdue. A sprite winks at you, offering a riddle for the moonlit bargain.\",\"choices\":[\"Accept the riddle\",\"Offer a trade of memories\",\"Follow the moonlit trail\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"riddle_received_ch\",\"bargain_chosen_ch\"]},\"is_ending\":false,\"ending_type\":null}"
+          ],
+          "raw_schema_failures": 0,
+          "action_taken": "Follow the moonlit trail",
+          "used_bridge": false,
+          "tokens": 33,
+          "wall_seconds": 7.671242750016972,
+          "validation_errors": []
+        },
+        {
+          "turn_json": {
+            "narration": "The sprite offers a final riddle. Your words echo through the trees.",
+            "choices": [
+              "Answer with a riddle of your own",
+              "Offer a bargain in return",
+              "Step back and wait for the end"
+            ],
+            "state_delta": {
+              "hp": 0,
+              "add_items": [],
+              "remove_items": [],
+              "location": "Starting Point",
+              "add_flags": [
+                "bargain_chosen_c",
+                "ending_setup_"
+              ]
+            },
+            "is_ending": true,
+            "ending_type": "bittersweet"
+          },
+          "raw": "{\"narration\":\"The sprite offers a final riddle. Your words echo through the trees.\",\"choices\":[\"Answer with a riddle of your own\",\"Offer a bargain in return\",\"Step back and wait for the end\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"bargain_chosen_c\",\"ending_setup_\"]},\"is_ending\":true,\"ending_type\":\"bittersweet\"}",
+          "grammar_raw": "{\"narration\":\"The sprite offers a final riddle. Your words echo through the trees.\",\"choices\":[\"Answer with a riddle of your own\",\"Offer a bargain in return\",\"Step back and wait for the end\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"bargain_chosen_c\",\"ending_setup_\"]},\"is_ending\":true,\"ending_type\":\"bittersweet\"}",
+          "raw_attempts": [
+            "{\"narration\":\"The sprite offers a final riddle. Your words echo through the trees.\",\"choices\":[\"Answer with a riddle of your own\",\"Offer a bargain in return\",\"Step back and wait for the end\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"bargain_chosen_c\",\"ending_setup_\"]},\"is_ending\":true,\"ending_type\":\"bittersweet\"}"
+          ],
+          "raw_schema_failures": 0,
+          "action_taken": null,
+          "used_bridge": false,
+          "tokens": 29,
+          "wall_seconds": 6.19612208311446,
+          "validation_errors": []
+        }
+      ]
+    },
+    {
+      "adventure_id": "adv-000003",
+      "genre": "cursed_dungeon",
+      "premise": null,
+      "seed": 10003,
+      "turns": [
+        {
+          "turn_json": {
+            "narration": "The air is cold and damp. A flickering torch reveals a rusted iron door ahead.",
+            "choices": [
+              "Try to open the iron door",
+              "Follow the torchlight deeper",
+              "Inspect the dust for clues"
+            ],
+            "state_delta": {
+              "hp": 0,
+              "add_items": [],
+              "remove_items": [],
+              "location": "Starting Point",
+              "add_flags": [
+                "door_revealed"
+              ]
+            },
+            "is_ending": false,
+            "ending_type": null
+          },
+          "raw": "{\"narration\":\"The air is cold and damp. A flickering torch reveals a rusted iron door ahead.\",\"choices\":[\"Try to open the iron door\",\"Follow the torchlight deeper\",\"Inspect the dust for clues\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"door_revealed\"]},\"is_ending\":false,\"ending_type\":null}",
+          "grammar_raw": "{\"narration\":\"The air is cold and damp. A flickering torch reveals a rusted iron door ahead.\",\"choices\":[\"Try to open the iron door\",\"Follow the torchlight deeper\",\"Inspect the dust for clues\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"door_revealed\"]},\"is_ending\":false,\"ending_type\":null}",
+          "raw_attempts": [
+            "{\"narration\":\"The air is cold and damp. A flickering torch reveals a rusted iron door ahead.\",\"choices\":[\"Try to open the iron door\",\"Follow the torchlight deeper\",\"Inspect the dust for clues\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"door_revealed\"]},\"is_ending\":false,\"ending_type\":null}"
+          ],
+          "raw_schema_failures": 0,
+          "action_taken": "Follow the torchlight deeper",
+          "used_bridge": false,
+          "tokens": 28,
+          "wall_seconds": 7.14747825008817,
+          "validation_errors": []
+        },
+        {
+          "turn_json": {
+            "narration": "The torchlight flickers over a rusted door marked with a skull. A whisper urges you to open it.",
+            "choices": [
+              "Open the door",
+              "Check the torchlight source",
+              "Search for another path"
+            ],
+            "state_delta": {
+              "hp": 0,
+              "add_items": [],
+              "remove_items": [],
+              "location": "Starting Point",
+              "add_flags": [
+                "door_checked",
+                "whisper_heard"
+              ]
+            },
+            "is_ending": false,
+            "ending_type": null
+          },
+          "raw": "{\"narration\":\"The torchlight flickers over a rusted door marked with a skull. A whisper urges you to open it.\",\"choices\":[\"Open the door\",\"Check the torchlight source\",\"Search for another path\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"door_checked\",\"whisper_heard\"]},\"is_ending\":false,\"ending_type\":null}",
+          "grammar_raw": "{\"narration\":\"The torchlight flickers over a rusted door marked with a skull. A whisper urges you to open it.\",\"choices\":[\"Open the door\",\"Check the torchlight source\",\"Search for another path\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"door_checked\",\"whisper_heard\"]},\"is_ending\":false,\"ending_type\":null}",
+          "raw_attempts": [
+            "{\"narration\":\"The torchlight flickers over a rusted door marked with a skull. A whisper urges you to open it.\",\"choices\":[\"Open the door\",\"Check the torchlight source\",\"Search for another path\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"door_checked\",\"whisper_heard\"]},\"is_ending\":false,\"ending_type\":null}"
+          ],
+          "raw_schema_failures": 0,
+          "action_taken": "Search for another path",
+          "used_bridge": false,
+          "tokens": 27,
+          "wall_seconds": 10.167184749851003,
+          "validation_errors": []
+        },
+        {
+          "turn_json": {
+            "narration": "The door creaks open, revealing a room filled with whispering bones. A faint melody drifts from the shadows.",
+            "choices": [
+              "Investigate the melody",
+              "Clear the bones",
+              "Inspect the skull mark"
+            ],
+            "state_delta": {
+              "hp": 0,
+              "add_items": [],
+              "remove_items": [],
+              "location": "Starting Point",
+              "add_flags": [
+                "room_discovered"
+              ]
+            },
+            "is_ending": false,
+            "ending_type": null
+          },
+          "raw": "{\"narration\":\"The door creaks open, revealing a room filled with whispering bones. A faint melody drifts from the shadows.\",\"choices\":[\"Investigate the melody\",\"Clear the bones\",\"Inspect the skull mark\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"room_discovered\"]},\"is_ending\":false,\"ending_type\":null}",
+          "grammar_raw": "{\"narration\":\"The door creaks open, revealing a room filled with whispering bones. A faint melody drifts from the shadows.\",\"choices\":[\"Investigate the melody\",\"Clear the bones\",\"Inspect the skull mark\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"room_discovered\"]},\"is_ending\":false,\"ending_type\":null}",
+          "raw_attempts": [
+            "{\"narration\":\"The door creaks open, revealing a room filled with whispering bones. A faint melody drifts from the shadows.\",\"choices\":[\"Investigate the melody\",\"Clear the bones\",\"Inspect the skull mark\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"room_discovered\"]},\"is_ending\":false,\"ending_type\":null}"
+          ],
+          "raw_schema_failures": 0,
+          "action_taken": "Investigate the melody",
+          "used_bridge": false,
+          "tokens": 26,
+          "wall_seconds": 8.367472083074972,
+          "validation_errors": []
+        },
+        {
+          "turn_json": {
+            "narration": "The melody grows louder, drawing you toward the source. A shadow shifts, waiting to be caught.",
+            "choices": [
+              "Follow the melody",
+              "Try to extinguish the torch",
+              "Peek around the corner"
+            ],
+            "state_delta": {
+              "hp": 0,
+              "add_items": [],
+              "remove_items": [],
+              "location": "Starting Point",
+              "add_flags": [
+                "melody_intensifies",
+                "shadow_present"
+              ]
+            },
+            "is_ending": false,
+            "ending_type": null
+          },
+          "raw": "{\"narration\":\"The melody grows louder, drawing you toward the source. A shadow shifts, waiting to be caught.\",\"choices\":[\"Follow the melody\",\"Try to extinguish the torch\",\"Peek around the corner\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"melody_intensifies\",\"shadow_present\"]},\"is_ending\":false,\"ending_type\":null}",
+          "grammar_raw": "{\"narration\":\"The melody grows louder, drawing you toward the source. A shadow shifts, waiting to be caught.\",\"choices\":[\"Follow the melody\",\"Try to extinguish the torch\",\"Peek around the corner\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"melody_intensifies\",\"shadow_present\"]},\"is_ending\":false,\"ending_type\":null}",
+          "raw_attempts": [
+            "{\"narration\":\"The melody grows louder, drawing you toward the source. A shadow shifts, waiting to be caught.\",\"choices\":[\"Follow the melody\",\"Try to extinguish the torch\",\"Peek around the corner\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"melody_intensifies\",\"shadow_present\"]},\"is_ending\":false,\"ending_type\":null}"
+          ],
+          "raw_schema_failures": 0,
+          "action_taken": "Try to extinguish the torch",
+          "used_bridge": false,
+          "tokens": 26,
+          "wall_seconds": 6.044762749923393,
+          "validation_errors": []
+        },
+        {
+          "turn_json": {
+            "narration": "The air grows cold as the melody intensifies. A shadow writhes nearby, watching your every move.",
+            "choices": [
+              "Follow the melody deeper",
+              "Shout to scare the shadow",
+              "Press forward cautiously"
+            ],
+            "state_delta": {
+              "hp": 0,
+              "add_items": [],
+              "remove_items": [],
+              "location": "Starting Point",
+              "add_flags": [
+                "shadow_followed",
+                "melody_followed"
+              ]
+            },
+            "is_ending": false,
+            "ending_type": null
+          },
+          "raw": "{\"narration\":\"The air grows cold as the melody intensifies. A shadow writhes nearby, watching your every move.\",\"choices\":[\"Follow the melody deeper\",\"Shout to scare the shadow\",\"Press forward cautiously\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"shadow_followed\",\"melody_followed\"]},\"is_ending\":false,\"ending_type\":null}",
+          "grammar_raw": "{\"narration\":\"The air grows cold as the melody intensifies. A shadow writhes nearby, watching your every move.\",\"choices\":[\"Follow the melody deeper\",\"Shout to scare the shadow\",\"Press forward cautiously\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"shadow_followed\",\"melody_followed\"]},\"is_ending\":false,\"ending_type\":null}",
+          "raw_attempts": [
+            "{\"narration\":\"The air grows cold as the melody intensifies. A shadow writhes nearby, watching your every move.\",\"choices\":[\"Follow the melody deeper\",\"Shout to scare the shadow\",\"Press forward cautiously\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"shadow_followed\",\"melody_followed\"]},\"is_ending\":false,\"ending_type\":null}"
+          ],
+          "raw_schema_failures": 0,
+          "action_taken": "Press forward cautiously",
+          "used_bridge": false,
+          "tokens": 26,
+          "wall_seconds": 8.598434458021075,
+          "validation_errors": []
+        },
+        {
+          "turn_json": {
+            "narration": "A shadow stretches ahead, curling like smoke. Your torch flickers, but the melody demands you move.",
+            "choices": [
+              "Follow the shadow's shape",
+              "Shout to break the melody",
+              "Drop your torch to avoid the dark"
+            ],
+            "state_delta": {
+              "hp": -2,
+              "add_items": [
+                "shadow_tracking"
+              ],
+              "remove_items": [],
+              "location": "Starting Point",
+              "add_flags": [
+                "shadow_followed",
+                "melody_followed",
+                "shadow_present"
+              ]
+            },
+            "is_ending": false,
+            "ending_type": null
+          },
+          "raw": "{\"narration\":\"A shadow stretches ahead, curling like smoke. Your torch flickers, but the melody demands you move.\",\"choices\":[\"Follow the shadow's shape\",\"Shout to break the melody\",\"Drop your torch to avoid the dark\"],\"state_delta\":{\"hp\":-2,\"add_items\":[\"shadow_tracking\"],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"shadow_followed\",\"melody_followed\",\"shadow_present\"]},\"is_ending\":false,\"ending_type\":null}",
+          "grammar_raw": "{\"narration\":\"A shadow stretches ahead, curling like smoke. Your torch flickers, but the melody demands you move.\",\"choices\":[\"Follow the shadow's shape\",\"Shout to break the melody\",\"Drop your torch to avoid the dark\"],\"state_delta\":{\"hp\":-2,\"add_items\":[\"shadow_tracking\"],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"shadow_followed\",\"melody_followed\",\"shadow_present\"]},\"is_ending\":false,\"ending_type\":null}",
+          "raw_attempts": [
+            "{\"narration\":\"A shadow stretches ahead, curling like smoke. Your torch flickers, but the melody demands you move.\",\"choices\":[\"Follow the shadow's shape\",\"Shout to break the melody\",\"Drop your torch to avoid the dark\"],\"state_delta\":{\"hp\":-2,\"add_items\":[\"shadow_tracking\"],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"shadow_followed\",\"melody_followed\",\"shadow_present\"]},\"is_ending\":false,\"ending_type\":null}"
+          ],
+          "raw_schema_failures": 0,
+          "action_taken": "Follow the shadow's shape",
+          "used_bridge": false,
+          "tokens": 30,
+          "wall_seconds": 11.533105209004134,
+          "validation_errors": []
+        },
+        {
+          "turn_json": {
+            "narration": "The shadow grows sharper, as if drawn by your own curiosity. A whisper urges you to stop, but the air is too still to hear.",
+            "choices": [
+              "Ignore the shadow and press forward",
+              "Turn back toward the light",
+              "Call out to the whisper"
+            ],
+            "state_delta": {
+              "hp": -2,
+              "add_items": [],
+              "remove_items": [],
+              "location": "Starting Point",
+              "add_flags": [
+                "shadow_grows_sharp",
+                "whisper_heard"
+              ]
+            },
+            "is_ending": false,
+            "ending_type": null
+          },
+          "raw": "{\"narration\":\"The shadow grows sharper, as if drawn by your own curiosity. A whisper urges you to stop, but the air is too still to hear.\",\"choices\":[\"Ignore the shadow and press forward\",\"Turn back toward the light\",\"Call out to the whisper\"],\"state_delta\":{\"hp\":-2,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"shadow_grows_sharp\",\"whisper_heard\"]},\"is_ending\":false,\"ending_type\":null}",
+          "grammar_raw": "{\"narration\":\"The shadow grows sharper, as if drawn by your own curiosity. A whisper urges you to stop, but the air is too still to hear.\",\"choices\":[\"Ignore the shadow and press forward\",\"Turn back toward the light\",\"Call out to the whisper\"],\"state_delta\":{\"hp\":-2,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"shadow_grows_sharp\",\"whisper_heard\"]},\"is_ending\":false,\"ending_type\":null}",
+          "raw_attempts": [
+            "{\"narration\":\"The shadow grows sharper, as if drawn by your own curiosity. A whisper urges you to stop, but the air is too still to hear.\",\"choices\":[\"Ignore the shadow and press forward\",\"Turn back toward the light\",\"Call out to the whisper\"],\"state_delta\":{\"hp\":-2,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"shadow_grows_sharp\",\"whisper_heard\"]},\"is_ending\":false,\"ending_type\":null}"
+          ],
+          "raw_schema_failures": 0,
+          "action_taken": "Turn back toward the light",
+          "used_bridge": false,
+          "tokens": 39,
+          "wall_seconds": 10.395237416028976,
+          "validation_errors": []
+        },
+        {
+          "turn_json": {
+            "narration": "The shadow forms a jagged shape ahead, pulsing with hunger. A low, mournful melody tugs at your thoughts.",
+            "choices": [
+              "Peek inside the shadow's form",
+              "Shout to demand the shadow stop",
+              "Toss your shadow_tracking into the air"
+            ],
+            "state_delta": {
+              "hp": -2,
+              "add_items": [],
+              "remove_items": [],
+              "location": "Starting Point",
+              "add_flags": [
+                "shadow_grows_sharp",
+                "melody_intensifies",
+                "shadow_shadows_itself"
+              ]
+            },
+            "is_ending": false,
+            "ending_type": null
+          },
+          "raw": "{\"narration\":\"The shadow forms a jagged shape ahead, pulsing with hunger. A low, mournful melody tugs at your thoughts.\",\"choices\":[\"Peek inside the shadow's form\",\"Shout to demand the shadow stop\",\"Toss your shadow_tracking into the air\"],\"state_delta\":{\"hp\":-2,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"shadow_grows_sharp\",\"melody_intensifies\",\"shadow_shadows_itself\"]},\"is_ending\":false,\"ending_type\":null}",
+          "grammar_raw": "{\"narration\":\"The shadow forms a jagged shape ahead, pulsing with hunger. A low, mournful melody tugs at your thoughts.\",\"choices\":[\"Peek inside the shadow's form\",\"Shout to demand the shadow stop\",\"Toss your shadow_tracking into the air\"],\"state_delta\":{\"hp\":-2,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"shadow_grows_sharp\",\"melody_intensifies\",\"shadow_shadows_itself\"]},\"is_ending\":false,\"ending_type\":null}",
+          "raw_attempts": [
+            "{\"narration\":\"The shadow forms a jagged shape ahead, pulsing with hunger. A low, mournful melody tugs at your thoughts.\",\"choices\":[\"Peek inside the shadow's form\",\"Shout to demand the shadow stop\",\"Toss your shadow_tracking into the air\"],\"state_delta\":{\"hp\":-2,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"shadow_grows_sharp\",\"melody_intensifies\",\"shadow_shadows_itself\"]},\"is_ending\":false,\"ending_type\":null}"
+          ],
+          "raw_schema_failures": 0,
+          "action_taken": "Toss your shadow_tracking into the air",
+          "used_bridge": false,
+          "tokens": 33,
+          "wall_seconds": 9.482410332886502,
+          "validation_errors": []
+        },
+        {
+          "turn_json": {
+            "narration": "The shadows coil tighter, forming a shape that feels like it wants to escape. Your shadow_tracking flickers, now glowing with a faint, eerie light.",
+            "choices": [
+              "Follow the glowing shadow into the dark",
+              "Chase the shadow's movement toward the light",
+              "Place your hand over your eyes to blind yourself"
+            ],
+            "state_delta": {
+              "hp": -2,
+              "add_items": [
+                "shadow_grows_i"
+              ],
+              "remove_items": [],
+              "location": "Starting Point",
+              "add_flags": [
+                "shadow_grows_i",
+                "shadow_followed_i"
+              ]
+            },
+            "is_ending": false,
+            "ending_type": null
+          },
+          "raw": "{\"narration\":\"The shadows coil tighter, forming a shape that feels like it wants to escape. Your shadow_tracking flickers, now glowing with a faint, eerie light.\",\"choices\":[\"Follow the glowing shadow into the dark\",\"Chase the shadow's movement toward the light\",\"Place your hand over your eyes to blind yourself\"],\"state_delta\":{\"hp\":-2,\"add_items\":[\"shadow_grows_i\"],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"shadow_grows_i\",\"shadow_followed_i\"]},\"is_ending\":false,\"ending_type\":null}",
+          "grammar_raw": "{\"narration\":\"The shadows coil tighter, forming a shape that feels like it wants to escape. Your shadow_tracking flickers, now glowing with a faint, eerie light.\",\"choices\":[\"Follow the glowing shadow into the dark\",\"Chase the shadow's movement toward the light\",\"Place your hand over your eyes to blind yourself\"],\"state_delta\":{\"hp\":-2,\"add_items\":[\"shadow_grows_i\"],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"shadow_grows_i\",\"shadow_followed_i\"]},\"is_ending\":false,\"ending_type\":null}",
+          "raw_attempts": [
+            "{\"narration\":\"The shadows coil tighter, forming a shape that feels like it wants to escape. Your shadow_tracking flickers, now glowing with a faint, eerie light.\",\"choices\":[\"Follow the glowing shadow into the dark\",\"Chase the shadow's movement toward the light\",\"Place your hand over your eyes to blind yourself\"],\"state_delta\":{\"hp\":-2,\"add_items\":[\"shadow_grows_i\"],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"shadow_grows_i\",\"shadow_followed_i\"]},\"is_ending\":false,\"ending_type\":null}"
+          ],
+          "raw_schema_failures": 0,
+          "action_taken": "Follow the glowing shadow into the dark",
+          "used_bridge": false,
+          "tokens": 45,
+          "wall_seconds": 7.780610000016168,
+          "validation_errors": []
+        },
+        {
+          "turn_json": {
+            "narration": "A curtain of grey mist rolls between you and the trouble. For one breath, the dungeon gives you room to choose.",
+            "choices": [
+              "Step through the mist",
+              "Check the cracked wall",
+              "Tell the curse to wait"
+            ],
+            "state_delta": {
+              "hp": 0,
+              "add_items": [],
+              "remove_items": [],
+              "location": "Starting Point",
+              "add_flags": []
+            },
+            "is_ending": false,
+            "ending_type": null
+          },
+          "raw": "{\"narration\":\"The shadow grows sharper, its edges like broken glass. A low rumble shakes the ground as it moves forward.\",\"choices\":[\"Seal your shadow_grows_i behind you\",\"Trace the shadow with shadow_tracking\",\"Bury your shadow_grows_i in the dirt\"],\"state_delta\":{\"hp\":-2,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"shadow_grows_i\"]},\"is_ending\":false,\"ending_type\":null}",
+          "grammar_raw": "{\"narration\":\"The shadow grows sharper, its edges like broken glass. A low rumble shakes the ground as it moves forward.\",\"choices\":[\"Seal your shadow_grows_i behind you\",\"Trace the shadow with shadow_tracking\",\"Bury your shadow_grows_i in the dirt\"],\"state_delta\":{\"hp\":-2,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"shadow_grows_i\"]},\"is_ending\":false,\"ending_type\":null}",
+          "raw_attempts": [
+            "{\"narration\":\"The shadow follows you, but the air grows thin with a metallic tang. A door yawns open in the wall, revealing a pit of writhing bones.\",\"choices\":[\"Step into the pit of bones\",\"Shout to distract the shadows\",\"Lure the shadows with your shadow_grows_i\"],\"state_delta\":{\"hp\":-2,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"door_appeared\",\"metallic_air\"]},\"is_ending\":false,\"ending_type\":null}",
+            "{\"narration\":\"The shadow grows sharper, its edges like broken glass. A low rumble shakes the ground as it moves forward.\",\"choices\":[\"Seal your shadow_grows_i behind you\",\"Trace the shadow with shadow_tracking\",\"Bury your shadow_grows_i in the dirt\"],\"state_delta\":{\"hp\":-2,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"shadow_grows_i\"]},\"is_ending\":false,\"ending_type\":null}"
+          ],
+          "raw_schema_failures": 0,
+          "action_taken": "Check the cracked wall",
+          "used_bridge": true,
+          "tokens": 33,
+          "wall_seconds": 15.880062457872555,
+          "validation_errors": [
+            "bridge_after_retries"
+          ]
+        },
+        {
+          "turn_json": {
+            "narration": "The mist parting reveals a hollow, hollowed-out door. A faint whisper promises a bargain.",
+            "choices": [
+              "Open the door",
+              "Follow the whisper",
+              "Search for another path"
+            ],
+            "state_delta": {
+              "hp": -1,
+              "add_items": [
+                "whisper"
+              ],
+              "remove_items": [],
+              "location": "Starting Point",
+              "add_flags": [
+                "door_seen"
+              ]
+            },
+            "is_ending": false,
+            "ending_type": null
+          },
+          "raw": "{\"narration\":\"The mist parting reveals a hollow, hollowed-out door. A faint whisper promises a bargain.\",\"choices\":[\"Open the door\",\"Follow the whisper\",\"Search for another path\"],\"state_delta\":{\"hp\":-1,\"add_items\":[\"whisper\"],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"door_seen\"]},\"is_ending\":false,\"ending_type\":null}",
+          "grammar_raw": "{\"narration\":\"The mist parting reveals a hollow, hollowed-out door. A faint whisper promises a bargain.\",\"choices\":[\"Open the door\",\"Follow the whisper\",\"Search for another path\"],\"state_delta\":{\"hp\":-1,\"add_items\":[\"whisper\"],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"door_seen\"]},\"is_ending\":false,\"ending_type\":null}",
+          "raw_attempts": [
+            "{\"narration\":\"The mist parting reveals a hollow, hollowed-out door. A faint whisper promises a bargain.\",\"choices\":[\"Open the door\",\"Follow the whisper\",\"Search for another path\"],\"state_delta\":{\"hp\":-1,\"add_items\":[\"whisper\"],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"door_seen\"]},\"is_ending\":false,\"ending_type\":null}"
+          ],
+          "raw_schema_failures": 0,
+          "action_taken": "Search for another path",
+          "used_bridge": false,
+          "tokens": 22,
+          "wall_seconds": 6.625570457894355,
+          "validation_errors": []
+        },
+        {
+          "turn_json": {
+            "narration": "A dusty omen lands at your feet and refuses to explain itself. The silence feels staged.",
+            "choices": [
+              "Pocket the omen",
+              "Question the silence",
+              "Move before it notices"
+            ],
+            "state_delta": {
+              "hp": 0,
+              "add_items": [],
+              "remove_items": [],
+              "location": "Starting Point",
+              "add_flags": []
+            },
+            "is_ending": false,
+            "ending_type": null
+          },
+          "raw": "{\"narration\":\"The door groans as something stirs. A flicker of light beckons ahead.\",\"choices\":[\"Enter the door\",\"Follow the flicker\",\"Use whisper to the wall\"],\"state_delta\":{\"hp\":-1,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"door_opened\"]},\"is_ending\":false,\"ending_type\":null}",
+          "grammar_raw": "{\"narration\":\"The door groans as something stirs. A flicker of light beckons ahead.\",\"choices\":[\"Enter the door\",\"Follow the flicker\",\"Use whisper to the wall\"],\"state_delta\":{\"hp\":-1,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"door_opened\"]},\"is_ending\":false,\"ending_type\":null}",
+          "raw_attempts": [
+            "{\"narration\":\"The door creaks open to reveal a room filled with flickering torches. A shadow writhes toward the center, casting your own shadow with it.\",\"choices\":[\"Follow the shadow's movement\",\"Use the whisper to calm the flickering torches\",\"Search the room for a weapon\"],\"state_delta\":{\"hp\":-1,\"add_items\":[],\"remove_items\":[],\"location\":\"Room of Flickering Torches\",\"add_flags\":[\"torch_room_entered\",\"shadow_centered_\"]},\"is_ending\":false,\"ending_type\":null}",
+            "{\"narration\":\"The door groans as something stirs. A flicker of light beckons ahead.\",\"choices\":[\"Enter the door\",\"Follow the flicker\",\"Use whisper to the wall\"],\"state_delta\":{\"hp\":-1,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"door_opened\"]},\"is_ending\":false,\"ending_type\":null}"
+          ],
+          "raw_schema_failures": 0,
+          "action_taken": "Pocket the omen",
+          "used_bridge": true,
+          "tokens": 21,
+          "wall_seconds": 15.009933999972418,
+          "validation_errors": [
+            "bridge_after_retries"
+          ]
+        },
+        {
+          "turn_json": {
+            "narration": "The door groans and offers a final riddle. Your shadow flares, eager to solve the riddle.",
+            "choices": [
+              "Riddle the door",
+              "Follow the shadow\u2019s pull",
+              "Offer the whisper"
+            ],
+            "state_delta": {
+              "hp": 0,
+              "add_items": [],
+              "remove_items": [],
+              "location": "Door Riddle",
+              "add_flags": [
+                "door_riddle_seen",
+                "riddle_given_to_door"
+              ]
+            },
+            "is_ending": false,
+            "ending_type": null
+          },
+          "raw": "{\"narration\":\"The door groans and offers a final riddle. Your shadow flares, eager to solve the riddle.\",\"choices\":[\"Riddle the door\",\"Follow the shadow\u2019s pull\",\"Offer the whisper\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Door Riddle\",\"add_flags\":[\"door_riddle_seen\",\"riddle_given_to_door\"]},\"is_ending\":false,\"ending_type\":null}",
+          "grammar_raw": "{\"narration\":\"The door groans and offers a final riddle. Your shadow flares, eager to solve the riddle.\",\"choices\":[\"Riddle the door\",\"Follow the shadow\u2019s pull\",\"Offer the whisper\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Door Riddle\",\"add_flags\":[\"door_riddle_seen\",\"riddle_given_to_door\"]},\"is_ending\":false,\"ending_type\":null}",
+          "raw_attempts": [
+            "{\"narration\":\"The door groans and offers a final riddle. Your shadow flares, eager to solve the riddle.\",\"choices\":[\"Riddle the door\",\"Follow the shadow\u2019s pull\",\"Offer the whisper\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Door Riddle\",\"add_flags\":[\"door_riddle_seen\",\"riddle_given_to_door\"]},\"is_ending\":false,\"ending_type\":null}"
+          ],
+          "raw_schema_failures": 0,
+          "action_taken": "Follow the shadow\u2019s pull",
+          "used_bridge": false,
+          "tokens": 24,
+          "wall_seconds": 6.386778958141804,
+          "validation_errors": []
+        },
+        {
+          "turn_json": {
+            "narration": "The riddle hums in your bones. One choice remains.",
+            "choices": [
+              "Unravel the riddle",
+              "Break the door open",
+              "Lure the shadow away"
+            ],
+            "state_delta": {
+              "hp": 0,
+              "add_items": [],
+              "remove_items": [],
+              "location": "Door Riddle",
+              "add_flags": [
+                "riddle_given_to_"
+              ]
+            },
+            "is_ending": true,
+            "ending_type": "bittersweet"
+          },
+          "raw": "{\"narration\":\"The riddle hums in your bones. One choice remains.\",\"choices\":[\"Unravel the riddle\",\"Break the door open\",\"Lure the shadow away\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Door Riddle\",\"add_flags\":[\"riddle_given_to_\"]},\"is_ending\":true,\"ending_type\":\"bittersweet\"}",
+          "grammar_raw": "{\"narration\":\"The riddle hums in your bones. One choice remains.\",\"choices\":[\"Unravel the riddle\",\"Break the door open\",\"Lure the shadow away\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Door Riddle\",\"add_flags\":[\"riddle_given_to_\"]},\"is_ending\":true,\"ending_type\":\"bittersweet\"}",
+          "raw_attempts": [
+            "{\"narration\":\"The riddle hums in your bones. One choice remains.\",\"choices\":[\"Unravel the riddle\",\"Break the door open\",\"Lure the shadow away\"],\"state_delta\":{\"hp\":0,\"add_items\":[],\"remove_items\":[],\"location\":\"Door Riddle\",\"add_flags\":[\"riddle_given_to_\"]},\"is_ending\":true,\"ending_type\":\"bittersweet\"}"
+          ],
+          "raw_schema_failures": 0,
+          "action_taken": null,
+          "used_bridge": false,
+          "tokens": 18,
+          "wall_seconds": 6.719819792080671,
+          "validation_errors": []
+        }
+      ]
+    }
+  ],
+  "metrics": {
+    "sessions": 2.0,
+    "turns": 28.0,
+    "schema_valid_rate": 1.0,
+    "choice_distinct_rate": 1.0,
+    "delta_legal_rate": 1.0,
+    "zero_bridge_complete_rate": 0.5,
+    "mean_tokens_per_turn": 31.535714285714285,
+    "mean_wall_seconds_per_turn": 8.406794990994968
+  },
+  "gate": {
+    "required_sessions": 2,
+    "sessions": 2,
+    "completed_sessions": 2,
+    "grammar_clean_sessions": 1,
+    "bridge_turns": 2,
+    "max_bridge_turns": 0,
+    "raw_schema_failures": 0,
+    "retry_turns": 2,
+    "turns": 28,
+    "passed": false
+  }
+}

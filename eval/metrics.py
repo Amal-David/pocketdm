@@ -48,7 +48,13 @@ def compute_session_metrics(session: dict[str, Any]) -> SessionMetrics:
             choice_distinct += 1
         if not validate_turn(state, turn):
             delta_legal += 1
-        state = apply_delta(state, turn)
+        updated_state = apply_delta(state, turn)
+        action_taken = record.get("action_taken")
+        if not turn.is_ending and isinstance(action_taken, str) and action_taken:
+            updated_state = updated_state.model_copy(
+                update={"recent_turns": [*updated_state.recent_turns, (turn, action_taken)][-2:]}
+            )
+        state = updated_state
         completed = completed or bool(turn.is_ending)
 
     return SessionMetrics(

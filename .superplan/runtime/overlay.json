@@ -1,27 +1,19 @@
 {
   "workspace_path": "/Users/amal/listenowl/experiments/build-small",
   "session_id": "workspace:/Users/amal/listenowl/experiments/build-small",
-  "updated_at": "2026-06-11T13:45:21.695Z",
+  "updated_at": "2026-06-11T14:00:46.908Z",
   "focused_change": {
     "change_id": "pocketdm",
     "title": "PocketDM — offline voiced tiny-model Dungeon Master (Build Small hackathon)",
     "status": "blocked",
     "task_total": 16,
     "task_done": 9,
-    "updated_at": "2026-06-11T13:45:21.690Z"
+    "updated_at": "2026-06-11T14:00:46.904Z"
   },
   "active_task": null,
   "board": {
     "in_progress": [],
     "backlog": [
-      {
-        "task_id": "T-0008",
-        "title": "WP-6: eval/sessions.py — 50 automated grammar-constrained sessions against llama-server (pinned fresh build, Qwen3.5 arch) must complete with zero grammar failures and zero engine fallbacks beyond budget. Runs in CI.",
-        "status": "backlog",
-        "completed_acceptance_criteria": 0,
-        "total_acceptance_criteria": 2,
-        "progress_percent": 0
-      },
       {
         "task_id": "T-0013",
         "title": "Deploy to build-small-hackathon org Space (Gradio SDK, sdk_version >=6.10, Q4_K_M GGUF + voices baked in). Measure live tok/s; if streamed turn feels broken (<~8 tok/s) execute 0.8B fallback retrain same day.",
@@ -159,6 +151,17 @@
       }
     ],
     "blocked": [
+      {
+        "task_id": "T-0008",
+        "title": "WP-6: eval/sessions.py — 50 automated grammar-constrained sessions against llama-server (pinned fresh build, Qwen3.5 arch) must complete with zero grammar failures and zero engine fallbacks beyond budget. Runs in CI.",
+        "status": "blocked",
+        "completed_acceptance_criteria": 0,
+        "total_acceptance_criteria": 2,
+        "progress_percent": 0,
+        "started_at": "2026-06-11T13:46:00.550Z",
+        "updated_at": "2026-06-11T14:00:46.904Z",
+        "reason": "Implemented eval/sessions.py and GitHub Actions wiring, but the current local 2B Q4_K_M GGUF cannot satisfy the 50/50 grammar-clean gate. A 1-session smoke passed cleanly (14 turns, 0 bridges, 0 raw schema failures), then deterministic evidence at eval/results/grammar-sessions-2-fail.json completed 2/2 sessions but only 1/2 grammar-clean: session 2 used 2 bridge fallbacks, raw_schema_failures=0, gate passed=false. Full 50/50 acceptance cannot pass until the model/data/runtime validation behavior improves or the acceptance budget changes."
+      },
       {
         "task_id": "T-0007",
         "title": "WP-5: eval/harness.py — automated metrics (schema-valid without grammar, choice distinctness, delta legality, fallback rate, tokens/turn) + LLM-judge rubric (coherence, choice meaningfulness, ending satisfaction 1-5) as Modal batch on 50 held-out seeds. Base-vs-finetuned table output.",
