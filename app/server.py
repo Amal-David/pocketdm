@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import html
 import io
+import os
 import uuid
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -41,6 +42,22 @@ app = Server()
 app.mount("/static", StaticFiles(directory=STATIC_ROOT), name="static")
 
 _SESSIONS: dict[str, PlaySession] = {}
+
+
+@app.on_event("startup")
+async def prepare_optional_tts_assets() -> None:
+    """Best-effort Kokoro asset warmup for Space startup, never for turn-time play."""
+    if not _truthy_env("POCKETDM_TTS_PRELOAD"):
+        return
+
+    try:
+        from app.tts import download
+
+        download()
+    except Exception:
+        # Text-first play remains the product contract; /api/tts will expose
+        # unavailable status without breaking the adventure.
+        return
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -212,6 +229,10 @@ def _genre(raw_genre: Any) -> str:
 def _clean_text(value: Any, *, limit: int) -> str:
     text = " ".join(str(value or "").split())
     return html.escape(text[:limit], quote=False)
+
+
+def _truthy_env(name: str) -> bool:
+    return str(os.environ.get(name, "")).casefold() in {"1", "true", "yes", "on"}
 
 
 def _assistant_opening(genre: str) -> str:

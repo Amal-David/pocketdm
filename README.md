@@ -70,6 +70,8 @@ POCKETDM_GGUF=models/pocketdm-2b-Q4_K_M.gguf uv run --group eval python app.py
 Narration audio is a progressive enhancement. If Kokoro dependencies and local
 model files are available, `/api/tts` returns WAV audio for each turn. If they
 are missing, the text adventure and dragon assistant continue without blocking.
+The Space entrypoint preloads the Kokoro ONNX assets at startup when needed;
+turn-time play never downloads them.
 
 You can also use:
 

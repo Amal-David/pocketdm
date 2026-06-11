@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
 
-from app.server import app
+from app.server import _truthy_env, app
 
 
 def test_custom_server_starts_adventure_and_dragon_hint() -> None:
@@ -59,6 +59,17 @@ def test_custom_server_rejects_unknown_session() -> None:
     )
 
     assert response.status_code == 404
+
+
+def test_tts_preload_env_flag_is_explicit(monkeypatch) -> None:
+    monkeypatch.delenv("POCKETDM_TTS_PRELOAD", raising=False)
+    assert _truthy_env("POCKETDM_TTS_PRELOAD") is False
+
+    monkeypatch.setenv("POCKETDM_TTS_PRELOAD", "1")
+    assert _truthy_env("POCKETDM_TTS_PRELOAD") is True
+
+    monkeypatch.setenv("POCKETDM_TTS_PRELOAD", "off")
+    assert _truthy_env("POCKETDM_TTS_PRELOAD") is False
 
 
 def test_custom_server_scripted_demo_reaches_one_stable_ending_without_bridge() -> None:
