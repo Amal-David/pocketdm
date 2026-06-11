@@ -93,6 +93,7 @@ def play_model_sessions(
     threads: int,
     gpu_layers: int,
     seed: int,
+    use_chat_template: bool,
     max_turns: int,
     progress: bool,
 ) -> list[dict[str, Any]]:
@@ -103,6 +104,7 @@ def play_model_sessions(
         threads=threads,
         gpu_layers=gpu_layers,
         seed=seed,
+        use_chat_template=use_chat_template,
     )
     return play_grammar_sessions(
         backend=backend,
@@ -121,9 +123,11 @@ class LlamaCppGrammarBackend:
         threads: int,
         gpu_layers: int,
         seed: int,
+        use_chat_template: bool,
     ) -> None:
         from llama_cpp import Llama, LlamaGrammar
 
+        self.use_chat_template = use_chat_template
         self.llm = Llama(
             model_path=str(model_path),
             n_ctx=2048,
@@ -135,6 +139,16 @@ class LlamaCppGrammarBackend:
         self.grammar = LlamaGrammar.from_file(str(grammar_path))
 
     def complete(self, messages: list[dict[str, str]], *, temperature: float) -> str:
+        if self.use_chat_template:
+            response = self.llm.create_chat_completion(
+                messages=messages,
+                max_tokens=340,
+                temperature=temperature,
+                grammar=self.grammar,
+                stop=["<turn|>", "<|im_end|>"],
+            )
+            return str(response["choices"][0]["message"]["content"]).strip()
+
         response = self.llm(
             render_prompt(messages),
             max_tokens=340,
@@ -231,6 +245,15 @@ def _completion_tokens(text: str) -> int:
     return max(0, len(text.split()))
 
 
+def _use_chat_template(model_path: Path, mode: str) -> bool:
+    lowered = mode.casefold()
+    if lowered == "on":
+        return True
+    if lowered == "off":
+        return False
+    return "gemma" in model_path.name.casefold()
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Run grammar-constrained PocketDM sessions against a local GGUF."
@@ -242,6 +265,11 @@ def main() -> None:
     parser.add_argument("--threads", type=int, default=int(os.environ.get("POCKETDM_LLAMA_THREADS", "2")))
     parser.add_argument("--gpu-layers", type=int, default=int(os.environ.get("POCKETDM_LLAMA_GPU_LAYERS", "0")))
     parser.add_argument("--seed", type=int, default=3407)
+    parser.add_argument(
+        "--chat-template",
+        choices=["auto", "on", "off"],
+        default=os.environ.get("POCKETDM_CHAT_TEMPLATE", "auto"),
+    )
     parser.add_argument("--max-turns", type=int, default=15)
     parser.add_argument("--max-bridge-turns", type=int, default=0)
     parser.add_argument("--progress", action="store_true")
@@ -261,6 +289,7 @@ def main() -> None:
         threads=args.threads,
         gpu_layers=args.gpu_layers,
         seed=args.seed,
+        use_chat_template=_use_chat_template(model_path, args.chat_template),
         max_turns=args.max_turns,
         progress=args.progress,
     )
@@ -274,6 +303,7 @@ def main() -> None:
         "seeds": args.seeds,
         "grammar": args.grammar,
         "seed": args.seed,
+        "chat_template": args.chat_template,
         "max_turns": args.max_turns,
         "sessions": transcripts,
         "metrics": aggregate_metrics(transcripts),

@@ -171,12 +171,17 @@ def test_prompt_budget_worst_case_and_stable_prefix() -> None:
         GameState(genre="cursed_dungeon", location="Elsewhere")
     )
     history_json = messages[1]["content"].split("History=", 1)[1].split(
+        "\navoid_choices=",
+        1,
+    )[0]
+    avoid_json = messages[1]["content"].split("avoid_choices=", 1)[1].split(
         "\nRespond",
         1,
     )[0]
     history = json.loads(history_json)
+    avoid_choices = json.loads(avoid_json)
 
-    assert len(rendered) <= 1250
+    assert len(rendered) <= 1450
     assert messages[0]["content"] == other_messages[0]["content"]
     assert "~" not in rendered
     assert history == [
@@ -197,8 +202,11 @@ def test_prompt_budget_worst_case_and_stable_prefix() -> None:
             "a": "The player then tried another wordy",
         },
     ]
-    assert "Choice alpha" not in rendered
-    assert "Choice delta" not in rendered
+    assert avoid_choices == [
+        "Choice delta Choice delta Choice delta",
+        "Choice epsilon Choice epsilon Choice",
+        "Choice zeta Choice zeta Choice zeta",
+    ]
 
 
 def test_retry_then_bridge_path() -> None:

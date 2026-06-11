@@ -68,6 +68,12 @@ the playable checkpoint. To use the local trained GGUF model:
 POCKETDM_GGUF=models/2b-v1-lora/gguf/merged.Q4_K_M.gguf uv run --group eval --group tts python app.py
 ```
 
+To try the experimental Gemma 4 E2B backend after downloading its GGUF:
+
+```bash
+POCKETDM_GGUF=models/gemma-4-e2b-it/gguf/gemma-4-E2B-it-Q4_K_M.gguf POCKETDM_LLAMA_THREADS=8 uv run --group eval --group tts python app.py
+```
+
 Narration audio is a progressive enhancement. If Kokoro dependencies and local
 model files are available, `/api/tts` returns WAV audio for each turn. If they
 are missing, the text adventure and dragon assistant continue without blocking.

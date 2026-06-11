@@ -352,7 +352,7 @@ def _backend_for_adventure(genre: str, premise: str | None) -> tuple[TurnBackend
 
 def _model_label(session: PlaySession) -> str:
     if session.backend_label == "llama.cpp":
-        return "2B Q4_K_M GGUF"
+        return str(getattr(session.backend, "model_label", "GGUF model"))
     return "Scripted safety mode"
 
 
