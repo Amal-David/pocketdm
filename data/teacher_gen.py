@@ -545,6 +545,7 @@ def _accept_turn(
 
 def _run_remote(
     adventures: int,
+    start_index: int,
     wave_size: int,
     gpu_name: str,
     max_tokens: int,
@@ -552,7 +553,7 @@ def _run_remote(
 ) -> dict[str, Any]:
     llm = _load_llm()
     sampling_params = _sampling_param_variants(max_tokens, rep_penalty)
-    runtimes = [_make_adventure(index) for index in range(adventures)]
+    runtimes = [_make_adventure(start_index + index) for index in range(adventures)]
     schema_failures = 0
     validation_failures = 0
     retried = 0
@@ -749,11 +750,19 @@ def _prefer_control_plane_invocation(function: Any) -> None:
 )
 def generate_h100(
     adventures: int,
+    start_index: int,
     wave_size: int,
     max_tokens: int,
     rep_penalty: float,
 ) -> dict[str, Any]:
-    result = _run_remote(adventures, wave_size, "H100", max_tokens, rep_penalty)
+    result = _run_remote(
+        adventures,
+        start_index,
+        wave_size,
+        "H100",
+        max_tokens,
+        rep_penalty,
+    )
     hf_cache.commit()
     return result
 
@@ -766,11 +775,19 @@ def generate_h100(
 )
 def generate_a100(
     adventures: int,
+    start_index: int,
     wave_size: int,
     max_tokens: int,
     rep_penalty: float,
 ) -> dict[str, Any]:
-    result = _run_remote(adventures, wave_size, "A100-80GB", max_tokens, rep_penalty)
+    result = _run_remote(
+        adventures,
+        start_index,
+        wave_size,
+        "A100-80GB",
+        max_tokens,
+        rep_penalty,
+    )
     hf_cache.commit()
     return result
 
@@ -779,6 +796,7 @@ def generate_a100(
 def main(
     adventures: int = 50,
     out: str = "data/out/smoke.jsonl",
+    start_index: int = 0,
     wave_size: int = DEFAULT_WAVE_SIZE,
     max_tokens: int = DEFAULT_MAX_TOKENS,
     rep_penalty: float = 0.0,
@@ -786,6 +804,8 @@ def main(
 ) -> None:
     if adventures <= 0:
         raise ValueError("--adventures must be positive")
+    if start_index < 0:
+        raise ValueError("--start-index must be non-negative")
     if wave_size <= 0:
         raise ValueError("--wave-size must be positive")
     if max_tokens <= 0:
@@ -797,7 +817,7 @@ def main(
 
     remote = generate_a100 if gpu == "A100-80GB" else generate_h100
     _prefer_control_plane_invocation(remote)
-    result = remote.remote(adventures, wave_size, max_tokens, rep_penalty)
+    result = remote.remote(adventures, start_index, wave_size, max_tokens, rep_penalty)
 
     out_path = Path(out)
     out_path.parent.mkdir(parents=True, exist_ok=True)
