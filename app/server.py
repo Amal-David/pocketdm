@@ -30,6 +30,7 @@ GENRE_LABELS = {
 class PlaySession:
     state: GameState
     backend: MockBackend
+    voice_id: str | None = None
     last_turn: Turn | None = None
     transcript: list[dict[str, Any]] = field(default_factory=list)
 
@@ -58,6 +59,7 @@ async def start_adventure(request: Request) -> JSONResponse:
     session = PlaySession(
         state=GameState(genre=genre, premise=premise),
         backend=MockBackend(_scripted_turns(genre, premise)),
+        voice_id=_voice_id(payload.get("voice"), genre),
     )
     session_id = uuid.uuid4().hex
     _SESSIONS[session_id] = session
@@ -66,7 +68,7 @@ async def start_adventure(request: Request) -> JSONResponse:
         {
             "session_id": session_id,
             "turn": turn_payload,
-            "state": _state_payload(session.state),
+            "state": _state_payload(session.state, _voice_for_session(session)),
             "assistant": _assistant_opening(genre),
         }
     )
@@ -84,7 +86,7 @@ async def choose_action(request: Request) -> JSONResponse:
         return JSONResponse(
             {
                 "turn": _turn_payload(session.last_turn),
-                "state": _state_payload(session.state),
+                "state": _state_payload(session.state, _voice_for_session(session)),
                 "assistant": _assistant_for_turn(session, action),
             }
         )
@@ -103,7 +105,7 @@ async def choose_action(request: Request) -> JSONResponse:
     return JSONResponse(
         {
             "turn": turn_payload,
-            "state": _state_payload(session.state),
+            "state": _state_payload(session.state, _voice_for_session(session)),
             "assistant": _assistant_for_turn(session, action),
         }
     )
@@ -131,12 +133,12 @@ async def narration_tts(request: Request) -> Response:
 
         from app.tts import synthesize
 
-        sample_rate, audio = synthesize(text, voice_id=_voice_for_genre(session.state.genre))
+        sample_rate, audio = synthesize(text, voice_id=_voice_for_session(session))
     except Exception as exc:
-        raise HTTPException(
-            status_code=503,
-            detail=f"local Kokoro narration unavailable: {type(exc).__name__}",
-        ) from exc
+        return Response(
+            status_code=204,
+            headers={"x-pocketdm-tts": f"unavailable:{type(exc).__name__}"},
+        )
 
     wav = io.BytesIO()
     sf.write(wav, audio, sample_rate, format="WAV")
@@ -173,7 +175,7 @@ def _turn_payload(turn: Turn, used_bridge: bool = False) -> dict[str, Any]:
     }
 
 
-def _state_payload(state: GameState) -> dict[str, Any]:
+def _state_payload(state: GameState, voice_id: str | None = None) -> dict[str, Any]:
     return {
         "hp": state.hp,
         "inventory": list(state.inventory),
@@ -181,6 +183,7 @@ def _state_payload(state: GameState) -> dict[str, Any]:
         "turn_count": state.turn_count,
         "genre": state.genre,
         "premise": state.premise,
+        "voice": voice_id or _voice_for_genre(state.genre),
     }
 
 
@@ -261,6 +264,19 @@ def _voice_for_genre(genre: str) -> str:
     if genre == "derelict_starship":
         return "starship"
     return "dungeon"
+
+
+def _voice_id(raw_voice: Any, genre: str) -> str | None:
+    voice = str(raw_voice or "auto")
+    if voice == "auto":
+        return None
+    if voice in {"dungeon", "wood", "starship", "lore"}:
+        return voice
+    return _voice_for_genre(genre)
+
+
+def _voice_for_session(session: PlaySession) -> str:
+    return session.voice_id or _voice_for_genre(session.state.genre)
 
 
 def _recommended_choice(session: PlaySession) -> str:

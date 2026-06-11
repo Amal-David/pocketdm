@@ -17,6 +17,7 @@ def test_custom_server_starts_adventure_and_dragon_hint() -> None:
     assert body["session_id"]
     assert body["turn"]["choices"]
     assert body["state"]["turn_count"] == 1
+    assert body["state"]["voice"] == "dungeon"
     assert "Ember" in body["assistant"]
 
     hint = client.post(
@@ -34,6 +35,18 @@ def test_custom_server_starts_adventure_and_dragon_hint() -> None:
     assert status.status_code == 200
     assert "10/10 HP" in status.json()["reply"]
     assert "Turn 1" in status.json()["reply"]
+
+
+def test_custom_server_accepts_explicit_lore_voice_selection() -> None:
+    client = TestClient(app)
+
+    start = client.post(
+        "/api/start",
+        json={"genre": "derelict_starship", "voice": "lore"},
+    )
+
+    assert start.status_code == 200
+    assert start.json()["state"]["voice"] == "lore"
 
 
 def test_custom_server_rejects_unknown_session() -> None:

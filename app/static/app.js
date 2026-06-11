@@ -10,6 +10,7 @@ const state = {
 
 const els = {
   genre: document.querySelector("#genre"),
+  voice: document.querySelector("#voice"),
   premise: document.querySelector("#premise"),
   newAdventure: document.querySelector("#new-adventure"),
   narration: document.querySelector("#narration"),
@@ -19,6 +20,7 @@ const els = {
   turnCount: document.querySelector("#turn-count"),
   location: document.querySelector("#location"),
   inventory: document.querySelector("#inventory"),
+  voiceState: document.querySelector("#voice-state"),
   freeformForm: document.querySelector("#freeform-form"),
   freeformInput: document.querySelector("#freeform-input"),
   freeformButton: document.querySelector("#freeform-form button"),
@@ -57,6 +59,7 @@ async function startAdventure() {
   try {
     const payload = await postJSON("/api/start", {
       genre: els.genre.value,
+      voice: els.voice.value,
       premise: els.premise.value,
     });
     state.sessionId = payload.session_id;
@@ -113,7 +116,17 @@ function renderTurn(turn, gameState) {
   els.turnCount.textContent = String(gameState.turn_count);
   els.location.textContent = gameState.location;
   els.inventory.textContent = gameState.inventory.length ? gameState.inventory.join(", ") : "-";
+  els.voiceState.textContent = voiceLabel(gameState.voice);
   playNarration(turn.narration);
+}
+
+function voiceLabel(voice) {
+  return {
+    dungeon: "Dungeon",
+    wood: "Wood",
+    starship: "Starship",
+    lore: "Lore Narrator",
+  }[voice] || "Auto";
 }
 
 function renderChoices(turn) {
@@ -188,6 +201,7 @@ async function playNarration(text) {
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ session_id: state.sessionId, text }),
     });
+    if (response.status === 204) return;
     if (!response.ok) return;
     const blob = await response.blob();
     if (state.narrationAudio) state.narrationAudio.pause();

@@ -42,6 +42,16 @@
             </select>
           </label>
           <label>
+            Voice
+            <select id="voice">
+              <option value="auto">Auto by genre</option>
+              <option value="lore">Lore Narrator</option>
+              <option value="dungeon">Dungeon</option>
+              <option value="wood">Wood</option>
+              <option value="starship">Starship</option>
+            </select>
+          </label>
+          <label>
             Premise
             <textarea id="premise" maxlength="140" placeholder="A tiny quest hook"></textarea>
           </label>
@@ -53,6 +63,7 @@
             <div><dt>Turn</dt><dd id="turn-count">0</dd></div>
             <div><dt>Location</dt><dd id="location">Starting Point</dd></div>
             <div><dt>Inventory</dt><dd id="inventory">-</dd></div>
+            <div><dt>Voice</dt><dd id="voice-state">Auto</dd></div>
           </dl>
         </aside>
 
