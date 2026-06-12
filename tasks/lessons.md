@@ -257,3 +257,10 @@ User clarified that the model should say "pika pika" in text and in voice.
 **Rule:** minimized check-ins and assistant reply moments should visibly keep
 the guarded "Pika pika!" prefix and force a short native voice cue when the
 pet initiates a new check-in.
+
+## 2026-06-13 — Hamster-style loops need care meaning
+User wants the viral Telegram-style loop, but as a proper desktop pet with
+emotion, growth, and lore.
+**Rule:** daily board mechanics should become care contracts with visible
+receipts, vitals, mood-care progress, proactive prompts, and sprite requests,
+not abstract coin tapping or finance-style progression.

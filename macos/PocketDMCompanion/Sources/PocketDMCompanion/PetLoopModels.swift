@@ -970,6 +970,223 @@ enum PetDailyQuest: Int, CaseIterable {
     }
 }
 
+enum PetBondContract: Int, CaseIterable {
+    case morningHello = 1
+    case snackCache = 2
+    case focusPerch = 4
+    case phraseSpark = 8
+    case tinyExpedition = 16
+    case cipherWhisper = 32
+    case restNest = 64
+    case upgradePolish = 128
+    case cheerSignal = 256
+    case storyTrail = 512
+
+    static func dailyDeck(for dateKey: String) -> [PetBondContract] {
+        let seed = dateKey.unicodeScalars.reduce(0) { $0 + Int($1.value) }
+        let decks: [[PetBondContract]] = [
+            [.morningHello, .focusPerch, .phraseSpark, .storyTrail],
+            [.snackCache, .tinyExpedition, .cipherWhisper, .cheerSignal],
+            [.morningHello, .phraseSpark, .upgradePolish, .restNest],
+            [.focusPerch, .storyTrail, .snackCache, .cipherWhisper],
+            [.tinyExpedition, .cheerSignal, .phraseSpark, .upgradePolish],
+            [.restNest, .morningHello, .focusPerch, .storyTrail]
+        ]
+        return decks[seed % decks.count]
+    }
+
+    var title: String {
+        switch self {
+        case .morningHello:
+            return "Morning Hello"
+        case .snackCache:
+            return "Snack Cache"
+        case .focusPerch:
+            return "Focus Perch"
+        case .phraseSpark:
+            return "Phrase Spark"
+        case .tinyExpedition:
+            return "Tiny Expedition"
+        case .cipherWhisper:
+            return "Cipher Whisper"
+        case .restNest:
+            return "Rest Nest"
+        case .upgradePolish:
+            return "Upgrade Polish"
+        case .cheerSignal:
+            return "Cheer Signal"
+        case .storyTrail:
+            return "Story Trail"
+        }
+    }
+
+    var shortLabel: String {
+        switch self {
+        case .morningHello:
+            return "Hello"
+        case .snackCache:
+            return "Snack"
+        case .focusPerch:
+            return "Focus"
+        case .phraseSpark:
+            return "Phrase"
+        case .tinyExpedition:
+            return "Trail"
+        case .cipherWhisper:
+            return "Cipher"
+        case .restNest:
+            return "Rest"
+        case .upgradePolish:
+            return "Polish"
+        case .cheerSignal:
+            return "Cheer"
+        case .storyTrail:
+            return "Story"
+        }
+    }
+
+    var actionLine: String {
+        switch self {
+        case .morningHello:
+            return "say hello and give one safe tap"
+        case .snackCache:
+            return "refill the little snack stash"
+        case .focusPerch:
+            return "let the buddy sit beside one task"
+        case .phraseSpark:
+            return "practice one language spark"
+        case .tinyExpedition:
+            return "send the buddy down a tiny trail"
+        case .cipherWhisper:
+            return "solve one small secret together"
+        case .restNest:
+            return "let the buddy curl up and recover"
+        case .upgradePolish:
+            return "polish one kit card"
+        case .cheerSignal:
+            return "answer one warm check-in"
+        case .storyTrail:
+            return "open the next story breadcrumb"
+        }
+    }
+
+    var rewardLine: String {
+        switch self {
+        case .morningHello:
+            return "The first spark of the day feels safe."
+        case .snackCache:
+            return "A full snack cache steadies the mood."
+        case .focusPerch:
+            return "It learns your work rhythm without pressure."
+        case .phraseSpark:
+            return "A phrase becomes a tiny shared ritual."
+        case .tinyExpedition:
+            return "The trail map gets one brighter mark."
+        case .cipherWhisper:
+            return "The secret word becomes a keepsake."
+        case .restNest:
+            return "Rest teaches it that quiet also counts."
+        case .upgradePolish:
+            return "The kit feels cared for, not only bought."
+        case .cheerSignal:
+            return "The check-in turns into a bond receipt."
+        case .storyTrail:
+            return "A new breadcrumb joins the day story."
+        }
+    }
+
+    var sparkReward: Int {
+        switch self {
+        case .morningHello, .snackCache, .restNest:
+            return 9
+        case .focusPerch, .phraseSpark, .cheerSignal:
+            return 12
+        case .tinyExpedition, .cipherWhisper, .storyTrail:
+            return 14
+        case .upgradePolish:
+            return 16
+        }
+    }
+
+    var vital: PetCareVital {
+        switch self {
+        case .snackCache, .morningHello:
+            return .snack
+        case .restNest:
+            return .rest
+        case .tinyExpedition, .cheerSignal, .storyTrail:
+            return .play
+        case .focusPerch, .phraseSpark, .cipherWhisper, .upgradePolish:
+            return .focus
+        }
+    }
+
+    var moodStep: PetMoodCareStep {
+        switch self {
+        case .morningHello:
+            return .soothe
+        case .snackCache:
+            return .snack
+        case .focusPerch:
+            return .focus
+        case .phraseSpark:
+            return .study
+        case .tinyExpedition, .storyTrail:
+            return .adventure
+        case .cipherWhisper:
+            return .puzzle
+        case .restNest:
+            return .rest
+        case .upgradePolish:
+            return .focus
+        case .cheerSignal:
+            return .cheer
+        }
+    }
+
+    var quest: PetDailyQuest {
+        switch self {
+        case .morningHello, .snackCache, .restNest:
+            return .care
+        case .focusPerch, .cheerSignal:
+            return .cheer
+        case .phraseSpark:
+            return .learn
+        case .tinyExpedition, .storyTrail:
+            return .adventure
+        case .cipherWhisper:
+            return .cipher
+        case .upgradePolish:
+            return .upgrade
+        }
+    }
+
+    var spriteRequestName: String {
+        switch self {
+        case .morningHello:
+            return "pet-{stage}-bond-board-morning-hello.png"
+        case .snackCache:
+            return "pet-{stage}-bond-board-snack-cache.png"
+        case .focusPerch:
+            return "pet-{stage}-bond-board-focus-perch.png"
+        case .phraseSpark:
+            return "pet-{stage}-bond-board-phrase-spark.png"
+        case .tinyExpedition:
+            return "pet-{stage}-bond-board-tiny-expedition.png"
+        case .cipherWhisper:
+            return "pet-{stage}-bond-board-cipher-whisper.png"
+        case .restNest:
+            return "pet-{stage}-bond-board-rest-nest.png"
+        case .upgradePolish:
+            return "pet-{stage}-bond-board-upgrade-polish.png"
+        case .cheerSignal:
+            return "pet-{stage}-bond-board-cheer-signal.png"
+        case .storyTrail:
+            return "pet-{stage}-bond-board-story-trail.png"
+        }
+    }
+}
+
 struct PetDailyCipher {
     let clue: String
     let answer: String

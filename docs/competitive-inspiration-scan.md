@@ -200,6 +200,9 @@ The new layer should add:
   or complete a small emotional arc.
 - Proactive mood-care bubbles that can ask for the next emotional care step
   while the pet is minimized.
+- A daily Bond Board: four rotating care contracts inspired by daily
+  combo/cipher/upgrade retention loops, but expressed as care, study, focus,
+  rest, story, and adventure rituals instead of finance mechanics.
 - A journal/album view that pulls progress out of the cramped status stack and
   makes growth, moods, memories, badges, rituals, upgrade cards, and next sprite
   needs readable.
@@ -251,6 +254,11 @@ The native macOS companion now has the first version of the loop:
   Learn + Hint + Upgrade, plus Cipher and Boost variants.
 - A daily task board with care, hint, learn, quest, upgrade, cheer, cipher, and
   boost tasks.
+- A Bond Board button now completes the next daily care contract, pays Joy and
+  Sparks, refills the matching vital, advances Mood Care, and grants Bond HP
+  for clearing all four contracts.
+- Minimized proactive bubbles can now offer the next Bond Board contract, and
+  accepting the bubble marks real board progress.
 - A daily cipher with deterministic clue, answer, and Spark reward.
 - A daily Spark Boost that refills energy and pays extra Sparks.
 - A rotating Upgrade button that spends Sparks on Snack Bowl, Study Bell, Quest

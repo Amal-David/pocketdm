@@ -200,6 +200,9 @@ final class DragonOverlayModel: ObservableObject {
     private static let cipherLevelKey = "PocketDMCompanion.cipherLevel"
     private static let dailyQuestDateKey = "PocketDMCompanion.dailyQuestDate"
     private static let dailyQuestMaskKey = "PocketDMCompanion.dailyQuestMask"
+    private static let dailyBondBoardDateKey = "PocketDMCompanion.dailyBondBoardDate"
+    private static let dailyBondBoardMaskKey = "PocketDMCompanion.dailyBondBoardMask"
+    private static let bondContractAlbumMaskKey = "PocketDMCompanion.bondContractAlbumMask"
     private static let dailyBoosterDateKey = "PocketDMCompanion.dailyBoosterDate"
     private static let dailyBoosterUsedKey = "PocketDMCompanion.dailyBoosterUsed"
     private static let dailyCipherDateKey = "PocketDMCompanion.dailyCipherDate"
@@ -281,6 +284,9 @@ final class DragonOverlayModel: ObservableObject {
     @Published var cipherLevel = UserDefaults.standard.object(forKey: DragonOverlayModel.cipherLevelKey) as? Int ?? 0
     @Published var dailyQuestDate = UserDefaults.standard.string(forKey: DragonOverlayModel.dailyQuestDateKey) ?? ""
     @Published var dailyQuestMask = UserDefaults.standard.object(forKey: DragonOverlayModel.dailyQuestMaskKey) as? Int ?? 0
+    @Published var dailyBondBoardDate = UserDefaults.standard.string(forKey: DragonOverlayModel.dailyBondBoardDateKey) ?? ""
+    @Published var dailyBondBoardMask = UserDefaults.standard.object(forKey: DragonOverlayModel.dailyBondBoardMaskKey) as? Int ?? 0
+    @Published var bondContractAlbumMask = UserDefaults.standard.object(forKey: DragonOverlayModel.bondContractAlbumMaskKey) as? Int ?? 0
     @Published var dailyBoosterDate = UserDefaults.standard.string(forKey: DragonOverlayModel.dailyBoosterDateKey) ?? ""
     @Published var dailyBoosterUsed = UserDefaults.standard.bool(forKey: DragonOverlayModel.dailyBoosterUsedKey)
     @Published var dailyCipherDate = UserDefaults.standard.string(forKey: DragonOverlayModel.dailyCipherDateKey) ?? ""
@@ -316,6 +322,7 @@ final class DragonOverlayModel: ObservableObject {
     @Published var cheerRewardLine = ""
     @Published var cheerDaypartRaw = 0
     @Published var cheerMoodCareStepRaw = 0
+    @Published var cheerBondContractRaw = 0
 
     let languageCoach = LanguageCoachStore()
 
@@ -729,6 +736,7 @@ final class DragonOverlayModel: ObservableObject {
         let prompt = cheerTitle.isEmpty ? "Check in" : cheerTitle
         let rewardLine = cheerRewardLine.isEmpty ? "Check-in answered" : cheerRewardLine
         let moodCareStep = PetMoodCareStep(rawValue: cheerMoodCareStepRaw)
+        let bondContract = PetBondContract(rawValue: cheerBondContractRaw)
         let daypartNote = recordCheerAnswer()
         clearCheerBubble()
         lastRequest = "Cheer"
@@ -750,6 +758,16 @@ final class DragonOverlayModel: ObservableObject {
         }
         if let moodCareStep, let moodCareNote = markMoodCare(moodCareStep) {
             message += " \(moodCareNote)"
+        }
+        if let bondContract, let bondNote = markBondContract(bondContract) {
+            message += " \(bondNote)"
+            recordDailyQuest(bondContract.quest)
+            if let vitalNote = refillVital(bondContract.vital, by: 1) {
+                message += " \(vitalNote)"
+            }
+            if let moodCareNote = markMoodCare(bondContract.moodStep) {
+                message += " \(moodCareNote)"
+            }
         }
         if let moodCareNote = markMoodCare(.cheer) {
             message += " \(moodCareNote)"
@@ -982,6 +1000,40 @@ final class DragonOverlayModel: ObservableObject {
         speakPika()
     }
 
+    func playBondBoard() {
+        let priorStage = growthStage
+        applyVitalDecay()
+        syncDailyCombo()
+        guard let contract = nextBondContract else {
+            lastRequest = "Board"
+            message = pikaText("Bond Board is clear today. Pikachu curls proudly around the finished route.")
+            appendEmotionScene(trigger: "bond board")
+            play(.happy)
+            speakPika()
+            setMood(.happy, duration: 1.2)
+            return
+        }
+
+        lastRequest = "Board"
+        message = pikaText("\(contract.title): \(contract.actionLine).")
+        if let bondNote = markBondContract(contract) {
+            message += " \(bondNote)"
+        }
+        recordDailyQuest(contract.quest)
+        if let vitalNote = refillVital(contract.vital, by: 2) {
+            message += " \(vitalNote)"
+        }
+        if let moodCareNote = markMoodCare(contract.moodStep) {
+            message += " \(moodCareNote)"
+        }
+        appendEmotionScene(trigger: "bond board")
+        appendEvolutionNote(from: priorStage)
+        persistCare()
+        play(.happy)
+        speakPika()
+        setMood(.happy, duration: 1.4)
+    }
+
     func setMood(_ next: PetMood, duration: TimeInterval? = nil) {
         moodTask?.cancel()
         mood = next
@@ -1089,6 +1141,17 @@ final class DragonOverlayModel: ObservableObject {
             "\(quest.shortLabel)\(dailyQuestMask & quest.rawValue == 0 ? "○" : "✓")"
         }
         return "Tasks \(done)/\(quests.count) " + labels.joined(separator: " ")
+    }
+
+    var bondBoardLine: String {
+        let contracts = dailyBondContracts
+        let done = contracts.filter { dailyBondBoardMask & $0.rawValue != 0 }.count
+        let next = nextBondContract?.shortLabel ?? "clear"
+        return "Bond Board \(done)/\(contracts.count) · next \(next)"
+    }
+
+    var bondBoardContracts: [PetBondContract] {
+        dailyBondContracts
     }
 
     var weeklyLine: String {
@@ -1245,16 +1308,34 @@ final class DragonOverlayModel: ObservableObject {
     var journalRitualCaption: String {
         let comboDone = dailyComboActions.filter { dailyComboMask & $0.rawValue != 0 }.count
         let questDone = dailyQuests.filter { dailyQuestMask & $0.rawValue != 0 }.count
-        let next = nextDailyQuest?.title ?? "Board clear"
-        return "Combo \(comboDone)/\(dailyComboActions.count) · Tasks \(questDone)/\(dailyQuests.count) · Next \(next)"
+        let bondDone = dailyBondContracts.filter { dailyBondBoardMask & $0.rawValue != 0 }.count
+        let next = nextBondContract?.title ?? nextDailyQuest?.title ?? "Board clear"
+        return "Combo \(comboDone)/\(dailyComboActions.count) · Tasks \(questDone)/\(dailyQuests.count) · Bonds \(bondDone)/\(dailyBondContracts.count) · Next \(next)"
     }
 
     var journalRitualProgress: Double {
         let comboDone = dailyComboActions.filter { dailyComboMask & $0.rawValue != 0 }.count
         let questDone = dailyQuests.filter { dailyQuestMask & $0.rawValue != 0 }.count
-        let total = dailyComboActions.count + dailyQuests.count + dailyEvent.requiredSteps
-        let done = comboDone + questDone + min(dailyEventProgress, dailyEvent.requiredSteps)
+        let bondDone = dailyBondContracts.filter { dailyBondBoardMask & $0.rawValue != 0 }.count
+        let total = dailyComboActions.count + dailyQuests.count + dailyBondContracts.count + dailyEvent.requiredSteps
+        let done = comboDone + questDone + bondDone + min(dailyEventProgress, dailyEvent.requiredSteps)
         return total == 0 ? 0 : Double(done) / Double(total)
+    }
+
+    var journalBondBoardProgress: Double {
+        let contracts = dailyBondContracts
+        let done = contracts.filter { dailyBondBoardMask & $0.rawValue != 0 }.count
+        return Double(done) / Double(max(1, contracts.count))
+    }
+
+    var journalBondBoardCaption: String {
+        let albumDone = PetBondContract.allCases.filter { bondContractAlbumMask & $0.rawValue != 0 }.count
+        return "\(bondBoardLine) · Album \(albumDone)/\(PetBondContract.allCases.count)"
+    }
+
+    var journalBondBoardSpriteLine: String {
+        let contract = nextBondContract ?? dailyBondContracts.last ?? .morningHello
+        return "Board sprite: \(contract.spriteRequestName.replacingOccurrences(of: "{stage}", with: growthStage.assetSlug))"
     }
 
     var journalVitalProgress: Double {
@@ -1348,6 +1429,7 @@ final class DragonOverlayModel: ObservableObject {
         cheerRewardLine = ""
         cheerDaypartRaw = 0
         cheerMoodCareStepRaw = 0
+        cheerBondContractRaw = 0
     }
 
     private func persistCare() {
@@ -1371,6 +1453,9 @@ final class DragonOverlayModel: ObservableObject {
         UserDefaults.standard.set(cipherLevel, forKey: Self.cipherLevelKey)
         UserDefaults.standard.set(dailyQuestDate, forKey: Self.dailyQuestDateKey)
         UserDefaults.standard.set(dailyQuestMask, forKey: Self.dailyQuestMaskKey)
+        UserDefaults.standard.set(dailyBondBoardDate, forKey: Self.dailyBondBoardDateKey)
+        UserDefaults.standard.set(dailyBondBoardMask, forKey: Self.dailyBondBoardMaskKey)
+        UserDefaults.standard.set(bondContractAlbumMask, forKey: Self.bondContractAlbumMaskKey)
         UserDefaults.standard.set(dailyBoosterDate, forKey: Self.dailyBoosterDateKey)
         UserDefaults.standard.set(dailyBoosterUsed, forKey: Self.dailyBoosterUsedKey)
         UserDefaults.standard.set(dailyCipherDate, forKey: Self.dailyCipherDateKey)
@@ -1520,6 +1605,14 @@ final class DragonOverlayModel: ObservableObject {
 
     func isMoodCareFeelingComplete(_ feeling: PetFeeling) -> Bool {
         moodCareAlbumMask & feeling.rawValue != 0
+    }
+
+    func isBondContractDone(_ contract: PetBondContract) -> Bool {
+        dailyBondBoardMask & contract.rawValue != 0
+    }
+
+    func isBondContractUnlocked(_ contract: PetBondContract) -> Bool {
+        bondContractAlbumMask & contract.rawValue != 0
     }
 
     private func setVital(_ vital: PetCareVital, value: Int) {
@@ -1721,6 +1814,8 @@ final class DragonOverlayModel: ObservableObject {
             return .curious
         case "quest open", "cheer":
             return .eager
+        case "bond board":
+            return .determined
         case "upgrade":
             return .proud
         case "upgrade wait":
@@ -1839,6 +1934,11 @@ final class DragonOverlayModel: ObservableObject {
         if dailyQuestDate != today {
             dailyQuestDate = today
             dailyQuestMask = 0
+            changed = true
+        }
+        if dailyBondBoardDate != today {
+            dailyBondBoardDate = today
+            dailyBondBoardMask = 0
             changed = true
         }
         if dailyBoosterDate != today {
@@ -1969,12 +2069,50 @@ final class DragonOverlayModel: ObservableObject {
         persistCare()
     }
 
+    private func markBondContract(_ contract: PetBondContract) -> String? {
+        syncDailyCombo()
+        let wasComplete = isBondBoardComplete
+        guard dailyBondBoardMask & contract.rawValue == 0 else {
+            persistCare()
+            return nil
+        }
+
+        dailyBondBoardMask |= contract.rawValue
+        bondContractAlbumMask |= contract.rawValue
+        let done = dailyBondContracts.filter { dailyBondBoardMask & $0.rawValue != 0 }.count
+        let reward = contract.sparkReward + sparkLevel + cheerLevel
+        sparkDust = min(999, sparkDust + reward)
+        happiness = min(5, happiness + 1)
+
+        var notes = [
+            "Bond Board: \(contract.shortLabel) \(done)/\(dailyBondContracts.count), Joy +1, Sparks +\(reward). \(contract.rewardLine)"
+        ]
+
+        if !wasComplete, isBondBoardComplete {
+            companionHP = min(10, companionHP + 1)
+            sparkDust = min(999, sparkDust + 35)
+            notes.append("Bond Board complete: Bond HP +1 and Sparks +35.")
+            if let memoryNote = unlockMemory(.firstBoard) {
+                notes.append(memoryNote)
+            }
+            play(.happy)
+            setMood(.hyper, duration: 1.8)
+        }
+
+        persistCare()
+        return notes.joined(separator: " ")
+    }
+
     private var isDailyComboComplete: Bool {
         dailyComboActions.allSatisfy { dailyComboMask & $0.rawValue != 0 }
     }
 
     private var isDailyQuestSetComplete: Bool {
         dailyQuests.allSatisfy { dailyQuestMask & $0.rawValue != 0 }
+    }
+
+    private var isBondBoardComplete: Bool {
+        dailyBondContracts.allSatisfy { dailyBondBoardMask & $0.rawValue != 0 }
     }
 
     private var nextUpgradeCandidate: PetUpgradeCandidate {
@@ -2000,6 +2138,14 @@ final class DragonOverlayModel: ObservableObject {
 
     private var nextDailyQuest: PetDailyQuest? {
         dailyQuests.first { dailyQuestMask & $0.rawValue == 0 }
+    }
+
+    private var dailyBondContracts: [PetBondContract] {
+        PetBondContract.dailyDeck(for: dailyBondBoardDate.isEmpty ? Self.dayFormatter.string(from: Date()) : dailyBondBoardDate)
+    }
+
+    private var nextBondContract: PetBondContract? {
+        dailyBondContracts.first { dailyBondBoardMask & $0.rawValue == 0 }
     }
 
     private var dailyCipher: PetDailyCipher {
@@ -2070,6 +2216,8 @@ final class DragonOverlayModel: ObservableObject {
         let shouldUseDaypart = dailyNudgeOfferedMask & daypart.rawValue == 0
         let nextMoodCareStep = moodCareRecipe.nextStep(mask: dailyMoodCareMask)
         let shouldUseMoodCare = !shouldUseDaypart && nextMoodCareStep != nil && index % 2 == 0
+        let nextContract = nextBondContract
+        let shouldUseBondBoard = !shouldUseDaypart && !shouldUseMoodCare && nextContract != nil && index % 3 == 2
         let prompt: PetNudgeLibrary.PetCheerPrompt
         if shouldUseDaypart {
             prompt = PetNudgeLibrary.PetCheerPrompt(
@@ -2084,6 +2232,13 @@ final class DragonOverlayModel: ObservableObject {
                 recipe: moodCareRecipe,
                 step: nextMoodCareStep,
                 stage: growthStage
+            )
+        } else if shouldUseBondBoard, let nextContract {
+            prompt = PetNudgeLibrary.PetCheerPrompt(
+                title: "Bond Board",
+                body: "\(nextContract.title) is ready. Want to \(nextContract.actionLine)?",
+                action: "Open \(nextContract.shortLabel)",
+                rewardLine: "\(nextContract.title) answered"
             )
         } else {
             prompt = PetNudgeLibrary.cheerPrompt(
@@ -2110,6 +2265,7 @@ final class DragonOverlayModel: ObservableObject {
         cheerRewardLine = prompt.rewardLine
         cheerDaypartRaw = shouldUseDaypart ? daypart.rawValue : 0
         cheerMoodCareStepRaw = shouldUseMoodCare ? (nextMoodCareStep?.rawValue ?? 0) : 0
+        cheerBondContractRaw = shouldUseBondBoard ? (nextContract?.rawValue ?? 0) : 0
         cheerBubble = pikaText(prompt.body)
         if shouldUseDaypart {
             dailyNudgeOfferedMask |= daypart.rawValue
@@ -2449,6 +2605,11 @@ struct DragonOverlayView: View {
                         }
 
                         HStack(spacing: 8) {
+                            Button("Board") {
+                                model.playBondBoard()
+                            }
+                            .buttonStyle(DragonButtonStyle(kind: .secondary))
+                            .disabled(model.busy)
                             Button("Boost") {
                                 model.activateDailyBoost()
                             }
@@ -2548,6 +2709,11 @@ struct DragonOverlayView: View {
                 .foregroundStyle(Color.ivory.opacity(0.72))
                 .lineLimit(1)
                 .minimumScaleFactor(0.58)
+            Text(model.bondBoardLine)
+                .font(.system(size: 8.4, weight: .black, design: .rounded))
+                .foregroundStyle(Color.gold.opacity(0.72))
+                .lineLimit(1)
+                .minimumScaleFactor(0.52)
             Text(model.weeklyLine)
                 .font(.system(size: 8.4, weight: .black, design: .rounded))
                 .foregroundStyle(Color.gold.opacity(0.72))
@@ -2856,6 +3022,9 @@ struct PetJournalPanel: View {
             detailLine(model.needLine)
             detailLine(model.comboLine)
             detailLine(model.taskLine)
+            journalHero("Bond Board", value: model.journalBondBoardProgress, caption: model.journalBondBoardCaption)
+            bondContractGrid
+            artLine(model.journalBondBoardSpriteLine)
             journalHero("Care Vitals", value: model.journalVitalProgress, caption: model.journalVitalCaption)
             vitalGrid
             artLine(model.journalVitalSpriteLine)
@@ -2995,6 +3164,28 @@ struct PetJournalPanel: View {
                 vitalChip(vital)
             }
         }
+    }
+
+    private var bondContractGrid: some View {
+        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 4), count: 4), spacing: 3) {
+            ForEach(model.bondBoardContracts, id: \.rawValue) { contract in
+                bondContractChip(contract)
+            }
+        }
+    }
+
+    private func bondContractChip(_ contract: PetBondContract) -> some View {
+        let done = model.isBondContractDone(contract)
+        let unlocked = model.isBondContractUnlocked(contract)
+        return Text("\(contract.shortLabel) \(done ? "✓" : unlocked ? "•" : "○")")
+            .font(.system(size: 7.4, weight: .black, design: .rounded))
+            .foregroundStyle(done ? Color.black : Color.ivory.opacity(unlocked ? 0.78 : 0.62))
+            .lineLimit(1)
+            .minimumScaleFactor(0.58)
+            .frame(height: 18)
+            .frame(maxWidth: .infinity)
+            .background(done ? Color.gold.opacity(0.92) : Color.black.opacity(unlocked ? 0.42 : 0.32), in: RoundedRectangle(cornerRadius: 5))
+            .overlay(RoundedRectangle(cornerRadius: 5).stroke(Color.ivory.opacity(done ? 0 : 0.12), lineWidth: 1))
     }
 
     private func vitalChip(_ vital: PetCareVital) -> some View {

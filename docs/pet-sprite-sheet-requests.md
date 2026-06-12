@@ -236,6 +236,14 @@ Generate these first. They unlock the most visible upgrade with the least code:
    - User accepts a mood-care prompt; pet warms, nods, and stores progress.
 107. `pet-buddy-proactive-mood-care-dismiss.png`
    - User skips a mood-care prompt; pet accepts it kindly and returns to idle.
+108. `pet-buddy-bond-board-open.png`
+   - Opens four daily care contracts as small visual task charms.
+109. `pet-buddy-bond-board-contract-ready.png`
+   - One contract glows and invites a tiny care action.
+110. `pet-buddy-bond-board-contract-complete.png`
+   - Contract accepted; pet stores the receipt and gains Joy/Sparks.
+111. `pet-buddy-bond-board-complete.png`
+   - All four daily contracts complete; pet celebrates Bond HP without confetti text.
 
 ## Generate In Separate Batches
 
@@ -349,7 +357,27 @@ consistent:
 - `pet-buddy-proactive-mood-care-answer.png`
 - `pet-buddy-proactive-mood-care-dismiss.png`
 
-### Batch 11: Full Stage Matrix
+### Batch 11: Bond Board Contracts
+
+- `pet-buddy-bond-board-open.png`
+- `pet-buddy-bond-board-contract-ready.png`
+- `pet-buddy-bond-board-contract-complete.png`
+- `pet-buddy-bond-board-complete.png`
+- `pet-buddy-bond-board-morning-hello.png`
+- `pet-buddy-bond-board-snack-cache.png`
+- `pet-buddy-bond-board-focus-perch.png`
+- `pet-buddy-bond-board-phrase-spark.png`
+- `pet-buddy-bond-board-tiny-expedition.png`
+- `pet-buddy-bond-board-cipher-whisper.png`
+- `pet-buddy-bond-board-rest-nest.png`
+- `pet-buddy-bond-board-upgrade-polish.png`
+- `pet-buddy-bond-board-cheer-signal.png`
+- `pet-buddy-bond-board-story-trail.png`
+- `pet-buddy-proactive-bond-board-checkin.png`
+- `pet-buddy-proactive-bond-board-answer.png`
+- `pet-buddy-proactive-bond-board-dismiss.png`
+
+### Batch 12: Full Stage Matrix
 
 After the buddy form works, repeat the stage matrix for:
 
@@ -693,8 +721,45 @@ Proactive check-ins:
   - Cheek sparks ready, invites a short burst.
 - `pet-{stage}-proactive-comeback-checkin.png`
   - Welcomes the user back and presents a saved chest.
+- `pet-{stage}-proactive-bond-board-checkin.png`
+  - Invites the next daily Bond Board contract while minimized.
+- `pet-{stage}-proactive-bond-board-answer.png`
+  - Bond Board bubble accepted; pet stores the contract receipt.
+- `pet-{stage}-proactive-bond-board-dismiss.png`
+  - Bond Board bubble dismissed; pet remains warm and returns to idle.
 - `pet-{stage}-proactive-dismiss.png`
   - Calmly accepts dismissal and returns to idle, no sad guilt.
+
+Bond Board contracts:
+
+- `pet-{stage}-bond-board-open.png`
+  - Opens today's four small care contracts as charm cards.
+- `pet-{stage}-bond-board-contract-ready.png`
+  - One contract glows and pet points to the next tiny action.
+- `pet-{stage}-bond-board-contract-complete.png`
+  - User accepts a contract; pet gains Joy/Sparks and stores a receipt.
+- `pet-{stage}-bond-board-complete.png`
+  - All four contracts complete; Bond HP glow, proud but not loud.
+- `pet-{stage}-bond-board-morning-hello.png`
+  - Hello/tap contract, safe first spark of the day.
+- `pet-{stage}-bond-board-snack-cache.png`
+  - Snack cache contract, fills a little stash and brightens cheeks.
+- `pet-{stage}-bond-board-focus-perch.png`
+  - Focus contract, pet sits beside a task and watches calmly.
+- `pet-{stage}-bond-board-phrase-spark.png`
+  - Language contract, pet repeats a phrase and stores a study spark.
+- `pet-{stage}-bond-board-tiny-expedition.png`
+  - Trail contract, pet takes one little map step and returns.
+- `pet-{stage}-bond-board-cipher-whisper.png`
+  - Cipher contract, pet studies a clue and whispers the solved spark.
+- `pet-{stage}-bond-board-rest-nest.png`
+  - Rest contract, pet curls up and recovers gently.
+- `pet-{stage}-bond-board-upgrade-polish.png`
+  - Upgrade contract, pet polishes a kit card with pride.
+- `pet-{stage}-bond-board-cheer-signal.png`
+  - Cheer contract, pet sends a warm check-in signal.
+- `pet-{stage}-bond-board-story-trail.png`
+  - Story contract, pet reveals a tiny breadcrumb for the day's lore.
 
 Cheer Rhythm dayparts:
 
@@ -830,6 +895,15 @@ These are for the progression layer:
 - Cipher Stone daily-puzzle upgrade.
 - Daily task board complete.
 - Daily task board almost complete.
+- Bond Board opened.
+- Bond Board contract ready.
+- Bond Board contract accepted.
+- Bond Board contract completed.
+- Bond Board complete.
+- Bond Board album updated.
+- Bond Board proactive check-in appeared.
+- Bond Board proactive check-in accepted.
+- Bond Board proactive check-in dismissed.
 - Daily cipher clue found.
 - Daily cipher solved.
 - Daily boost ready.
