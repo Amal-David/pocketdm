@@ -314,3 +314,10 @@ A proper pet should remember becoming bigger, not silently cross a threshold.
 **Rule:** stage changes should unlock persistent Growth Journey entries with
 arrival lore, rewards, care effects, and exact arrival/transition sprite
 filenames.
+
+## 2026-06-13 — Model voice must say the catchphrase
+User clarified again that the model should say "pika pika" in text and in
+voice.
+**Rule:** every assistant/model feedback path should visibly keep the guarded
+"Pika pika!" prefix and force the native spoken catchphrase on direct reply or
+quiz feedback moments so debounce never makes the character voice disappear.

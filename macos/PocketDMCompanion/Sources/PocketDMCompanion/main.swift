@@ -659,12 +659,12 @@ final class DragonOverlayModel: ObservableObject {
             appendEvolutionNote(from: priorStage)
             persistCare()
             play(reward.dailyBond ? .pet : .happy)
-            speakPikaLine(message)
+            speakPikaLine(message, force: true)
             setMood(.happy, duration: 1.4)
         } else {
             appendEmotionScene(trigger: "lesson retry")
             play(.alert)
-            speakPikaLine(message)
+            speakPikaLine(message, force: true)
             setMood(.alert, duration: 1.2)
         }
     }
@@ -3123,6 +3123,8 @@ final class PetSoundPlayer {
     }
 
     private func pikaSpeechLine(from text: String) -> String {
+        // Keep the spoken pet voice aligned with the visible assistant line:
+        // exactly one "Pika pika!" lead-in, then a concise reply preview.
         let withoutCatchphrase = text.replacingOccurrences(
             of: #"(?i)\bpika[\s,-]+pika[!,.:\s-]*"#,
             with: "",
