@@ -205,6 +205,9 @@ The new layer should add:
 - A proactive Cheer Dialogue deck for warm "how are you doing?", "what is
   happening?", tiny-win, overwhelm, reset, and quiet-company moments that can be
   answered or skipped without guilt.
+- Cheer Memories that turn answered proactive check-ins into saved keepsake
+  scenes, so the pet appears to remember small conversations throughout the
+  day.
 - A daily Bond Board: four rotating care contracts inspired by daily
   combo/cipher/upgrade retention loops, but expressed as care, study, focus,
   rest, story, and adventure rituals instead of finance mechanics.
@@ -324,6 +327,9 @@ The native macOS companion now has the first version of the loop:
 - Proactive bubbles now carry a check-in type such as Feeling, Focus, Tiny Win,
   Reset, Quest, Lesson, Rest, Comeback, Board, Puzzle, Boost, Upgrade, Event,
   or Care, with separate answered/skipped state and sprite requests.
+- Answered proactive bubbles now unlock Cheer Memories such as Warm Check,
+  First Minute, Tiny Win Saved, Night Watch, Comeback Glow, and Event Beat,
+  making proactive conversation part of the persistent pet album.
 
 This is not the full final pet fantasy yet. It is the backbone that lets the
 next sprite sheets matter: new art can now map to real emotions, upgrades,

@@ -514,7 +514,58 @@ emotional beat, the care action, and the pet settling into a better state.
 - `pet-{stage}-journal-emotion-episodes.png`
   - Opens an album page of locked and unlocked emotion episode charms.
 
-### Batch 17: Full Stage Matrix
+### Batch 17: Cheer Memories
+
+These are proactive check-in scenes. Each sheet should show the pet initiating
+a tiny conversation, receiving the user's attention, and saving it as a
+keepsake without any text in the art.
+
+- `pet-{stage}-cheer-memory-warm-check.png`
+  - Asks how the user is doing, listens, and stores a warm spark.
+- `pet-{stage}-cheer-memory-whats-happening.png`
+  - Looks curious, gathers one messy thought, and carries it gently.
+- `pet-{stage}-cheer-memory-tiny-win-saved.png`
+  - Saves one tiny win as visible proof of motion.
+- `pet-{stage}-cheer-memory-overwhelm-softened.png`
+  - Shrinks a too-large feeling into one softer step.
+- `pet-{stage}-cheer-memory-first-minute.png`
+  - Sits beside the first minute of work and keeps watch.
+- `pet-{stage}-cheer-memory-soft-reset.png`
+  - Breathes, stretches, and clears space around the next click.
+- `pet-{stage}-cheer-memory-brave-step.png`
+  - Marks one brave next move on a tiny trail.
+- `pet-{stage}-cheer-memory-quiet-company.png`
+  - Offers quiet company without asking for a task.
+- `pet-{stage}-cheer-memory-sunrise-hello.png`
+  - Starts the day with recognition, not pressure.
+- `pet-{stage}-cheer-memory-focus-perch.png`
+  - Perches beside one task with attentive eyes.
+- `pet-{stage}-cheer-memory-afternoon-reset.png`
+  - Low afternoon energy becomes a softer reset.
+- `pet-{stage}-cheer-memory-evening-close.png`
+  - Tucks one open loop beside a warm evening glow.
+- `pet-{stage}-cheer-memory-night-watch.png`
+  - Guards the quiet hours calmly.
+- `pet-{stage}-cheer-memory-lesson-spark.png`
+  - Turns one phrase into a bright study keepsake.
+- `pet-{stage}-cheer-memory-comeback-glow.png`
+  - Welcomes the user back and saves the return.
+- `pet-{stage}-cheer-memory-care-contract.png`
+  - Turns a Bond Board contract into a care receipt.
+- `pet-{stage}-cheer-memory-puzzle-clue.png`
+  - Carries one puzzle clue safely.
+- `pet-{stage}-cheer-memory-boost-routed.png`
+  - Routes extra energy into a calmer next loop.
+- `pet-{stage}-cheer-memory-upgrade-wish.png`
+  - Looks at saved Sparks and points gently toward the next charm.
+- `pet-{stage}-cheer-memory-event-beat.png`
+  - Saves one daily event beat as a warm story moment.
+- `pet-{stage}-cheer-memory-care-ritual.png`
+  - Answers the current care need and remembers it.
+- `pet-{stage}-journal-cheer-memories.png`
+  - Opens a page of locked and unlocked proactive conversation keepsakes.
+
+### Batch 18: Full Stage Matrix
 
 After the buddy form works, repeat the stage matrix for:
 

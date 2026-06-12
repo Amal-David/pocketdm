@@ -295,3 +295,10 @@ day, not merely surface generic notifications.
 Feeling, Focus, Tiny Win, Reset, Quest, Lesson, Rest, Comeback, Board, Puzzle,
 Boost, Upgrade, Event, or Care, and that type should have answer/skip state,
 care effects, and a matching sprite request.
+
+## 2026-06-13 — Proactive conversations need memories
+The pet should feel like it remembers small check-ins, not like it emits
+throwaway notifications.
+**Rule:** answered proactive bubbles should unlock named Cheer Memories with
+daily progress, permanent album progress, care effects, and exact sprite
+filenames so "how are you doing?" becomes relationship history.

@@ -3365,6 +3365,348 @@ enum PetCheerIntent: Int, CaseIterable {
     }
 }
 
+enum PetCheerMemory: Int, CaseIterable {
+    case warmCheck = 1
+    case whatsHappening = 2
+    case tinyWinSaved = 4
+    case overwhelmSoftened = 8
+    case firstMinute = 16
+    case softReset = 32
+    case braveStep = 64
+    case quietCompany = 128
+    case sunriseHello = 256
+    case focusPerch = 512
+    case afternoonReset = 1024
+    case eveningClose = 2048
+    case nightWatch = 4096
+    case lessonSpark = 8192
+    case comebackGlow = 16384
+    case careContract = 32768
+    case puzzleClue = 65536
+    case boostRouted = 131072
+    case upgradeWish = 262144
+    case eventBeat = 524288
+    case careRitual = 1048576
+
+    var title: String {
+        switch self {
+        case .warmCheck:
+            return "Warm Check"
+        case .whatsHappening:
+            return "What Happened"
+        case .tinyWinSaved:
+            return "Tiny Win Saved"
+        case .overwhelmSoftened:
+            return "Too Much Softened"
+        case .firstMinute:
+            return "First Minute"
+        case .softReset:
+            return "Soft Reset"
+        case .braveStep:
+            return "Brave Step"
+        case .quietCompany:
+            return "Quiet Company"
+        case .sunriseHello:
+            return "Sunrise Hello"
+        case .focusPerch:
+            return "Focus Perch"
+        case .afternoonReset:
+            return "Afternoon Reset"
+        case .eveningClose:
+            return "Evening Close"
+        case .nightWatch:
+            return "Night Watch"
+        case .lessonSpark:
+            return "Lesson Spark"
+        case .comebackGlow:
+            return "Comeback Glow"
+        case .careContract:
+            return "Care Contract"
+        case .puzzleClue:
+            return "Puzzle Clue"
+        case .boostRouted:
+            return "Boost Routed"
+        case .upgradeWish:
+            return "Upgrade Wish"
+        case .eventBeat:
+            return "Event Beat"
+        case .careRitual:
+            return "Care Ritual"
+        }
+    }
+
+    var shortLabel: String {
+        switch self {
+        case .warmCheck:
+            return "Warm"
+        case .whatsHappening:
+            return "What"
+        case .tinyWinSaved:
+            return "Win"
+        case .overwhelmSoftened:
+            return "Ease"
+        case .firstMinute:
+            return "Min"
+        case .softReset:
+            return "Reset"
+        case .braveStep:
+            return "Brave"
+        case .quietCompany:
+            return "Quiet"
+        case .sunriseHello:
+            return "Sun"
+        case .focusPerch:
+            return "Focus"
+        case .afternoonReset:
+            return "Noon"
+        case .eveningClose:
+            return "Eve"
+        case .nightWatch:
+            return "Night"
+        case .lessonSpark:
+            return "Learn"
+        case .comebackGlow:
+            return "Back"
+        case .careContract:
+            return "Board"
+        case .puzzleClue:
+            return "Clue"
+        case .boostRouted:
+            return "Boost"
+        case .upgradeWish:
+            return "Card"
+        case .eventBeat:
+            return "Event"
+        case .careRitual:
+            return "Care"
+        }
+    }
+
+    var storyLine: String {
+        switch self {
+        case .warmCheck:
+            return "The pet asks how you are and keeps the answer gently."
+        case .whatsHappening:
+            return "A messy moment becomes one named spark it can carry."
+        case .tinyWinSaved:
+            return "One small win is saved as proof that the day moved."
+        case .overwhelmSoftened:
+            return "A too-large feeling gets folded into one softer step."
+        case .firstMinute:
+            return "The pet sits beside the first minute so starting feels less alone."
+        case .softReset:
+            return "A breath and stretch clear a little room around the next click."
+        case .braveStep:
+            return "The next brave move gets a tiny trail marker."
+        case .quietCompany:
+            return "Quiet company becomes care even when nothing big happens."
+        case .sunriseHello:
+            return "The day starts with recognition instead of pressure."
+        case .focusPerch:
+            return "It perches beside one task and keeps watch."
+        case .afternoonReset:
+            return "Low afternoon energy becomes a reset, not a failure."
+        case .eveningClose:
+            return "One open loop gets tucked beside the campfire."
+        case .nightWatch:
+            return "The pet guards the quiet hours with no urgency."
+        case .lessonSpark:
+            return "One phrase becomes a bright study keepsake."
+        case .comebackGlow:
+            return "Returning becomes part of the bond instead of a missed streak."
+        case .careContract:
+            return "A daily board task becomes a care receipt."
+        case .puzzleClue:
+            return "A clue is carried safely until the next puzzle step."
+        case .boostRouted:
+            return "Extra energy gets routed into a calmer next loop."
+        case .upgradeWish:
+            return "Saved Sparks point toward the next charm without shame."
+        case .eventBeat:
+            return "Today's event gets one warm story beat."
+        case .careRitual:
+            return "The current care need is answered and remembered."
+        }
+    }
+
+    var vital: PetCareVital {
+        switch self {
+        case .warmCheck, .overwhelmSoftened, .quietCompany, .nightWatch, .comebackGlow:
+            return .rest
+        case .whatsHappening, .firstMinute, .focusPerch, .lessonSpark, .careContract, .puzzleClue, .boostRouted, .upgradeWish:
+            return .focus
+        case .tinyWinSaved, .braveStep, .sunriseHello, .afternoonReset, .eveningClose, .eventBeat:
+            return .play
+        case .softReset, .careRitual:
+            return .snack
+        }
+    }
+
+    var moodStep: PetMoodCareStep {
+        switch self {
+        case .warmCheck, .overwhelmSoftened, .quietCompany, .comebackGlow:
+            return .soothe
+        case .whatsHappening, .firstMinute, .focusPerch, .boostRouted, .upgradeWish:
+            return .focus
+        case .tinyWinSaved, .careContract, .careRitual:
+            return .cheer
+        case .softReset, .nightWatch:
+            return .rest
+        case .braveStep, .eventBeat, .eveningClose:
+            return .adventure
+        case .sunriseHello, .afternoonReset:
+            return .play
+        case .lessonSpark:
+            return .study
+        case .puzzleClue:
+            return .puzzle
+        }
+    }
+
+    var sparkReward: Int {
+        switch self {
+        case .warmCheck, .whatsHappening, .overwhelmSoftened, .quietCompany, .sunriseHello, .nightWatch:
+            return 4
+        case .tinyWinSaved, .firstMinute, .softReset, .braveStep, .focusPerch, .afternoonReset, .eveningClose, .careRitual:
+            return 5
+        case .lessonSpark, .comebackGlow, .careContract, .puzzleClue, .boostRouted, .upgradeWish, .eventBeat:
+            return 6
+        }
+    }
+
+    var spriteSlug: String {
+        switch self {
+        case .warmCheck:
+            return "warm-check"
+        case .whatsHappening:
+            return "whats-happening"
+        case .tinyWinSaved:
+            return "tiny-win-saved"
+        case .overwhelmSoftened:
+            return "overwhelm-softened"
+        case .firstMinute:
+            return "first-minute"
+        case .softReset:
+            return "soft-reset"
+        case .braveStep:
+            return "brave-step"
+        case .quietCompany:
+            return "quiet-company"
+        case .sunriseHello:
+            return "sunrise-hello"
+        case .focusPerch:
+            return "focus-perch"
+        case .afternoonReset:
+            return "afternoon-reset"
+        case .eveningClose:
+            return "evening-close"
+        case .nightWatch:
+            return "night-watch"
+        case .lessonSpark:
+            return "lesson-spark"
+        case .comebackGlow:
+            return "comeback-glow"
+        case .careContract:
+            return "care-contract"
+        case .puzzleClue:
+            return "puzzle-clue"
+        case .boostRouted:
+            return "boost-routed"
+        case .upgradeWish:
+            return "upgrade-wish"
+        case .eventBeat:
+            return "event-beat"
+        case .careRitual:
+            return "care-ritual"
+        }
+    }
+
+    var spriteRequestName: String {
+        "pet-{stage}-cheer-memory-\(spriteSlug).png"
+    }
+
+    static func scene(dialogue: PetCheerDialogue?, intent: PetCheerIntent, daypart: PetDaypartNudge?) -> PetCheerMemory {
+        if let dialogue {
+            switch dialogue {
+            case .howAreYou:
+                return .warmCheck
+            case .whatsHappening:
+                return .whatsHappening
+            case .tinyWin:
+                return .tinyWinSaved
+            case .tooMuch:
+                return .overwhelmSoftened
+            case .focusStart:
+                return .firstMinute
+            case .softReset:
+                return .softReset
+            case .braveNext:
+                return .braveStep
+            case .quietCompany:
+                return .quietCompany
+            }
+        }
+
+        if let daypart {
+            switch daypart {
+            case .sunrise:
+                return .sunriseHello
+            case .focus:
+                return .focusPerch
+            case .afternoon:
+                return .afternoonReset
+            case .evening:
+                return .eveningClose
+            case .night:
+                return .nightWatch
+            }
+        }
+
+        switch intent {
+        case .checkIn:
+            return .warmCheck
+        case .feeling:
+            return .overwhelmSoftened
+        case .focus:
+            return .firstMinute
+        case .tinyWin:
+            return .tinyWinSaved
+        case .reset:
+            return .softReset
+        case .quest:
+            return .braveStep
+        case .lesson:
+            return .lessonSpark
+        case .rest:
+            return .quietCompany
+        case .comeback:
+            return .comebackGlow
+        case .board:
+            return .careContract
+        case .puzzle:
+            return .puzzleClue
+        case .boost:
+            return .boostRouted
+        case .upgrade:
+            return .upgradeWish
+        case .event:
+            return .eventBeat
+        case .care:
+            return .careRitual
+        }
+    }
+
+    static func count(mask: Int) -> Int {
+        allCases.filter { mask & $0.rawValue != 0 }.count
+    }
+
+    static func summary(dailyMask: Int, albumMask: Int, latest: PetCheerMemory) -> String {
+        let today = count(mask: dailyMask)
+        let album = count(mask: albumMask)
+        return "Cheer Memories \(today) today · Album \(album)/\(allCases.count) · Latest \(latest.title)"
+    }
+}
+
 enum PetLoreCodex {
     static func line(
         stage: PetGrowthStage,
