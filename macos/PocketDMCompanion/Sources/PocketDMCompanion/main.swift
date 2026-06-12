@@ -200,6 +200,8 @@ final class DragonOverlayModel: ObservableObject {
     private static let dailyBoosterUsedKey = "PocketDMCompanion.dailyBoosterUsed"
     private static let dailyCipherDateKey = "PocketDMCompanion.dailyCipherDate"
     private static let dailyCipherSolvedKey = "PocketDMCompanion.dailyCipherSolved"
+    private static let lastLifecycleAtKey = "PocketDMCompanion.lastLifecycleAt"
+    private static let lastComebackChestDayKey = "PocketDMCompanion.lastComebackChestDay"
     private static let maxEnergy = 5
     private static let energyRechargeSeconds: TimeInterval = 30 * 60
     private static let passiveSparkSeconds: TimeInterval = 15 * 60
@@ -254,6 +256,8 @@ final class DragonOverlayModel: ObservableObject {
     private var cheerTask: Task<Void, Never>?
     private var lastEnergyAt = UserDefaults.standard.double(forKey: DragonOverlayModel.lastEnergyAtKey)
     private var passiveSparkAt = UserDefaults.standard.double(forKey: DragonOverlayModel.passiveSparkAtKey)
+    private var lastLifecycleAt = UserDefaults.standard.double(forKey: DragonOverlayModel.lastLifecycleAtKey)
+    private var lastComebackChestDay = UserDefaults.standard.string(forKey: DragonOverlayModel.lastComebackChestDayKey) ?? ""
     init(client: PocketDMClient, launcher: GameLauncher) {
         self.client = client
         self.launcher = launcher
@@ -265,11 +269,16 @@ final class DragonOverlayModel: ObservableObject {
             passiveSparkAt = Date().timeIntervalSince1970
             UserDefaults.standard.set(passiveSparkAt, forKey: Self.passiveSparkAtKey)
         }
+        if lastLifecycleAt == 0 {
+            lastLifecycleAt = Date().timeIntervalSince1970
+            UserDefaults.standard.set(lastLifecycleAt, forKey: Self.lastLifecycleAtKey)
+        }
         syncDailyCombo()
         rechargeEnergy()
+        applyLifecycleCatchup(reason: "launch")
         let collected = collectPassiveSparks()
         if collected > 0 {
-            message = pikaText("Welcome back. Pikachu gathered \(collected) Sparks while you were away.")
+            appendPetNote("Pikachu gathered \(collected) Sparks while you were away.")
             speakPika()
         }
         startEnergyLoop()
@@ -302,9 +311,10 @@ final class DragonOverlayModel: ObservableObject {
         guard minimized != value else { return }
         minimized = value
         if !value {
+            applyLifecycleCatchup(reason: "open")
             let collected = collectPassiveSparks()
             if collected > 0 {
-                message = pikaText("Welcome back. Pikachu gathered \(collected) passive Sparks.")
+                appendPetNote("Pikachu gathered \(collected) passive Sparks.")
                 speakPika()
             }
         }
@@ -594,6 +604,10 @@ final class DragonOverlayModel: ObservableObject {
         return "Combo " + pieces.joined(separator: " · ")
     }
 
+    var evolutionLine: String {
+        PetGrowthStage.progressLine(companionHP: companionHP, sparkDust: sparkDust)
+    }
+
     var taskLine: String {
         let quests = dailyQuests
         let done = quests.filter { dailyQuestMask & $0.rawValue != 0 }.count
@@ -605,9 +619,9 @@ final class DragonOverlayModel: ObservableObject {
 
     var cipherLine: String {
         if dailyCipherSolved {
-            return "Cipher \(dailyCipher.answer) ✓ · Boost \(dailyBoosterUsed ? "used" : "ready")"
+            return "\(careMoment.title) · Cipher \(dailyCipher.answer) ✓ · Boost \(dailyBoosterUsed ? "used" : "ready")"
         }
-        return "Cipher: \(dailyCipher.clue) · Boost \(dailyBoosterUsed ? "used" : "ready")"
+        return "\(careMoment.title) · Cipher: \(dailyCipher.clue) · Boost \(dailyBoosterUsed ? "used" : "ready")"
     }
 
     var upgradeLine: String {
@@ -649,6 +663,16 @@ final class DragonOverlayModel: ObservableObject {
         return "Pika pika! \(text)"
     }
 
+    private func appendPetNote(_ note: String) {
+        if message.isEmpty || message == "Thinking..." {
+            message = pikaText(note)
+        } else if message.localizedCaseInsensitiveContains(note) {
+            return
+        } else {
+            message += " \(note)"
+        }
+    }
+
     private func persistCare() {
         UserDefaults.standard.set(companionHP, forKey: Self.companionHPKey)
         UserDefaults.standard.set(happiness, forKey: Self.happinessKey)
@@ -674,6 +698,8 @@ final class DragonOverlayModel: ObservableObject {
         UserDefaults.standard.set(dailyBoosterUsed, forKey: Self.dailyBoosterUsedKey)
         UserDefaults.standard.set(dailyCipherDate, forKey: Self.dailyCipherDateKey)
         UserDefaults.standard.set(dailyCipherSolved, forKey: Self.dailyCipherSolvedKey)
+        UserDefaults.standard.set(lastLifecycleAt, forKey: Self.lastLifecycleAtKey)
+        UserDefaults.standard.set(lastComebackChestDay, forKey: Self.lastComebackChestDayKey)
     }
 
     private func handlesCare(_ prompt: String) -> Bool {
@@ -708,8 +734,16 @@ final class DragonOverlayModel: ObservableObject {
             sparkDust: sparkDust,
             streak: petStreak,
             minimized: minimized,
-            hour: Calendar.current.component(.hour, from: Date())
+            hour: currentHour
         )
+    }
+
+    private var currentHour: Int {
+        Calendar.current.component(.hour, from: Date())
+    }
+
+    private var careMoment: PetCareMoment {
+        PetCareMoment(hour: currentHour)
     }
 
     private func spendEnergy() -> Bool {
@@ -743,6 +777,37 @@ final class DragonOverlayModel: ObservableObject {
         }
         persistCare()
         return earned
+    }
+
+    private func applyLifecycleCatchup(reason: String) {
+        let now = Date().timeIntervalSince1970
+        let elapsed = now - lastLifecycleAt
+        guard elapsed >= 60 * 60 else { return }
+
+        let hours = Int(elapsed / (60 * 60))
+        var notes: [String] = []
+        if let decayLine = PetLifecycleRules.decayLine(hoursIdle: hours) {
+            happiness = max(1, happiness - 1)
+            notes.append(decayLine)
+        }
+
+        let today = Self.dayFormatter.string(from: Date())
+        if lastComebackChestDay != today,
+           let reward = PetLifecycleRules.comebackReward(hoursAway: hours, nestLevel: nestLevel, sparkLevel: sparkLevel) {
+            lastComebackChestDay = today
+            sparkDust = min(999, sparkDust + reward.sparks)
+            happiness = min(5, happiness + reward.joy)
+            energy = min(Self.maxEnergy, energy + reward.energy)
+            notes.append(reward.line)
+        }
+
+        lastLifecycleAt = now
+        if !notes.isEmpty {
+            lastRequest = reason == "launch" ? "Welcome back" : "Comeback"
+            message = pikaText(notes.joined(separator: " "))
+            speakPika()
+        }
+        persistCare()
     }
 
     private func syncDailyCombo() {
@@ -876,6 +941,7 @@ final class DragonOverlayModel: ObservableObject {
                 await MainActor.run {
                     self?.syncDailyCombo()
                     self?.rechargeEnergy()
+                    self?.applyLifecycleCatchup(reason: "timer")
                     _ = self?.collectPassiveSparks()
                 }
             }
@@ -912,6 +978,8 @@ final class DragonOverlayModel: ObservableObject {
             cipher: dailyCipher,
             cipherSolved: dailyCipherSolved,
             boosterReady: !dailyBoosterUsed,
+            careMoment: careMoment,
+            comebackReady: canShowComebackNudge,
             energy: energy,
             sparkDust: sparkDust,
             index: index
@@ -921,6 +989,12 @@ final class DragonOverlayModel: ObservableObject {
         play(.happy)
         speakPika()
         setMood(.hyper, duration: 1.2)
+    }
+
+    private var canShowComebackNudge: Bool {
+        let today = Self.dayFormatter.string(from: Date())
+        let elapsed = Date().timeIntervalSince1970 - lastLifecycleAt
+        return lastComebackChestDay != today && elapsed >= 4 * 60 * 60
     }
 }
 
@@ -1275,6 +1349,11 @@ struct DragonOverlayView: View {
                 .foregroundStyle(Color.ivory.opacity(0.74))
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
+            Text(model.evolutionLine)
+                .font(.system(size: 8.5, weight: .bold, design: .rounded))
+                .foregroundStyle(Color.gold.opacity(0.78))
+                .lineLimit(1)
+                .minimumScaleFactor(0.58)
             Text(model.taskLine)
                 .font(.system(size: 8.5, weight: .black, design: .rounded))
                 .foregroundStyle(Color.ivory.opacity(0.72))
@@ -1293,7 +1372,7 @@ struct DragonOverlayView: View {
         }
         .multilineTextAlignment(.center)
         .frame(width: 170)
-        .frame(minHeight: 122)
+        .frame(minHeight: 134)
         .padding(.vertical, 7)
         .padding(.horizontal, 8)
         .background(.black.opacity(0.58), in: RoundedRectangle(cornerRadius: 7))

@@ -135,3 +135,9 @@ voice.
 **Rule:** mascot catchphrases should appear in the visible response text and
 trigger a native voice or sound reaction on meaningful pet events, with mute
 still respected.
+
+## 2026-06-12 — Absence should create a comeback, not punishment
+User wants a proper pet with growth, emotions, nudges, and long-running loops.
+**Rule:** when modeling time away, use gentle mood softening plus comeback
+rewards, time-of-day greetings, and visible evolution progress; do not make the
+pet feel needy, punitive, or like a generic streak counter.

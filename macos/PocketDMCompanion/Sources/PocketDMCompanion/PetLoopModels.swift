@@ -81,6 +81,24 @@ enum PetGrowthStage: CaseIterable {
             return "It guards the streak like a pocket storm."
         }
     }
+
+    static func progressLine(companionHP: Int, sparkDust: Int) -> String {
+        let milestones: [(PetGrowthStage, Int, Int)] = [
+            (.pocketPal, 4, 50),
+            (.trailBuddy, 6, 120),
+            (.stormScout, 8, 240),
+            (.stormGuardian, 10, 420)
+        ]
+        guard let next = milestones.first(where: { _, hp, sparks in
+            companionHP < hp && sparkDust < sparks
+        }) else {
+            return "Evolution: final form unlocked."
+        }
+
+        let hpNeed = max(0, next.1 - companionHP)
+        let sparkNeed = max(0, next.2 - sparkDust)
+        return "Next \(next.0.title): \(hpNeed) HP or \(sparkNeed) Sparks"
+    }
 }
 
 enum PetFeeling {
@@ -490,6 +508,105 @@ struct PetDailyCipher {
     }
 }
 
+enum PetCareMoment {
+    case sunrise
+    case focus
+    case afternoon
+    case evening
+    case night
+
+    init(hour: Int) {
+        switch hour {
+        case 5..<10:
+            self = .sunrise
+        case 10..<14:
+            self = .focus
+        case 14..<18:
+            self = .afternoon
+        case 18..<22:
+            self = .evening
+        default:
+            self = .night
+        }
+    }
+
+    var title: String {
+        switch self {
+        case .sunrise:
+            return "Sunrise"
+        case .focus:
+            return "Focus"
+        case .afternoon:
+            return "Afternoon"
+        case .evening:
+            return "Evening"
+        case .night:
+            return "Night"
+        }
+    }
+
+    var nudgeLine: String {
+        switch self {
+        case .sunrise:
+            return "Morning spark check. Want to pick one tiny quest?"
+        case .focus:
+            return "Focus window. I can sit with you for one clean step."
+        case .afternoon:
+            return "Afternoon wobble check. Need a boost or a softer task?"
+        case .evening:
+            return "Evening campfire check. Want to close one loop?"
+        case .night:
+            return "Quiet night watch. I can keep this gentle."
+        }
+    }
+}
+
+struct PetComebackReward {
+    let sparks: Int
+    let joy: Int
+    let energy: Int
+    let chestName: String
+
+    var line: String {
+        "\(chestName) opened: Joy +\(joy), Energy +\(energy), Sparks +\(sparks)."
+    }
+}
+
+enum PetLifecycleRules {
+    static func comebackReward(hoursAway: Int, nestLevel: Int, sparkLevel: Int) -> PetComebackReward? {
+        guard hoursAway >= 4 else { return nil }
+        let chest: String
+        let base: Int
+        if hoursAway >= 24 {
+            chest = "Storm Chest"
+            base = 28
+        } else if hoursAway >= 12 {
+            chest = "Moon Chest"
+            base = 20
+        } else {
+            chest = "Pocket Chest"
+            base = 12
+        }
+
+        return PetComebackReward(
+            sparks: min(80, base + nestLevel * 4 + sparkLevel * 3),
+            joy: hoursAway >= 12 ? 2 : 1,
+            energy: hoursAway >= 8 ? 2 : 1,
+            chestName: chest
+        )
+    }
+
+    static func decayLine(hoursIdle: Int) -> String? {
+        if hoursIdle >= 18 {
+            return "It waited a long while, so Joy softened by 1. A quick pet repairs it."
+        }
+        if hoursIdle >= 8 {
+            return "It got a little lonely while waiting. One check-in warms it back up."
+        }
+        return nil
+    }
+}
+
 enum PetLoreCodex {
     static func line(
         stage: PetGrowthStage,
@@ -531,12 +648,20 @@ enum PetNudgeLibrary {
         cipher: PetDailyCipher,
         cipherSolved: Bool,
         boosterReady: Bool,
+        careMoment: PetCareMoment,
+        comebackReady: Bool,
         energy: Int,
         sparkDust: Int,
         index: Int
     ) -> String {
+        if comebackReady {
+            return "Welcome back. I saved a little chest for you."
+        }
         if energy == 0 {
             return "I am sleepy, but I saved your quest. Come back after a recharge?"
+        }
+        if index % 5 == 0 {
+            return careMoment.nudgeLine
         }
         if boosterReady {
             return "Your Spark Boost is ready. Want a quick burst before the next quest?"

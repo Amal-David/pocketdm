@@ -183,6 +183,12 @@ The new layer should add:
 - Daily task-board tracking inspired by Telegram mini-game loops.
 - A daily cipher that gives a small puzzle reward.
 - A daily boost that refills energy and creates a quick return hook.
+- Time-of-day check-ins that feel different in morning, focus hours,
+  afternoon, evening, and night.
+- Comeback chests after meaningful time away, with gentle mood repair rather
+  than shame.
+- A visible evolution progress receipt so growth from small to big is always
+  legible.
 - Pet feelings that are visible enough to drive sprite selection.
 - Lore receipts that make each stage feel like a relationship, not a number.
 - Upgrade cards that change behavior: faster check-ins, better comeback
@@ -209,6 +215,11 @@ The native macOS companion now has the first version of the loop:
 - A rotating Upgrade button that spends Sparks on Snack Bowl, Study Bell, Quest
   Map, Cozy Nest, Cheer Signal, Spark Wheel, Focus Charm, and Cipher Stone.
 - Growth stages computed from Bond HP and Sparks.
+- A visible next-evolution line based on Bond HP or Sparks.
+- Lifecycle catch-up on launch/open: long absence can soften Joy, open a
+  comeback chest, refill some energy, and create a warmer welcome-back moment.
+- Time-of-day proactive nudge copy for Sunrise, Focus, Afternoon, Evening, and
+  Night care moments.
 - Visible feelings such as Eager, Proud, Overcharged, Focused, Celebrating,
   Protective, Gentle, Restless, Snacky, Sleepy, Curious, and Lonely.
 - A short lore line inside the care panel.

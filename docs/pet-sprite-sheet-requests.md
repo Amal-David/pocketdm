@@ -50,6 +50,12 @@ Generate these first. They unlock the most visible upgrade with the least code:
    - Fast wind-up, electric burst, then settles proudly.
 15. `pet-buddy-daily-cipher.png`
    - Thinking pose, clue discovery, little solved-celebration.
+16. `pet-buddy-comeback-chest.png`
+   - Opens a small saved chest after the user returns, relieved and happy.
+17. `pet-buddy-evolve-preview.png`
+   - Looks at a growing glow, then points at the next form.
+18. `pet-buddy-mood-repair.png`
+   - Starts lonely/gentle, receives care, warms back into a smile.
 
 ## Growth Stages
 
@@ -145,6 +151,52 @@ Full matrix:
 - keep every strip transparent, same camera, same scale anchor, same foot
   baseline, and no sticker outline.
 
+## Lifecycle Pack
+
+These are the sheets that make the pet feel alive across a real day, not just
+while the panel is open.
+
+Time-of-day nudges:
+
+- `pet-{stage}-sunrise-checkin.png`
+  - Wakes up, notices the user, offers a small morning quest.
+- `pet-{stage}-focus-window.png`
+  - Sits still, attentive, ready to help the user start one task.
+- `pet-{stage}-afternoon-wobble.png`
+  - Low-energy wobble, then asks whether the user wants a softer task.
+- `pet-{stage}-evening-campfire.png`
+  - Cozy closing-loop animation, warm and calm.
+- `pet-{stage}-night-watch.png`
+  - Protective quiet guard pose with slow breathing.
+
+Comeback and absence:
+
+- `pet-{stage}-waiting-softly.png`
+  - Looks around occasionally while the user is away.
+- `pet-{stage}-lonely-wait.png`
+  - Gentle low-joy state, not dramatic, no shame.
+- `pet-{stage}-welcome-back.png`
+  - Perks up when the user returns.
+- `pet-{stage}-pocket-chest-open.png`
+  - Small 4+ hour comeback reward.
+- `pet-{stage}-moon-chest-open.png`
+  - Medium 12+ hour comeback reward.
+- `pet-{stage}-storm-chest-open.png`
+  - Large 24+ hour comeback reward.
+- `pet-{stage}-mood-repair.png`
+  - Joy recovers after a pet/check-in.
+
+Evolution and growth:
+
+- `pet-{stage}-evolution-progress.png`
+  - Looks at a glowing progress mark for the next stage.
+- `pet-{stage}-ready-to-evolve.png`
+  - Excited, electricity gathers, body glows.
+- `pet-{stage}-evolve-to-{next-stage}.png`
+  - Transition from current stage into next stage.
+- `pet-{stage}-new-stage-idle.png`
+  - First calm idle loop after growth.
+
 ## Core Actions
 
 These are the actual product loops:
@@ -202,6 +254,16 @@ These are for the progression layer:
 - Daily boost ready.
 - Daily boost claimed.
 - Pika pika voice reaction.
+- Evolution progress updated.
+- Ready to evolve.
+- Evolution complete.
+- Mood decay after long absence.
+- Mood repaired by care.
+- Time-of-day nudge: sunrise.
+- Time-of-day nudge: focus.
+- Time-of-day nudge: afternoon.
+- Time-of-day nudge: evening.
+- Time-of-day nudge: night.
 
 ## Submission-Inspired Experience Sheets
 
