@@ -47,5 +47,12 @@ def test_scripted_play_loop_and_dragon_need_no_outbound_sockets(monkeypatch) -> 
 
     sprite = client.get("/static/dragon-sprites.png")
     assert sprite.status_code == 200
+    for sprite_name in (
+        "dragon-sprites-sad.png",
+        "dragon-sprites-angry.png",
+        "dragon-sprites-scared.png",
+    ):
+        mood_sprite = client.get(f"/static/{sprite_name}")
+        assert mood_sprite.status_code == 200
     assert not attempted
     monkeypatch.setattr(socket.socket, "connect", original_connect)

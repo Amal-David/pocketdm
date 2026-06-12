@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>PocketDM</title>
-    <link rel="stylesheet" href="/static/styles.css?v=20260612-spark1" />
+    <link rel="stylesheet" href="/static/styles.css?v=20260612-pet2" />
   </head>
   <body>
     <main class="shell">
@@ -72,7 +72,7 @@
           <p class="scene-label" id="scene-label">Awaiting adventure</p>
           <div class="dice-roll" id="dice-roll" aria-hidden="true">d20</div>
           <div class="narration" id="narration">
-            Pick a genre and begin. Spark will stay over the screen, hop, chatter,
+            Pick a genre and begin. Pikachu will stay over the screen, emote,
             read your state, and crackle when the tale calls for it.
           </div>
           <div class="choices" id="choices"></div>
@@ -88,7 +88,7 @@
       <div class="dragon-shell">
         <div class="dragon-handle" id="dragon-handle" role="toolbar" aria-label="Move electric familiar overlay">
           <span class="dragon-handle-grip" aria-hidden="true"></span>
-          <span class="dragon-name">Spark</span>
+          <span class="dragon-name">Pikachu</span>
           <span class="dragon-status" id="dragon-status">Idle</span>
           <button
             id="dragon-minimize"
@@ -102,16 +102,16 @@
           </button>
         </div>
         <div class="dragon-speech" id="dragon-speech">
-          Zip-zip. I am Spark. Drag me anywhere, minimize me, and ask for hints while the tale unfolds.
+          Pika-pika. I am on your desktop now. Drag me anywhere, minimize me, and ask for hints while the tale unfolds.
         </div>
-        <div class="dragon-quickbar" aria-label="Spark quick actions">
+        <div class="dragon-quickbar" aria-label="Pikachu quick actions">
           <button type="button" data-dragon-action="hint">Hint</button>
-          <button type="button" data-dragon-action="status">Status</button>
-          <button type="button" data-dragon-action="perch">Perch</button>
-          <button type="button" data-dragon-action="fire">Spark</button>
+          <button type="button" data-dragon-action="cheer">Happy</button>
+          <button type="button" data-dragon-action="nap">Nap</button>
+          <button type="button" data-dragon-action="fire">Angry</button>
         </div>
         <div class="dragon-row">
-          <button class="dragon-avatar" id="dragon-avatar" type="button" aria-label="Ask Spark for a hint">
+          <button class="dragon-avatar" id="dragon-avatar" type="button" aria-label="Ask Pikachu for a hint">
             <span class="dragon-stage" aria-hidden="true">
               <span class="dragon-aura"></span>
               <span class="dragon-sprite"></span>
@@ -119,7 +119,7 @@
             </span>
           </button>
           <form class="dragon-chat" id="dragon-form">
-            <input id="dragon-input" type="text" placeholder="Ask Spark" />
+            <input id="dragon-input" type="text" placeholder="Ask Pikachu" />
             <button type="submit">Ask</button>
           </form>
         </div>
@@ -129,10 +129,10 @@
           <span class="dragon-sprite"></span>
           <span class="dragon-shadow"></span>
         </span>
-        <span class="dragon-tab-label">Spark</span>
+        <span class="dragon-tab-label">Pikachu</span>
       </button>
     </section>
 
-    <script src="/static/app.js?v=20260612-spark1" type="module"></script>
+    <script src="/static/app.js?v=20260612-pet2" type="module"></script>
   </body>
 </html>

@@ -50,3 +50,16 @@ faster than the custom dragon attempts.
 **Rule:** do not use official character sprites, names, or catchphrases in the
 public hackathon artifact. Build an original electric familiar with yellow
 mascot readability, cheek sparks, and short custom chirps like "zip-zip" instead.
+
+## 2026-06-12 — Sprite sheets should become pet states, not decoration
+User provided 3D mood sheets and wanted the whole app to pick up that livelier
+desktop-pet feeling.
+**Rule:** when good reference sheets arrive, extract a consistent frame format
+and wire the app around visible states like happy, sad, angry, and scared; don't
+leave the asset as a static mascot beside a normal chat UI.
+
+## 2026-06-12 — Native pet polish beats branded action names
+User cared about the macOS overlay itself, not the browser, and called out the
+sprite extraction border plus marketing-heavy labels like Spark.
+**Rule:** verify the actual desktop overlay, regenerate masks when source-sheet
+halos appear, and prefer literal state labels such as Happy, Nap, and Angry.

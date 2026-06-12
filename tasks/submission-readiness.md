@@ -5,7 +5,7 @@
 - Custom Gradio app launches with `uv run python app.py`.
 - `/health` returns `{"status":"ok"}` on port 7860.
 - The app plays a complete scripted adventure through the frozen engine state contract.
-- Ember is persistent across the viewport, uses `app/static/dragon-sprites.png`, flaps continuously, gives state-aware hints, speaks through browser speech synthesis, and fires on notable replies.
+- Pikachu is persistent across the native macOS overlay, uses four local 3D mood sprite strips, gives state-aware hints, speaks through browser speech synthesis, and switches between happy, sad, angry, and scared reactions.
 - Narration has selectable `Auto`, `Dungeon`, `Wood`, `Starship`, and `Lore Narrator` modes; `app/voices/lore_narrator.npy` smoke-synthesizes locally at 24 kHz.
 - The app can switch to an optional llama.cpp backend when `POCKETDM_GGUF` points at a GGUF model; without that artifact, it honestly reports the current `Scripted` backend.
 - Unit/integration tests pass locally: `57 passed`.
@@ -14,7 +14,7 @@
 - WP-4 0.8B LoRA smoke training ran end to end on Modal: 20 steps, 978 train rows, 20 eval rows, train_loss=1.555, eval_loss=1.284, merged model saved in the `pocketdm-models` volume.
 - WP-4 smoke GGUF export ran end to end: Q4_K_M artifact SHA256 `02f57aca6929095f80b359d63760cbcd7e4d16ad4ce8d83b4af2d2c5c0355dc8`; local `train/smoke_infer.py --turns 3` loads it through llama.cpp and emits valid turn JSON.
 - The app can run with the smoke GGUF enabled: `POCKETDM_GGUF=models/0p8b-smoke-lora-20/merged.Q4_K_M.gguf uv run python app.py`, `/api/start` returned valid llama.cpp-backed turns with `used_bridge=false`, and `agent-browser` captured proof-badge/UI screenshots at `/tmp/pocketdm-gguf-started-proof3.png` and `/tmp/pocketdm-mobile-idle-fixed2.png`.
-- A local offline smoke test proves the scripted play loop, Ember assistant, and dragon sprite asset do not open outbound sockets.
+- A local offline smoke test proves the scripted play loop, Pikachu assistant, and mood sprite assets do not open outbound sockets.
 
 ## Honest Gaps Before Final Submission
 
@@ -29,7 +29,7 @@
 
 ## Judge-Framing Notes
 
-- Lead with Thousand Token Wood delight: a tiny offline DM plus a desktop-pet dragon.
+- Lead with Thousand Token Wood delight: a tiny offline DM plus an always-on desktop pet familiar.
 - Show the app first, not the training pipeline.
 - Be explicit that the engine owns state and validates every model turn.
 - Use the cost log and smoke reports as receipts for the Modal/OpenAI/Codex story.

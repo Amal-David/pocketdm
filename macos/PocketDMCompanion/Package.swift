@@ -13,7 +13,13 @@ let package = Package(
     targets: [
         .executableTarget(
             name: "PocketDMCompanion",
-            path: "Sources/PocketDMCompanion"
+            path: "Sources/PocketDMCompanion",
+            resources: [
+                .process("Resources")
+            ],
+            swiftSettings: [
+                .unsafeFlags(["-parse-as-library"])
+            ]
         )
     ]
 )

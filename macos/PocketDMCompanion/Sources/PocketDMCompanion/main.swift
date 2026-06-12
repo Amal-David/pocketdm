@@ -98,7 +98,11 @@ final class DragonOverlayController {
             }
         )
 
-        panel.contentView = NSHostingView(rootView: content)
+        let hostingView = NSHostingView(rootView: content)
+        hostingView.wantsLayer = true
+        hostingView.layer?.backgroundColor = NSColor.clear.cgColor
+        hostingView.layer?.isOpaque = false
+        panel.contentView = hostingView
         restoreFrame()
         setMinimized(model.minimized)
     }
@@ -109,7 +113,7 @@ final class DragonOverlayController {
     }
 
     private func setMinimized(_ minimized: Bool) {
-        let size = minimized ? NSSize(width: 168, height: 74) : NSSize(width: 360, height: 292)
+        let size = minimized ? NSSize(width: 176, height: 78) : NSSize(width: 374, height: 304)
         var frame = panel.frame
         let top = frame.maxY
         frame.size = size
@@ -147,12 +151,12 @@ final class DragonOverlayController {
 final class FloatingDragonPanel: NSPanel {
     init() {
         super.init(
-            contentRect: NSRect(x: 0, y: 0, width: 360, height: 292),
+            contentRect: NSRect(x: 0, y: 0, width: 374, height: 304),
             styleMask: [.borderless, .nonactivatingPanel],
             backing: .buffered,
             defer: false
         )
-        level = .floating
+        level = .statusBar
         collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
         backgroundColor = .clear
         isOpaque = false
@@ -167,13 +171,15 @@ final class FloatingDragonPanel: NSPanel {
 
 @MainActor
 final class DragonOverlayModel: ObservableObject {
-    @Published var message = "Zip-zip. I am Spark. I can hover above your Mac while PocketDM runs."
+    @Published var message = "Pika-pika. I am on your desktop now."
     @Published var serverLine = "Checking PocketDM..."
     @Published var minimized = UserDefaults.standard.bool(forKey: "PocketDMCompanion.minimized")
     @Published var busy = false
+    @Published var mood: PetMood = .happy
 
     private let client: PocketDMClient
     private let launcher: GameLauncher
+    private var moodTask: Task<Void, Never>?
 
     init(client: PocketDMClient, launcher: GameLauncher) {
         self.client = client
@@ -197,15 +203,66 @@ final class DragonOverlayModel: ObservableObject {
         UserDefaults.standard.set(value, forKey: "PocketDMCompanion.minimized")
     }
 
+    func happy() {
+        message = "Happy."
+        setMood(.happy, duration: 1.6)
+    }
+
+    func nap() {
+        message = "Tiny recharge nap. Still listening."
+        setMood(.sad, duration: 2.4)
+    }
+
+    func angry() {
+        message = "Angry."
+        setMood(.angry, duration: 1.5)
+    }
+
     func ask(_ prompt: String) async {
         busy = true
+        setMood(.scared)
         defer { busy = false }
         do {
             message = try await client.assistantReply(for: prompt)
             serverLine = "PocketDM companion online"
+            setMood(.happy, duration: 1.5)
         } catch {
             message = "I cannot reach the tale yet. Open PocketDM, start a run, then ask me again."
             serverLine = "Waiting for local server"
+            setMood(.sad, duration: 2.4)
+        }
+    }
+
+    func setMood(_ next: PetMood, duration: TimeInterval? = nil) {
+        moodTask?.cancel()
+        mood = next
+        guard let duration else { return }
+        moodTask = Task { [weak self] in
+            try? await Task.sleep(nanoseconds: UInt64(duration * 1_000_000_000))
+            if Task.isCancelled { return }
+            await MainActor.run {
+                self?.mood = .happy
+            }
+        }
+    }
+}
+
+enum PetMood: String, CaseIterable {
+    case happy
+    case sad
+    case angry
+    case scared
+
+    var assetName: String {
+        switch self {
+        case .happy:
+            return "spark-happy"
+        case .sad:
+            return "spark-sad"
+        case .angry:
+            return "spark-angry"
+        case .scared:
+            return "spark-scared"
         }
     }
 }
@@ -233,8 +290,8 @@ struct DragonOverlayView: View {
             onSizeChange(false)
         } label: {
             HStack(spacing: 8) {
-                dragonGlyph(size: 48)
-                Text("Spark")
+                AnimatedPetSprite(mood: model.mood, size: 52)
+                Text("Pikachu")
                     .font(.system(size: 13, weight: .black, design: .rounded))
                     .foregroundStyle(Color.ivory)
             }
@@ -254,7 +311,7 @@ struct DragonOverlayView: View {
                 Image(systemName: "circle.grid.2x2.fill")
                     .font(.system(size: 15, weight: .bold))
                     .foregroundStyle(Color.ivory.opacity(0.72))
-                Text("Spark")
+                Text("Pikachu")
                     .font(.system(size: 12, weight: .black, design: .rounded))
                     .foregroundStyle(Color.ivory)
                 Spacer()
@@ -282,7 +339,7 @@ struct DragonOverlayView: View {
                 .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.gold.opacity(0.38), lineWidth: 1))
 
             HStack(alignment: .bottom, spacing: 10) {
-                dragonGlyph(size: 136)
+                AnimatedPetSprite(mood: model.mood, size: 154)
                     .shadow(color: .black.opacity(0.42), radius: 12, y: 10)
 
                 VStack(spacing: 8) {
@@ -294,13 +351,20 @@ struct DragonOverlayView: View {
 
                     HStack(spacing: 8) {
                         Button("Hint") { Task { await model.ask("hint") } }
-                        Button("Status") { Task { await model.ask("status") } }
+                        Button("Happy") { model.happy() }
+                    }
+                    .buttonStyle(DragonButtonStyle())
+                    .disabled(model.busy)
+
+                    HStack(spacing: 8) {
+                        Button("Nap") { model.nap() }
+                        Button("Angry") { model.angry() }
                     }
                     .buttonStyle(DragonButtonStyle())
                     .disabled(model.busy)
 
                     HStack(spacing: 7) {
-                        TextField("Ask Spark", text: $customPrompt)
+                        TextField("Ask Pikachu", text: $customPrompt)
                             .textFieldStyle(.plain)
                             .font(.system(size: 13, weight: .semibold))
                             .padding(.horizontal, 9)
@@ -326,7 +390,7 @@ struct DragonOverlayView: View {
             }
         }
         .padding(8)
-        .frame(width: 360, height: 292)
+        .frame(width: 374, height: 304)
         .background(.clear)
     }
 
@@ -346,46 +410,77 @@ struct DragonOverlayView: View {
             }
     }
 
-    private func dragonGlyph(size: CGFloat) -> some View {
-        ZStack {
-            Ellipse()
-                .fill(LinearGradient(colors: [Color.emerald, Color.deepTeal], startPoint: .topLeading, endPoint: .bottomTrailing))
-                .frame(width: size * 0.58, height: size * 0.38)
-                .offset(x: -size * 0.08, y: size * 0.14)
-            Capsule()
-                .fill(Color.wing)
-                .frame(width: size * 0.48, height: size * 0.18)
-                .rotationEffect(.degrees(-32))
-                .offset(x: -size * 0.2, y: -size * 0.12)
-            Capsule()
-                .fill(Color.wing)
-                .frame(width: size * 0.46, height: size * 0.16)
-                .rotationEffect(.degrees(24))
-                .offset(x: size * 0.14, y: -size * 0.08)
-            Circle()
-                .fill(LinearGradient(colors: [Color.emeraldLight, Color.emerald], startPoint: .top, endPoint: .bottom))
-                .frame(width: size * 0.36, height: size * 0.36)
-                .offset(x: size * 0.24, y: -size * 0.12)
-            Circle()
-                .fill(Color.ivory)
-                .frame(width: size * 0.06)
-                .offset(x: size * 0.32, y: -size * 0.15)
-            Circle()
-                .fill(.black)
-                .frame(width: size * 0.032)
-                .offset(x: size * 0.335, y: -size * 0.15)
-            Triangle()
-                .fill(Color.gold)
-                .frame(width: size * 0.12, height: size * 0.18)
-                .rotationEffect(.degrees(-8))
-                .offset(x: size * 0.14, y: -size * 0.31)
-            Triangle()
-                .fill(Color.gold)
-                .frame(width: size * 0.12, height: size * 0.18)
-                .rotationEffect(.degrees(18))
-                .offset(x: size * 0.3, y: -size * 0.3)
+}
+
+struct AnimatedPetSprite: View {
+    let mood: PetMood
+    let size: CGFloat
+
+    @State private var frameIndex = 0
+    private let timer = Timer.publish(every: 0.1, on: .main, in: .common).autoconnect()
+
+    var body: some View {
+        Group {
+            if let image = PetSpriteSheet.image(for: mood, frame: frameIndex) {
+                Image(nsImage: image)
+                    .resizable()
+                    .interpolation(.high)
+                    .scaledToFit()
+            } else {
+                Image(systemName: "bolt.fill")
+                    .resizable()
+                    .scaledToFit()
+                    .foregroundStyle(Color.gold)
+                    .padding(size * 0.22)
+            }
         }
         .frame(width: size, height: size)
+        .contentShape(Rectangle())
+        .onReceive(timer) { _ in
+            frameIndex = (frameIndex + 1) % PetSpriteSheet.frameCount
+        }
+        .onChange(of: mood) {
+            frameIndex = 0
+        }
+    }
+}
+
+@MainActor
+enum PetSpriteSheet {
+    static let frameCount = 12
+    private static var cache: [PetMood: [NSImage]] = [:]
+
+    static func image(for mood: PetMood, frame: Int) -> NSImage? {
+        let frames = frames(for: mood)
+        guard !frames.isEmpty else { return nil }
+        return frames[frame % frames.count]
+    }
+
+    private static func frames(for mood: PetMood) -> [NSImage] {
+        if let cached = cache[mood] {
+            return cached
+        }
+        guard
+            let url = Bundle.module.url(forResource: mood.assetName, withExtension: "png"),
+            let sheet = NSImage(contentsOf: url),
+            let cgImage = sheet.cgImage(forProposedRect: nil, context: nil, hints: nil)
+        else {
+            cache[mood] = []
+            return []
+        }
+
+        let frameWidth = cgImage.width / frameCount
+        let frameHeight = cgImage.height
+        let frames = (0..<frameCount).compactMap { index -> NSImage? in
+            let rect = CGRect(x: index * frameWidth, y: 0, width: frameWidth, height: frameHeight)
+            guard let cropped = cgImage.cropping(to: rect) else { return nil }
+            return NSImage(
+                cgImage: cropped,
+                size: NSSize(width: CGFloat(frameWidth), height: CGFloat(frameHeight))
+            )
+        }
+        cache[mood] = frames
+        return frames
     }
 }
 
@@ -415,6 +510,21 @@ struct Triangle: Shape {
         path.move(to: CGPoint(x: rect.midX, y: rect.minY))
         path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
         path.addLine(to: CGPoint(x: rect.minX, y: rect.maxY))
+        path.closeSubpath()
+        return path
+    }
+}
+
+struct BoltTail: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        path.move(to: CGPoint(x: rect.minX + rect.width * 0.1, y: rect.minY + rect.height * 0.2))
+        path.addLine(to: CGPoint(x: rect.minX + rect.width * 0.72, y: rect.minY))
+        path.addLine(to: CGPoint(x: rect.minX + rect.width * 0.52, y: rect.minY + rect.height * 0.36))
+        path.addLine(to: CGPoint(x: rect.maxX, y: rect.minY + rect.height * 0.36))
+        path.addLine(to: CGPoint(x: rect.minX + rect.width * 0.28, y: rect.maxY))
+        path.addLine(to: CGPoint(x: rect.minX + rect.width * 0.48, y: rect.minY + rect.height * 0.54))
+        path.addLine(to: CGPoint(x: rect.minX, y: rect.minY + rect.height * 0.58))
         path.closeSubpath()
         return path
     }
@@ -543,4 +653,9 @@ private extension Color {
     static let emeraldLight = Color(red: 1.0, green: 0.94, blue: 0.4)
     static let deepTeal = Color(red: 0.82, green: 0.36, blue: 0.04)
     static let wing = Color(red: 1.0, green: 0.84, blue: 0.18)
+    static let sparkLight = Color(red: 1.0, green: 0.92, blue: 0.28)
+    static let sparkAmber = Color(red: 0.91, green: 0.5, blue: 0.06)
+    static let sparkDark = Color(red: 0.12, green: 0.08, blue: 0.05)
+    static let sparkCheek = Color(red: 0.98, green: 0.25, blue: 0.22)
+    static let electricBlue = Color(red: 0.38, green: 0.92, blue: 1.0)
 }

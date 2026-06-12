@@ -108,7 +108,7 @@ async function startAdventure() {
     dragonSay(`I lost the trail: ${error.message}`, { fire: true });
   } finally {
     setBusy(false);
-    setDragonMood("idle");
+    settleDragonMood("thinking");
   }
 }
 
@@ -128,13 +128,13 @@ async function choose(action) {
     dragonSay(`That turn fizzled: ${error.message}`, { fire: true });
   } finally {
     setBusy(false);
-    setDragonMood("idle");
+    settleDragonMood("thinking");
   }
 }
 
 async function askDragon(message) {
   if (!state.sessionId) {
-    dragonSay("Start a tale first, then I can zip in with useful opinions.", { fire: true });
+    dragonSay("Start a tale first, then I can help from the corner.", { fire: true });
     return;
   }
   setDragonMinimized(false);
@@ -144,11 +144,13 @@ async function askDragon(message) {
       session_id: state.sessionId,
       message,
     });
-    dragonSay(payload.reply, { fire: /fire|flame|scorch|victory/i.test(payload.reply) });
+    dragonSay(payload.reply, {
+      fire: /fire|flame|scorch|victory|spark|bolt|shock|thunder/i.test(payload.reply),
+    });
   } catch (error) {
-    dragonSay(`My tiny spark jammed: ${error.message}`, { fire: true });
+    dragonSay(`My tiny helper jammed: ${error.message}`, { fire: true });
   } finally {
-    setDragonMood("idle");
+    settleDragonMood("listening");
   }
 }
 
@@ -157,14 +159,20 @@ function handleDragonQuickAction(action) {
     case "hint":
       askDragon("hint");
       return;
-    case "status":
-      askDragon("status");
+    case "cheer":
+      dragonSay("Happy.", {
+        mood: "cheer",
+        speak: false,
+      });
       return;
-    case "perch":
-      perchDragon();
+    case "nap":
+      dragonSay("Nap.", {
+        mood: "nap",
+        speak: false,
+      });
       return;
     case "fire":
-      dragonSay("Zip-zip. Static check complete. Tiny thunderbolt ready for one heroic story.", {
+      dragonSay("Angry.", {
         fire: true,
         speak: false,
       });
@@ -295,17 +303,14 @@ function typeText(target, text) {
 
 function dragonSay(text, options = {}) {
   els.dragonSpeech.textContent = text;
+  const mood = options.mood || (options.fire ? "fire" : "idle");
   if (options.fire) {
-    setDragonMood("fire");
+    setTemporaryDragonMood("fire", 1100);
     els.dragonAvatar.classList.remove("is-fire");
     void els.dragonAvatar.offsetWidth;
     els.dragonAvatar.classList.add("is-fire");
-    window.clearTimeout(state.dragonMoodTimer);
-    state.dragonMoodTimer = window.setTimeout(() => {
-      if (!state.isBusy && els.dragonAssistant.dataset.mood === "fire") {
-        setDragonMood("idle");
-      }
-    }, 900);
+  } else if (mood !== "idle") {
+    setTemporaryDragonMood(mood, options.duration || 1800);
   } else if (!state.isBusy) {
     setDragonMood("idle");
   }
@@ -447,11 +452,30 @@ function setDragonMinimized(isMinimized) {
 function setDragonMood(mood) {
   els.dragonAssistant.dataset.mood = mood;
   els.dragonStatus.textContent = {
+    cheer: "Happy",
+    nap: "Rest",
+    scared: "Alert",
     thinking: "Thinking",
     listening: "Listening",
-    fire: "Spark",
-    idle: "Idle",
-  }[mood] || "Idle";
+    fire: "Angry",
+    idle: "Happy",
+  }[mood] || "Happy";
+}
+
+function setTemporaryDragonMood(mood, duration) {
+  window.clearTimeout(state.dragonMoodTimer);
+  setDragonMood(mood);
+  state.dragonMoodTimer = window.setTimeout(() => {
+    if (!state.isBusy && els.dragonAssistant.dataset.mood === mood) {
+      setDragonMood("idle");
+    }
+  }, duration);
+}
+
+function settleDragonMood(...moods) {
+  if (moods.includes(els.dragonAssistant.dataset.mood)) {
+    setDragonMood("idle");
+  }
 }
 
 function startDragonDrag(event) {

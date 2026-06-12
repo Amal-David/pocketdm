@@ -271,8 +271,8 @@ def _truthy_env(name: str) -> bool:
 
 def _assistant_opening(genre: str) -> str:
     return (
-        f"I am Ember, your pocket drake. I will perch here while the "
-        f"{GENRE_LABELS[genre]} tries to misbehave."
+        f"I am Pikachu, your pocket electric familiar. I will hover here while "
+        f"the {GENRE_LABELS[genre]} tries to misbehave."
     )
 
 
@@ -280,7 +280,7 @@ def _assistant_for_turn(session: PlaySession, action: str) -> str:
     if session.last_turn is None:
         return "I am ready when you are."
     if session.last_turn.is_ending:
-        return "That is a proper ending. I am doing a tiny victory scorch."
+        return "That is a proper ending. Tiny victory jump."
     if session.state.hp <= 3:
         return (
             f"Careful: {session.state.hp}/10 HP at {session.state.location}. "
@@ -293,7 +293,7 @@ def _assistant_for_turn(session: PlaySession, action: str) -> str:
             f"{inventory}."
         )
     return (
-        "Choice logged. Wings flapping. "
+        "Choice logged. Tail glowing. "
         f"My current read: {_choice_reason(session, _recommended_choice(session))}"
     )
 
@@ -313,11 +313,11 @@ def _dragon_reply(session: PlaySession, message: str) -> str:
             return "The tale has landed. Start a fresh scroll if you want another flight."
         choice = _recommended_choice(session)
         return f"My hint: try '{choice}'. {_choice_reason(session, choice)}"
-    if "fire" in lowered or "flame" in lowered:
-        return "A tasteful puff of fire, then. We are dramatic, not reckless."
+    if "fire" in lowered or "flame" in lowered or "angry" in lowered or "bolt" in lowered:
+        return "Angry face, then. Dramatic, not reckless."
     if "offline" in lowered or "tiny" in lowered:
         return "The winning trick is receipts: small model, local rules, no hidden cloud calls."
-    return "I heard you. Ask me for a hint, a status read, or a little fire."
+    return "I heard you. Ask me for a hint, a status read, or an angry face."
 
 
 def _voice_for_genre(genre: str) -> str:

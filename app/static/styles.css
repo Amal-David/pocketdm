@@ -393,7 +393,7 @@ dd {
 
 .dragon-row {
   display: grid;
-  grid-template-columns: 170px minmax(0, 1fr);
+  grid-template-columns: 190px minmax(0, 1fr);
   gap: 10px;
   align-items: end;
 }
@@ -408,8 +408,8 @@ dd {
   position: relative;
   display: grid;
   place-items: center;
-  width: 170px;
-  height: 170px;
+  width: 190px;
+  height: 190px;
   border: 0;
   background: transparent;
   cursor: pointer;
@@ -436,7 +436,9 @@ dd {
 }
 
 .dragon-stage {
-  --dragon-frame: 168px;
+  --dragon-frame: 188px;
+  --pet-strip-width: 2256px;
+  --pet-strip-offset: -2256px;
   position: relative;
   display: block;
   width: var(--dragon-frame);
@@ -450,9 +452,11 @@ dd {
   display: block;
   width: var(--dragon-frame);
   height: var(--dragon-frame);
-  background: url("/static/dragon-sprites.png") 0 0 / calc(var(--dragon-frame) * 8) var(--dragon-frame) no-repeat;
-  animation: dragon-flap 0.9s steps(8) infinite;
+  background: url("/static/dragon-sprites.png") 0 0 / var(--pet-strip-width) var(--dragon-frame) no-repeat;
+  animation: dragon-flap 1.28s steps(12) infinite;
   filter: drop-shadow(0 18px 18px rgba(0, 0, 0, 0.44));
+  transform: translateZ(0);
+  will-change: background-position, filter;
 }
 
 .dragon-aura {
@@ -481,7 +485,8 @@ dd {
 }
 
 .dragon-assistant[data-mood="thinking"] .dragon-sprite {
-  animation-duration: 0.56s;
+  background-image: url("/static/dragon-sprites-scared.png");
+  animation-duration: 0.72s;
   filter:
     drop-shadow(0 18px 18px rgba(0, 0, 0, 0.44))
     drop-shadow(0 0 14px rgba(88, 235, 255, 0.42));
@@ -492,8 +497,47 @@ dd {
   transform: rotate(-3deg) translateY(-2px);
 }
 
+.dragon-assistant[data-mood="listening"] .dragon-sprite,
+.dragon-assistant[data-mood="scared"] .dragon-sprite {
+  background-image: url("/static/dragon-sprites-scared.png");
+  animation-duration: 1.04s;
+}
+
+.dragon-assistant[data-mood="cheer"] .dragon-stage {
+  animation: pet-cheer 1.05s cubic-bezier(0.2, 1.35, 0.26, 1) infinite;
+}
+
+.dragon-assistant[data-mood="cheer"] .dragon-sprite {
+  background-image: url("/static/dragon-sprites.png");
+  animation-duration: 0.82s;
+  filter:
+    drop-shadow(0 18px 18px rgba(0, 0, 0, 0.44))
+    drop-shadow(0 0 16px rgba(255, 236, 87, 0.42));
+}
+
+.dragon-assistant[data-mood="nap"] .dragon-stage {
+  animation: pet-nap 2.1s ease-in-out infinite;
+}
+
+.dragon-assistant[data-mood="nap"] .dragon-sprite {
+  background-image: url("/static/dragon-sprites-sad.png");
+  animation-duration: 2s;
+  filter:
+    drop-shadow(0 16px 16px rgba(0, 0, 0, 0.4))
+    saturate(0.86);
+}
+
 .dragon-assistant[data-mood="fire"] .dragon-sprite {
-  animation-duration: 0.42s;
+  background-image: url("/static/dragon-sprites-angry.png");
+  animation-duration: 0.66s;
+  filter:
+    drop-shadow(0 18px 18px rgba(0, 0, 0, 0.44))
+    drop-shadow(0 0 18px rgba(255, 236, 87, 0.5))
+    drop-shadow(0 0 22px rgba(88, 235, 255, 0.38));
+}
+
+.dragon-assistant[data-mood="fire"] .dragon-stage {
+  animation: pet-spark 0.72s ease-in-out infinite;
 }
 
 .dragon-tab {
@@ -517,6 +561,8 @@ dd {
 
 .dragon-tab .dragon-stage {
   --dragon-frame: 54px;
+  --pet-strip-width: 648px;
+  --pet-strip-offset: -648px;
   animation-duration: 2.2s;
 }
 
@@ -554,7 +600,7 @@ dd {
 
 @keyframes dragon-flap {
   to {
-    background-position-x: calc(var(--dragon-frame) * -8);
+    background-position-x: var(--pet-strip-offset);
   }
 }
 
@@ -604,6 +650,42 @@ dd {
   100% {
     border-left-color: rgba(88, 235, 255, 0);
     transform: scaleX(0.3);
+  }
+}
+
+@keyframes pet-cheer {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg) scale(1);
+  }
+  38% {
+    transform: translateY(-16px) rotate(-4deg) scale(1.06);
+  }
+  68% {
+    transform: translateY(-4px) rotate(3deg) scale(1.02);
+  }
+}
+
+@keyframes pet-nap {
+  0%,
+  100% {
+    transform: translateY(4px) rotate(-2deg) scale(0.98);
+  }
+  50% {
+    transform: translateY(9px) rotate(1deg) scale(0.94);
+  }
+}
+
+@keyframes pet-spark {
+  0%,
+  100% {
+    transform: translateX(0) rotate(0deg) scale(1);
+  }
+  30% {
+    transform: translateX(-5px) rotate(-5deg) scale(1.04);
+  }
+  58% {
+    transform: translateX(5px) rotate(4deg) scale(1.02);
   }
 }
 
@@ -711,6 +793,8 @@ dd {
 
   .dragon-stage {
     --dragon-frame: 88px;
+    --pet-strip-width: 1056px;
+    --pet-strip-offset: -1056px;
   }
 
   .dragon-chat {
