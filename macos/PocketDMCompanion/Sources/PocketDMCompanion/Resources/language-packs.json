@@ -3,40 +3,2610 @@
     "id": "spanish",
     "title": "Spanish",
     "nativeTitle": "Español",
-    "subtitle": "Travel basics",
+    "subtitle": "100 words + 100 sentences",
     "languageCode": "es-ES",
-    "cards": [
+    "words": [
       {
-        "id": "spanish-hello",
+        "id": "spanish-word-001",
+        "kind": "word",
         "english": "Hello",
         "target": "Hola",
         "romanization": "OH-lah",
-        "pronunciationTip": "Open with a round OH, then finish softly on lah.",
-        "distractors": ["Goodbye", "Please", "Water"]
+        "pronunciationTip": "Say it as OH-lah. Keep the final sound light.",
+        "distractors": [
+          "Excuse me",
+          "Soup",
+          "Right"
+        ]
       },
       {
-        "id": "spanish-thanks",
+        "id": "spanish-word-002",
+        "kind": "word",
+        "english": "Goodbye",
+        "target": "Adiós",
+        "romanization": "ah-DYOS",
+        "pronunciationTip": "Say it as ah-DYOS. Keep the final sound light.",
+        "distractors": [
+          "Good morning",
+          "House",
+          "Straight"
+        ]
+      },
+      {
+        "id": "spanish-word-003",
+        "kind": "word",
+        "english": "Yes",
+        "target": "Sí",
+        "romanization": "SEE",
+        "pronunciationTip": "Say it as SEE. Keep the final sound light.",
+        "distractors": [
+          "Good night",
+          "Hotel",
+          "Near"
+        ]
+      },
+      {
+        "id": "spanish-word-004",
+        "kind": "word",
+        "english": "No",
+        "target": "No",
+        "romanization": "noh",
+        "pronunciationTip": "Say it as noh. Keep the final sound light.",
+        "distractors": [
+          "Water",
+          "Bathroom",
+          "Far"
+        ]
+      },
+      {
+        "id": "spanish-word-005",
+        "kind": "word",
+        "english": "Please",
+        "target": "Por favor",
+        "romanization": "por fah-VOR",
+        "pronunciationTip": "Say it as por fah-VOR. Keep the final sound light.",
+        "distractors": [
+          "Coffee",
+          "Station",
+          "Today"
+        ]
+      },
+      {
+        "id": "spanish-word-006",
+        "kind": "word",
         "english": "Thank you",
         "target": "Gracias",
         "romanization": "GRAH-syahs",
-        "pronunciationTip": "Start with GRAH, then let syahs glide quickly.",
-        "distractors": ["Excuse me", "Good night", "I am sorry"]
+        "pronunciationTip": "Say it as GRAH-syahs. Keep the final sound light.",
+        "distractors": [
+          "Tea",
+          "Airport",
+          "Tomorrow"
+        ]
       },
       {
-        "id": "spanish-water",
-        "english": "I want water",
-        "target": "Quiero agua",
-        "romanization": "KYEH-roh AH-gwah",
-        "pronunciationTip": "Keep quiero two beats, then open wide on agua.",
-        "distractors": ["I need help", "Where is the station?", "The food is good"]
+        "id": "spanish-word-007",
+        "kind": "word",
+        "english": "Sorry",
+        "target": "Lo siento",
+        "romanization": "loh SYEN-toh",
+        "pronunciationTip": "Say it as loh SYEN-toh. Keep the final sound light.",
+        "distractors": [
+          "Food",
+          "Street",
+          "Yesterday"
+        ]
       },
       {
-        "id": "spanish-station",
-        "english": "Where is the station?",
-        "target": "¿Dónde está la estación?",
-        "romanization": "DON-deh es-TAH lah es-tah-SYON",
-        "pronunciationTip": "Stress TAH and finish estacion with a bright SYON.",
-        "distractors": ["How much is it?", "I like coffee", "See you tomorrow"]
+        "id": "spanish-word-008",
+        "kind": "word",
+        "english": "Excuse me",
+        "target": "Perdón",
+        "romanization": "per-DON",
+        "pronunciationTip": "Say it as per-DON. Keep the final sound light.",
+        "distractors": [
+          "Rice",
+          "Store",
+          "Morning"
+        ]
+      },
+      {
+        "id": "spanish-word-009",
+        "kind": "word",
+        "english": "Good morning",
+        "target": "Buenos días",
+        "romanization": "BWEH-nos DEE-ahs",
+        "pronunciationTip": "Say it as BWEH-nos DEE-ahs. Keep the final sound light.",
+        "distractors": [
+          "Bread",
+          "Market",
+          "Night"
+        ]
+      },
+      {
+        "id": "spanish-word-010",
+        "kind": "word",
+        "english": "Good night",
+        "target": "Buenas noches",
+        "romanization": "BWEH-nas NOH-ches",
+        "pronunciationTip": "Say it as BWEH-nas NOH-ches. Keep the final sound light.",
+        "distractors": [
+          "Fruit",
+          "School",
+          "Now"
+        ]
+      },
+      {
+        "id": "spanish-word-011",
+        "kind": "word",
+        "english": "Water",
+        "target": "Agua",
+        "romanization": "AH-gwah",
+        "pronunciationTip": "Say it as AH-gwah. Keep the final sound light.",
+        "distractors": [
+          "Apple",
+          "Hospital",
+          "Later"
+        ]
+      },
+      {
+        "id": "spanish-word-012",
+        "kind": "word",
+        "english": "Coffee",
+        "target": "Café",
+        "romanization": "kah-FEH",
+        "pronunciationTip": "Say it as kah-FEH. Keep the final sound light.",
+        "distractors": [
+          "Banana",
+          "Left",
+          "I"
+        ]
+      },
+      {
+        "id": "spanish-word-013",
+        "kind": "word",
+        "english": "Tea",
+        "target": "Té",
+        "romanization": "teh",
+        "pronunciationTip": "Say it as teh. Keep the final sound light.",
+        "distractors": [
+          "Soup",
+          "Right",
+          "You"
+        ]
+      },
+      {
+        "id": "spanish-word-014",
+        "kind": "word",
+        "english": "Food",
+        "target": "Comida",
+        "romanization": "koh-MEE-dah",
+        "pronunciationTip": "Say it as koh-MEE-dah. Keep the final sound light.",
+        "distractors": [
+          "House",
+          "Straight",
+          "We"
+        ]
+      },
+      {
+        "id": "spanish-word-015",
+        "kind": "word",
+        "english": "Rice",
+        "target": "Arroz",
+        "romanization": "ah-ROS",
+        "pronunciationTip": "Say it as ah-ROS. Keep the final sound light.",
+        "distractors": [
+          "Hotel",
+          "Near",
+          "They"
+        ]
+      },
+      {
+        "id": "spanish-word-016",
+        "kind": "word",
+        "english": "Bread",
+        "target": "Pan",
+        "romanization": "pahn",
+        "pronunciationTip": "Say it as pahn. Keep the final sound light.",
+        "distractors": [
+          "Bathroom",
+          "Far",
+          "Friend"
+        ]
+      },
+      {
+        "id": "spanish-word-017",
+        "kind": "word",
+        "english": "Fruit",
+        "target": "Fruta",
+        "romanization": "FROO-tah",
+        "pronunciationTip": "Say it as FROO-tah. Keep the final sound light.",
+        "distractors": [
+          "Station",
+          "Today",
+          "Family"
+        ]
+      },
+      {
+        "id": "spanish-word-018",
+        "kind": "word",
+        "english": "Apple",
+        "target": "Manzana",
+        "romanization": "mahn-SAH-nah",
+        "pronunciationTip": "Say it as mahn-SAH-nah. Keep the final sound light.",
+        "distractors": [
+          "Airport",
+          "Tomorrow",
+          "Teacher"
+        ]
+      },
+      {
+        "id": "spanish-word-019",
+        "kind": "word",
+        "english": "Banana",
+        "target": "Plátano",
+        "romanization": "PLAH-tah-noh",
+        "pronunciationTip": "Say it as PLAH-tah-noh. Keep the final sound light.",
+        "distractors": [
+          "Street",
+          "Yesterday",
+          "Student"
+        ]
+      },
+      {
+        "id": "spanish-word-020",
+        "kind": "word",
+        "english": "Soup",
+        "target": "Sopa",
+        "romanization": "SOH-pah",
+        "pronunciationTip": "Say it as SOH-pah. Keep the final sound light.",
+        "distractors": [
+          "Store",
+          "Morning",
+          "Child"
+        ]
+      },
+      {
+        "id": "spanish-word-021",
+        "kind": "word",
+        "english": "House",
+        "target": "Casa",
+        "romanization": "KAH-sah",
+        "pronunciationTip": "Say it as KAH-sah. Keep the final sound light.",
+        "distractors": [
+          "Market",
+          "Night",
+          "Person"
+        ]
+      },
+      {
+        "id": "spanish-word-022",
+        "kind": "word",
+        "english": "Hotel",
+        "target": "Hotel",
+        "romanization": "oh-TEL",
+        "pronunciationTip": "Say it as oh-TEL. Keep the final sound light.",
+        "distractors": [
+          "School",
+          "Now",
+          "Man"
+        ]
+      },
+      {
+        "id": "spanish-word-023",
+        "kind": "word",
+        "english": "Bathroom",
+        "target": "Baño",
+        "romanization": "BAH-nyoh",
+        "pronunciationTip": "Say it as BAH-nyoh. Keep the final sound light.",
+        "distractors": [
+          "Hospital",
+          "Later",
+          "Woman"
+        ]
+      },
+      {
+        "id": "spanish-word-024",
+        "kind": "word",
+        "english": "Station",
+        "target": "Estación",
+        "romanization": "es-tah-SYON",
+        "pronunciationTip": "Say it as es-tah-SYON. Keep the final sound light.",
+        "distractors": [
+          "Left",
+          "I",
+          "Name"
+        ]
+      },
+      {
+        "id": "spanish-word-025",
+        "kind": "word",
+        "english": "Airport",
+        "target": "Aeropuerto",
+        "romanization": "ah-eh-roh-PWER-toh",
+        "pronunciationTip": "Say it as ah-eh-roh-PWER-toh. Keep the final sound light.",
+        "distractors": [
+          "Right",
+          "You",
+          "Phone"
+        ]
+      },
+      {
+        "id": "spanish-word-026",
+        "kind": "word",
+        "english": "Street",
+        "target": "Calle",
+        "romanization": "KAH-yeh",
+        "pronunciationTip": "Say it as KAH-yeh. Keep the final sound light.",
+        "distractors": [
+          "Straight",
+          "We",
+          "Money"
+        ]
+      },
+      {
+        "id": "spanish-word-027",
+        "kind": "word",
+        "english": "Store",
+        "target": "Tienda",
+        "romanization": "TYEN-dah",
+        "pronunciationTip": "Say it as TYEN-dah. Keep the final sound light.",
+        "distractors": [
+          "Near",
+          "They",
+          "Ticket"
+        ]
+      },
+      {
+        "id": "spanish-word-028",
+        "kind": "word",
+        "english": "Market",
+        "target": "Mercado",
+        "romanization": "mer-KAH-doh",
+        "pronunciationTip": "Say it as mer-KAH-doh. Keep the final sound light.",
+        "distractors": [
+          "Far",
+          "Friend",
+          "Bus"
+        ]
+      },
+      {
+        "id": "spanish-word-029",
+        "kind": "word",
+        "english": "School",
+        "target": "Escuela",
+        "romanization": "es-KWEH-lah",
+        "pronunciationTip": "Say it as es-KWEH-lah. Keep the final sound light.",
+        "distractors": [
+          "Today",
+          "Family",
+          "Train"
+        ]
+      },
+      {
+        "id": "spanish-word-030",
+        "kind": "word",
+        "english": "Hospital",
+        "target": "Hospital",
+        "romanization": "os-pee-TAL",
+        "pronunciationTip": "Say it as os-pee-TAL. Keep the final sound light.",
+        "distractors": [
+          "Tomorrow",
+          "Teacher",
+          "Taxi"
+        ]
+      },
+      {
+        "id": "spanish-word-031",
+        "kind": "word",
+        "english": "Left",
+        "target": "Izquierda",
+        "romanization": "ees-KYER-dah",
+        "pronunciationTip": "Say it as ees-KYER-dah. Keep the final sound light.",
+        "distractors": [
+          "Yesterday",
+          "Student",
+          "Car"
+        ]
+      },
+      {
+        "id": "spanish-word-032",
+        "kind": "word",
+        "english": "Right",
+        "target": "Derecha",
+        "romanization": "deh-REH-chah",
+        "pronunciationTip": "Say it as deh-REH-chah. Keep the final sound light.",
+        "distractors": [
+          "Morning",
+          "Child",
+          "Bicycle"
+        ]
+      },
+      {
+        "id": "spanish-word-033",
+        "kind": "word",
+        "english": "Straight",
+        "target": "Derecho",
+        "romanization": "deh-REH-choh",
+        "pronunciationTip": "Say it as deh-REH-choh. Keep the final sound light.",
+        "distractors": [
+          "Night",
+          "Person",
+          "City"
+        ]
+      },
+      {
+        "id": "spanish-word-034",
+        "kind": "word",
+        "english": "Near",
+        "target": "Cerca",
+        "romanization": "SER-kah",
+        "pronunciationTip": "Say it as SER-kah. Keep the final sound light.",
+        "distractors": [
+          "Now",
+          "Man",
+          "Country"
+        ]
+      },
+      {
+        "id": "spanish-word-035",
+        "kind": "word",
+        "english": "Far",
+        "target": "Lejos",
+        "romanization": "LEH-hos",
+        "pronunciationTip": "Say it as LEH-hos. Keep the final sound light.",
+        "distractors": [
+          "Later",
+          "Woman",
+          "Language"
+        ]
+      },
+      {
+        "id": "spanish-word-036",
+        "kind": "word",
+        "english": "Today",
+        "target": "Hoy",
+        "romanization": "oy",
+        "pronunciationTip": "Say it as oy. Keep the final sound light.",
+        "distractors": [
+          "I",
+          "Name",
+          "Spanish"
+        ]
+      },
+      {
+        "id": "spanish-word-037",
+        "kind": "word",
+        "english": "Tomorrow",
+        "target": "Mañana",
+        "romanization": "mah-NYAH-nah",
+        "pronunciationTip": "Say it as mah-NYAH-nah. Keep the final sound light.",
+        "distractors": [
+          "You",
+          "Phone",
+          "Chinese"
+        ]
+      },
+      {
+        "id": "spanish-word-038",
+        "kind": "word",
+        "english": "Yesterday",
+        "target": "Ayer",
+        "romanization": "ah-YER",
+        "pronunciationTip": "Say it as ah-YER. Keep the final sound light.",
+        "distractors": [
+          "We",
+          "Money",
+          "English"
+        ]
+      },
+      {
+        "id": "spanish-word-039",
+        "kind": "word",
+        "english": "Morning",
+        "target": "Mañana",
+        "romanization": "mah-NYAH-nah",
+        "pronunciationTip": "Say it as mah-NYAH-nah. Keep the final sound light.",
+        "distractors": [
+          "They",
+          "Ticket",
+          "Book"
+        ]
+      },
+      {
+        "id": "spanish-word-040",
+        "kind": "word",
+        "english": "Night",
+        "target": "Noche",
+        "romanization": "NOH-cheh",
+        "pronunciationTip": "Say it as NOH-cheh. Keep the final sound light.",
+        "distractors": [
+          "Friend",
+          "Bus",
+          "Music"
+        ]
+      },
+      {
+        "id": "spanish-word-041",
+        "kind": "word",
+        "english": "Now",
+        "target": "Ahora",
+        "romanization": "ah-OH-rah",
+        "pronunciationTip": "Say it as ah-OH-rah. Keep the final sound light.",
+        "distractors": [
+          "Family",
+          "Train",
+          "Movie"
+        ]
+      },
+      {
+        "id": "spanish-word-042",
+        "kind": "word",
+        "english": "Later",
+        "target": "Luego",
+        "romanization": "LWEH-goh",
+        "pronunciationTip": "Say it as LWEH-goh. Keep the final sound light.",
+        "distractors": [
+          "Teacher",
+          "Taxi",
+          "Work"
+        ]
+      },
+      {
+        "id": "spanish-word-043",
+        "kind": "word",
+        "english": "I",
+        "target": "Yo",
+        "romanization": "yoh",
+        "pronunciationTip": "Say it as yoh. Keep the final sound light.",
+        "distractors": [
+          "Student",
+          "Car",
+          "Help"
+        ]
+      },
+      {
+        "id": "spanish-word-044",
+        "kind": "word",
+        "english": "You",
+        "target": "Tú",
+        "romanization": "too",
+        "pronunciationTip": "Say it as too. Keep the final sound light.",
+        "distractors": [
+          "Child",
+          "Bicycle",
+          "Question"
+        ]
+      },
+      {
+        "id": "spanish-word-045",
+        "kind": "word",
+        "english": "We",
+        "target": "Nosotros",
+        "romanization": "noh-SOH-tros",
+        "pronunciationTip": "Say it as noh-SOH-tros. Keep the final sound light.",
+        "distractors": [
+          "Person",
+          "City",
+          "Answer"
+        ]
+      },
+      {
+        "id": "spanish-word-046",
+        "kind": "word",
+        "english": "They",
+        "target": "Ellos",
+        "romanization": "EH-yos",
+        "pronunciationTip": "Say it as EH-yos. Keep the final sound light.",
+        "distractors": [
+          "Man",
+          "Country",
+          "Problem"
+        ]
+      },
+      {
+        "id": "spanish-word-047",
+        "kind": "word",
+        "english": "Friend",
+        "target": "Amigo",
+        "romanization": "ah-MEE-goh",
+        "pronunciationTip": "Say it as ah-MEE-goh. Keep the final sound light.",
+        "distractors": [
+          "Woman",
+          "Language",
+          "Happy"
+        ]
+      },
+      {
+        "id": "spanish-word-048",
+        "kind": "word",
+        "english": "Family",
+        "target": "Familia",
+        "romanization": "fah-MEE-lyah",
+        "pronunciationTip": "Say it as fah-MEE-lyah. Keep the final sound light.",
+        "distractors": [
+          "Name",
+          "Spanish",
+          "Tired"
+        ]
+      },
+      {
+        "id": "spanish-word-049",
+        "kind": "word",
+        "english": "Teacher",
+        "target": "Maestra",
+        "romanization": "mah-ES-trah",
+        "pronunciationTip": "Say it as mah-ES-trah. Keep the final sound light.",
+        "distractors": [
+          "Phone",
+          "Chinese",
+          "Hungry"
+        ]
+      },
+      {
+        "id": "spanish-word-050",
+        "kind": "word",
+        "english": "Student",
+        "target": "Estudiante",
+        "romanization": "es-too-DYAN-teh",
+        "pronunciationTip": "Say it as es-too-DYAN-teh. Keep the final sound light.",
+        "distractors": [
+          "Money",
+          "English",
+          "Thirsty"
+        ]
+      },
+      {
+        "id": "spanish-word-051",
+        "kind": "word",
+        "english": "Child",
+        "target": "Niño",
+        "romanization": "NEE-nyoh",
+        "pronunciationTip": "Say it as NEE-nyoh. Keep the final sound light.",
+        "distractors": [
+          "Ticket",
+          "Book",
+          "Hot"
+        ]
+      },
+      {
+        "id": "spanish-word-052",
+        "kind": "word",
+        "english": "Person",
+        "target": "Persona",
+        "romanization": "per-SOH-nah",
+        "pronunciationTip": "Say it as per-SOH-nah. Keep the final sound light.",
+        "distractors": [
+          "Bus",
+          "Music",
+          "Cold"
+        ]
+      },
+      {
+        "id": "spanish-word-053",
+        "kind": "word",
+        "english": "Man",
+        "target": "Hombre",
+        "romanization": "OHM-breh",
+        "pronunciationTip": "Say it as OHM-breh. Keep the final sound light.",
+        "distractors": [
+          "Train",
+          "Movie",
+          "Big"
+        ]
+      },
+      {
+        "id": "spanish-word-054",
+        "kind": "word",
+        "english": "Woman",
+        "target": "Mujer",
+        "romanization": "moo-HER",
+        "pronunciationTip": "Say it as moo-HER. Keep the final sound light.",
+        "distractors": [
+          "Taxi",
+          "Work",
+          "Small"
+        ]
+      },
+      {
+        "id": "spanish-word-055",
+        "kind": "word",
+        "english": "Name",
+        "target": "Nombre",
+        "romanization": "NOHM-breh",
+        "pronunciationTip": "Say it as NOHM-breh. Keep the final sound light.",
+        "distractors": [
+          "Car",
+          "Help",
+          "Fast"
+        ]
+      },
+      {
+        "id": "spanish-word-056",
+        "kind": "word",
+        "english": "Phone",
+        "target": "Teléfono",
+        "romanization": "teh-LEH-foh-noh",
+        "pronunciationTip": "Say it as teh-LEH-foh-noh. Keep the final sound light.",
+        "distractors": [
+          "Bicycle",
+          "Question",
+          "Slow"
+        ]
+      },
+      {
+        "id": "spanish-word-057",
+        "kind": "word",
+        "english": "Money",
+        "target": "Dinero",
+        "romanization": "dee-NEH-roh",
+        "pronunciationTip": "Say it as dee-NEH-roh. Keep the final sound light.",
+        "distractors": [
+          "City",
+          "Answer",
+          "Good"
+        ]
+      },
+      {
+        "id": "spanish-word-058",
+        "kind": "word",
+        "english": "Ticket",
+        "target": "Boleto",
+        "romanization": "boh-LEH-toh",
+        "pronunciationTip": "Say it as boh-LEH-toh. Keep the final sound light.",
+        "distractors": [
+          "Country",
+          "Problem",
+          "Bad"
+        ]
+      },
+      {
+        "id": "spanish-word-059",
+        "kind": "word",
+        "english": "Bus",
+        "target": "Autobús",
+        "romanization": "ow-toh-BOOS",
+        "pronunciationTip": "Say it as ow-toh-BOOS. Keep the final sound light.",
+        "distractors": [
+          "Language",
+          "Happy",
+          "Open"
+        ]
+      },
+      {
+        "id": "spanish-word-060",
+        "kind": "word",
+        "english": "Train",
+        "target": "Tren",
+        "romanization": "tren",
+        "pronunciationTip": "Say it as tren. Keep the final sound light.",
+        "distractors": [
+          "Spanish",
+          "Tired",
+          "Closed"
+        ]
+      },
+      {
+        "id": "spanish-word-061",
+        "kind": "word",
+        "english": "Taxi",
+        "target": "Taxi",
+        "romanization": "TAHK-see",
+        "pronunciationTip": "Say it as TAHK-see. Keep the final sound light.",
+        "distractors": [
+          "Chinese",
+          "Hungry",
+          "Here"
+        ]
+      },
+      {
+        "id": "spanish-word-062",
+        "kind": "word",
+        "english": "Car",
+        "target": "Coche",
+        "romanization": "KOH-cheh",
+        "pronunciationTip": "Say it as KOH-cheh. Keep the final sound light.",
+        "distractors": [
+          "English",
+          "Thirsty",
+          "There"
+        ]
+      },
+      {
+        "id": "spanish-word-063",
+        "kind": "word",
+        "english": "Bicycle",
+        "target": "Bicicleta",
+        "romanization": "bee-see-KLEH-tah",
+        "pronunciationTip": "Say it as bee-see-KLEH-tah. Keep the final sound light.",
+        "distractors": [
+          "Book",
+          "Hot",
+          "One"
+        ]
+      },
+      {
+        "id": "spanish-word-064",
+        "kind": "word",
+        "english": "City",
+        "target": "Ciudad",
+        "romanization": "syoo-DAHD",
+        "pronunciationTip": "Say it as syoo-DAHD. Keep the final sound light.",
+        "distractors": [
+          "Music",
+          "Cold",
+          "Two"
+        ]
+      },
+      {
+        "id": "spanish-word-065",
+        "kind": "word",
+        "english": "Country",
+        "target": "País",
+        "romanization": "pah-EES",
+        "pronunciationTip": "Say it as pah-EES. Keep the final sound light.",
+        "distractors": [
+          "Movie",
+          "Big",
+          "Three"
+        ]
+      },
+      {
+        "id": "spanish-word-066",
+        "kind": "word",
+        "english": "Language",
+        "target": "Idioma",
+        "romanization": "ee-DYOH-mah",
+        "pronunciationTip": "Say it as ee-DYOH-mah. Keep the final sound light.",
+        "distractors": [
+          "Work",
+          "Small",
+          "Four"
+        ]
+      },
+      {
+        "id": "spanish-word-067",
+        "kind": "word",
+        "english": "Spanish",
+        "target": "Español",
+        "romanization": "es-pah-NYOL",
+        "pronunciationTip": "Say it as es-pah-NYOL. Keep the final sound light.",
+        "distractors": [
+          "Help",
+          "Fast",
+          "Five"
+        ]
+      },
+      {
+        "id": "spanish-word-068",
+        "kind": "word",
+        "english": "Chinese",
+        "target": "Chino",
+        "romanization": "CHEE-noh",
+        "pronunciationTip": "Say it as CHEE-noh. Keep the final sound light.",
+        "distractors": [
+          "Question",
+          "Slow",
+          "Ten"
+        ]
+      },
+      {
+        "id": "spanish-word-069",
+        "kind": "word",
+        "english": "English",
+        "target": "Inglés",
+        "romanization": "een-GLES",
+        "pronunciationTip": "Say it as een-GLES. Keep the final sound light.",
+        "distractors": [
+          "Answer",
+          "Good",
+          "Time"
+        ]
+      },
+      {
+        "id": "spanish-word-070",
+        "kind": "word",
+        "english": "Book",
+        "target": "Libro",
+        "romanization": "LEE-broh",
+        "pronunciationTip": "Say it as LEE-broh. Keep the final sound light.",
+        "distractors": [
+          "Problem",
+          "Bad",
+          "I need water"
+        ]
+      },
+      {
+        "id": "spanish-word-071",
+        "kind": "word",
+        "english": "Music",
+        "target": "Música",
+        "romanization": "MOO-see-kah",
+        "pronunciationTip": "Say it as MOO-see-kah. Keep the final sound light.",
+        "distractors": [
+          "Happy",
+          "Open",
+          "I want coffee"
+        ]
+      },
+      {
+        "id": "spanish-word-072",
+        "kind": "word",
+        "english": "Movie",
+        "target": "Película",
+        "romanization": "peh-LEE-koo-lah",
+        "pronunciationTip": "Say it as peh-LEE-koo-lah. Keep the final sound light.",
+        "distractors": [
+          "Tired",
+          "Closed",
+          "I have a question"
+        ]
+      },
+      {
+        "id": "spanish-word-073",
+        "kind": "word",
+        "english": "Work",
+        "target": "Trabajo",
+        "romanization": "trah-BAH-hoh",
+        "pronunciationTip": "Say it as trah-BAH-hoh. Keep the final sound light.",
+        "distractors": [
+          "Hungry",
+          "Here",
+          "I speak Spanish"
+        ]
+      },
+      {
+        "id": "spanish-word-074",
+        "kind": "word",
+        "english": "Help",
+        "target": "Ayuda",
+        "romanization": "ah-YOO-dah",
+        "pronunciationTip": "Say it as ah-YOO-dah. Keep the final sound light.",
+        "distractors": [
+          "Thirsty",
+          "There",
+          "I eat rice"
+        ]
+      },
+      {
+        "id": "spanish-word-075",
+        "kind": "word",
+        "english": "Question",
+        "target": "Pregunta",
+        "romanization": "preh-GOON-tah",
+        "pronunciationTip": "Say it as preh-GOON-tah. Keep the final sound light.",
+        "distractors": [
+          "Hot",
+          "One",
+          "I read a book"
+        ]
+      },
+      {
+        "id": "spanish-word-076",
+        "kind": "word",
+        "english": "Answer",
+        "target": "Respuesta",
+        "romanization": "res-PWES-tah",
+        "pronunciationTip": "Say it as res-PWES-tah. Keep the final sound light.",
+        "distractors": [
+          "Cold",
+          "Two",
+          "I go to school"
+        ]
+      },
+      {
+        "id": "spanish-word-077",
+        "kind": "word",
+        "english": "Problem",
+        "target": "Problema",
+        "romanization": "proh-BLEH-mah",
+        "pronunciationTip": "Say it as proh-BLEH-mah. Keep the final sound light.",
+        "distractors": [
+          "Big",
+          "Three",
+          "I buy bread"
+        ]
+      },
+      {
+        "id": "spanish-word-078",
+        "kind": "word",
+        "english": "Happy",
+        "target": "Feliz",
+        "romanization": "feh-LEES",
+        "pronunciationTip": "Say it as feh-LEES. Keep the final sound light.",
+        "distractors": [
+          "Small",
+          "Four",
+          "I wait for the bus"
+        ]
+      },
+      {
+        "id": "spanish-word-079",
+        "kind": "word",
+        "english": "Tired",
+        "target": "Cansado",
+        "romanization": "kahn-SAH-doh",
+        "pronunciationTip": "Say it as kahn-SAH-doh. Keep the final sound light.",
+        "distractors": [
+          "Fast",
+          "Five",
+          "I listen to music"
+        ]
+      },
+      {
+        "id": "spanish-word-080",
+        "kind": "word",
+        "english": "Hungry",
+        "target": "Hambriento",
+        "romanization": "ahm-BRYEN-toh",
+        "pronunciationTip": "Say it as ahm-BRYEN-toh. Keep the final sound light.",
+        "distractors": [
+          "Slow",
+          "Ten",
+          "You need water"
+        ]
+      },
+      {
+        "id": "spanish-word-081",
+        "kind": "word",
+        "english": "Thirsty",
+        "target": "Sediento",
+        "romanization": "seh-DYEN-toh",
+        "pronunciationTip": "Say it as seh-DYEN-toh. Keep the final sound light.",
+        "distractors": [
+          "Good",
+          "Time",
+          "You want coffee"
+        ]
+      },
+      {
+        "id": "spanish-word-082",
+        "kind": "word",
+        "english": "Hot",
+        "target": "Caliente",
+        "romanization": "kah-LYEN-teh",
+        "pronunciationTip": "Say it as kah-LYEN-teh. Keep the final sound light.",
+        "distractors": [
+          "Bad",
+          "I need water",
+          "You have a question"
+        ]
+      },
+      {
+        "id": "spanish-word-083",
+        "kind": "word",
+        "english": "Cold",
+        "target": "Frío",
+        "romanization": "FREE-oh",
+        "pronunciationTip": "Say it as FREE-oh. Keep the final sound light.",
+        "distractors": [
+          "Open",
+          "I want coffee",
+          "You speak Spanish"
+        ]
+      },
+      {
+        "id": "spanish-word-084",
+        "kind": "word",
+        "english": "Big",
+        "target": "Grande",
+        "romanization": "GRAHN-deh",
+        "pronunciationTip": "Say it as GRAHN-deh. Keep the final sound light.",
+        "distractors": [
+          "Closed",
+          "I have a question",
+          "You eat rice"
+        ]
+      },
+      {
+        "id": "spanish-word-085",
+        "kind": "word",
+        "english": "Small",
+        "target": "Pequeño",
+        "romanization": "peh-KEH-nyoh",
+        "pronunciationTip": "Say it as peh-KEH-nyoh. Keep the final sound light.",
+        "distractors": [
+          "Here",
+          "I speak Spanish",
+          "You read a book"
+        ]
+      },
+      {
+        "id": "spanish-word-086",
+        "kind": "word",
+        "english": "Fast",
+        "target": "Rápido",
+        "romanization": "RAH-pee-doh",
+        "pronunciationTip": "Say it as RAH-pee-doh. Keep the final sound light.",
+        "distractors": [
+          "There",
+          "I eat rice",
+          "You go to school"
+        ]
+      },
+      {
+        "id": "spanish-word-087",
+        "kind": "word",
+        "english": "Slow",
+        "target": "Lento",
+        "romanization": "LEN-toh",
+        "pronunciationTip": "Say it as LEN-toh. Keep the final sound light.",
+        "distractors": [
+          "One",
+          "I read a book",
+          "You buy bread"
+        ]
+      },
+      {
+        "id": "spanish-word-088",
+        "kind": "word",
+        "english": "Good",
+        "target": "Bueno",
+        "romanization": "BWEH-noh",
+        "pronunciationTip": "Say it as BWEH-noh. Keep the final sound light.",
+        "distractors": [
+          "Two",
+          "I go to school",
+          "You wait for the bus"
+        ]
+      },
+      {
+        "id": "spanish-word-089",
+        "kind": "word",
+        "english": "Bad",
+        "target": "Malo",
+        "romanization": "MAH-loh",
+        "pronunciationTip": "Say it as MAH-loh. Keep the final sound light.",
+        "distractors": [
+          "Three",
+          "I buy bread",
+          "You listen to music"
+        ]
+      },
+      {
+        "id": "spanish-word-090",
+        "kind": "word",
+        "english": "Open",
+        "target": "Abierto",
+        "romanization": "ah-BYER-toh",
+        "pronunciationTip": "Say it as ah-BYER-toh. Keep the final sound light.",
+        "distractors": [
+          "Four",
+          "I wait for the bus",
+          "We need water"
+        ]
+      },
+      {
+        "id": "spanish-word-091",
+        "kind": "word",
+        "english": "Closed",
+        "target": "Cerrado",
+        "romanization": "seh-RAH-doh",
+        "pronunciationTip": "Say it as seh-RAH-doh. Keep the final sound light.",
+        "distractors": [
+          "Five",
+          "I listen to music",
+          "We want coffee"
+        ]
+      },
+      {
+        "id": "spanish-word-092",
+        "kind": "word",
+        "english": "Here",
+        "target": "Aquí",
+        "romanization": "ah-KEE",
+        "pronunciationTip": "Say it as ah-KEE. Keep the final sound light.",
+        "distractors": [
+          "Ten",
+          "You need water",
+          "We have a question"
+        ]
+      },
+      {
+        "id": "spanish-word-093",
+        "kind": "word",
+        "english": "There",
+        "target": "Allí",
+        "romanization": "ah-YEE",
+        "pronunciationTip": "Say it as ah-YEE. Keep the final sound light.",
+        "distractors": [
+          "Time",
+          "You want coffee",
+          "We speak Spanish"
+        ]
+      },
+      {
+        "id": "spanish-word-094",
+        "kind": "word",
+        "english": "One",
+        "target": "Uno",
+        "romanization": "OO-noh",
+        "pronunciationTip": "Say it as OO-noh. Keep the final sound light.",
+        "distractors": [
+          "I need water",
+          "You have a question",
+          "We eat rice"
+        ]
+      },
+      {
+        "id": "spanish-word-095",
+        "kind": "word",
+        "english": "Two",
+        "target": "Dos",
+        "romanization": "dohs",
+        "pronunciationTip": "Say it as dohs. Keep the final sound light.",
+        "distractors": [
+          "I want coffee",
+          "You speak Spanish",
+          "We read a book"
+        ]
+      },
+      {
+        "id": "spanish-word-096",
+        "kind": "word",
+        "english": "Three",
+        "target": "Tres",
+        "romanization": "trehs",
+        "pronunciationTip": "Say it as trehs. Keep the final sound light.",
+        "distractors": [
+          "I have a question",
+          "You eat rice",
+          "We go to school"
+        ]
+      },
+      {
+        "id": "spanish-word-097",
+        "kind": "word",
+        "english": "Four",
+        "target": "Cuatro",
+        "romanization": "KWAH-troh",
+        "pronunciationTip": "Say it as KWAH-troh. Keep the final sound light.",
+        "distractors": [
+          "I speak Spanish",
+          "You read a book",
+          "We buy bread"
+        ]
+      },
+      {
+        "id": "spanish-word-098",
+        "kind": "word",
+        "english": "Five",
+        "target": "Cinco",
+        "romanization": "SEEN-koh",
+        "pronunciationTip": "Say it as SEEN-koh. Keep the final sound light.",
+        "distractors": [
+          "I eat rice",
+          "You go to school",
+          "We wait for the bus"
+        ]
+      },
+      {
+        "id": "spanish-word-099",
+        "kind": "word",
+        "english": "Ten",
+        "target": "Diez",
+        "romanization": "dyes",
+        "pronunciationTip": "Say it as dyes. Keep the final sound light.",
+        "distractors": [
+          "I read a book",
+          "You buy bread",
+          "We listen to music"
+        ]
+      },
+      {
+        "id": "spanish-word-100",
+        "kind": "word",
+        "english": "Time",
+        "target": "Tiempo",
+        "romanization": "TYEM-poh",
+        "pronunciationTip": "Say it as TYEM-poh. Keep the final sound light.",
+        "distractors": [
+          "I go to school",
+          "You wait for the bus",
+          "They need water"
+        ]
+      }
+    ],
+    "sentences": [
+      {
+        "id": "spanish-sentence-001",
+        "kind": "sentence",
+        "english": "I need water",
+        "target": "Yo necesito agua",
+        "romanization": "yoh neh-seh-SEE-toh AH-gwah",
+        "pronunciationTip": "Practice the rhythm: yoh neh-seh-SEE-toh AH-gwah.",
+        "distractors": [
+          "Excuse me",
+          "Soup",
+          "Right"
+        ]
+      },
+      {
+        "id": "spanish-sentence-002",
+        "kind": "sentence",
+        "english": "I want coffee",
+        "target": "Yo quiero café",
+        "romanization": "yoh KYEH-roh kah-FEH",
+        "pronunciationTip": "Practice the rhythm: yoh KYEH-roh kah-FEH.",
+        "distractors": [
+          "Good morning",
+          "House",
+          "Straight"
+        ]
+      },
+      {
+        "id": "spanish-sentence-003",
+        "kind": "sentence",
+        "english": "I have a question",
+        "target": "Yo tengo una pregunta",
+        "romanization": "yoh TEN-goh OO-nah preh-GOON-tah",
+        "pronunciationTip": "Practice the rhythm: yoh TEN-goh OO-nah preh-GOON-tah.",
+        "distractors": [
+          "Good night",
+          "Hotel",
+          "Near"
+        ]
+      },
+      {
+        "id": "spanish-sentence-004",
+        "kind": "sentence",
+        "english": "I speak Spanish",
+        "target": "Yo hablo español",
+        "romanization": "yoh AH-bloh es-pah-NYOL",
+        "pronunciationTip": "Practice the rhythm: yoh AH-bloh es-pah-NYOL.",
+        "distractors": [
+          "Water",
+          "Bathroom",
+          "Far"
+        ]
+      },
+      {
+        "id": "spanish-sentence-005",
+        "kind": "sentence",
+        "english": "I eat rice",
+        "target": "Yo como arroz",
+        "romanization": "yoh KOH-moh ah-ROS",
+        "pronunciationTip": "Practice the rhythm: yoh KOH-moh ah-ROS.",
+        "distractors": [
+          "Coffee",
+          "Station",
+          "Today"
+        ]
+      },
+      {
+        "id": "spanish-sentence-006",
+        "kind": "sentence",
+        "english": "I read a book",
+        "target": "Yo leo un libro",
+        "romanization": "yoh LEH-oh oon LEE-broh",
+        "pronunciationTip": "Practice the rhythm: yoh LEH-oh oon LEE-broh.",
+        "distractors": [
+          "Tea",
+          "Airport",
+          "Tomorrow"
+        ]
+      },
+      {
+        "id": "spanish-sentence-007",
+        "kind": "sentence",
+        "english": "I go to school",
+        "target": "Yo voy a la escuela",
+        "romanization": "yoh voy ah lah es-KWEH-lah",
+        "pronunciationTip": "Practice the rhythm: yoh voy ah lah es-KWEH-lah.",
+        "distractors": [
+          "Food",
+          "Street",
+          "Yesterday"
+        ]
+      },
+      {
+        "id": "spanish-sentence-008",
+        "kind": "sentence",
+        "english": "I buy bread",
+        "target": "Yo compro pan",
+        "romanization": "yoh KOHM-proh pahn",
+        "pronunciationTip": "Practice the rhythm: yoh KOHM-proh pahn.",
+        "distractors": [
+          "Rice",
+          "Store",
+          "Morning"
+        ]
+      },
+      {
+        "id": "spanish-sentence-009",
+        "kind": "sentence",
+        "english": "I wait for the bus",
+        "target": "Yo espero el autobús",
+        "romanization": "yoh es-PEH-roh el ow-toh-BOOS",
+        "pronunciationTip": "Practice the rhythm: yoh es-PEH-roh el ow-toh-BOOS.",
+        "distractors": [
+          "Bread",
+          "Market",
+          "Night"
+        ]
+      },
+      {
+        "id": "spanish-sentence-010",
+        "kind": "sentence",
+        "english": "I listen to music",
+        "target": "Yo escucho música",
+        "romanization": "yoh es-KOO-choh MOO-see-kah",
+        "pronunciationTip": "Practice the rhythm: yoh es-KOO-choh MOO-see-kah.",
+        "distractors": [
+          "Fruit",
+          "School",
+          "Now"
+        ]
+      },
+      {
+        "id": "spanish-sentence-011",
+        "kind": "sentence",
+        "english": "You need water",
+        "target": "Tú necesitas agua",
+        "romanization": "too neh-seh-SEE-tahs AH-gwah",
+        "pronunciationTip": "Practice the rhythm: too neh-seh-SEE-tahs AH-gwah.",
+        "distractors": [
+          "Apple",
+          "Hospital",
+          "Later"
+        ]
+      },
+      {
+        "id": "spanish-sentence-012",
+        "kind": "sentence",
+        "english": "You want coffee",
+        "target": "Tú quieres café",
+        "romanization": "too KYEH-rehs kah-FEH",
+        "pronunciationTip": "Practice the rhythm: too KYEH-rehs kah-FEH.",
+        "distractors": [
+          "Banana",
+          "Left",
+          "I"
+        ]
+      },
+      {
+        "id": "spanish-sentence-013",
+        "kind": "sentence",
+        "english": "You have a question",
+        "target": "Tú tienes una pregunta",
+        "romanization": "too TYEH-nehs OO-nah preh-GOON-tah",
+        "pronunciationTip": "Practice the rhythm: too TYEH-nehs OO-nah preh-GOON-tah.",
+        "distractors": [
+          "Soup",
+          "Right",
+          "You"
+        ]
+      },
+      {
+        "id": "spanish-sentence-014",
+        "kind": "sentence",
+        "english": "You speak Spanish",
+        "target": "Tú hablas español",
+        "romanization": "too AH-blahs es-pah-NYOL",
+        "pronunciationTip": "Practice the rhythm: too AH-blahs es-pah-NYOL.",
+        "distractors": [
+          "House",
+          "Straight",
+          "We"
+        ]
+      },
+      {
+        "id": "spanish-sentence-015",
+        "kind": "sentence",
+        "english": "You eat rice",
+        "target": "Tú comes arroz",
+        "romanization": "too KOH-mehs ah-ROS",
+        "pronunciationTip": "Practice the rhythm: too KOH-mehs ah-ROS.",
+        "distractors": [
+          "Hotel",
+          "Near",
+          "They"
+        ]
+      },
+      {
+        "id": "spanish-sentence-016",
+        "kind": "sentence",
+        "english": "You read a book",
+        "target": "Tú lees un libro",
+        "romanization": "too LEH-ehs oon LEE-broh",
+        "pronunciationTip": "Practice the rhythm: too LEH-ehs oon LEE-broh.",
+        "distractors": [
+          "Bathroom",
+          "Far",
+          "Friend"
+        ]
+      },
+      {
+        "id": "spanish-sentence-017",
+        "kind": "sentence",
+        "english": "You go to school",
+        "target": "Tú vas a la escuela",
+        "romanization": "too vahs ah lah es-KWEH-lah",
+        "pronunciationTip": "Practice the rhythm: too vahs ah lah es-KWEH-lah.",
+        "distractors": [
+          "Station",
+          "Today",
+          "Family"
+        ]
+      },
+      {
+        "id": "spanish-sentence-018",
+        "kind": "sentence",
+        "english": "You buy bread",
+        "target": "Tú compras pan",
+        "romanization": "too KOHM-prahs pahn",
+        "pronunciationTip": "Practice the rhythm: too KOHM-prahs pahn.",
+        "distractors": [
+          "Airport",
+          "Tomorrow",
+          "Teacher"
+        ]
+      },
+      {
+        "id": "spanish-sentence-019",
+        "kind": "sentence",
+        "english": "You wait for the bus",
+        "target": "Tú esperas el autobús",
+        "romanization": "too es-PEH-rahs el ow-toh-BOOS",
+        "pronunciationTip": "Practice the rhythm: too es-PEH-rahs el ow-toh-BOOS.",
+        "distractors": [
+          "Street",
+          "Yesterday",
+          "Student"
+        ]
+      },
+      {
+        "id": "spanish-sentence-020",
+        "kind": "sentence",
+        "english": "You listen to music",
+        "target": "Tú escuchas música",
+        "romanization": "too es-KOO-chahs MOO-see-kah",
+        "pronunciationTip": "Practice the rhythm: too es-KOO-chahs MOO-see-kah.",
+        "distractors": [
+          "Store",
+          "Morning",
+          "Child"
+        ]
+      },
+      {
+        "id": "spanish-sentence-021",
+        "kind": "sentence",
+        "english": "We need water",
+        "target": "Nosotros necesitamos agua",
+        "romanization": "noh-SOH-tros neh-seh-see-TAH-mos AH-gwah",
+        "pronunciationTip": "Practice the rhythm: noh-SOH-tros neh-seh-see-TAH-mos AH-gwah.",
+        "distractors": [
+          "Market",
+          "Night",
+          "Person"
+        ]
+      },
+      {
+        "id": "spanish-sentence-022",
+        "kind": "sentence",
+        "english": "We want coffee",
+        "target": "Nosotros queremos café",
+        "romanization": "noh-SOH-tros keh-REH-mos kah-FEH",
+        "pronunciationTip": "Practice the rhythm: noh-SOH-tros keh-REH-mos kah-FEH.",
+        "distractors": [
+          "School",
+          "Now",
+          "Man"
+        ]
+      },
+      {
+        "id": "spanish-sentence-023",
+        "kind": "sentence",
+        "english": "We have a question",
+        "target": "Nosotros tenemos una pregunta",
+        "romanization": "noh-SOH-tros teh-NEH-mos OO-nah preh-GOON-tah",
+        "pronunciationTip": "Practice the rhythm: noh-SOH-tros teh-NEH-mos OO-nah preh-GOON-tah.",
+        "distractors": [
+          "Hospital",
+          "Later",
+          "Woman"
+        ]
+      },
+      {
+        "id": "spanish-sentence-024",
+        "kind": "sentence",
+        "english": "We speak Spanish",
+        "target": "Nosotros hablamos español",
+        "romanization": "noh-SOH-tros ah-BLAH-mos es-pah-NYOL",
+        "pronunciationTip": "Practice the rhythm: noh-SOH-tros ah-BLAH-mos es-pah-NYOL.",
+        "distractors": [
+          "Left",
+          "I",
+          "Name"
+        ]
+      },
+      {
+        "id": "spanish-sentence-025",
+        "kind": "sentence",
+        "english": "We eat rice",
+        "target": "Nosotros comemos arroz",
+        "romanization": "noh-SOH-tros koh-MEH-mos ah-ROS",
+        "pronunciationTip": "Practice the rhythm: noh-SOH-tros koh-MEH-mos ah-ROS.",
+        "distractors": [
+          "Right",
+          "You",
+          "Phone"
+        ]
+      },
+      {
+        "id": "spanish-sentence-026",
+        "kind": "sentence",
+        "english": "We read a book",
+        "target": "Nosotros leemos un libro",
+        "romanization": "noh-SOH-tros leh-EH-mos oon LEE-broh",
+        "pronunciationTip": "Practice the rhythm: noh-SOH-tros leh-EH-mos oon LEE-broh.",
+        "distractors": [
+          "Straight",
+          "We",
+          "Money"
+        ]
+      },
+      {
+        "id": "spanish-sentence-027",
+        "kind": "sentence",
+        "english": "We go to school",
+        "target": "Nosotros vamos a la escuela",
+        "romanization": "noh-SOH-tros VAH-mos ah lah es-KWEH-lah",
+        "pronunciationTip": "Practice the rhythm: noh-SOH-tros VAH-mos ah lah es-KWEH-lah.",
+        "distractors": [
+          "Near",
+          "They",
+          "Ticket"
+        ]
+      },
+      {
+        "id": "spanish-sentence-028",
+        "kind": "sentence",
+        "english": "We buy bread",
+        "target": "Nosotros compramos pan",
+        "romanization": "noh-SOH-tros kohm-PRAH-mos pahn",
+        "pronunciationTip": "Practice the rhythm: noh-SOH-tros kohm-PRAH-mos pahn.",
+        "distractors": [
+          "Far",
+          "Friend",
+          "Bus"
+        ]
+      },
+      {
+        "id": "spanish-sentence-029",
+        "kind": "sentence",
+        "english": "We wait for the bus",
+        "target": "Nosotros esperamos el autobús",
+        "romanization": "noh-SOH-tros es-peh-RAH-mos el ow-toh-BOOS",
+        "pronunciationTip": "Practice the rhythm: noh-SOH-tros es-peh-RAH-mos el ow-toh-BOOS.",
+        "distractors": [
+          "Today",
+          "Family",
+          "Train"
+        ]
+      },
+      {
+        "id": "spanish-sentence-030",
+        "kind": "sentence",
+        "english": "We listen to music",
+        "target": "Nosotros escuchamos música",
+        "romanization": "noh-SOH-tros es-koo-CHAH-mos MOO-see-kah",
+        "pronunciationTip": "Practice the rhythm: noh-SOH-tros es-koo-CHAH-mos MOO-see-kah.",
+        "distractors": [
+          "Tomorrow",
+          "Teacher",
+          "Taxi"
+        ]
+      },
+      {
+        "id": "spanish-sentence-031",
+        "kind": "sentence",
+        "english": "They need water",
+        "target": "Ellos necesitan agua",
+        "romanization": "EH-yos neh-seh-SEE-tahn AH-gwah",
+        "pronunciationTip": "Practice the rhythm: EH-yos neh-seh-SEE-tahn AH-gwah.",
+        "distractors": [
+          "Yesterday",
+          "Student",
+          "Car"
+        ]
+      },
+      {
+        "id": "spanish-sentence-032",
+        "kind": "sentence",
+        "english": "They want coffee",
+        "target": "Ellos quieren café",
+        "romanization": "EH-yos KYEH-ren kah-FEH",
+        "pronunciationTip": "Practice the rhythm: EH-yos KYEH-ren kah-FEH.",
+        "distractors": [
+          "Morning",
+          "Child",
+          "Bicycle"
+        ]
+      },
+      {
+        "id": "spanish-sentence-033",
+        "kind": "sentence",
+        "english": "They have a question",
+        "target": "Ellos tienen una pregunta",
+        "romanization": "EH-yos TYEH-nen OO-nah preh-GOON-tah",
+        "pronunciationTip": "Practice the rhythm: EH-yos TYEH-nen OO-nah preh-GOON-tah.",
+        "distractors": [
+          "Night",
+          "Person",
+          "City"
+        ]
+      },
+      {
+        "id": "spanish-sentence-034",
+        "kind": "sentence",
+        "english": "They speak Spanish",
+        "target": "Ellos hablan español",
+        "romanization": "EH-yos AH-blahn es-pah-NYOL",
+        "pronunciationTip": "Practice the rhythm: EH-yos AH-blahn es-pah-NYOL.",
+        "distractors": [
+          "Now",
+          "Man",
+          "Country"
+        ]
+      },
+      {
+        "id": "spanish-sentence-035",
+        "kind": "sentence",
+        "english": "They eat rice",
+        "target": "Ellos comen arroz",
+        "romanization": "EH-yos KOH-men ah-ROS",
+        "pronunciationTip": "Practice the rhythm: EH-yos KOH-men ah-ROS.",
+        "distractors": [
+          "Later",
+          "Woman",
+          "Language"
+        ]
+      },
+      {
+        "id": "spanish-sentence-036",
+        "kind": "sentence",
+        "english": "They read a book",
+        "target": "Ellos leen un libro",
+        "romanization": "EH-yos LEH-en oon LEE-broh",
+        "pronunciationTip": "Practice the rhythm: EH-yos LEH-en oon LEE-broh.",
+        "distractors": [
+          "I",
+          "Name",
+          "Spanish"
+        ]
+      },
+      {
+        "id": "spanish-sentence-037",
+        "kind": "sentence",
+        "english": "They go to school",
+        "target": "Ellos van a la escuela",
+        "romanization": "EH-yos vahn ah lah es-KWEH-lah",
+        "pronunciationTip": "Practice the rhythm: EH-yos vahn ah lah es-KWEH-lah.",
+        "distractors": [
+          "You",
+          "Phone",
+          "Chinese"
+        ]
+      },
+      {
+        "id": "spanish-sentence-038",
+        "kind": "sentence",
+        "english": "They buy bread",
+        "target": "Ellos compran pan",
+        "romanization": "EH-yos KOHM-prahn pahn",
+        "pronunciationTip": "Practice the rhythm: EH-yos KOHM-prahn pahn.",
+        "distractors": [
+          "We",
+          "Money",
+          "English"
+        ]
+      },
+      {
+        "id": "spanish-sentence-039",
+        "kind": "sentence",
+        "english": "They wait for the bus",
+        "target": "Ellos esperan el autobús",
+        "romanization": "EH-yos es-PEH-rahn el ow-toh-BOOS",
+        "pronunciationTip": "Practice the rhythm: EH-yos es-PEH-rahn el ow-toh-BOOS.",
+        "distractors": [
+          "They",
+          "Ticket",
+          "Book"
+        ]
+      },
+      {
+        "id": "spanish-sentence-040",
+        "kind": "sentence",
+        "english": "They listen to music",
+        "target": "Ellos escuchan música",
+        "romanization": "EH-yos es-KOO-chahn MOO-see-kah",
+        "pronunciationTip": "Practice the rhythm: EH-yos es-KOO-chahn MOO-see-kah.",
+        "distractors": [
+          "Friend",
+          "Bus",
+          "Music"
+        ]
+      },
+      {
+        "id": "spanish-sentence-041",
+        "kind": "sentence",
+        "english": "My friend need water",
+        "target": "Mi amigo necesita agua",
+        "romanization": "mee ah-MEE-goh neh-seh-SEE-tah AH-gwah",
+        "pronunciationTip": "Practice the rhythm: mee ah-MEE-goh neh-seh-SEE-tah AH-gwah.",
+        "distractors": [
+          "Family",
+          "Train",
+          "Movie"
+        ]
+      },
+      {
+        "id": "spanish-sentence-042",
+        "kind": "sentence",
+        "english": "My friend want coffee",
+        "target": "Mi amigo quiere café",
+        "romanization": "mee ah-MEE-goh KYEH-reh kah-FEH",
+        "pronunciationTip": "Practice the rhythm: mee ah-MEE-goh KYEH-reh kah-FEH.",
+        "distractors": [
+          "Teacher",
+          "Taxi",
+          "Work"
+        ]
+      },
+      {
+        "id": "spanish-sentence-043",
+        "kind": "sentence",
+        "english": "My friend have a question",
+        "target": "Mi amigo tiene una pregunta",
+        "romanization": "mee ah-MEE-goh TYEH-neh OO-nah preh-GOON-tah",
+        "pronunciationTip": "Practice the rhythm: mee ah-MEE-goh TYEH-neh OO-nah preh-GOON-tah.",
+        "distractors": [
+          "Student",
+          "Car",
+          "Help"
+        ]
+      },
+      {
+        "id": "spanish-sentence-044",
+        "kind": "sentence",
+        "english": "My friend speak Spanish",
+        "target": "Mi amigo habla español",
+        "romanization": "mee ah-MEE-goh AH-blah es-pah-NYOL",
+        "pronunciationTip": "Practice the rhythm: mee ah-MEE-goh AH-blah es-pah-NYOL.",
+        "distractors": [
+          "Child",
+          "Bicycle",
+          "Question"
+        ]
+      },
+      {
+        "id": "spanish-sentence-045",
+        "kind": "sentence",
+        "english": "My friend eat rice",
+        "target": "Mi amigo come arroz",
+        "romanization": "mee ah-MEE-goh KOH-meh ah-ROS",
+        "pronunciationTip": "Practice the rhythm: mee ah-MEE-goh KOH-meh ah-ROS.",
+        "distractors": [
+          "Person",
+          "City",
+          "Answer"
+        ]
+      },
+      {
+        "id": "spanish-sentence-046",
+        "kind": "sentence",
+        "english": "My friend read a book",
+        "target": "Mi amigo lee un libro",
+        "romanization": "mee ah-MEE-goh LEH-eh oon LEE-broh",
+        "pronunciationTip": "Practice the rhythm: mee ah-MEE-goh LEH-eh oon LEE-broh.",
+        "distractors": [
+          "Man",
+          "Country",
+          "Problem"
+        ]
+      },
+      {
+        "id": "spanish-sentence-047",
+        "kind": "sentence",
+        "english": "My friend go to school",
+        "target": "Mi amigo va a la escuela",
+        "romanization": "mee ah-MEE-goh vah ah lah es-KWEH-lah",
+        "pronunciationTip": "Practice the rhythm: mee ah-MEE-goh vah ah lah es-KWEH-lah.",
+        "distractors": [
+          "Woman",
+          "Language",
+          "Happy"
+        ]
+      },
+      {
+        "id": "spanish-sentence-048",
+        "kind": "sentence",
+        "english": "My friend buy bread",
+        "target": "Mi amigo compra pan",
+        "romanization": "mee ah-MEE-goh KOHM-prah pahn",
+        "pronunciationTip": "Practice the rhythm: mee ah-MEE-goh KOHM-prah pahn.",
+        "distractors": [
+          "Name",
+          "Spanish",
+          "Tired"
+        ]
+      },
+      {
+        "id": "spanish-sentence-049",
+        "kind": "sentence",
+        "english": "My friend wait for the bus",
+        "target": "Mi amigo espera el autobús",
+        "romanization": "mee ah-MEE-goh es-PEH-rah el ow-toh-BOOS",
+        "pronunciationTip": "Practice the rhythm: mee ah-MEE-goh es-PEH-rah el ow-toh-BOOS.",
+        "distractors": [
+          "Phone",
+          "Chinese",
+          "Hungry"
+        ]
+      },
+      {
+        "id": "spanish-sentence-050",
+        "kind": "sentence",
+        "english": "My friend listen to music",
+        "target": "Mi amigo escucha música",
+        "romanization": "mee ah-MEE-goh es-KOO-chah MOO-see-kah",
+        "pronunciationTip": "Practice the rhythm: mee ah-MEE-goh es-KOO-chah MOO-see-kah.",
+        "distractors": [
+          "Money",
+          "English",
+          "Thirsty"
+        ]
+      },
+      {
+        "id": "spanish-sentence-051",
+        "kind": "sentence",
+        "english": "The teacher need water",
+        "target": "La maestra necesita agua",
+        "romanization": "lah mah-ES-trah neh-seh-SEE-tah AH-gwah",
+        "pronunciationTip": "Practice the rhythm: lah mah-ES-trah neh-seh-SEE-tah AH-gwah.",
+        "distractors": [
+          "Ticket",
+          "Book",
+          "Hot"
+        ]
+      },
+      {
+        "id": "spanish-sentence-052",
+        "kind": "sentence",
+        "english": "The teacher want coffee",
+        "target": "La maestra quiere café",
+        "romanization": "lah mah-ES-trah KYEH-reh kah-FEH",
+        "pronunciationTip": "Practice the rhythm: lah mah-ES-trah KYEH-reh kah-FEH.",
+        "distractors": [
+          "Bus",
+          "Music",
+          "Cold"
+        ]
+      },
+      {
+        "id": "spanish-sentence-053",
+        "kind": "sentence",
+        "english": "The teacher have a question",
+        "target": "La maestra tiene una pregunta",
+        "romanization": "lah mah-ES-trah TYEH-neh OO-nah preh-GOON-tah",
+        "pronunciationTip": "Practice the rhythm: lah mah-ES-trah TYEH-neh OO-nah preh-GOON-tah.",
+        "distractors": [
+          "Train",
+          "Movie",
+          "Big"
+        ]
+      },
+      {
+        "id": "spanish-sentence-054",
+        "kind": "sentence",
+        "english": "The teacher speak Spanish",
+        "target": "La maestra habla español",
+        "romanization": "lah mah-ES-trah AH-blah es-pah-NYOL",
+        "pronunciationTip": "Practice the rhythm: lah mah-ES-trah AH-blah es-pah-NYOL.",
+        "distractors": [
+          "Taxi",
+          "Work",
+          "Small"
+        ]
+      },
+      {
+        "id": "spanish-sentence-055",
+        "kind": "sentence",
+        "english": "The teacher eat rice",
+        "target": "La maestra come arroz",
+        "romanization": "lah mah-ES-trah KOH-meh ah-ROS",
+        "pronunciationTip": "Practice the rhythm: lah mah-ES-trah KOH-meh ah-ROS.",
+        "distractors": [
+          "Car",
+          "Help",
+          "Fast"
+        ]
+      },
+      {
+        "id": "spanish-sentence-056",
+        "kind": "sentence",
+        "english": "The teacher read a book",
+        "target": "La maestra lee un libro",
+        "romanization": "lah mah-ES-trah LEH-eh oon LEE-broh",
+        "pronunciationTip": "Practice the rhythm: lah mah-ES-trah LEH-eh oon LEE-broh.",
+        "distractors": [
+          "Bicycle",
+          "Question",
+          "Slow"
+        ]
+      },
+      {
+        "id": "spanish-sentence-057",
+        "kind": "sentence",
+        "english": "The teacher go to school",
+        "target": "La maestra va a la escuela",
+        "romanization": "lah mah-ES-trah vah ah lah es-KWEH-lah",
+        "pronunciationTip": "Practice the rhythm: lah mah-ES-trah vah ah lah es-KWEH-lah.",
+        "distractors": [
+          "City",
+          "Answer",
+          "Good"
+        ]
+      },
+      {
+        "id": "spanish-sentence-058",
+        "kind": "sentence",
+        "english": "The teacher buy bread",
+        "target": "La maestra compra pan",
+        "romanization": "lah mah-ES-trah KOHM-prah pahn",
+        "pronunciationTip": "Practice the rhythm: lah mah-ES-trah KOHM-prah pahn.",
+        "distractors": [
+          "Country",
+          "Problem",
+          "Bad"
+        ]
+      },
+      {
+        "id": "spanish-sentence-059",
+        "kind": "sentence",
+        "english": "The teacher wait for the bus",
+        "target": "La maestra espera el autobús",
+        "romanization": "lah mah-ES-trah es-PEH-rah el ow-toh-BOOS",
+        "pronunciationTip": "Practice the rhythm: lah mah-ES-trah es-PEH-rah el ow-toh-BOOS.",
+        "distractors": [
+          "Language",
+          "Happy",
+          "Open"
+        ]
+      },
+      {
+        "id": "spanish-sentence-060",
+        "kind": "sentence",
+        "english": "The teacher listen to music",
+        "target": "La maestra escucha música",
+        "romanization": "lah mah-ES-trah es-KOO-chah MOO-see-kah",
+        "pronunciationTip": "Practice the rhythm: lah mah-ES-trah es-KOO-chah MOO-see-kah.",
+        "distractors": [
+          "Spanish",
+          "Tired",
+          "Closed"
+        ]
+      },
+      {
+        "id": "spanish-sentence-061",
+        "kind": "sentence",
+        "english": "The family need water",
+        "target": "La familia necesita agua",
+        "romanization": "lah fah-MEE-lyah neh-seh-SEE-tah AH-gwah",
+        "pronunciationTip": "Practice the rhythm: lah fah-MEE-lyah neh-seh-SEE-tah AH-gwah.",
+        "distractors": [
+          "Chinese",
+          "Hungry",
+          "Here"
+        ]
+      },
+      {
+        "id": "spanish-sentence-062",
+        "kind": "sentence",
+        "english": "The family want coffee",
+        "target": "La familia quiere café",
+        "romanization": "lah fah-MEE-lyah KYEH-reh kah-FEH",
+        "pronunciationTip": "Practice the rhythm: lah fah-MEE-lyah KYEH-reh kah-FEH.",
+        "distractors": [
+          "English",
+          "Thirsty",
+          "There"
+        ]
+      },
+      {
+        "id": "spanish-sentence-063",
+        "kind": "sentence",
+        "english": "The family have a question",
+        "target": "La familia tiene una pregunta",
+        "romanization": "lah fah-MEE-lyah TYEH-neh OO-nah preh-GOON-tah",
+        "pronunciationTip": "Practice the rhythm: lah fah-MEE-lyah TYEH-neh OO-nah preh-GOON-tah.",
+        "distractors": [
+          "Book",
+          "Hot",
+          "One"
+        ]
+      },
+      {
+        "id": "spanish-sentence-064",
+        "kind": "sentence",
+        "english": "The family speak Spanish",
+        "target": "La familia habla español",
+        "romanization": "lah fah-MEE-lyah AH-blah es-pah-NYOL",
+        "pronunciationTip": "Practice the rhythm: lah fah-MEE-lyah AH-blah es-pah-NYOL.",
+        "distractors": [
+          "Music",
+          "Cold",
+          "Two"
+        ]
+      },
+      {
+        "id": "spanish-sentence-065",
+        "kind": "sentence",
+        "english": "The family eat rice",
+        "target": "La familia come arroz",
+        "romanization": "lah fah-MEE-lyah KOH-meh ah-ROS",
+        "pronunciationTip": "Practice the rhythm: lah fah-MEE-lyah KOH-meh ah-ROS.",
+        "distractors": [
+          "Movie",
+          "Big",
+          "Three"
+        ]
+      },
+      {
+        "id": "spanish-sentence-066",
+        "kind": "sentence",
+        "english": "The family read a book",
+        "target": "La familia lee un libro",
+        "romanization": "lah fah-MEE-lyah LEH-eh oon LEE-broh",
+        "pronunciationTip": "Practice the rhythm: lah fah-MEE-lyah LEH-eh oon LEE-broh.",
+        "distractors": [
+          "Work",
+          "Small",
+          "Four"
+        ]
+      },
+      {
+        "id": "spanish-sentence-067",
+        "kind": "sentence",
+        "english": "The family go to school",
+        "target": "La familia va a la escuela",
+        "romanization": "lah fah-MEE-lyah vah ah lah es-KWEH-lah",
+        "pronunciationTip": "Practice the rhythm: lah fah-MEE-lyah vah ah lah es-KWEH-lah.",
+        "distractors": [
+          "Help",
+          "Fast",
+          "Five"
+        ]
+      },
+      {
+        "id": "spanish-sentence-068",
+        "kind": "sentence",
+        "english": "The family buy bread",
+        "target": "La familia compra pan",
+        "romanization": "lah fah-MEE-lyah KOHM-prah pahn",
+        "pronunciationTip": "Practice the rhythm: lah fah-MEE-lyah KOHM-prah pahn.",
+        "distractors": [
+          "Question",
+          "Slow",
+          "Ten"
+        ]
+      },
+      {
+        "id": "spanish-sentence-069",
+        "kind": "sentence",
+        "english": "The family wait for the bus",
+        "target": "La familia espera el autobús",
+        "romanization": "lah fah-MEE-lyah es-PEH-rah el ow-toh-BOOS",
+        "pronunciationTip": "Practice the rhythm: lah fah-MEE-lyah es-PEH-rah el ow-toh-BOOS.",
+        "distractors": [
+          "Answer",
+          "Good",
+          "Time"
+        ]
+      },
+      {
+        "id": "spanish-sentence-070",
+        "kind": "sentence",
+        "english": "The family listen to music",
+        "target": "La familia escucha música",
+        "romanization": "lah fah-MEE-lyah es-KOO-chah MOO-see-kah",
+        "pronunciationTip": "Practice the rhythm: lah fah-MEE-lyah es-KOO-chah MOO-see-kah.",
+        "distractors": [
+          "Problem",
+          "Bad",
+          "I need water"
+        ]
+      },
+      {
+        "id": "spanish-sentence-071",
+        "kind": "sentence",
+        "english": "The child need water",
+        "target": "El niño necesita agua",
+        "romanization": "el NEE-nyoh neh-seh-SEE-tah AH-gwah",
+        "pronunciationTip": "Practice the rhythm: el NEE-nyoh neh-seh-SEE-tah AH-gwah.",
+        "distractors": [
+          "Happy",
+          "Open",
+          "I want coffee"
+        ]
+      },
+      {
+        "id": "spanish-sentence-072",
+        "kind": "sentence",
+        "english": "The child want coffee",
+        "target": "El niño quiere café",
+        "romanization": "el NEE-nyoh KYEH-reh kah-FEH",
+        "pronunciationTip": "Practice the rhythm: el NEE-nyoh KYEH-reh kah-FEH.",
+        "distractors": [
+          "Tired",
+          "Closed",
+          "I have a question"
+        ]
+      },
+      {
+        "id": "spanish-sentence-073",
+        "kind": "sentence",
+        "english": "The child have a question",
+        "target": "El niño tiene una pregunta",
+        "romanization": "el NEE-nyoh TYEH-neh OO-nah preh-GOON-tah",
+        "pronunciationTip": "Practice the rhythm: el NEE-nyoh TYEH-neh OO-nah preh-GOON-tah.",
+        "distractors": [
+          "Hungry",
+          "Here",
+          "I speak Spanish"
+        ]
+      },
+      {
+        "id": "spanish-sentence-074",
+        "kind": "sentence",
+        "english": "The child speak Spanish",
+        "target": "El niño habla español",
+        "romanization": "el NEE-nyoh AH-blah es-pah-NYOL",
+        "pronunciationTip": "Practice the rhythm: el NEE-nyoh AH-blah es-pah-NYOL.",
+        "distractors": [
+          "Thirsty",
+          "There",
+          "I eat rice"
+        ]
+      },
+      {
+        "id": "spanish-sentence-075",
+        "kind": "sentence",
+        "english": "The child eat rice",
+        "target": "El niño come arroz",
+        "romanization": "el NEE-nyoh KOH-meh ah-ROS",
+        "pronunciationTip": "Practice the rhythm: el NEE-nyoh KOH-meh ah-ROS.",
+        "distractors": [
+          "Hot",
+          "One",
+          "I read a book"
+        ]
+      },
+      {
+        "id": "spanish-sentence-076",
+        "kind": "sentence",
+        "english": "The child read a book",
+        "target": "El niño lee un libro",
+        "romanization": "el NEE-nyoh LEH-eh oon LEE-broh",
+        "pronunciationTip": "Practice the rhythm: el NEE-nyoh LEH-eh oon LEE-broh.",
+        "distractors": [
+          "Cold",
+          "Two",
+          "I go to school"
+        ]
+      },
+      {
+        "id": "spanish-sentence-077",
+        "kind": "sentence",
+        "english": "The child go to school",
+        "target": "El niño va a la escuela",
+        "romanization": "el NEE-nyoh vah ah lah es-KWEH-lah",
+        "pronunciationTip": "Practice the rhythm: el NEE-nyoh vah ah lah es-KWEH-lah.",
+        "distractors": [
+          "Big",
+          "Three",
+          "I buy bread"
+        ]
+      },
+      {
+        "id": "spanish-sentence-078",
+        "kind": "sentence",
+        "english": "The child buy bread",
+        "target": "El niño compra pan",
+        "romanization": "el NEE-nyoh KOHM-prah pahn",
+        "pronunciationTip": "Practice the rhythm: el NEE-nyoh KOHM-prah pahn.",
+        "distractors": [
+          "Small",
+          "Four",
+          "I wait for the bus"
+        ]
+      },
+      {
+        "id": "spanish-sentence-079",
+        "kind": "sentence",
+        "english": "The child wait for the bus",
+        "target": "El niño espera el autobús",
+        "romanization": "el NEE-nyoh es-PEH-rah el ow-toh-BOOS",
+        "pronunciationTip": "Practice the rhythm: el NEE-nyoh es-PEH-rah el ow-toh-BOOS.",
+        "distractors": [
+          "Fast",
+          "Five",
+          "I listen to music"
+        ]
+      },
+      {
+        "id": "spanish-sentence-080",
+        "kind": "sentence",
+        "english": "The child listen to music",
+        "target": "El niño escucha música",
+        "romanization": "el NEE-nyoh es-KOO-chah MOO-see-kah",
+        "pronunciationTip": "Practice the rhythm: el NEE-nyoh es-KOO-chah MOO-see-kah.",
+        "distractors": [
+          "Slow",
+          "Ten",
+          "You need water"
+        ]
+      },
+      {
+        "id": "spanish-sentence-081",
+        "kind": "sentence",
+        "english": "The traveler need water",
+        "target": "El viajero necesita agua",
+        "romanization": "el byah-HEH-roh neh-seh-SEE-tah AH-gwah",
+        "pronunciationTip": "Practice the rhythm: el byah-HEH-roh neh-seh-SEE-tah AH-gwah.",
+        "distractors": [
+          "Good",
+          "Time",
+          "You want coffee"
+        ]
+      },
+      {
+        "id": "spanish-sentence-082",
+        "kind": "sentence",
+        "english": "The traveler want coffee",
+        "target": "El viajero quiere café",
+        "romanization": "el byah-HEH-roh KYEH-reh kah-FEH",
+        "pronunciationTip": "Practice the rhythm: el byah-HEH-roh KYEH-reh kah-FEH.",
+        "distractors": [
+          "Bad",
+          "I need water",
+          "You have a question"
+        ]
+      },
+      {
+        "id": "spanish-sentence-083",
+        "kind": "sentence",
+        "english": "The traveler have a question",
+        "target": "El viajero tiene una pregunta",
+        "romanization": "el byah-HEH-roh TYEH-neh OO-nah preh-GOON-tah",
+        "pronunciationTip": "Practice the rhythm: el byah-HEH-roh TYEH-neh OO-nah preh-GOON-tah.",
+        "distractors": [
+          "Open",
+          "I want coffee",
+          "You speak Spanish"
+        ]
+      },
+      {
+        "id": "spanish-sentence-084",
+        "kind": "sentence",
+        "english": "The traveler speak Spanish",
+        "target": "El viajero habla español",
+        "romanization": "el byah-HEH-roh AH-blah es-pah-NYOL",
+        "pronunciationTip": "Practice the rhythm: el byah-HEH-roh AH-blah es-pah-NYOL.",
+        "distractors": [
+          "Closed",
+          "I have a question",
+          "You eat rice"
+        ]
+      },
+      {
+        "id": "spanish-sentence-085",
+        "kind": "sentence",
+        "english": "The traveler eat rice",
+        "target": "El viajero come arroz",
+        "romanization": "el byah-HEH-roh KOH-meh ah-ROS",
+        "pronunciationTip": "Practice the rhythm: el byah-HEH-roh KOH-meh ah-ROS.",
+        "distractors": [
+          "Here",
+          "I speak Spanish",
+          "You read a book"
+        ]
+      },
+      {
+        "id": "spanish-sentence-086",
+        "kind": "sentence",
+        "english": "The traveler read a book",
+        "target": "El viajero lee un libro",
+        "romanization": "el byah-HEH-roh LEH-eh oon LEE-broh",
+        "pronunciationTip": "Practice the rhythm: el byah-HEH-roh LEH-eh oon LEE-broh.",
+        "distractors": [
+          "There",
+          "I eat rice",
+          "You go to school"
+        ]
+      },
+      {
+        "id": "spanish-sentence-087",
+        "kind": "sentence",
+        "english": "The traveler go to school",
+        "target": "El viajero va a la escuela",
+        "romanization": "el byah-HEH-roh vah ah lah es-KWEH-lah",
+        "pronunciationTip": "Practice the rhythm: el byah-HEH-roh vah ah lah es-KWEH-lah.",
+        "distractors": [
+          "One",
+          "I read a book",
+          "You buy bread"
+        ]
+      },
+      {
+        "id": "spanish-sentence-088",
+        "kind": "sentence",
+        "english": "The traveler buy bread",
+        "target": "El viajero compra pan",
+        "romanization": "el byah-HEH-roh KOHM-prah pahn",
+        "pronunciationTip": "Practice the rhythm: el byah-HEH-roh KOHM-prah pahn.",
+        "distractors": [
+          "Two",
+          "I go to school",
+          "You wait for the bus"
+        ]
+      },
+      {
+        "id": "spanish-sentence-089",
+        "kind": "sentence",
+        "english": "The traveler wait for the bus",
+        "target": "El viajero espera el autobús",
+        "romanization": "el byah-HEH-roh es-PEH-rah el ow-toh-BOOS",
+        "pronunciationTip": "Practice the rhythm: el byah-HEH-roh es-PEH-rah el ow-toh-BOOS.",
+        "distractors": [
+          "Three",
+          "I buy bread",
+          "You listen to music"
+        ]
+      },
+      {
+        "id": "spanish-sentence-090",
+        "kind": "sentence",
+        "english": "The traveler listen to music",
+        "target": "El viajero escucha música",
+        "romanization": "el byah-HEH-roh es-KOO-chah MOO-see-kah",
+        "pronunciationTip": "Practice the rhythm: el byah-HEH-roh es-KOO-chah MOO-see-kah.",
+        "distractors": [
+          "Four",
+          "I wait for the bus",
+          "We need water"
+        ]
+      },
+      {
+        "id": "spanish-sentence-091",
+        "kind": "sentence",
+        "english": "The student need water",
+        "target": "La estudiante necesita agua",
+        "romanization": "lah es-too-DYAN-teh neh-seh-SEE-tah AH-gwah",
+        "pronunciationTip": "Practice the rhythm: lah es-too-DYAN-teh neh-seh-SEE-tah AH-gwah.",
+        "distractors": [
+          "Five",
+          "I listen to music",
+          "We want coffee"
+        ]
+      },
+      {
+        "id": "spanish-sentence-092",
+        "kind": "sentence",
+        "english": "The student want coffee",
+        "target": "La estudiante quiere café",
+        "romanization": "lah es-too-DYAN-teh KYEH-reh kah-FEH",
+        "pronunciationTip": "Practice the rhythm: lah es-too-DYAN-teh KYEH-reh kah-FEH.",
+        "distractors": [
+          "Ten",
+          "You need water",
+          "We have a question"
+        ]
+      },
+      {
+        "id": "spanish-sentence-093",
+        "kind": "sentence",
+        "english": "The student have a question",
+        "target": "La estudiante tiene una pregunta",
+        "romanization": "lah es-too-DYAN-teh TYEH-neh OO-nah preh-GOON-tah",
+        "pronunciationTip": "Practice the rhythm: lah es-too-DYAN-teh TYEH-neh OO-nah preh-GOON-tah.",
+        "distractors": [
+          "Time",
+          "You want coffee",
+          "We speak Spanish"
+        ]
+      },
+      {
+        "id": "spanish-sentence-094",
+        "kind": "sentence",
+        "english": "The student speak Spanish",
+        "target": "La estudiante habla español",
+        "romanization": "lah es-too-DYAN-teh AH-blah es-pah-NYOL",
+        "pronunciationTip": "Practice the rhythm: lah es-too-DYAN-teh AH-blah es-pah-NYOL.",
+        "distractors": [
+          "I need water",
+          "You have a question",
+          "We eat rice"
+        ]
+      },
+      {
+        "id": "spanish-sentence-095",
+        "kind": "sentence",
+        "english": "The student eat rice",
+        "target": "La estudiante come arroz",
+        "romanization": "lah es-too-DYAN-teh KOH-meh ah-ROS",
+        "pronunciationTip": "Practice the rhythm: lah es-too-DYAN-teh KOH-meh ah-ROS.",
+        "distractors": [
+          "I want coffee",
+          "You speak Spanish",
+          "We read a book"
+        ]
+      },
+      {
+        "id": "spanish-sentence-096",
+        "kind": "sentence",
+        "english": "The student read a book",
+        "target": "La estudiante lee un libro",
+        "romanization": "lah es-too-DYAN-teh LEH-eh oon LEE-broh",
+        "pronunciationTip": "Practice the rhythm: lah es-too-DYAN-teh LEH-eh oon LEE-broh.",
+        "distractors": [
+          "I have a question",
+          "You eat rice",
+          "We go to school"
+        ]
+      },
+      {
+        "id": "spanish-sentence-097",
+        "kind": "sentence",
+        "english": "The student go to school",
+        "target": "La estudiante va a la escuela",
+        "romanization": "lah es-too-DYAN-teh vah ah lah es-KWEH-lah",
+        "pronunciationTip": "Practice the rhythm: lah es-too-DYAN-teh vah ah lah es-KWEH-lah.",
+        "distractors": [
+          "I speak Spanish",
+          "You read a book",
+          "We buy bread"
+        ]
+      },
+      {
+        "id": "spanish-sentence-098",
+        "kind": "sentence",
+        "english": "The student buy bread",
+        "target": "La estudiante compra pan",
+        "romanization": "lah es-too-DYAN-teh KOHM-prah pahn",
+        "pronunciationTip": "Practice the rhythm: lah es-too-DYAN-teh KOHM-prah pahn.",
+        "distractors": [
+          "I eat rice",
+          "You go to school",
+          "We wait for the bus"
+        ]
+      },
+      {
+        "id": "spanish-sentence-099",
+        "kind": "sentence",
+        "english": "The student wait for the bus",
+        "target": "La estudiante espera el autobús",
+        "romanization": "lah es-too-DYAN-teh es-PEH-rah el ow-toh-BOOS",
+        "pronunciationTip": "Practice the rhythm: lah es-too-DYAN-teh es-PEH-rah el ow-toh-BOOS.",
+        "distractors": [
+          "I read a book",
+          "You buy bread",
+          "We listen to music"
+        ]
+      },
+      {
+        "id": "spanish-sentence-100",
+        "kind": "sentence",
+        "english": "The student listen to music",
+        "target": "La estudiante escucha música",
+        "romanization": "lah es-too-DYAN-teh es-KOO-chah MOO-see-kah",
+        "pronunciationTip": "Practice the rhythm: lah es-too-DYAN-teh es-KOO-chah MOO-see-kah.",
+        "distractors": [
+          "I go to school",
+          "You wait for the bus",
+          "They need water"
+        ]
       }
     ]
   },
@@ -44,40 +2614,2610 @@
     "id": "mandarin",
     "title": "Mandarin",
     "nativeTitle": "中文",
-    "subtitle": "Simplified basics",
+    "subtitle": "100 words + 100 sentences",
     "languageCode": "zh-CN",
-    "cards": [
+    "words": [
       {
-        "id": "mandarin-hello",
+        "id": "mandarin-word-001",
+        "kind": "word",
         "english": "Hello",
         "target": "你好",
         "romanization": "nǐ hǎo",
-        "pronunciationTip": "Both syllables dip then rise. Smile slightly on hao.",
-        "distractors": ["Thank you", "Goodbye", "Water"]
+        "pronunciationTip": "Say it as nǐ hǎo. Keep the final sound light.",
+        "distractors": [
+          "Excuse me",
+          "Soup",
+          "Right"
+        ]
       },
       {
-        "id": "mandarin-thanks",
+        "id": "mandarin-word-002",
+        "kind": "word",
+        "english": "Goodbye",
+        "target": "再见",
+        "romanization": "zài jiàn",
+        "pronunciationTip": "Say it as zài jiàn. Keep the final sound light.",
+        "distractors": [
+          "Good morning",
+          "House",
+          "Straight"
+        ]
+      },
+      {
+        "id": "mandarin-word-003",
+        "kind": "word",
+        "english": "Yes",
+        "target": "是",
+        "romanization": "shì",
+        "pronunciationTip": "Say it as shì. Keep the final sound light.",
+        "distractors": [
+          "Good night",
+          "Hotel",
+          "Near"
+        ]
+      },
+      {
+        "id": "mandarin-word-004",
+        "kind": "word",
+        "english": "No",
+        "target": "不",
+        "romanization": "bù",
+        "pronunciationTip": "Say it as bù. Keep the final sound light.",
+        "distractors": [
+          "Water",
+          "Bathroom",
+          "Far"
+        ]
+      },
+      {
+        "id": "mandarin-word-005",
+        "kind": "word",
+        "english": "Please",
+        "target": "请",
+        "romanization": "qǐng",
+        "pronunciationTip": "Say it as qǐng. Keep the final sound light.",
+        "distractors": [
+          "Coffee",
+          "Station",
+          "Today"
+        ]
+      },
+      {
+        "id": "mandarin-word-006",
+        "kind": "word",
         "english": "Thank you",
         "target": "谢谢",
         "romanization": "xiè xie",
-        "pronunciationTip": "First xie falls clearly; the second is lighter.",
-        "distractors": ["Hello", "Please", "I want water"]
+        "pronunciationTip": "Say it as xiè xie. Keep the final sound light.",
+        "distractors": [
+          "Tea",
+          "Airport",
+          "Tomorrow"
+        ]
       },
       {
-        "id": "mandarin-water",
-        "english": "I want water",
-        "target": "我要水",
-        "romanization": "wǒ yào shuǐ",
-        "pronunciationTip": "Wo dips, yao falls, shui dips then rises.",
-        "distractors": ["Where is the station?", "I am sorry", "Good morning"]
+        "id": "mandarin-word-007",
+        "kind": "word",
+        "english": "Sorry",
+        "target": "对不起",
+        "romanization": "duì bu qǐ",
+        "pronunciationTip": "Say it as duì bu qǐ. Keep the final sound light.",
+        "distractors": [
+          "Food",
+          "Street",
+          "Yesterday"
+        ]
       },
       {
-        "id": "mandarin-station",
-        "english": "Where is the station?",
-        "target": "车站在哪里？",
-        "romanization": "chē zhàn zài nǎ lǐ",
-        "pronunciationTip": "Che stays high, zhan falls, then na and li dip.",
-        "distractors": ["How much is it?", "The food is good", "See you tomorrow"]
+        "id": "mandarin-word-008",
+        "kind": "word",
+        "english": "Excuse me",
+        "target": "不好意思",
+        "romanization": "bù hǎo yì si",
+        "pronunciationTip": "Say it as bù hǎo yì si. Keep the final sound light.",
+        "distractors": [
+          "Rice",
+          "Store",
+          "Morning"
+        ]
+      },
+      {
+        "id": "mandarin-word-009",
+        "kind": "word",
+        "english": "Good morning",
+        "target": "早上好",
+        "romanization": "zǎo shang hǎo",
+        "pronunciationTip": "Say it as zǎo shang hǎo. Keep the final sound light.",
+        "distractors": [
+          "Bread",
+          "Market",
+          "Night"
+        ]
+      },
+      {
+        "id": "mandarin-word-010",
+        "kind": "word",
+        "english": "Good night",
+        "target": "晚安",
+        "romanization": "wǎn ān",
+        "pronunciationTip": "Say it as wǎn ān. Keep the final sound light.",
+        "distractors": [
+          "Fruit",
+          "School",
+          "Now"
+        ]
+      },
+      {
+        "id": "mandarin-word-011",
+        "kind": "word",
+        "english": "Water",
+        "target": "水",
+        "romanization": "shuǐ",
+        "pronunciationTip": "Say it as shuǐ. Keep the final sound light.",
+        "distractors": [
+          "Apple",
+          "Hospital",
+          "Later"
+        ]
+      },
+      {
+        "id": "mandarin-word-012",
+        "kind": "word",
+        "english": "Coffee",
+        "target": "咖啡",
+        "romanization": "kā fēi",
+        "pronunciationTip": "Say it as kā fēi. Keep the final sound light.",
+        "distractors": [
+          "Banana",
+          "Left",
+          "I"
+        ]
+      },
+      {
+        "id": "mandarin-word-013",
+        "kind": "word",
+        "english": "Tea",
+        "target": "茶",
+        "romanization": "chá",
+        "pronunciationTip": "Say it as chá. Keep the final sound light.",
+        "distractors": [
+          "Soup",
+          "Right",
+          "You"
+        ]
+      },
+      {
+        "id": "mandarin-word-014",
+        "kind": "word",
+        "english": "Food",
+        "target": "食物",
+        "romanization": "shí wù",
+        "pronunciationTip": "Say it as shí wù. Keep the final sound light.",
+        "distractors": [
+          "House",
+          "Straight",
+          "We"
+        ]
+      },
+      {
+        "id": "mandarin-word-015",
+        "kind": "word",
+        "english": "Rice",
+        "target": "米饭",
+        "romanization": "mǐ fàn",
+        "pronunciationTip": "Say it as mǐ fàn. Keep the final sound light.",
+        "distractors": [
+          "Hotel",
+          "Near",
+          "They"
+        ]
+      },
+      {
+        "id": "mandarin-word-016",
+        "kind": "word",
+        "english": "Bread",
+        "target": "面包",
+        "romanization": "miàn bāo",
+        "pronunciationTip": "Say it as miàn bāo. Keep the final sound light.",
+        "distractors": [
+          "Bathroom",
+          "Far",
+          "Friend"
+        ]
+      },
+      {
+        "id": "mandarin-word-017",
+        "kind": "word",
+        "english": "Fruit",
+        "target": "水果",
+        "romanization": "shuǐ guǒ",
+        "pronunciationTip": "Say it as shuǐ guǒ. Keep the final sound light.",
+        "distractors": [
+          "Station",
+          "Today",
+          "Family"
+        ]
+      },
+      {
+        "id": "mandarin-word-018",
+        "kind": "word",
+        "english": "Apple",
+        "target": "苹果",
+        "romanization": "píng guǒ",
+        "pronunciationTip": "Say it as píng guǒ. Keep the final sound light.",
+        "distractors": [
+          "Airport",
+          "Tomorrow",
+          "Teacher"
+        ]
+      },
+      {
+        "id": "mandarin-word-019",
+        "kind": "word",
+        "english": "Banana",
+        "target": "香蕉",
+        "romanization": "xiāng jiāo",
+        "pronunciationTip": "Say it as xiāng jiāo. Keep the final sound light.",
+        "distractors": [
+          "Street",
+          "Yesterday",
+          "Student"
+        ]
+      },
+      {
+        "id": "mandarin-word-020",
+        "kind": "word",
+        "english": "Soup",
+        "target": "汤",
+        "romanization": "tāng",
+        "pronunciationTip": "Say it as tāng. Keep the final sound light.",
+        "distractors": [
+          "Store",
+          "Morning",
+          "Child"
+        ]
+      },
+      {
+        "id": "mandarin-word-021",
+        "kind": "word",
+        "english": "House",
+        "target": "房子",
+        "romanization": "fáng zi",
+        "pronunciationTip": "Say it as fáng zi. Keep the final sound light.",
+        "distractors": [
+          "Market",
+          "Night",
+          "Person"
+        ]
+      },
+      {
+        "id": "mandarin-word-022",
+        "kind": "word",
+        "english": "Hotel",
+        "target": "酒店",
+        "romanization": "jiǔ diàn",
+        "pronunciationTip": "Say it as jiǔ diàn. Keep the final sound light.",
+        "distractors": [
+          "School",
+          "Now",
+          "Man"
+        ]
+      },
+      {
+        "id": "mandarin-word-023",
+        "kind": "word",
+        "english": "Bathroom",
+        "target": "洗手间",
+        "romanization": "xǐ shǒu jiān",
+        "pronunciationTip": "Say it as xǐ shǒu jiān. Keep the final sound light.",
+        "distractors": [
+          "Hospital",
+          "Later",
+          "Woman"
+        ]
+      },
+      {
+        "id": "mandarin-word-024",
+        "kind": "word",
+        "english": "Station",
+        "target": "车站",
+        "romanization": "chē zhàn",
+        "pronunciationTip": "Say it as chē zhàn. Keep the final sound light.",
+        "distractors": [
+          "Left",
+          "I",
+          "Name"
+        ]
+      },
+      {
+        "id": "mandarin-word-025",
+        "kind": "word",
+        "english": "Airport",
+        "target": "机场",
+        "romanization": "jī chǎng",
+        "pronunciationTip": "Say it as jī chǎng. Keep the final sound light.",
+        "distractors": [
+          "Right",
+          "You",
+          "Phone"
+        ]
+      },
+      {
+        "id": "mandarin-word-026",
+        "kind": "word",
+        "english": "Street",
+        "target": "街道",
+        "romanization": "jiē dào",
+        "pronunciationTip": "Say it as jiē dào. Keep the final sound light.",
+        "distractors": [
+          "Straight",
+          "We",
+          "Money"
+        ]
+      },
+      {
+        "id": "mandarin-word-027",
+        "kind": "word",
+        "english": "Store",
+        "target": "商店",
+        "romanization": "shāng diàn",
+        "pronunciationTip": "Say it as shāng diàn. Keep the final sound light.",
+        "distractors": [
+          "Near",
+          "They",
+          "Ticket"
+        ]
+      },
+      {
+        "id": "mandarin-word-028",
+        "kind": "word",
+        "english": "Market",
+        "target": "市场",
+        "romanization": "shì chǎng",
+        "pronunciationTip": "Say it as shì chǎng. Keep the final sound light.",
+        "distractors": [
+          "Far",
+          "Friend",
+          "Bus"
+        ]
+      },
+      {
+        "id": "mandarin-word-029",
+        "kind": "word",
+        "english": "School",
+        "target": "学校",
+        "romanization": "xué xiào",
+        "pronunciationTip": "Say it as xué xiào. Keep the final sound light.",
+        "distractors": [
+          "Today",
+          "Family",
+          "Train"
+        ]
+      },
+      {
+        "id": "mandarin-word-030",
+        "kind": "word",
+        "english": "Hospital",
+        "target": "医院",
+        "romanization": "yī yuàn",
+        "pronunciationTip": "Say it as yī yuàn. Keep the final sound light.",
+        "distractors": [
+          "Tomorrow",
+          "Teacher",
+          "Taxi"
+        ]
+      },
+      {
+        "id": "mandarin-word-031",
+        "kind": "word",
+        "english": "Left",
+        "target": "左边",
+        "romanization": "zuǒ biān",
+        "pronunciationTip": "Say it as zuǒ biān. Keep the final sound light.",
+        "distractors": [
+          "Yesterday",
+          "Student",
+          "Car"
+        ]
+      },
+      {
+        "id": "mandarin-word-032",
+        "kind": "word",
+        "english": "Right",
+        "target": "右边",
+        "romanization": "yòu biān",
+        "pronunciationTip": "Say it as yòu biān. Keep the final sound light.",
+        "distractors": [
+          "Morning",
+          "Child",
+          "Bicycle"
+        ]
+      },
+      {
+        "id": "mandarin-word-033",
+        "kind": "word",
+        "english": "Straight",
+        "target": "一直走",
+        "romanization": "yì zhí zǒu",
+        "pronunciationTip": "Say it as yì zhí zǒu. Keep the final sound light.",
+        "distractors": [
+          "Night",
+          "Person",
+          "City"
+        ]
+      },
+      {
+        "id": "mandarin-word-034",
+        "kind": "word",
+        "english": "Near",
+        "target": "近",
+        "romanization": "jìn",
+        "pronunciationTip": "Say it as jìn. Keep the final sound light.",
+        "distractors": [
+          "Now",
+          "Man",
+          "Country"
+        ]
+      },
+      {
+        "id": "mandarin-word-035",
+        "kind": "word",
+        "english": "Far",
+        "target": "远",
+        "romanization": "yuǎn",
+        "pronunciationTip": "Say it as yuǎn. Keep the final sound light.",
+        "distractors": [
+          "Later",
+          "Woman",
+          "Language"
+        ]
+      },
+      {
+        "id": "mandarin-word-036",
+        "kind": "word",
+        "english": "Today",
+        "target": "今天",
+        "romanization": "jīn tiān",
+        "pronunciationTip": "Say it as jīn tiān. Keep the final sound light.",
+        "distractors": [
+          "I",
+          "Name",
+          "Spanish"
+        ]
+      },
+      {
+        "id": "mandarin-word-037",
+        "kind": "word",
+        "english": "Tomorrow",
+        "target": "明天",
+        "romanization": "míng tiān",
+        "pronunciationTip": "Say it as míng tiān. Keep the final sound light.",
+        "distractors": [
+          "You",
+          "Phone",
+          "Chinese"
+        ]
+      },
+      {
+        "id": "mandarin-word-038",
+        "kind": "word",
+        "english": "Yesterday",
+        "target": "昨天",
+        "romanization": "zuó tiān",
+        "pronunciationTip": "Say it as zuó tiān. Keep the final sound light.",
+        "distractors": [
+          "We",
+          "Money",
+          "English"
+        ]
+      },
+      {
+        "id": "mandarin-word-039",
+        "kind": "word",
+        "english": "Morning",
+        "target": "早上",
+        "romanization": "zǎo shang",
+        "pronunciationTip": "Say it as zǎo shang. Keep the final sound light.",
+        "distractors": [
+          "They",
+          "Ticket",
+          "Book"
+        ]
+      },
+      {
+        "id": "mandarin-word-040",
+        "kind": "word",
+        "english": "Night",
+        "target": "晚上",
+        "romanization": "wǎn shang",
+        "pronunciationTip": "Say it as wǎn shang. Keep the final sound light.",
+        "distractors": [
+          "Friend",
+          "Bus",
+          "Music"
+        ]
+      },
+      {
+        "id": "mandarin-word-041",
+        "kind": "word",
+        "english": "Now",
+        "target": "现在",
+        "romanization": "xiàn zài",
+        "pronunciationTip": "Say it as xiàn zài. Keep the final sound light.",
+        "distractors": [
+          "Family",
+          "Train",
+          "Movie"
+        ]
+      },
+      {
+        "id": "mandarin-word-042",
+        "kind": "word",
+        "english": "Later",
+        "target": "以后",
+        "romanization": "yǐ hòu",
+        "pronunciationTip": "Say it as yǐ hòu. Keep the final sound light.",
+        "distractors": [
+          "Teacher",
+          "Taxi",
+          "Work"
+        ]
+      },
+      {
+        "id": "mandarin-word-043",
+        "kind": "word",
+        "english": "I",
+        "target": "我",
+        "romanization": "wǒ",
+        "pronunciationTip": "Say it as wǒ. Keep the final sound light.",
+        "distractors": [
+          "Student",
+          "Car",
+          "Help"
+        ]
+      },
+      {
+        "id": "mandarin-word-044",
+        "kind": "word",
+        "english": "You",
+        "target": "你",
+        "romanization": "nǐ",
+        "pronunciationTip": "Say it as nǐ. Keep the final sound light.",
+        "distractors": [
+          "Child",
+          "Bicycle",
+          "Question"
+        ]
+      },
+      {
+        "id": "mandarin-word-045",
+        "kind": "word",
+        "english": "We",
+        "target": "我们",
+        "romanization": "wǒ men",
+        "pronunciationTip": "Say it as wǒ men. Keep the final sound light.",
+        "distractors": [
+          "Person",
+          "City",
+          "Answer"
+        ]
+      },
+      {
+        "id": "mandarin-word-046",
+        "kind": "word",
+        "english": "They",
+        "target": "他们",
+        "romanization": "tā men",
+        "pronunciationTip": "Say it as tā men. Keep the final sound light.",
+        "distractors": [
+          "Man",
+          "Country",
+          "Problem"
+        ]
+      },
+      {
+        "id": "mandarin-word-047",
+        "kind": "word",
+        "english": "Friend",
+        "target": "朋友",
+        "romanization": "péng you",
+        "pronunciationTip": "Say it as péng you. Keep the final sound light.",
+        "distractors": [
+          "Woman",
+          "Language",
+          "Happy"
+        ]
+      },
+      {
+        "id": "mandarin-word-048",
+        "kind": "word",
+        "english": "Family",
+        "target": "家人",
+        "romanization": "jiā rén",
+        "pronunciationTip": "Say it as jiā rén. Keep the final sound light.",
+        "distractors": [
+          "Name",
+          "Spanish",
+          "Tired"
+        ]
+      },
+      {
+        "id": "mandarin-word-049",
+        "kind": "word",
+        "english": "Teacher",
+        "target": "老师",
+        "romanization": "lǎo shī",
+        "pronunciationTip": "Say it as lǎo shī. Keep the final sound light.",
+        "distractors": [
+          "Phone",
+          "Chinese",
+          "Hungry"
+        ]
+      },
+      {
+        "id": "mandarin-word-050",
+        "kind": "word",
+        "english": "Student",
+        "target": "学生",
+        "romanization": "xué sheng",
+        "pronunciationTip": "Say it as xué sheng. Keep the final sound light.",
+        "distractors": [
+          "Money",
+          "English",
+          "Thirsty"
+        ]
+      },
+      {
+        "id": "mandarin-word-051",
+        "kind": "word",
+        "english": "Child",
+        "target": "孩子",
+        "romanization": "hái zi",
+        "pronunciationTip": "Say it as hái zi. Keep the final sound light.",
+        "distractors": [
+          "Ticket",
+          "Book",
+          "Hot"
+        ]
+      },
+      {
+        "id": "mandarin-word-052",
+        "kind": "word",
+        "english": "Person",
+        "target": "人",
+        "romanization": "rén",
+        "pronunciationTip": "Say it as rén. Keep the final sound light.",
+        "distractors": [
+          "Bus",
+          "Music",
+          "Cold"
+        ]
+      },
+      {
+        "id": "mandarin-word-053",
+        "kind": "word",
+        "english": "Man",
+        "target": "男人",
+        "romanization": "nán rén",
+        "pronunciationTip": "Say it as nán rén. Keep the final sound light.",
+        "distractors": [
+          "Train",
+          "Movie",
+          "Big"
+        ]
+      },
+      {
+        "id": "mandarin-word-054",
+        "kind": "word",
+        "english": "Woman",
+        "target": "女人",
+        "romanization": "nǚ rén",
+        "pronunciationTip": "Say it as nǚ rén. Keep the final sound light.",
+        "distractors": [
+          "Taxi",
+          "Work",
+          "Small"
+        ]
+      },
+      {
+        "id": "mandarin-word-055",
+        "kind": "word",
+        "english": "Name",
+        "target": "名字",
+        "romanization": "míng zi",
+        "pronunciationTip": "Say it as míng zi. Keep the final sound light.",
+        "distractors": [
+          "Car",
+          "Help",
+          "Fast"
+        ]
+      },
+      {
+        "id": "mandarin-word-056",
+        "kind": "word",
+        "english": "Phone",
+        "target": "电话",
+        "romanization": "diàn huà",
+        "pronunciationTip": "Say it as diàn huà. Keep the final sound light.",
+        "distractors": [
+          "Bicycle",
+          "Question",
+          "Slow"
+        ]
+      },
+      {
+        "id": "mandarin-word-057",
+        "kind": "word",
+        "english": "Money",
+        "target": "钱",
+        "romanization": "qián",
+        "pronunciationTip": "Say it as qián. Keep the final sound light.",
+        "distractors": [
+          "City",
+          "Answer",
+          "Good"
+        ]
+      },
+      {
+        "id": "mandarin-word-058",
+        "kind": "word",
+        "english": "Ticket",
+        "target": "票",
+        "romanization": "piào",
+        "pronunciationTip": "Say it as piào. Keep the final sound light.",
+        "distractors": [
+          "Country",
+          "Problem",
+          "Bad"
+        ]
+      },
+      {
+        "id": "mandarin-word-059",
+        "kind": "word",
+        "english": "Bus",
+        "target": "公交车",
+        "romanization": "gōng jiāo chē",
+        "pronunciationTip": "Say it as gōng jiāo chē. Keep the final sound light.",
+        "distractors": [
+          "Language",
+          "Happy",
+          "Open"
+        ]
+      },
+      {
+        "id": "mandarin-word-060",
+        "kind": "word",
+        "english": "Train",
+        "target": "火车",
+        "romanization": "huǒ chē",
+        "pronunciationTip": "Say it as huǒ chē. Keep the final sound light.",
+        "distractors": [
+          "Spanish",
+          "Tired",
+          "Closed"
+        ]
+      },
+      {
+        "id": "mandarin-word-061",
+        "kind": "word",
+        "english": "Taxi",
+        "target": "出租车",
+        "romanization": "chū zū chē",
+        "pronunciationTip": "Say it as chū zū chē. Keep the final sound light.",
+        "distractors": [
+          "Chinese",
+          "Hungry",
+          "Here"
+        ]
+      },
+      {
+        "id": "mandarin-word-062",
+        "kind": "word",
+        "english": "Car",
+        "target": "汽车",
+        "romanization": "qì chē",
+        "pronunciationTip": "Say it as qì chē. Keep the final sound light.",
+        "distractors": [
+          "English",
+          "Thirsty",
+          "There"
+        ]
+      },
+      {
+        "id": "mandarin-word-063",
+        "kind": "word",
+        "english": "Bicycle",
+        "target": "自行车",
+        "romanization": "zì xíng chē",
+        "pronunciationTip": "Say it as zì xíng chē. Keep the final sound light.",
+        "distractors": [
+          "Book",
+          "Hot",
+          "One"
+        ]
+      },
+      {
+        "id": "mandarin-word-064",
+        "kind": "word",
+        "english": "City",
+        "target": "城市",
+        "romanization": "chéng shì",
+        "pronunciationTip": "Say it as chéng shì. Keep the final sound light.",
+        "distractors": [
+          "Music",
+          "Cold",
+          "Two"
+        ]
+      },
+      {
+        "id": "mandarin-word-065",
+        "kind": "word",
+        "english": "Country",
+        "target": "国家",
+        "romanization": "guó jiā",
+        "pronunciationTip": "Say it as guó jiā. Keep the final sound light.",
+        "distractors": [
+          "Movie",
+          "Big",
+          "Three"
+        ]
+      },
+      {
+        "id": "mandarin-word-066",
+        "kind": "word",
+        "english": "Language",
+        "target": "语言",
+        "romanization": "yǔ yán",
+        "pronunciationTip": "Say it as yǔ yán. Keep the final sound light.",
+        "distractors": [
+          "Work",
+          "Small",
+          "Four"
+        ]
+      },
+      {
+        "id": "mandarin-word-067",
+        "kind": "word",
+        "english": "Spanish",
+        "target": "西班牙语",
+        "romanization": "xī bān yá yǔ",
+        "pronunciationTip": "Say it as xī bān yá yǔ. Keep the final sound light.",
+        "distractors": [
+          "Help",
+          "Fast",
+          "Five"
+        ]
+      },
+      {
+        "id": "mandarin-word-068",
+        "kind": "word",
+        "english": "Chinese",
+        "target": "中文",
+        "romanization": "zhōng wén",
+        "pronunciationTip": "Say it as zhōng wén. Keep the final sound light.",
+        "distractors": [
+          "Question",
+          "Slow",
+          "Ten"
+        ]
+      },
+      {
+        "id": "mandarin-word-069",
+        "kind": "word",
+        "english": "English",
+        "target": "英语",
+        "romanization": "yīng yǔ",
+        "pronunciationTip": "Say it as yīng yǔ. Keep the final sound light.",
+        "distractors": [
+          "Answer",
+          "Good",
+          "Time"
+        ]
+      },
+      {
+        "id": "mandarin-word-070",
+        "kind": "word",
+        "english": "Book",
+        "target": "书",
+        "romanization": "shū",
+        "pronunciationTip": "Say it as shū. Keep the final sound light.",
+        "distractors": [
+          "Problem",
+          "Bad",
+          "I need water"
+        ]
+      },
+      {
+        "id": "mandarin-word-071",
+        "kind": "word",
+        "english": "Music",
+        "target": "音乐",
+        "romanization": "yīn yuè",
+        "pronunciationTip": "Say it as yīn yuè. Keep the final sound light.",
+        "distractors": [
+          "Happy",
+          "Open",
+          "I want coffee"
+        ]
+      },
+      {
+        "id": "mandarin-word-072",
+        "kind": "word",
+        "english": "Movie",
+        "target": "电影",
+        "romanization": "diàn yǐng",
+        "pronunciationTip": "Say it as diàn yǐng. Keep the final sound light.",
+        "distractors": [
+          "Tired",
+          "Closed",
+          "I have a question"
+        ]
+      },
+      {
+        "id": "mandarin-word-073",
+        "kind": "word",
+        "english": "Work",
+        "target": "工作",
+        "romanization": "gōng zuò",
+        "pronunciationTip": "Say it as gōng zuò. Keep the final sound light.",
+        "distractors": [
+          "Hungry",
+          "Here",
+          "I speak Chinese"
+        ]
+      },
+      {
+        "id": "mandarin-word-074",
+        "kind": "word",
+        "english": "Help",
+        "target": "帮助",
+        "romanization": "bāng zhù",
+        "pronunciationTip": "Say it as bāng zhù. Keep the final sound light.",
+        "distractors": [
+          "Thirsty",
+          "There",
+          "I eat rice"
+        ]
+      },
+      {
+        "id": "mandarin-word-075",
+        "kind": "word",
+        "english": "Question",
+        "target": "问题",
+        "romanization": "wèn tí",
+        "pronunciationTip": "Say it as wèn tí. Keep the final sound light.",
+        "distractors": [
+          "Hot",
+          "One",
+          "I read a book"
+        ]
+      },
+      {
+        "id": "mandarin-word-076",
+        "kind": "word",
+        "english": "Answer",
+        "target": "回答",
+        "romanization": "huí dá",
+        "pronunciationTip": "Say it as huí dá. Keep the final sound light.",
+        "distractors": [
+          "Cold",
+          "Two",
+          "I go to school"
+        ]
+      },
+      {
+        "id": "mandarin-word-077",
+        "kind": "word",
+        "english": "Problem",
+        "target": "麻烦",
+        "romanization": "má fan",
+        "pronunciationTip": "Say it as má fan. Keep the final sound light.",
+        "distractors": [
+          "Big",
+          "Three",
+          "I buy bread"
+        ]
+      },
+      {
+        "id": "mandarin-word-078",
+        "kind": "word",
+        "english": "Happy",
+        "target": "开心",
+        "romanization": "kāi xīn",
+        "pronunciationTip": "Say it as kāi xīn. Keep the final sound light.",
+        "distractors": [
+          "Small",
+          "Four",
+          "I wait for the bus"
+        ]
+      },
+      {
+        "id": "mandarin-word-079",
+        "kind": "word",
+        "english": "Tired",
+        "target": "累",
+        "romanization": "lèi",
+        "pronunciationTip": "Say it as lèi. Keep the final sound light.",
+        "distractors": [
+          "Fast",
+          "Five",
+          "I like music"
+        ]
+      },
+      {
+        "id": "mandarin-word-080",
+        "kind": "word",
+        "english": "Hungry",
+        "target": "饿",
+        "romanization": "è",
+        "pronunciationTip": "Say it as è. Keep the final sound light.",
+        "distractors": [
+          "Slow",
+          "Ten",
+          "You need water"
+        ]
+      },
+      {
+        "id": "mandarin-word-081",
+        "kind": "word",
+        "english": "Thirsty",
+        "target": "渴",
+        "romanization": "kě",
+        "pronunciationTip": "Say it as kě. Keep the final sound light.",
+        "distractors": [
+          "Good",
+          "Time",
+          "You want coffee"
+        ]
+      },
+      {
+        "id": "mandarin-word-082",
+        "kind": "word",
+        "english": "Hot",
+        "target": "热",
+        "romanization": "rè",
+        "pronunciationTip": "Say it as rè. Keep the final sound light.",
+        "distractors": [
+          "Bad",
+          "I need water",
+          "You have a question"
+        ]
+      },
+      {
+        "id": "mandarin-word-083",
+        "kind": "word",
+        "english": "Cold",
+        "target": "冷",
+        "romanization": "lěng",
+        "pronunciationTip": "Say it as lěng. Keep the final sound light.",
+        "distractors": [
+          "Open",
+          "I want coffee",
+          "You speak Chinese"
+        ]
+      },
+      {
+        "id": "mandarin-word-084",
+        "kind": "word",
+        "english": "Big",
+        "target": "大",
+        "romanization": "dà",
+        "pronunciationTip": "Say it as dà. Keep the final sound light.",
+        "distractors": [
+          "Closed",
+          "I have a question",
+          "You eat rice"
+        ]
+      },
+      {
+        "id": "mandarin-word-085",
+        "kind": "word",
+        "english": "Small",
+        "target": "小",
+        "romanization": "xiǎo",
+        "pronunciationTip": "Say it as xiǎo. Keep the final sound light.",
+        "distractors": [
+          "Here",
+          "I speak Chinese",
+          "You read a book"
+        ]
+      },
+      {
+        "id": "mandarin-word-086",
+        "kind": "word",
+        "english": "Fast",
+        "target": "快",
+        "romanization": "kuài",
+        "pronunciationTip": "Say it as kuài. Keep the final sound light.",
+        "distractors": [
+          "There",
+          "I eat rice",
+          "You go to school"
+        ]
+      },
+      {
+        "id": "mandarin-word-087",
+        "kind": "word",
+        "english": "Slow",
+        "target": "慢",
+        "romanization": "màn",
+        "pronunciationTip": "Say it as màn. Keep the final sound light.",
+        "distractors": [
+          "One",
+          "I read a book",
+          "You buy bread"
+        ]
+      },
+      {
+        "id": "mandarin-word-088",
+        "kind": "word",
+        "english": "Good",
+        "target": "好",
+        "romanization": "hǎo",
+        "pronunciationTip": "Say it as hǎo. Keep the final sound light.",
+        "distractors": [
+          "Two",
+          "I go to school",
+          "You wait for the bus"
+        ]
+      },
+      {
+        "id": "mandarin-word-089",
+        "kind": "word",
+        "english": "Bad",
+        "target": "不好",
+        "romanization": "bù hǎo",
+        "pronunciationTip": "Say it as bù hǎo. Keep the final sound light.",
+        "distractors": [
+          "Three",
+          "I buy bread",
+          "You like music"
+        ]
+      },
+      {
+        "id": "mandarin-word-090",
+        "kind": "word",
+        "english": "Open",
+        "target": "开",
+        "romanization": "kāi",
+        "pronunciationTip": "Say it as kāi. Keep the final sound light.",
+        "distractors": [
+          "Four",
+          "I wait for the bus",
+          "We need water"
+        ]
+      },
+      {
+        "id": "mandarin-word-091",
+        "kind": "word",
+        "english": "Closed",
+        "target": "关",
+        "romanization": "guān",
+        "pronunciationTip": "Say it as guān. Keep the final sound light.",
+        "distractors": [
+          "Five",
+          "I like music",
+          "We want coffee"
+        ]
+      },
+      {
+        "id": "mandarin-word-092",
+        "kind": "word",
+        "english": "Here",
+        "target": "这里",
+        "romanization": "zhè lǐ",
+        "pronunciationTip": "Say it as zhè lǐ. Keep the final sound light.",
+        "distractors": [
+          "Ten",
+          "You need water",
+          "We have a question"
+        ]
+      },
+      {
+        "id": "mandarin-word-093",
+        "kind": "word",
+        "english": "There",
+        "target": "那里",
+        "romanization": "nà lǐ",
+        "pronunciationTip": "Say it as nà lǐ. Keep the final sound light.",
+        "distractors": [
+          "Time",
+          "You want coffee",
+          "We speak Chinese"
+        ]
+      },
+      {
+        "id": "mandarin-word-094",
+        "kind": "word",
+        "english": "One",
+        "target": "一",
+        "romanization": "yī",
+        "pronunciationTip": "Say it as yī. Keep the final sound light.",
+        "distractors": [
+          "I need water",
+          "You have a question",
+          "We eat rice"
+        ]
+      },
+      {
+        "id": "mandarin-word-095",
+        "kind": "word",
+        "english": "Two",
+        "target": "二",
+        "romanization": "èr",
+        "pronunciationTip": "Say it as èr. Keep the final sound light.",
+        "distractors": [
+          "I want coffee",
+          "You speak Chinese",
+          "We read a book"
+        ]
+      },
+      {
+        "id": "mandarin-word-096",
+        "kind": "word",
+        "english": "Three",
+        "target": "三",
+        "romanization": "sān",
+        "pronunciationTip": "Say it as sān. Keep the final sound light.",
+        "distractors": [
+          "I have a question",
+          "You eat rice",
+          "We go to school"
+        ]
+      },
+      {
+        "id": "mandarin-word-097",
+        "kind": "word",
+        "english": "Four",
+        "target": "四",
+        "romanization": "sì",
+        "pronunciationTip": "Say it as sì. Keep the final sound light.",
+        "distractors": [
+          "I speak Chinese",
+          "You read a book",
+          "We buy bread"
+        ]
+      },
+      {
+        "id": "mandarin-word-098",
+        "kind": "word",
+        "english": "Five",
+        "target": "五",
+        "romanization": "wǔ",
+        "pronunciationTip": "Say it as wǔ. Keep the final sound light.",
+        "distractors": [
+          "I eat rice",
+          "You go to school",
+          "We wait for the bus"
+        ]
+      },
+      {
+        "id": "mandarin-word-099",
+        "kind": "word",
+        "english": "Ten",
+        "target": "十",
+        "romanization": "shí",
+        "pronunciationTip": "Say it as shí. Keep the final sound light.",
+        "distractors": [
+          "I read a book",
+          "You buy bread",
+          "We like music"
+        ]
+      },
+      {
+        "id": "mandarin-word-100",
+        "kind": "word",
+        "english": "Time",
+        "target": "时间",
+        "romanization": "shí jiān",
+        "pronunciationTip": "Say it as shí jiān. Keep the final sound light.",
+        "distractors": [
+          "I go to school",
+          "You wait for the bus",
+          "They need water"
+        ]
+      }
+    ],
+    "sentences": [
+      {
+        "id": "mandarin-sentence-001",
+        "kind": "sentence",
+        "english": "I need water",
+        "target": "我需要水",
+        "romanization": "wǒ xū yào shuǐ",
+        "pronunciationTip": "Practice the rhythm: wǒ xū yào shuǐ.",
+        "distractors": [
+          "Excuse me",
+          "Soup",
+          "Right"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-002",
+        "kind": "sentence",
+        "english": "I want coffee",
+        "target": "我想要咖啡",
+        "romanization": "wǒ xiǎng yào kā fēi",
+        "pronunciationTip": "Practice the rhythm: wǒ xiǎng yào kā fēi.",
+        "distractors": [
+          "Good morning",
+          "House",
+          "Straight"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-003",
+        "kind": "sentence",
+        "english": "I have a question",
+        "target": "我有一个问题",
+        "romanization": "wǒ yǒu yí ge wèn tí",
+        "pronunciationTip": "Practice the rhythm: wǒ yǒu yí ge wèn tí.",
+        "distractors": [
+          "Good night",
+          "Hotel",
+          "Near"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-004",
+        "kind": "sentence",
+        "english": "I speak Chinese",
+        "target": "我说中文",
+        "romanization": "wǒ shuō zhōng wén",
+        "pronunciationTip": "Practice the rhythm: wǒ shuō zhōng wén.",
+        "distractors": [
+          "Water",
+          "Bathroom",
+          "Far"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-005",
+        "kind": "sentence",
+        "english": "I eat rice",
+        "target": "我吃米饭",
+        "romanization": "wǒ chī mǐ fàn",
+        "pronunciationTip": "Practice the rhythm: wǒ chī mǐ fàn.",
+        "distractors": [
+          "Coffee",
+          "Station",
+          "Today"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-006",
+        "kind": "sentence",
+        "english": "I read a book",
+        "target": "我读一本书",
+        "romanization": "wǒ dú yì běn shū",
+        "pronunciationTip": "Practice the rhythm: wǒ dú yì běn shū.",
+        "distractors": [
+          "Tea",
+          "Airport",
+          "Tomorrow"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-007",
+        "kind": "sentence",
+        "english": "I go to school",
+        "target": "我去学校",
+        "romanization": "wǒ qù xué xiào",
+        "pronunciationTip": "Practice the rhythm: wǒ qù xué xiào.",
+        "distractors": [
+          "Food",
+          "Street",
+          "Yesterday"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-008",
+        "kind": "sentence",
+        "english": "I buy bread",
+        "target": "我买面包",
+        "romanization": "wǒ mǎi miàn bāo",
+        "pronunciationTip": "Practice the rhythm: wǒ mǎi miàn bāo.",
+        "distractors": [
+          "Rice",
+          "Store",
+          "Morning"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-009",
+        "kind": "sentence",
+        "english": "I wait for the bus",
+        "target": "我等公交车",
+        "romanization": "wǒ děng gōng jiāo chē",
+        "pronunciationTip": "Practice the rhythm: wǒ děng gōng jiāo chē.",
+        "distractors": [
+          "Bread",
+          "Market",
+          "Night"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-010",
+        "kind": "sentence",
+        "english": "I like music",
+        "target": "我喜欢音乐",
+        "romanization": "wǒ xǐ huan yīn yuè",
+        "pronunciationTip": "Practice the rhythm: wǒ xǐ huan yīn yuè.",
+        "distractors": [
+          "Fruit",
+          "School",
+          "Now"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-011",
+        "kind": "sentence",
+        "english": "You need water",
+        "target": "你需要水",
+        "romanization": "nǐ xū yào shuǐ",
+        "pronunciationTip": "Practice the rhythm: nǐ xū yào shuǐ.",
+        "distractors": [
+          "Apple",
+          "Hospital",
+          "Later"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-012",
+        "kind": "sentence",
+        "english": "You want coffee",
+        "target": "你想要咖啡",
+        "romanization": "nǐ xiǎng yào kā fēi",
+        "pronunciationTip": "Practice the rhythm: nǐ xiǎng yào kā fēi.",
+        "distractors": [
+          "Banana",
+          "Left",
+          "I"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-013",
+        "kind": "sentence",
+        "english": "You have a question",
+        "target": "你有一个问题",
+        "romanization": "nǐ yǒu yí ge wèn tí",
+        "pronunciationTip": "Practice the rhythm: nǐ yǒu yí ge wèn tí.",
+        "distractors": [
+          "Soup",
+          "Right",
+          "You"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-014",
+        "kind": "sentence",
+        "english": "You speak Chinese",
+        "target": "你说中文",
+        "romanization": "nǐ shuō zhōng wén",
+        "pronunciationTip": "Practice the rhythm: nǐ shuō zhōng wén.",
+        "distractors": [
+          "House",
+          "Straight",
+          "We"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-015",
+        "kind": "sentence",
+        "english": "You eat rice",
+        "target": "你吃米饭",
+        "romanization": "nǐ chī mǐ fàn",
+        "pronunciationTip": "Practice the rhythm: nǐ chī mǐ fàn.",
+        "distractors": [
+          "Hotel",
+          "Near",
+          "They"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-016",
+        "kind": "sentence",
+        "english": "You read a book",
+        "target": "你读一本书",
+        "romanization": "nǐ dú yì běn shū",
+        "pronunciationTip": "Practice the rhythm: nǐ dú yì běn shū.",
+        "distractors": [
+          "Bathroom",
+          "Far",
+          "Friend"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-017",
+        "kind": "sentence",
+        "english": "You go to school",
+        "target": "你去学校",
+        "romanization": "nǐ qù xué xiào",
+        "pronunciationTip": "Practice the rhythm: nǐ qù xué xiào.",
+        "distractors": [
+          "Station",
+          "Today",
+          "Family"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-018",
+        "kind": "sentence",
+        "english": "You buy bread",
+        "target": "你买面包",
+        "romanization": "nǐ mǎi miàn bāo",
+        "pronunciationTip": "Practice the rhythm: nǐ mǎi miàn bāo.",
+        "distractors": [
+          "Airport",
+          "Tomorrow",
+          "Teacher"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-019",
+        "kind": "sentence",
+        "english": "You wait for the bus",
+        "target": "你等公交车",
+        "romanization": "nǐ děng gōng jiāo chē",
+        "pronunciationTip": "Practice the rhythm: nǐ děng gōng jiāo chē.",
+        "distractors": [
+          "Street",
+          "Yesterday",
+          "Student"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-020",
+        "kind": "sentence",
+        "english": "You like music",
+        "target": "你喜欢音乐",
+        "romanization": "nǐ xǐ huan yīn yuè",
+        "pronunciationTip": "Practice the rhythm: nǐ xǐ huan yīn yuè.",
+        "distractors": [
+          "Store",
+          "Morning",
+          "Child"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-021",
+        "kind": "sentence",
+        "english": "We need water",
+        "target": "我们需要水",
+        "romanization": "wǒ men xū yào shuǐ",
+        "pronunciationTip": "Practice the rhythm: wǒ men xū yào shuǐ.",
+        "distractors": [
+          "Market",
+          "Night",
+          "Person"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-022",
+        "kind": "sentence",
+        "english": "We want coffee",
+        "target": "我们想要咖啡",
+        "romanization": "wǒ men xiǎng yào kā fēi",
+        "pronunciationTip": "Practice the rhythm: wǒ men xiǎng yào kā fēi.",
+        "distractors": [
+          "School",
+          "Now",
+          "Man"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-023",
+        "kind": "sentence",
+        "english": "We have a question",
+        "target": "我们有一个问题",
+        "romanization": "wǒ men yǒu yí ge wèn tí",
+        "pronunciationTip": "Practice the rhythm: wǒ men yǒu yí ge wèn tí.",
+        "distractors": [
+          "Hospital",
+          "Later",
+          "Woman"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-024",
+        "kind": "sentence",
+        "english": "We speak Chinese",
+        "target": "我们说中文",
+        "romanization": "wǒ men shuō zhōng wén",
+        "pronunciationTip": "Practice the rhythm: wǒ men shuō zhōng wén.",
+        "distractors": [
+          "Left",
+          "I",
+          "Name"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-025",
+        "kind": "sentence",
+        "english": "We eat rice",
+        "target": "我们吃米饭",
+        "romanization": "wǒ men chī mǐ fàn",
+        "pronunciationTip": "Practice the rhythm: wǒ men chī mǐ fàn.",
+        "distractors": [
+          "Right",
+          "You",
+          "Phone"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-026",
+        "kind": "sentence",
+        "english": "We read a book",
+        "target": "我们读一本书",
+        "romanization": "wǒ men dú yì běn shū",
+        "pronunciationTip": "Practice the rhythm: wǒ men dú yì běn shū.",
+        "distractors": [
+          "Straight",
+          "We",
+          "Money"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-027",
+        "kind": "sentence",
+        "english": "We go to school",
+        "target": "我们去学校",
+        "romanization": "wǒ men qù xué xiào",
+        "pronunciationTip": "Practice the rhythm: wǒ men qù xué xiào.",
+        "distractors": [
+          "Near",
+          "They",
+          "Ticket"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-028",
+        "kind": "sentence",
+        "english": "We buy bread",
+        "target": "我们买面包",
+        "romanization": "wǒ men mǎi miàn bāo",
+        "pronunciationTip": "Practice the rhythm: wǒ men mǎi miàn bāo.",
+        "distractors": [
+          "Far",
+          "Friend",
+          "Bus"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-029",
+        "kind": "sentence",
+        "english": "We wait for the bus",
+        "target": "我们等公交车",
+        "romanization": "wǒ men děng gōng jiāo chē",
+        "pronunciationTip": "Practice the rhythm: wǒ men děng gōng jiāo chē.",
+        "distractors": [
+          "Today",
+          "Family",
+          "Train"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-030",
+        "kind": "sentence",
+        "english": "We like music",
+        "target": "我们喜欢音乐",
+        "romanization": "wǒ men xǐ huan yīn yuè",
+        "pronunciationTip": "Practice the rhythm: wǒ men xǐ huan yīn yuè.",
+        "distractors": [
+          "Tomorrow",
+          "Teacher",
+          "Taxi"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-031",
+        "kind": "sentence",
+        "english": "They need water",
+        "target": "他们需要水",
+        "romanization": "tā men xū yào shuǐ",
+        "pronunciationTip": "Practice the rhythm: tā men xū yào shuǐ.",
+        "distractors": [
+          "Yesterday",
+          "Student",
+          "Car"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-032",
+        "kind": "sentence",
+        "english": "They want coffee",
+        "target": "他们想要咖啡",
+        "romanization": "tā men xiǎng yào kā fēi",
+        "pronunciationTip": "Practice the rhythm: tā men xiǎng yào kā fēi.",
+        "distractors": [
+          "Morning",
+          "Child",
+          "Bicycle"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-033",
+        "kind": "sentence",
+        "english": "They have a question",
+        "target": "他们有一个问题",
+        "romanization": "tā men yǒu yí ge wèn tí",
+        "pronunciationTip": "Practice the rhythm: tā men yǒu yí ge wèn tí.",
+        "distractors": [
+          "Night",
+          "Person",
+          "City"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-034",
+        "kind": "sentence",
+        "english": "They speak Chinese",
+        "target": "他们说中文",
+        "romanization": "tā men shuō zhōng wén",
+        "pronunciationTip": "Practice the rhythm: tā men shuō zhōng wén.",
+        "distractors": [
+          "Now",
+          "Man",
+          "Country"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-035",
+        "kind": "sentence",
+        "english": "They eat rice",
+        "target": "他们吃米饭",
+        "romanization": "tā men chī mǐ fàn",
+        "pronunciationTip": "Practice the rhythm: tā men chī mǐ fàn.",
+        "distractors": [
+          "Later",
+          "Woman",
+          "Language"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-036",
+        "kind": "sentence",
+        "english": "They read a book",
+        "target": "他们读一本书",
+        "romanization": "tā men dú yì běn shū",
+        "pronunciationTip": "Practice the rhythm: tā men dú yì běn shū.",
+        "distractors": [
+          "I",
+          "Name",
+          "Spanish"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-037",
+        "kind": "sentence",
+        "english": "They go to school",
+        "target": "他们去学校",
+        "romanization": "tā men qù xué xiào",
+        "pronunciationTip": "Practice the rhythm: tā men qù xué xiào.",
+        "distractors": [
+          "You",
+          "Phone",
+          "Chinese"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-038",
+        "kind": "sentence",
+        "english": "They buy bread",
+        "target": "他们买面包",
+        "romanization": "tā men mǎi miàn bāo",
+        "pronunciationTip": "Practice the rhythm: tā men mǎi miàn bāo.",
+        "distractors": [
+          "We",
+          "Money",
+          "English"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-039",
+        "kind": "sentence",
+        "english": "They wait for the bus",
+        "target": "他们等公交车",
+        "romanization": "tā men děng gōng jiāo chē",
+        "pronunciationTip": "Practice the rhythm: tā men děng gōng jiāo chē.",
+        "distractors": [
+          "They",
+          "Ticket",
+          "Book"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-040",
+        "kind": "sentence",
+        "english": "They like music",
+        "target": "他们喜欢音乐",
+        "romanization": "tā men xǐ huan yīn yuè",
+        "pronunciationTip": "Practice the rhythm: tā men xǐ huan yīn yuè.",
+        "distractors": [
+          "Friend",
+          "Bus",
+          "Music"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-041",
+        "kind": "sentence",
+        "english": "My friend need water",
+        "target": "我的朋友需要水",
+        "romanization": "wǒ de péng you xū yào shuǐ",
+        "pronunciationTip": "Practice the rhythm: wǒ de péng you xū yào shuǐ.",
+        "distractors": [
+          "Family",
+          "Train",
+          "Movie"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-042",
+        "kind": "sentence",
+        "english": "My friend want coffee",
+        "target": "我的朋友想要咖啡",
+        "romanization": "wǒ de péng you xiǎng yào kā fēi",
+        "pronunciationTip": "Practice the rhythm: wǒ de péng you xiǎng yào kā fēi.",
+        "distractors": [
+          "Teacher",
+          "Taxi",
+          "Work"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-043",
+        "kind": "sentence",
+        "english": "My friend have a question",
+        "target": "我的朋友有一个问题",
+        "romanization": "wǒ de péng you yǒu yí ge wèn tí",
+        "pronunciationTip": "Practice the rhythm: wǒ de péng you yǒu yí ge wèn tí.",
+        "distractors": [
+          "Student",
+          "Car",
+          "Help"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-044",
+        "kind": "sentence",
+        "english": "My friend speak Chinese",
+        "target": "我的朋友说中文",
+        "romanization": "wǒ de péng you shuō zhōng wén",
+        "pronunciationTip": "Practice the rhythm: wǒ de péng you shuō zhōng wén.",
+        "distractors": [
+          "Child",
+          "Bicycle",
+          "Question"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-045",
+        "kind": "sentence",
+        "english": "My friend eat rice",
+        "target": "我的朋友吃米饭",
+        "romanization": "wǒ de péng you chī mǐ fàn",
+        "pronunciationTip": "Practice the rhythm: wǒ de péng you chī mǐ fàn.",
+        "distractors": [
+          "Person",
+          "City",
+          "Answer"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-046",
+        "kind": "sentence",
+        "english": "My friend read a book",
+        "target": "我的朋友读一本书",
+        "romanization": "wǒ de péng you dú yì běn shū",
+        "pronunciationTip": "Practice the rhythm: wǒ de péng you dú yì běn shū.",
+        "distractors": [
+          "Man",
+          "Country",
+          "Problem"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-047",
+        "kind": "sentence",
+        "english": "My friend go to school",
+        "target": "我的朋友去学校",
+        "romanization": "wǒ de péng you qù xué xiào",
+        "pronunciationTip": "Practice the rhythm: wǒ de péng you qù xué xiào.",
+        "distractors": [
+          "Woman",
+          "Language",
+          "Happy"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-048",
+        "kind": "sentence",
+        "english": "My friend buy bread",
+        "target": "我的朋友买面包",
+        "romanization": "wǒ de péng you mǎi miàn bāo",
+        "pronunciationTip": "Practice the rhythm: wǒ de péng you mǎi miàn bāo.",
+        "distractors": [
+          "Name",
+          "Spanish",
+          "Tired"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-049",
+        "kind": "sentence",
+        "english": "My friend wait for the bus",
+        "target": "我的朋友等公交车",
+        "romanization": "wǒ de péng you děng gōng jiāo chē",
+        "pronunciationTip": "Practice the rhythm: wǒ de péng you děng gōng jiāo chē.",
+        "distractors": [
+          "Phone",
+          "Chinese",
+          "Hungry"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-050",
+        "kind": "sentence",
+        "english": "My friend like music",
+        "target": "我的朋友喜欢音乐",
+        "romanization": "wǒ de péng you xǐ huan yīn yuè",
+        "pronunciationTip": "Practice the rhythm: wǒ de péng you xǐ huan yīn yuè.",
+        "distractors": [
+          "Money",
+          "English",
+          "Thirsty"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-051",
+        "kind": "sentence",
+        "english": "The teacher need water",
+        "target": "老师需要水",
+        "romanization": "lǎo shī xū yào shuǐ",
+        "pronunciationTip": "Practice the rhythm: lǎo shī xū yào shuǐ.",
+        "distractors": [
+          "Ticket",
+          "Book",
+          "Hot"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-052",
+        "kind": "sentence",
+        "english": "The teacher want coffee",
+        "target": "老师想要咖啡",
+        "romanization": "lǎo shī xiǎng yào kā fēi",
+        "pronunciationTip": "Practice the rhythm: lǎo shī xiǎng yào kā fēi.",
+        "distractors": [
+          "Bus",
+          "Music",
+          "Cold"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-053",
+        "kind": "sentence",
+        "english": "The teacher have a question",
+        "target": "老师有一个问题",
+        "romanization": "lǎo shī yǒu yí ge wèn tí",
+        "pronunciationTip": "Practice the rhythm: lǎo shī yǒu yí ge wèn tí.",
+        "distractors": [
+          "Train",
+          "Movie",
+          "Big"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-054",
+        "kind": "sentence",
+        "english": "The teacher speak Chinese",
+        "target": "老师说中文",
+        "romanization": "lǎo shī shuō zhōng wén",
+        "pronunciationTip": "Practice the rhythm: lǎo shī shuō zhōng wén.",
+        "distractors": [
+          "Taxi",
+          "Work",
+          "Small"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-055",
+        "kind": "sentence",
+        "english": "The teacher eat rice",
+        "target": "老师吃米饭",
+        "romanization": "lǎo shī chī mǐ fàn",
+        "pronunciationTip": "Practice the rhythm: lǎo shī chī mǐ fàn.",
+        "distractors": [
+          "Car",
+          "Help",
+          "Fast"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-056",
+        "kind": "sentence",
+        "english": "The teacher read a book",
+        "target": "老师读一本书",
+        "romanization": "lǎo shī dú yì běn shū",
+        "pronunciationTip": "Practice the rhythm: lǎo shī dú yì běn shū.",
+        "distractors": [
+          "Bicycle",
+          "Question",
+          "Slow"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-057",
+        "kind": "sentence",
+        "english": "The teacher go to school",
+        "target": "老师去学校",
+        "romanization": "lǎo shī qù xué xiào",
+        "pronunciationTip": "Practice the rhythm: lǎo shī qù xué xiào.",
+        "distractors": [
+          "City",
+          "Answer",
+          "Good"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-058",
+        "kind": "sentence",
+        "english": "The teacher buy bread",
+        "target": "老师买面包",
+        "romanization": "lǎo shī mǎi miàn bāo",
+        "pronunciationTip": "Practice the rhythm: lǎo shī mǎi miàn bāo.",
+        "distractors": [
+          "Country",
+          "Problem",
+          "Bad"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-059",
+        "kind": "sentence",
+        "english": "The teacher wait for the bus",
+        "target": "老师等公交车",
+        "romanization": "lǎo shī děng gōng jiāo chē",
+        "pronunciationTip": "Practice the rhythm: lǎo shī děng gōng jiāo chē.",
+        "distractors": [
+          "Language",
+          "Happy",
+          "Open"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-060",
+        "kind": "sentence",
+        "english": "The teacher like music",
+        "target": "老师喜欢音乐",
+        "romanization": "lǎo shī xǐ huan yīn yuè",
+        "pronunciationTip": "Practice the rhythm: lǎo shī xǐ huan yīn yuè.",
+        "distractors": [
+          "Spanish",
+          "Tired",
+          "Closed"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-061",
+        "kind": "sentence",
+        "english": "The family need water",
+        "target": "家人需要水",
+        "romanization": "jiā rén xū yào shuǐ",
+        "pronunciationTip": "Practice the rhythm: jiā rén xū yào shuǐ.",
+        "distractors": [
+          "Chinese",
+          "Hungry",
+          "Here"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-062",
+        "kind": "sentence",
+        "english": "The family want coffee",
+        "target": "家人想要咖啡",
+        "romanization": "jiā rén xiǎng yào kā fēi",
+        "pronunciationTip": "Practice the rhythm: jiā rén xiǎng yào kā fēi.",
+        "distractors": [
+          "English",
+          "Thirsty",
+          "There"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-063",
+        "kind": "sentence",
+        "english": "The family have a question",
+        "target": "家人有一个问题",
+        "romanization": "jiā rén yǒu yí ge wèn tí",
+        "pronunciationTip": "Practice the rhythm: jiā rén yǒu yí ge wèn tí.",
+        "distractors": [
+          "Book",
+          "Hot",
+          "One"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-064",
+        "kind": "sentence",
+        "english": "The family speak Chinese",
+        "target": "家人说中文",
+        "romanization": "jiā rén shuō zhōng wén",
+        "pronunciationTip": "Practice the rhythm: jiā rén shuō zhōng wén.",
+        "distractors": [
+          "Music",
+          "Cold",
+          "Two"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-065",
+        "kind": "sentence",
+        "english": "The family eat rice",
+        "target": "家人吃米饭",
+        "romanization": "jiā rén chī mǐ fàn",
+        "pronunciationTip": "Practice the rhythm: jiā rén chī mǐ fàn.",
+        "distractors": [
+          "Movie",
+          "Big",
+          "Three"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-066",
+        "kind": "sentence",
+        "english": "The family read a book",
+        "target": "家人读一本书",
+        "romanization": "jiā rén dú yì běn shū",
+        "pronunciationTip": "Practice the rhythm: jiā rén dú yì běn shū.",
+        "distractors": [
+          "Work",
+          "Small",
+          "Four"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-067",
+        "kind": "sentence",
+        "english": "The family go to school",
+        "target": "家人去学校",
+        "romanization": "jiā rén qù xué xiào",
+        "pronunciationTip": "Practice the rhythm: jiā rén qù xué xiào.",
+        "distractors": [
+          "Help",
+          "Fast",
+          "Five"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-068",
+        "kind": "sentence",
+        "english": "The family buy bread",
+        "target": "家人买面包",
+        "romanization": "jiā rén mǎi miàn bāo",
+        "pronunciationTip": "Practice the rhythm: jiā rén mǎi miàn bāo.",
+        "distractors": [
+          "Question",
+          "Slow",
+          "Ten"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-069",
+        "kind": "sentence",
+        "english": "The family wait for the bus",
+        "target": "家人等公交车",
+        "romanization": "jiā rén děng gōng jiāo chē",
+        "pronunciationTip": "Practice the rhythm: jiā rén děng gōng jiāo chē.",
+        "distractors": [
+          "Answer",
+          "Good",
+          "Time"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-070",
+        "kind": "sentence",
+        "english": "The family like music",
+        "target": "家人喜欢音乐",
+        "romanization": "jiā rén xǐ huan yīn yuè",
+        "pronunciationTip": "Practice the rhythm: jiā rén xǐ huan yīn yuè.",
+        "distractors": [
+          "Problem",
+          "Bad",
+          "I need water"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-071",
+        "kind": "sentence",
+        "english": "The child need water",
+        "target": "孩子需要水",
+        "romanization": "hái zi xū yào shuǐ",
+        "pronunciationTip": "Practice the rhythm: hái zi xū yào shuǐ.",
+        "distractors": [
+          "Happy",
+          "Open",
+          "I want coffee"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-072",
+        "kind": "sentence",
+        "english": "The child want coffee",
+        "target": "孩子想要咖啡",
+        "romanization": "hái zi xiǎng yào kā fēi",
+        "pronunciationTip": "Practice the rhythm: hái zi xiǎng yào kā fēi.",
+        "distractors": [
+          "Tired",
+          "Closed",
+          "I have a question"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-073",
+        "kind": "sentence",
+        "english": "The child have a question",
+        "target": "孩子有一个问题",
+        "romanization": "hái zi yǒu yí ge wèn tí",
+        "pronunciationTip": "Practice the rhythm: hái zi yǒu yí ge wèn tí.",
+        "distractors": [
+          "Hungry",
+          "Here",
+          "I speak Chinese"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-074",
+        "kind": "sentence",
+        "english": "The child speak Chinese",
+        "target": "孩子说中文",
+        "romanization": "hái zi shuō zhōng wén",
+        "pronunciationTip": "Practice the rhythm: hái zi shuō zhōng wén.",
+        "distractors": [
+          "Thirsty",
+          "There",
+          "I eat rice"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-075",
+        "kind": "sentence",
+        "english": "The child eat rice",
+        "target": "孩子吃米饭",
+        "romanization": "hái zi chī mǐ fàn",
+        "pronunciationTip": "Practice the rhythm: hái zi chī mǐ fàn.",
+        "distractors": [
+          "Hot",
+          "One",
+          "I read a book"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-076",
+        "kind": "sentence",
+        "english": "The child read a book",
+        "target": "孩子读一本书",
+        "romanization": "hái zi dú yì běn shū",
+        "pronunciationTip": "Practice the rhythm: hái zi dú yì běn shū.",
+        "distractors": [
+          "Cold",
+          "Two",
+          "I go to school"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-077",
+        "kind": "sentence",
+        "english": "The child go to school",
+        "target": "孩子去学校",
+        "romanization": "hái zi qù xué xiào",
+        "pronunciationTip": "Practice the rhythm: hái zi qù xué xiào.",
+        "distractors": [
+          "Big",
+          "Three",
+          "I buy bread"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-078",
+        "kind": "sentence",
+        "english": "The child buy bread",
+        "target": "孩子买面包",
+        "romanization": "hái zi mǎi miàn bāo",
+        "pronunciationTip": "Practice the rhythm: hái zi mǎi miàn bāo.",
+        "distractors": [
+          "Small",
+          "Four",
+          "I wait for the bus"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-079",
+        "kind": "sentence",
+        "english": "The child wait for the bus",
+        "target": "孩子等公交车",
+        "romanization": "hái zi děng gōng jiāo chē",
+        "pronunciationTip": "Practice the rhythm: hái zi děng gōng jiāo chē.",
+        "distractors": [
+          "Fast",
+          "Five",
+          "I like music"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-080",
+        "kind": "sentence",
+        "english": "The child like music",
+        "target": "孩子喜欢音乐",
+        "romanization": "hái zi xǐ huan yīn yuè",
+        "pronunciationTip": "Practice the rhythm: hái zi xǐ huan yīn yuè.",
+        "distractors": [
+          "Slow",
+          "Ten",
+          "You need water"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-081",
+        "kind": "sentence",
+        "english": "The traveler need water",
+        "target": "旅客需要水",
+        "romanization": "lǚ kè xū yào shuǐ",
+        "pronunciationTip": "Practice the rhythm: lǚ kè xū yào shuǐ.",
+        "distractors": [
+          "Good",
+          "Time",
+          "You want coffee"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-082",
+        "kind": "sentence",
+        "english": "The traveler want coffee",
+        "target": "旅客想要咖啡",
+        "romanization": "lǚ kè xiǎng yào kā fēi",
+        "pronunciationTip": "Practice the rhythm: lǚ kè xiǎng yào kā fēi.",
+        "distractors": [
+          "Bad",
+          "I need water",
+          "You have a question"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-083",
+        "kind": "sentence",
+        "english": "The traveler have a question",
+        "target": "旅客有一个问题",
+        "romanization": "lǚ kè yǒu yí ge wèn tí",
+        "pronunciationTip": "Practice the rhythm: lǚ kè yǒu yí ge wèn tí.",
+        "distractors": [
+          "Open",
+          "I want coffee",
+          "You speak Chinese"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-084",
+        "kind": "sentence",
+        "english": "The traveler speak Chinese",
+        "target": "旅客说中文",
+        "romanization": "lǚ kè shuō zhōng wén",
+        "pronunciationTip": "Practice the rhythm: lǚ kè shuō zhōng wén.",
+        "distractors": [
+          "Closed",
+          "I have a question",
+          "You eat rice"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-085",
+        "kind": "sentence",
+        "english": "The traveler eat rice",
+        "target": "旅客吃米饭",
+        "romanization": "lǚ kè chī mǐ fàn",
+        "pronunciationTip": "Practice the rhythm: lǚ kè chī mǐ fàn.",
+        "distractors": [
+          "Here",
+          "I speak Chinese",
+          "You read a book"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-086",
+        "kind": "sentence",
+        "english": "The traveler read a book",
+        "target": "旅客读一本书",
+        "romanization": "lǚ kè dú yì běn shū",
+        "pronunciationTip": "Practice the rhythm: lǚ kè dú yì běn shū.",
+        "distractors": [
+          "There",
+          "I eat rice",
+          "You go to school"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-087",
+        "kind": "sentence",
+        "english": "The traveler go to school",
+        "target": "旅客去学校",
+        "romanization": "lǚ kè qù xué xiào",
+        "pronunciationTip": "Practice the rhythm: lǚ kè qù xué xiào.",
+        "distractors": [
+          "One",
+          "I read a book",
+          "You buy bread"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-088",
+        "kind": "sentence",
+        "english": "The traveler buy bread",
+        "target": "旅客买面包",
+        "romanization": "lǚ kè mǎi miàn bāo",
+        "pronunciationTip": "Practice the rhythm: lǚ kè mǎi miàn bāo.",
+        "distractors": [
+          "Two",
+          "I go to school",
+          "You wait for the bus"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-089",
+        "kind": "sentence",
+        "english": "The traveler wait for the bus",
+        "target": "旅客等公交车",
+        "romanization": "lǚ kè děng gōng jiāo chē",
+        "pronunciationTip": "Practice the rhythm: lǚ kè děng gōng jiāo chē.",
+        "distractors": [
+          "Three",
+          "I buy bread",
+          "You like music"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-090",
+        "kind": "sentence",
+        "english": "The traveler like music",
+        "target": "旅客喜欢音乐",
+        "romanization": "lǚ kè xǐ huan yīn yuè",
+        "pronunciationTip": "Practice the rhythm: lǚ kè xǐ huan yīn yuè.",
+        "distractors": [
+          "Four",
+          "I wait for the bus",
+          "We need water"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-091",
+        "kind": "sentence",
+        "english": "The student need water",
+        "target": "学生需要水",
+        "romanization": "xué sheng xū yào shuǐ",
+        "pronunciationTip": "Practice the rhythm: xué sheng xū yào shuǐ.",
+        "distractors": [
+          "Five",
+          "I like music",
+          "We want coffee"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-092",
+        "kind": "sentence",
+        "english": "The student want coffee",
+        "target": "学生想要咖啡",
+        "romanization": "xué sheng xiǎng yào kā fēi",
+        "pronunciationTip": "Practice the rhythm: xué sheng xiǎng yào kā fēi.",
+        "distractors": [
+          "Ten",
+          "You need water",
+          "We have a question"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-093",
+        "kind": "sentence",
+        "english": "The student have a question",
+        "target": "学生有一个问题",
+        "romanization": "xué sheng yǒu yí ge wèn tí",
+        "pronunciationTip": "Practice the rhythm: xué sheng yǒu yí ge wèn tí.",
+        "distractors": [
+          "Time",
+          "You want coffee",
+          "We speak Chinese"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-094",
+        "kind": "sentence",
+        "english": "The student speak Chinese",
+        "target": "学生说中文",
+        "romanization": "xué sheng shuō zhōng wén",
+        "pronunciationTip": "Practice the rhythm: xué sheng shuō zhōng wén.",
+        "distractors": [
+          "I need water",
+          "You have a question",
+          "We eat rice"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-095",
+        "kind": "sentence",
+        "english": "The student eat rice",
+        "target": "学生吃米饭",
+        "romanization": "xué sheng chī mǐ fàn",
+        "pronunciationTip": "Practice the rhythm: xué sheng chī mǐ fàn.",
+        "distractors": [
+          "I want coffee",
+          "You speak Chinese",
+          "We read a book"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-096",
+        "kind": "sentence",
+        "english": "The student read a book",
+        "target": "学生读一本书",
+        "romanization": "xué sheng dú yì běn shū",
+        "pronunciationTip": "Practice the rhythm: xué sheng dú yì běn shū.",
+        "distractors": [
+          "I have a question",
+          "You eat rice",
+          "We go to school"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-097",
+        "kind": "sentence",
+        "english": "The student go to school",
+        "target": "学生去学校",
+        "romanization": "xué sheng qù xué xiào",
+        "pronunciationTip": "Practice the rhythm: xué sheng qù xué xiào.",
+        "distractors": [
+          "I speak Chinese",
+          "You read a book",
+          "We buy bread"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-098",
+        "kind": "sentence",
+        "english": "The student buy bread",
+        "target": "学生买面包",
+        "romanization": "xué sheng mǎi miàn bāo",
+        "pronunciationTip": "Practice the rhythm: xué sheng mǎi miàn bāo.",
+        "distractors": [
+          "I eat rice",
+          "You go to school",
+          "We wait for the bus"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-099",
+        "kind": "sentence",
+        "english": "The student wait for the bus",
+        "target": "学生等公交车",
+        "romanization": "xué sheng děng gōng jiāo chē",
+        "pronunciationTip": "Practice the rhythm: xué sheng děng gōng jiāo chē.",
+        "distractors": [
+          "I read a book",
+          "You buy bread",
+          "We like music"
+        ]
+      },
+      {
+        "id": "mandarin-sentence-100",
+        "kind": "sentence",
+        "english": "The student like music",
+        "target": "学生喜欢音乐",
+        "romanization": "xué sheng xǐ huan yīn yuè",
+        "pronunciationTip": "Practice the rhythm: xué sheng xǐ huan yīn yuè.",
+        "distractors": [
+          "I go to school",
+          "You wait for the bus",
+          "They need water"
+        ]
       }
     ]
   }

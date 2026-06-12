@@ -7,7 +7,12 @@ struct LanguagePack: Codable, Hashable, Identifiable {
     let nativeTitle: String
     let subtitle: String
     let languageCode: String
-    let cards: [LanguageCard]
+    let words: [LanguageCard]
+    let sentences: [LanguageCard]
+
+    var allCards: [LanguageCard] {
+        words + sentences
+    }
 
     static func load() -> [LanguagePack] {
         guard
@@ -28,22 +33,49 @@ struct LanguagePack: Codable, Hashable, Identifiable {
             nativeTitle: "Espanol",
             subtitle: "Travel basics",
             languageCode: "es-ES",
-            cards: [
+            words: [
                 LanguageCard(
                     id: "spanish-hello",
+                    kind: .word,
                     english: "Hello",
                     target: "Hola",
                     romanization: "OH-lah",
                     pronunciationTip: "Open with a round OH, then finish softly on lah.",
                     distractors: ["Goodbye", "Please", "Water"]
                 )
+            ],
+            sentences: [
+                LanguageCard(
+                    id: "spanish-sentence-hello",
+                    kind: .sentence,
+                    english: "I speak Spanish",
+                    target: "Yo hablo español",
+                    romanization: "yoh AH-bloh es-pah-NYOL",
+                    pronunciationTip: "Keep three even beats and stress NYOL at the end.",
+                    distractors: ["I need water", "You buy bread", "We read a book"]
+                )
             ]
         )
     ]
 }
 
+enum LanguageCardKind: String, Codable, Hashable {
+    case word
+    case sentence
+
+    var label: String {
+        switch self {
+        case .word:
+            return "Word"
+        case .sentence:
+            return "Sentence"
+        }
+    }
+}
+
 struct LanguageCard: Codable, Hashable, Identifiable {
     let id: String
+    let kind: LanguageCardKind
     let english: String
     let target: String
     let romanization: String
@@ -120,7 +152,7 @@ final class LanguageCoachStore: ObservableObject {
     }
 
     var lessonCards: [LanguageCard] {
-        Array(selectedPack.cards.prefix(3))
+        selectedPack.allCards
     }
 
     var currentCard: LanguageCard {
@@ -130,7 +162,7 @@ final class LanguageCoachStore: ObservableObject {
 
     var progressLine: String {
         let learned = lessonCards.filter { completedCardIDs.contains($0.id) }.count
-        return "\(selectedPack.nativeTitle) · \(learned)/\(lessonCards.count) learned · Streak \(currentStreak)"
+        return "\(selectedPack.nativeTitle) · \(learned)/\(lessonCards.count) · \(currentCard.kind.label) · Streak \(currentStreak)"
     }
 
     var packLine: String {
@@ -157,7 +189,7 @@ final class LanguageCoachStore: ObservableObject {
     }
 
     var phraseChoices: [String] {
-        let alternatives = selectedPack.cards
+        let alternatives = selectedPack.allCards
             .filter { $0.id != currentCard.id }
             .map(\.target)
         return rotate([currentCard.target] + Array(alternatives.prefix(2)), by: currentCardIndex + 1)

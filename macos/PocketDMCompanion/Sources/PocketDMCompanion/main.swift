@@ -211,11 +211,16 @@ final class DragonOverlayModel: ObservableObject {
     }
 
     func refreshHealth() async {
-        do {
-            serverLine = try await client.healthLine()
-        } catch {
-            serverLine = "PocketDM is not reachable yet"
+        for attempt in 0..<8 {
+            do {
+                serverLine = try await client.healthLine()
+                return
+            } catch {
+                serverLine = attempt == 0 ? "Starting PocketDM..." : "Waiting for PocketDM..."
+                try? await Task.sleep(nanoseconds: 350_000_000)
+            }
         }
+        serverLine = "PocketDM is not reachable yet"
     }
 
     func openGame() {

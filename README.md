@@ -60,8 +60,9 @@ uv run python app.py
 The app serves a `gradio.Server` backend with a custom HTML/CSS/JS frontend. The
 fixed Pikachu desktop pet uses local 3D mood sprite strips at
 `app/static/dragon-sprites*.png`; the native companion uses macOS system voices
-for Spanish and Mandarin lesson phrases, emotes between happy/nap/hyper/alert
-states, and does not call an external API for the language coach.
+for Spanish and Mandarin lesson phrases, ships 100 words plus 100 sentences per
+language, emotes between happy/nap/hyper/alert states, and does not call an
+external API for the language coach.
 
 By default the app reports `Backend: Scripted` and uses deterministic turns for
 the playable checkpoint. To use the local trained GGUF model:

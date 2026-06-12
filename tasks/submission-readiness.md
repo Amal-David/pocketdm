@@ -5,7 +5,7 @@
 - Custom Gradio app launches with `uv run python app.py`.
 - `/health` returns `{"status":"ok"}` on port 7860.
 - The app plays a complete scripted adventure through the frozen engine state contract.
-- Pikachu is persistent across the native macOS overlay, defaults to a pet-only animated state, uses four local 3D mood sprite strips with cleaned alpha edges, gives state-aware hints, includes daily Bond HP care, plays subtle original chirps, switches between Pet/Learn/Nap/Hyper reactions, and teaches beginner Spanish plus Mandarin with macOS TTS.
+- Pikachu is persistent across the native macOS overlay, defaults to a pet-only animated state, uses four local 3D mood sprite strips with cleaned alpha edges, gives state-aware hints, includes daily Bond HP care, plays subtle original chirps, switches between Pet/Learn/Nap/Hyper reactions, and teaches Spanish plus Mandarin with 100 words and 100 sentences per language using macOS TTS.
 - Narration has selectable `Auto`, `Dungeon`, `Wood`, `Starship`, and `Lore Narrator` modes; `app/voices/lore_narrator.npy` smoke-synthesizes locally at 24 kHz.
 - The app can switch to an optional llama.cpp backend when `POCKETDM_GGUF` points at a GGUF model; without that artifact, it honestly reports the current `Scripted` backend.
 - Unit/integration tests pass locally: `57 passed`.

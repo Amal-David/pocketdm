@@ -87,3 +87,10 @@ into the extracted sprite edge.
 white background, remove dark/gray low-alpha halo pixels, and regenerate native
 plus web strips from the original sheets instead of trying to hide the issue in
 layout code.
+
+## 2026-06-12 — Language packs must be real packs, not demo cards
+User corrected the language coach scope after the first Spanish/Mandarin demo
+used only a few cards.
+**Rule:** language-learning packs should ship as explicit word and sentence
+sections with at least 100 entries each per language, and the native lesson
+store should count the whole pack rather than hard-code the first three cards.
