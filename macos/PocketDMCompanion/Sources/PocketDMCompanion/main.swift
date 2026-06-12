@@ -210,6 +210,7 @@ final class DragonOverlayModel: ObservableObject {
     private static let lastLifecycleAtKey = "PocketDMCompanion.lastLifecycleAt"
     private static let lastComebackChestDayKey = "PocketDMCompanion.lastComebackChestDay"
     private static let careMemoryMaskKey = "PocketDMCompanion.careMemoryMask"
+    private static let lifeSceneMaskKey = "PocketDMCompanion.lifeSceneMask"
     private static let careCharmMaskKey = "PocketDMCompanion.careCharmMask"
     private static let evolutionQuestMaskKey = "PocketDMCompanion.evolutionQuestMask"
     private static let lastNeedBonusDayKey = "PocketDMCompanion.lastNeedBonusDay"
@@ -297,6 +298,7 @@ final class DragonOverlayModel: ObservableObject {
     @Published var dailyCipherDate = UserDefaults.standard.string(forKey: DragonOverlayModel.dailyCipherDateKey) ?? ""
     @Published var dailyCipherSolved = UserDefaults.standard.bool(forKey: DragonOverlayModel.dailyCipherSolvedKey)
     @Published var careMemoryMask = UserDefaults.standard.object(forKey: DragonOverlayModel.careMemoryMaskKey) as? Int ?? 0
+    @Published var lifeSceneMask = UserDefaults.standard.object(forKey: DragonOverlayModel.lifeSceneMaskKey) as? Int ?? 0
     @Published var careCharmMask = UserDefaults.standard.object(forKey: DragonOverlayModel.careCharmMaskKey) as? Int ?? 0
     @Published var evolutionQuestMask = UserDefaults.standard.object(forKey: DragonOverlayModel.evolutionQuestMaskKey) as? Int ?? 0
     @Published var dailyEventDate = UserDefaults.standard.string(forKey: DragonOverlayModel.dailyEventDateKey) ?? ""
@@ -620,12 +622,12 @@ final class DragonOverlayModel: ObservableObject {
             appendEvolutionNote(from: priorStage)
             persistCare()
             play(reward.dailyBond ? .pet : .happy)
-            speakPika()
+            speakPikaLine(message)
             setMood(.happy, duration: 1.4)
         } else {
             appendEmotionScene(trigger: "lesson retry")
             play(.alert)
-            speakPika()
+            speakPikaLine(message)
             setMood(.alert, duration: 1.2)
         }
     }
@@ -729,14 +731,14 @@ final class DragonOverlayModel: ObservableObject {
             appendEmotionScene(trigger: asksForHint ? "hint" : "chat")
             appendEvolutionNote(from: priorStage)
             play(.reply)
-            speakPika(force: true)
+            speakPikaLine(message, force: true)
             setMood(.happy, duration: 1.5)
         } catch {
             message = pikaText("I cannot reach the tale yet. Open PocketDM, start a run, then ask me again.")
             serverLine = "Waiting for local server"
             appendEmotionScene(trigger: "server wait")
             play(.nap)
-            speakPika(force: true)
+            speakPikaLine(message, force: true)
             setMood(.nap, duration: 2.4)
         }
     }
@@ -804,7 +806,7 @@ final class DragonOverlayModel: ObservableObject {
         UserDefaults.standard.set(Date().timeIntervalSince1970, forKey: Self.lastCheerAtKey)
         persistCare()
         play(.reply)
-        speakPika()
+        speakPikaLine(message)
         setMood(.hyper, duration: 1.6)
         setMinimized(false)
     }
@@ -1058,6 +1060,39 @@ final class DragonOverlayModel: ObservableObject {
         setMood(.happy, duration: 1.4)
     }
 
+    func playLifeScene() {
+        let priorStage = growthStage
+        applyVitalDecay()
+        guard let scene = nextLifeScene else {
+            lastRequest = "Life"
+            message = pikaText("\(growthStage.title) life scenes are complete. Pikachu rests in the story you built together.")
+            appendEmotionScene(trigger: "life scene")
+            play(.happy)
+            speakPika()
+            setMood(.happy, duration: 1.2)
+            return
+        }
+
+        lastRequest = "Life"
+        message = pikaText(scene.rewardLine)
+        if let sceneNote = unlockLifeScene(scene) {
+            message += " \(sceneNote)"
+        }
+        if let vitalNote = refillVital(scene.vital, by: 2) {
+            message += " \(vitalNote)"
+        }
+        if let moodCareNote = markMoodCare(scene.moodStep) {
+            message += " \(moodCareNote)"
+        }
+        recordDailyQuest(.cheer)
+        appendEmotionScene(trigger: "life scene")
+        appendEvolutionNote(from: priorStage)
+        persistCare()
+        play(.happy)
+        speakPika()
+        setMood(.happy, duration: 1.5)
+    }
+
     func setMood(_ next: PetMood, duration: TimeInterval? = nil) {
         moodTask?.cancel()
         mood = next
@@ -1115,6 +1150,14 @@ final class DragonOverlayModel: ObservableObject {
 
     var memoryLine: String {
         PetBondMemory.summary(mask: careMemoryMask)
+    }
+
+    var lifeSceneLine: String {
+        PetLifeScene.summary(mask: lifeSceneMask, stage: growthStage)
+    }
+
+    var currentLifeScenes: [PetLifeScene] {
+        PetLifeScene.scenes(for: growthStage)
     }
 
     var charmLine: String {
@@ -1315,6 +1358,20 @@ final class DragonOverlayModel: ObservableObject {
         Double(PetBondMemory.allCases.filter { careMemoryMask & $0.rawValue != 0 }.count) / Double(PetBondMemory.allCases.count)
     }
 
+    var journalLifeSceneProgress: Double {
+        Double(PetLifeScene.count(mask: lifeSceneMask, stage: growthStage)) / Double(max(1, currentLifeScenes.count))
+    }
+
+    var journalLifeSceneCaption: String {
+        let totalDone = PetLifeScene.count(mask: lifeSceneMask)
+        return "\(lifeSceneLine) · Album \(totalDone)/\(PetLifeScene.allCases.count)"
+    }
+
+    var journalLifeSceneSpriteLine: String {
+        let scene = nextLifeScene ?? currentLifeScenes.last ?? .tinyFirstLook
+        return "Life sprite: \(scene.spriteRequestName)"
+    }
+
     var journalBadgeCaption: String {
         "\(dailyEvent.title) · \(dailyEventProgress)/\(dailyEvent.requiredSteps) today · \(PetSeasonEvent.badgeSummary(mask: seasonBadgeMask))"
     }
@@ -1461,6 +1518,10 @@ final class DragonOverlayModel: ObservableObject {
         soundPlayer.speakPika(enabled: soundEnabled, force: force)
     }
 
+    private func speakPikaLine(_ text: String, force: Bool = false) {
+        soundPlayer.speakPikaLine(text, enabled: soundEnabled, force: force)
+    }
+
     private func pikaText(_ text: String) -> String {
         let normalized = text.lowercased().filter(\.isLetter)
         if normalized.contains("pikapika") {
@@ -1521,6 +1582,7 @@ final class DragonOverlayModel: ObservableObject {
         UserDefaults.standard.set(lastLifecycleAt, forKey: Self.lastLifecycleAtKey)
         UserDefaults.standard.set(lastComebackChestDay, forKey: Self.lastComebackChestDayKey)
         UserDefaults.standard.set(careMemoryMask, forKey: Self.careMemoryMaskKey)
+        UserDefaults.standard.set(lifeSceneMask, forKey: Self.lifeSceneMaskKey)
         UserDefaults.standard.set(careCharmMask, forKey: Self.careCharmMaskKey)
         UserDefaults.standard.set(evolutionQuestMask, forKey: Self.evolutionQuestMaskKey)
         UserDefaults.standard.set(lastNeedBonusDay, forKey: Self.lastNeedBonusDayKey)
@@ -1684,6 +1746,10 @@ final class DragonOverlayModel: ObservableObject {
 
     func isCheerDialogueUnlocked(_ dialogue: PetCheerDialogue) -> Bool {
         cheerDialogueAlbumMask & dialogue.rawValue != 0
+    }
+
+    func isLifeSceneUnlocked(_ scene: PetLifeScene) -> Bool {
+        lifeSceneMask & scene.rawValue != 0
     }
 
     private func setVital(_ vital: PetCareVital, value: Int) {
@@ -1894,6 +1960,8 @@ final class DragonOverlayModel: ObservableObject {
         case "event review":
             return .celebrating
         case "journal":
+            return .proud
+        case "life scene":
             return .proud
         default:
             return petFeeling
@@ -2210,6 +2278,27 @@ final class DragonOverlayModel: ObservableObject {
         return notes.joined(separator: " ")
     }
 
+    private func unlockLifeScene(_ scene: PetLifeScene) -> String? {
+        guard lifeSceneMask & scene.rawValue == 0 else { return nil }
+
+        let wasStageComplete = isLifeSceneStageComplete
+        lifeSceneMask |= scene.rawValue
+        let reward = scene.sparkReward + sparkLevel
+        sparkDust = min(999, sparkDust + reward)
+        happiness = min(5, happiness + 1)
+
+        var notes = ["Life scene saved: \(scene.title), Joy +1, Sparks +\(reward)."]
+        if !wasStageComplete, isLifeSceneStageComplete {
+            sparkDust = min(999, sparkDust + scene.sparkReward)
+            notes.append("\(scene.stage.title) life chapter complete: Sparks +\(scene.sparkReward).")
+            play(.happy)
+            setMood(.hyper, duration: 1.7)
+        }
+
+        persistCare()
+        return notes.joined(separator: " ")
+    }
+
     private var isDailyComboComplete: Bool {
         dailyComboActions.allSatisfy { dailyComboMask & $0.rawValue != 0 }
     }
@@ -2220,6 +2309,10 @@ final class DragonOverlayModel: ObservableObject {
 
     private var isBondBoardComplete: Bool {
         dailyBondContracts.allSatisfy { dailyBondBoardMask & $0.rawValue != 0 }
+    }
+
+    private var isLifeSceneStageComplete: Bool {
+        currentLifeScenes.allSatisfy { lifeSceneMask & $0.rawValue != 0 }
     }
 
     private var nextUpgradeCandidate: PetUpgradeCandidate {
@@ -2253,6 +2346,10 @@ final class DragonOverlayModel: ObservableObject {
 
     private var nextBondContract: PetBondContract? {
         dailyBondContracts.first { dailyBondBoardMask & $0.rawValue == 0 }
+    }
+
+    private var nextLifeScene: PetLifeScene? {
+        currentLifeScenes.first { lifeSceneMask & $0.rawValue == 0 }
     }
 
     private var dailyCipher: PetDailyCipher {
@@ -2396,7 +2493,7 @@ final class DragonOverlayModel: ObservableObject {
         defaults.set(index + 1, forKey: Self.cheerIndexKey)
         defaults.set(now, forKey: Self.lastCheerAtKey)
         play(.happy)
-        speakPika(force: true)
+        speakPikaLine(cheerBubble ?? prompt.body, force: true)
         setMood(.hyper, duration: 1.2)
     }
 
@@ -2533,17 +2630,42 @@ final class PetSoundPlayer {
     }
 
     func speakPika(enabled: Bool, force: Bool = false) {
+        speak("Pika pika!", enabled: enabled, force: force)
+    }
+
+    func speakPikaLine(_ text: String, enabled: Bool, force: Bool = false) {
+        speak(pikaSpeechLine(from: text), enabled: enabled, force: force)
+    }
+
+    private func speak(_ line: String, enabled: Bool, force: Bool) {
         guard enabled else { return }
         let now = Date()
         guard force || now.timeIntervalSince(lastPikaAt) >= 1.4 else { return }
         lastPikaAt = now
         speech.stopSpeaking(at: .immediate)
-        let utterance = AVSpeechUtterance(string: "Pika pika!")
+        let utterance = AVSpeechUtterance(string: line)
         utterance.rate = 0.48
         utterance.volume = 0.42
         utterance.pitchMultiplier = 1.18
         utterance.voice = AVSpeechSynthesisVoice(language: "en-US")
         speech.speak(utterance)
+    }
+
+    private func pikaSpeechLine(from text: String) -> String {
+        let withoutCatchphrase = text
+            .replacingOccurrences(of: "Pika pika!", with: "", options: [.caseInsensitive])
+            .replacingOccurrences(of: "Pika pika", with: "", options: [.caseInsensitive])
+        let compacted = withoutCatchphrase
+            .components(separatedBy: .whitespacesAndNewlines)
+            .filter { !$0.isEmpty }
+            .joined(separator: " ")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !compacted.isEmpty else { return "Pika pika!" }
+        let maxCharacters = 180
+        let clipped = compacted.count > maxCharacters
+            ? String(compacted.prefix(maxCharacters)).trimmingCharacters(in: .whitespacesAndNewlines) + "..."
+            : compacted
+        return "Pika pika! \(clipped)"
     }
 
     func stopAll() {
@@ -2726,6 +2848,11 @@ struct DragonOverlayView: View {
                         }
 
                         HStack(spacing: 8) {
+                            Button("Life") {
+                                model.playLifeScene()
+                            }
+                            .buttonStyle(DragonButtonStyle(kind: .secondary))
+                            .disabled(model.busy)
                             Button("Board") {
                                 model.playBondBoard()
                             }
@@ -2805,6 +2932,11 @@ struct DragonOverlayView: View {
                 .foregroundStyle(Color.ivory.opacity(0.72))
                 .lineLimit(2)
                 .minimumScaleFactor(0.58)
+            Text(model.lifeSceneLine)
+                .font(.system(size: 8.2, weight: .black, design: .rounded))
+                .foregroundStyle(Color.gold.opacity(0.68))
+                .lineLimit(1)
+                .minimumScaleFactor(0.48)
             Text(model.eventLine)
                 .font(.system(size: 8.5, weight: .black, design: .rounded))
                 .foregroundStyle(Color.gold.opacity(0.76))
@@ -3124,6 +3256,9 @@ struct PetJournalPanel: View {
             journalHero("Growth", value: model.journalGrowthProgress, caption: model.journalGrowthCaption)
             detailLine(model.evolutionLine)
             detailLine(model.loreLine)
+            journalHero("Life Scenes", value: model.journalLifeSceneProgress, caption: model.journalLifeSceneCaption)
+            lifeSceneGrid
+            artLine(model.journalLifeSceneSpriteLine)
             journalHero("Evolution Quests", value: model.journalEvolutionQuestProgress, caption: model.journalEvolutionQuestCaption)
             evolutionQuestGrid
             artLine(model.journalEvolutionQuestSpriteLine)
@@ -3137,6 +3272,8 @@ struct PetJournalPanel: View {
         case .memories:
             journalHero("Memories", value: model.journalMemoryProgress, caption: model.memoryLine)
             memoryList
+            journalHero("Current Stage Life", value: model.journalLifeSceneProgress, caption: model.lifeSceneLine)
+            lifeSceneGrid
         case .badges:
             journalHero("Badges", value: model.journalBadgeProgress, caption: model.journalBadgeCaption)
             badgeGrid
@@ -3235,6 +3372,14 @@ struct PetJournalPanel: View {
         LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 4), count: 2), spacing: 3) {
             ForEach(PetEvolutionQuest.allCases, id: \.rawValue) { quest in
                 evolutionQuestChip(quest)
+            }
+        }
+    }
+
+    private var lifeSceneGrid: some View {
+        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 4), count: 3), spacing: 3) {
+            ForEach(model.currentLifeScenes, id: \.rawValue) { scene in
+                journalChip(scene.shortLabel, isUnlocked: model.isLifeSceneUnlocked(scene))
             }
         }
     }

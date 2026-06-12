@@ -222,7 +222,8 @@ Rest, Hyper for Play, and Learn/Hint/Boost for Focus.
 User clarified that the model itself should say "pika pika" in text and voice.
 **Rule:** assistant replies, lesson feedback, and pet actions should use a
 single guarded catchphrase wrapper and trigger the native pika-like voice cue
-when sound is enabled.
+when sound is enabled. Real model or coach replies should speak a concise
+preview of the visible response, not only a generic chirp.
 
 ## 2026-06-13 — Pet loops need keepsakes, not only payouts
 The broader pet fantasy needs visible proof of shared moments, similar to how
@@ -271,3 +272,10 @@ throughout the day, not only show task notifications.
 **Rule:** proactive check-ins should include a rotating dialogue deck with
 answer/skip state, warm receipts, care impact, and matching sprite requests,
 while avoiding guilt when the user dismisses them.
+
+## 2026-06-13 — Growth needs life scenes, not just stage names
+User wants the pet to grow from small to big like a proper companion.
+**Rule:** every growth stage should expose small playable life scenes with lore,
+care effects, stage-specific sprite requests, and journal receipts so Tiny
+Spark, Pocket Pal, Trail Buddy, Storm Scout, and Storm Guardian feel behaviorally
+different.

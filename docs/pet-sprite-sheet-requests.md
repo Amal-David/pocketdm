@@ -260,6 +260,16 @@ Generate these first. They unlock the most visible upgrade with the least code:
    - Points toward the next brave small move.
 119. `pet-buddy-cheer-dialogue-quiet-company.png`
    - Quiet company pose, calm and present.
+120. `pet-tiny-spark-life-first-look.png`
+   - Tiny Spark looks up, recognizes the user, and chooses the desk as safe.
+121. `pet-pocket-pal-life-first-prompt.png`
+   - Pocket Pal learns to ask a gentle proactive question.
+122. `pet-trail-buddy-life-map-step.png`
+   - Trail Buddy unfolds the first safe trail map step.
+123. `pet-storm-scout-life-focus-patrol.png`
+   - Storm Scout quietly patrols around one focus task.
+124. `pet-storm-guardian-life-quiet-oath.png`
+   - Storm Guardian promises to guard the loop without guilt.
 
 ## Generate In Separate Batches
 
@@ -407,7 +417,27 @@ consistent:
 - `pet-buddy-cheer-dialogue-dismiss-soft.png`
 - `pet-buddy-journal-cheer-dialogues.png`
 
-### Batch 13: Full Stage Matrix
+### Batch 13: Stage Life Scenes
+
+- `pet-tiny-spark-life-first-look.png`
+- `pet-tiny-spark-life-desk-nest.png`
+- `pet-tiny-spark-life-spark-trail.png`
+- `pet-pocket-pal-life-morning-hop.png`
+- `pet-pocket-pal-life-snack-trust.png`
+- `pet-pocket-pal-life-first-prompt.png`
+- `pet-trail-buddy-life-map-step.png`
+- `pet-trail-buddy-life-brave-check.png`
+- `pet-trail-buddy-life-phrase-camp.png`
+- `pet-storm-scout-life-window-watch.png`
+- `pet-storm-scout-life-focus-patrol.png`
+- `pet-storm-scout-life-storm-practice.png`
+- `pet-storm-guardian-life-quiet-oath.png`
+- `pet-storm-guardian-life-full-trail.png`
+- `pet-storm-guardian-life-return-glow.png`
+- `pet-{stage}-journal-life-scenes.png`
+- `pet-{stage}-life-scene-complete.png`
+
+### Batch 14: Full Stage Matrix
 
 After the buddy form works, repeat the stage matrix for:
 
@@ -785,6 +815,43 @@ Cheer dialogue moments:
 - `pet-{stage}-journal-cheer-dialogues.png`
   - Journal page showing answered, skipped, and saved dialogue moments.
 
+Stage life scenes:
+
+- `pet-tiny-spark-life-first-look.png`
+  - Tiny Spark looks down, looks up, spots the user, and smiles with trust.
+- `pet-tiny-spark-life-desk-nest.png`
+  - Tiny Spark builds a little transparent-edge desk nest and peeks out.
+- `pet-tiny-spark-life-spark-trail.png`
+  - Tiny Spark leaves three tiny trail Sparks and follows them home.
+- `pet-pocket-pal-life-morning-hop.png`
+  - Pocket Pal recognizes the day start and does a small morning hop.
+- `pet-pocket-pal-life-snack-trust.png`
+  - Pocket Pal accepts a snack, waits politely, and glows with trust.
+- `pet-pocket-pal-life-first-prompt.png`
+  - Pocket Pal practices a gentle proactive question bubble.
+- `pet-trail-buddy-life-map-step.png`
+  - Trail Buddy unfolds a small map and marks one safe step forward.
+- `pet-trail-buddy-life-brave-check.png`
+  - Trail Buddy checks the user's mood, then walks beside a brave move.
+- `pet-trail-buddy-life-phrase-camp.png`
+  - Trail Buddy sets up a phrase camp and repeats a language spark.
+- `pet-storm-scout-life-window-watch.png`
+  - Storm Scout watches the screen edge for returning focus.
+- `pet-storm-scout-life-focus-patrol.png`
+  - Storm Scout quietly patrols around a task and blocks distractions.
+- `pet-storm-scout-life-storm-practice.png`
+  - Storm Scout practices small storm sparks to shrink big feelings.
+- `pet-storm-guardian-life-quiet-oath.png`
+  - Storm Guardian gives a calm no-shame protection oath.
+- `pet-storm-guardian-life-full-trail.png`
+  - Storm Guardian walks the full daily trail and remembers care marks.
+- `pet-storm-guardian-life-return-glow.png`
+  - Storm Guardian glows on user return because coming back is part of the bond.
+- `pet-{stage}-journal-life-scenes.png`
+  - Journal page with three stage life-scene charms and unlocked states.
+- `pet-{stage}-life-scene-complete.png`
+  - Current stage's three life scenes complete; pet gives a stage-chapter glow.
+
 Bond Board contracts:
 
 - `pet-{stage}-bond-board-open.png`
@@ -971,6 +1038,14 @@ These are for the progression layer:
 - Soft-reset check-in saved.
 - Brave-next check-in saved.
 - Quiet-company check-in saved.
+- Stage life scene unlocked.
+- Stage life scene completed.
+- Tiny Spark life chapter progressed.
+- Pocket Pal life chapter progressed.
+- Trail Buddy life chapter progressed.
+- Storm Scout life chapter progressed.
+- Storm Guardian life chapter progressed.
+- Life scene journal page viewed.
 - Daily cipher clue found.
 - Daily cipher solved.
 - Daily boost ready.

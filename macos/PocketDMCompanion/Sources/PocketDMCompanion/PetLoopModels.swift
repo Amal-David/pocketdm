@@ -116,6 +116,247 @@ enum PetGrowthStage: CaseIterable {
     }
 }
 
+enum PetLifeScene: Int, CaseIterable {
+    case tinyFirstLook = 1
+    case tinyDeskNest = 2
+    case tinySparkTrail = 4
+    case pocketMorningHop = 8
+    case pocketSnackTrust = 16
+    case pocketFirstPrompt = 32
+    case trailMapStep = 64
+    case trailBraveCheck = 128
+    case trailPhraseCamp = 256
+    case scoutWindowWatch = 512
+    case scoutFocusPatrol = 1024
+    case scoutStormPractice = 2048
+    case guardianQuietOath = 4096
+    case guardianFullTrail = 8192
+    case guardianReturnGlow = 16384
+
+    var stage: PetGrowthStage {
+        switch self {
+        case .tinyFirstLook, .tinyDeskNest, .tinySparkTrail:
+            return .tinySpark
+        case .pocketMorningHop, .pocketSnackTrust, .pocketFirstPrompt:
+            return .pocketPal
+        case .trailMapStep, .trailBraveCheck, .trailPhraseCamp:
+            return .trailBuddy
+        case .scoutWindowWatch, .scoutFocusPatrol, .scoutStormPractice:
+            return .stormScout
+        case .guardianQuietOath, .guardianFullTrail, .guardianReturnGlow:
+            return .stormGuardian
+        }
+    }
+
+    var title: String {
+        switch self {
+        case .tinyFirstLook:
+            return "First Look"
+        case .tinyDeskNest:
+            return "Desk Nest"
+        case .tinySparkTrail:
+            return "Spark Trail"
+        case .pocketMorningHop:
+            return "Morning Hop"
+        case .pocketSnackTrust:
+            return "Snack Trust"
+        case .pocketFirstPrompt:
+            return "First Prompt"
+        case .trailMapStep:
+            return "Map Step"
+        case .trailBraveCheck:
+            return "Brave Check"
+        case .trailPhraseCamp:
+            return "Phrase Camp"
+        case .scoutWindowWatch:
+            return "Window Watch"
+        case .scoutFocusPatrol:
+            return "Focus Patrol"
+        case .scoutStormPractice:
+            return "Storm Practice"
+        case .guardianQuietOath:
+            return "Quiet Oath"
+        case .guardianFullTrail:
+            return "Full Trail"
+        case .guardianReturnGlow:
+            return "Return Glow"
+        }
+    }
+
+    var shortLabel: String {
+        switch self {
+        case .tinyFirstLook:
+            return "Look"
+        case .tinyDeskNest:
+            return "Nest"
+        case .tinySparkTrail:
+            return "Trail"
+        case .pocketMorningHop:
+            return "Hop"
+        case .pocketSnackTrust:
+            return "Trust"
+        case .pocketFirstPrompt:
+            return "Ask"
+        case .trailMapStep:
+            return "Map"
+        case .trailBraveCheck:
+            return "Brave"
+        case .trailPhraseCamp:
+            return "Phrase"
+        case .scoutWindowWatch:
+            return "Watch"
+        case .scoutFocusPatrol:
+            return "Patrol"
+        case .scoutStormPractice:
+            return "Storm"
+        case .guardianQuietOath:
+            return "Oath"
+        case .guardianFullTrail:
+            return "Full"
+        case .guardianReturnGlow:
+            return "Glow"
+        }
+    }
+
+    var storyLine: String {
+        switch self {
+        case .tinyFirstLook:
+            return "It looks up, finds your cursor, and decides this desk is safe."
+        case .tinyDeskNest:
+            return "It makes a tiny nest at the screen edge and peeks out when you return."
+        case .tinySparkTrail:
+            return "It leaves three little Sparks so it can find the way back to you."
+        case .pocketMorningHop:
+            return "It recognizes the start of the day and hops before the first task."
+        case .pocketSnackTrust:
+            return "It accepts a snack, then waits instead of grabbing the whole stash."
+        case .pocketFirstPrompt:
+            return "It learns to ask a gentle question before offering help."
+        case .trailMapStep:
+            return "It unfolds a small trail map and marks one safe step forward."
+        case .trailBraveCheck:
+            return "It checks your face, then walks beside the brave little move."
+        case .trailPhraseCamp:
+            return "It builds a phrase camp and repeats one line until it glows."
+        case .scoutWindowWatch:
+            return "It watches the edge of the screen for returning focus."
+        case .scoutFocusPatrol:
+            return "It patrols quietly around a task and keeps distractions outside."
+        case .scoutStormPractice:
+            return "It practices tiny storm sparks so big feelings do not feel too big."
+        case .guardianQuietOath:
+            return "It promises to guard the daily loop without shame or pressure."
+        case .guardianFullTrail:
+            return "It walks the full trail and remembers every small care mark."
+        case .guardianReturnGlow:
+            return "It glows when you come back, because returning is part of the bond."
+        }
+    }
+
+    var rewardLine: String {
+        "\(stage.title) scene: \(storyLine)"
+    }
+
+    var sparkReward: Int {
+        switch stage {
+        case .tinySpark:
+            return 8
+        case .pocketPal:
+            return 12
+        case .trailBuddy:
+            return 16
+        case .stormScout:
+            return 22
+        case .stormGuardian:
+            return 30
+        }
+    }
+
+    var vital: PetCareVital {
+        switch self {
+        case .tinyFirstLook, .pocketFirstPrompt, .trailBraveCheck, .scoutWindowWatch, .guardianQuietOath:
+            return .focus
+        case .tinyDeskNest, .scoutStormPractice, .guardianReturnGlow:
+            return .rest
+        case .pocketMorningHop, .tinySparkTrail, .trailMapStep, .scoutFocusPatrol, .guardianFullTrail:
+            return .play
+        case .pocketSnackTrust, .trailPhraseCamp:
+            return .snack
+        }
+    }
+
+    var moodStep: PetMoodCareStep {
+        switch self {
+        case .tinyFirstLook, .tinyDeskNest, .pocketSnackTrust, .guardianQuietOath:
+            return .soothe
+        case .tinySparkTrail, .trailMapStep, .trailBraveCheck, .guardianFullTrail:
+            return .adventure
+        case .pocketMorningHop, .scoutStormPractice:
+            return .play
+        case .pocketFirstPrompt, .scoutWindowWatch, .scoutFocusPatrol:
+            return .focus
+        case .trailPhraseCamp:
+            return .study
+        case .guardianReturnGlow:
+            return .cheer
+        }
+    }
+
+    var spriteRequestName: String {
+        switch self {
+        case .tinyFirstLook:
+            return "pet-tiny-spark-life-first-look.png"
+        case .tinyDeskNest:
+            return "pet-tiny-spark-life-desk-nest.png"
+        case .tinySparkTrail:
+            return "pet-tiny-spark-life-spark-trail.png"
+        case .pocketMorningHop:
+            return "pet-pocket-pal-life-morning-hop.png"
+        case .pocketSnackTrust:
+            return "pet-pocket-pal-life-snack-trust.png"
+        case .pocketFirstPrompt:
+            return "pet-pocket-pal-life-first-prompt.png"
+        case .trailMapStep:
+            return "pet-trail-buddy-life-map-step.png"
+        case .trailBraveCheck:
+            return "pet-trail-buddy-life-brave-check.png"
+        case .trailPhraseCamp:
+            return "pet-trail-buddy-life-phrase-camp.png"
+        case .scoutWindowWatch:
+            return "pet-storm-scout-life-window-watch.png"
+        case .scoutFocusPatrol:
+            return "pet-storm-scout-life-focus-patrol.png"
+        case .scoutStormPractice:
+            return "pet-storm-scout-life-storm-practice.png"
+        case .guardianQuietOath:
+            return "pet-storm-guardian-life-quiet-oath.png"
+        case .guardianFullTrail:
+            return "pet-storm-guardian-life-full-trail.png"
+        case .guardianReturnGlow:
+            return "pet-storm-guardian-life-return-glow.png"
+        }
+    }
+
+    static func scenes(for stage: PetGrowthStage) -> [PetLifeScene] {
+        allCases.filter { $0.stage == stage }
+    }
+
+    static func count(mask: Int) -> Int {
+        allCases.filter { mask & $0.rawValue != 0 }.count
+    }
+
+    static func count(mask: Int, stage: PetGrowthStage) -> Int {
+        scenes(for: stage).filter { mask & $0.rawValue != 0 }.count
+    }
+
+    static func summary(mask: Int, stage: PetGrowthStage) -> String {
+        let scenes = scenes(for: stage)
+        let done = scenes.filter { mask & $0.rawValue != 0 }.count
+        let next = scenes.first { mask & $0.rawValue == 0 }
+        return "Life Scenes \(stage.title) \(done)/\(scenes.count) · next \(next?.title ?? "stage complete")"
+    }
+}
+
 enum PetEvolutionQuest: Int, CaseIterable {
     case firstBond = 1
     case trustTrail = 2

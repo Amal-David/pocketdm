@@ -213,6 +213,9 @@ The new layer should add:
   focus, or puzzle care rather than feeling like one static mood button.
 - Bond memories that unlock on first care, hint, lesson, quest, upgrade,
   comeback, cipher, boost, full board, and first evolution.
+- Stage life scenes that make Tiny Spark, Pocket Pal, Trail Buddy, Storm Scout,
+  and Storm Guardian behave differently through small story moments, not only
+  different scale values.
 - A daily event rail with short multi-step activities such as Spark Picnic,
   Study Parade, Sky Sprint, Riddle Trail, Cozy Campfire, and Rescue Walk.
 - Seasonal badges that are earned by completing daily events, giving the
@@ -253,6 +256,9 @@ The native macOS companion now has the first version of the loop:
 - A Care Charms album now unlocks collectible keepsakes for hello, snack care,
   study, adventure, rest, play, focus, cipher, event, upgrade, weekly trail,
   and all-vitals-glowing moments.
+- A Life button now unlocks stage-specific life scenes for the current growth
+  form, rewards Joy/Sparks, refills the matching vital, advances Mood Care, and
+  surfaces the next life-scene sprite request in the Growth journal.
 - Sparks earned from petting, asking, language practice, and combo completion.
 - Energy that recharges over time.
 - Passive Sparks collected after time away.
