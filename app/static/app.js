@@ -3,6 +3,9 @@ const state = {
   lastTurn: null,
   voiceEnabled: true,
   narrationAudio: null,
+  narrationAbortController: null,
+  narrationObjectUrl: null,
+  narrationRequestId: 0,
   typewriterFrame: null,
   isBusy: false,
   isTyping: false,
@@ -58,13 +61,15 @@ els.voiceToggle.addEventListener("click", () => {
   state.voiceEnabled = !state.voiceEnabled;
   els.voiceToggle.setAttribute("aria-pressed", String(state.voiceEnabled));
   els.voiceToggle.textContent = state.voiceEnabled ? "Voice" : "Muted";
-  if (!state.voiceEnabled && state.narrationAudio) {
-    state.narrationAudio.pause();
+  if (!state.voiceEnabled) {
+    stopAllAudio();
+    els.proofVoice.textContent = `${voiceLabel(state.currentVoice)} muted`;
   }
 });
 
 async function startAdventure() {
   state.audioUnlocked = true;
+  stopAllAudio();
   setBusy(true);
   try {
     const payload = await postJSON("/api/start", {
@@ -74,7 +79,7 @@ async function startAdventure() {
     });
     state.sessionId = payload.session_id;
     renderTurn(payload.turn, payload.state);
-    dragonSay(payload.assistant, { fire: true });
+    dragonSay(payload.assistant, { fire: true, speak: false });
     focusAdventureOnSmallScreens();
   } catch (error) {
     dragonSay(`I lost the trail: ${error.message}`, { fire: true });
@@ -85,6 +90,7 @@ async function startAdventure() {
 
 async function choose(action) {
   if (!state.sessionId || !state.lastTurn || state.lastTurn.is_ending) return;
+  stopAllAudio();
   setBusy(true);
   try {
     const payload = await postJSON("/api/choose", {
@@ -92,7 +98,7 @@ async function choose(action) {
       action,
     });
     renderTurn(payload.turn, payload.state);
-    dragonSay(payload.assistant, { fire: payload.turn.is_ending });
+    dragonSay(payload.assistant, { fire: payload.turn.is_ending, speak: false });
   } catch (error) {
     dragonSay(`That turn fizzled: ${error.message}`, { fire: true });
   } finally {
@@ -242,12 +248,14 @@ function dragonSay(text, options = {}) {
     void els.dragonAvatar.offsetWidth;
     els.dragonAvatar.classList.add("is-fire");
   }
+  if (options.speak === false) return;
   speak(text);
 }
 
 function speak(text) {
   if (!state.voiceEnabled) return;
   if (!("speechSynthesis" in window)) return;
+  stopNarration();
   window.speechSynthesis.cancel();
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.rate = 0.95;
@@ -257,30 +265,93 @@ function speak(text) {
 
 async function playNarration(text) {
   if (!state.voiceEnabled || !state.sessionId) return;
+  stopNarration();
+  if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+
+  const requestId = state.narrationRequestId + 1;
+  state.narrationRequestId = requestId;
+  const sessionId = state.sessionId;
+  const voice = state.currentVoice;
+  const controller = new AbortController();
+  state.narrationAbortController = controller;
+
   try {
     const response = await fetch("/api/tts", {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ session_id: state.sessionId, text }),
+      signal: controller.signal,
     });
+    if (!isCurrentNarration(requestId, sessionId)) return;
+
     if (response.status === 204) {
-      els.proofVoice.textContent = `${voiceLabel(state.currentVoice)} TTS unavailable`;
+      els.proofVoice.textContent = `${voiceLabel(voice)} TTS unavailable`;
       return;
     }
     if (!response.ok) {
-      els.proofVoice.textContent = `${voiceLabel(state.currentVoice)} voice pending`;
+      els.proofVoice.textContent = `${voiceLabel(voice)} voice pending`;
       return;
     }
     const blob = await response.blob();
-    if (state.narrationAudio) state.narrationAudio.pause();
-    state.narrationAudio = new Audio(URL.createObjectURL(blob));
+    if (!isCurrentNarration(requestId, sessionId)) return;
+
+    const objectUrl = URL.createObjectURL(blob);
+    const audio = new Audio(objectUrl);
+    state.narrationObjectUrl = objectUrl;
+    state.narrationAudio = audio;
+    audio.addEventListener(
+      "ended",
+      () => {
+        if (state.narrationAudio !== audio) return;
+        clearNarrationAudio();
+      },
+      { once: true },
+    );
     await state.narrationAudio.play();
-    els.proofVoice.textContent = `${voiceLabel(state.currentVoice)} voice on`;
+    if (isCurrentNarration(requestId, sessionId)) {
+      els.proofVoice.textContent = `${voiceLabel(voice)} voice on`;
+    }
   } catch (_error) {
+    if (controller.signal.aborted) return;
     els.proofVoice.textContent = state.audioUnlocked
-      ? `${voiceLabel(state.currentVoice)} click to unmute`
-      : `${voiceLabel(state.currentVoice)} voice gated`;
+      ? `${voiceLabel(voice)} click to unmute`
+      : `${voiceLabel(voice)} voice gated`;
+  } finally {
+    if (state.narrationAbortController === controller) {
+      state.narrationAbortController = null;
+    }
   }
+}
+
+function stopAllAudio() {
+  stopNarration();
+  if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+}
+
+function stopNarration() {
+  state.narrationRequestId += 1;
+  if (state.narrationAbortController) {
+    state.narrationAbortController.abort();
+    state.narrationAbortController = null;
+  }
+  clearNarrationAudio();
+}
+
+function clearNarrationAudio() {
+  if (state.narrationAudio) {
+    state.narrationAudio.pause();
+    state.narrationAudio.removeAttribute("src");
+    state.narrationAudio.load();
+    state.narrationAudio = null;
+  }
+  if (state.narrationObjectUrl) {
+    URL.revokeObjectURL(state.narrationObjectUrl);
+    state.narrationObjectUrl = null;
+  }
+}
+
+function isCurrentNarration(requestId, sessionId) {
+  return requestId === state.narrationRequestId && sessionId === state.sessionId;
 }
 
 async function postJSON(url, payload) {

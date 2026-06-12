@@ -27,3 +27,11 @@ native recent llama.cpp `llama-server`/`llama-cli` support with `--spec-type dra
 **Rule:** for Gemma 4 latency work, prioritize MTP server/CLI proof, tune
 `--spec-draft-n-max` on the actual hardware, and keep the Python binding as the
 fallback quality/smoke path.
+
+## 2026-06-12 — Browser TTS must have a single audio owner
+User reported overlapping sound after clicking answer choices. The frontend was
+starting async narration audio while Ember's browser speech could also speak, and
+old `/api/tts` responses could still start after the next turn began.
+**Rule:** when a new turn/action starts, abort pending TTS, stop any current
+narration, cancel browser speech, and make turn-result assistant text silent
+unless the user explicitly asks Ember to speak.
