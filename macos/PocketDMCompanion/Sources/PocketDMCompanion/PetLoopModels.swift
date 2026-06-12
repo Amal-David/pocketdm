@@ -3189,6 +3189,166 @@ enum PetWeeklyTrailChapter: Int, CaseIterable {
     }
 }
 
+enum PetRecoveryScene: Int, CaseIterable {
+    case softReturn = 1
+    case shieldSaved = 2
+    case quietRepair = 4
+    case moonNap = 8
+    case stormShelter = 16
+    case streakRekindled = 32
+
+    var title: String {
+        switch self {
+        case .softReturn:
+            return "Soft Return"
+        case .shieldSaved:
+            return "Shield Saved"
+        case .quietRepair:
+            return "Quiet Repair"
+        case .moonNap:
+            return "Moon Nap"
+        case .stormShelter:
+            return "Storm Shelter"
+        case .streakRekindled:
+            return "Streak Rekindled"
+        }
+    }
+
+    var shortLabel: String {
+        switch self {
+        case .softReturn:
+            return "Back"
+        case .shieldSaved:
+            return "Shield"
+        case .quietRepair:
+            return "Repair"
+        case .moonNap:
+            return "Moon"
+        case .stormShelter:
+            return "Shelter"
+        case .streakRekindled:
+            return "Rekindle"
+        }
+    }
+
+    var storyLine: String {
+        switch self {
+        case .softReturn:
+            return "It notices the missed day and chooses a gentle hello instead of guilt."
+        case .shieldSaved:
+            return "A stored streak shield glows once and keeps the trail warm."
+        case .quietRepair:
+            return "It sits beside the user and patches the bond with a small ritual."
+        case .moonNap:
+            return "It slept through the gap and wakes up ready to try again."
+        case .stormShelter:
+            return "It built a tiny shelter around the bond while the user was away."
+        case .streakRekindled:
+            return "After returning, the next steady streak turns into a comeback keepsake."
+        }
+    }
+
+    var rewardLine: String {
+        "\(title): \(storyLine)"
+    }
+
+    var sparkReward: Int {
+        switch self {
+        case .softReturn:
+            return 8
+        case .shieldSaved:
+            return 12
+        case .quietRepair:
+            return 14
+        case .moonNap:
+            return 18
+        case .stormShelter:
+            return 24
+        case .streakRekindled:
+            return 30
+        }
+    }
+
+    var joyReward: Int {
+        switch self {
+        case .softReturn, .shieldSaved, .quietRepair:
+            return 1
+        case .moonNap, .stormShelter, .streakRekindled:
+            return 2
+        }
+    }
+
+    var vital: PetCareVital {
+        switch self {
+        case .softReturn, .shieldSaved:
+            return .snack
+        case .quietRepair, .streakRekindled:
+            return .focus
+        case .moonNap, .stormShelter:
+            return .rest
+        }
+    }
+
+    var moodStep: PetMoodCareStep {
+        switch self {
+        case .softReturn:
+            return .soothe
+        case .shieldSaved:
+            return .cheer
+        case .quietRepair:
+            return .focus
+        case .moonNap:
+            return .rest
+        case .stormShelter:
+            return .soothe
+        case .streakRekindled:
+            return .play
+        }
+    }
+
+    var spriteRequestName: String {
+        switch self {
+        case .softReturn:
+            return "pet-{stage}-recovery-soft-return.png"
+        case .shieldSaved:
+            return "pet-{stage}-recovery-shield-saved.png"
+        case .quietRepair:
+            return "pet-{stage}-recovery-quiet-repair.png"
+        case .moonNap:
+            return "pet-{stage}-recovery-moon-nap.png"
+        case .stormShelter:
+            return "pet-{stage}-recovery-storm-shelter.png"
+        case .streakRekindled:
+            return "pet-{stage}-recovery-streak-rekindled.png"
+        }
+    }
+
+    static func scene(daysMissed: Int, shieldUsed: Bool) -> PetRecoveryScene {
+        if shieldUsed {
+            return .shieldSaved
+        }
+        if daysMissed <= 1 {
+            return .softReturn
+        }
+        if daysMissed <= 3 {
+            return .quietRepair
+        }
+        if daysMissed <= 6 {
+            return .moonNap
+        }
+        return .stormShelter
+    }
+
+    static func count(mask: Int) -> Int {
+        allCases.filter { mask & $0.rawValue != 0 }.count
+    }
+
+    static func summary(mask: Int, shieldCount: Int, latest: PetRecoveryScene?) -> String {
+        let latestText = latest.map { "Latest \($0.title)" } ?? "No comeback scene yet"
+        return "Recovery \(count(mask: mask))/\(allCases.count) · Shields \(shieldCount)/3 · \(latestText)"
+    }
+}
+
 struct PetComebackReward {
     let sparks: Int
     let joy: Int

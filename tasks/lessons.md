@@ -321,3 +321,10 @@ voice.
 **Rule:** every assistant/model feedback path should visibly keep the guarded
 "Pika pika!" prefix and force the native spoken catchphrase on direct reply or
 quiz feedback moments so debounce never makes the character voice disappear.
+
+## 2026-06-13 — Recovery loops must welcome, not punish
+The user wants Hamster-style retention loops, but the pet fantasy should not
+turn missed days into guilt.
+**Rule:** missed-day mechanics should use shields, soft returns, comeback
+albums, care effects, and concrete sprite requests so returning feels like
+repairing a relationship rather than losing a counter.

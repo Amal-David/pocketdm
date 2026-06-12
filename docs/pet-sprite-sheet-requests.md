@@ -1177,6 +1177,28 @@ Weekly streak trail:
 - `pet-{stage}-journal-week-page.png`
   - Pet opens the weekly trail page with four visual milestone charms.
 
+Streak recovery:
+
+- `pet-{stage}-recovery-soft-return.png`
+  - Missed one day without a shield; pet gives a gentle hello and points back
+    to the first trail light with no shame.
+- `pet-{stage}-recovery-shield-saved.png`
+  - A stored Streak Shield flashes, protects the trail, and the pet looks
+    relieved.
+- `pet-{stage}-recovery-quiet-repair.png`
+  - Two or three missed days; pet sits beside a small repair charm and patches
+    the bond.
+- `pet-{stage}-recovery-moon-nap.png`
+  - Several missed days; pet wakes from a moonlit nap and stretches warmly.
+- `pet-{stage}-recovery-storm-shelter.png`
+  - Long absence; pet emerges from a tiny shelter it built around the bond.
+- `pet-{stage}-recovery-streak-rekindled.png`
+  - After returning and rebuilding a three-day rhythm, the trail sparks back
+    into a proud comeback keepsake.
+- `pet-{stage}-journal-recovery-page.png`
+  - Pet opens the recovery album showing shields, comeback scenes, and the next
+    recovery sprite request.
+
 Upgrade card deck:
 
 - `pet-{stage}-card-snack-bowl.png`
@@ -1263,6 +1285,10 @@ These are for the progression layer:
 - Daily combo almost solved.
 - Streak maintained.
 - Streak broken but recoverable.
+- Streak Shield earned.
+- Streak Shield used.
+- Comeback album scene unlocked.
+- Streak rekindled after recovery.
 - Chest open.
 - Rare reward.
 - Bond HP increase.

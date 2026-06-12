@@ -235,6 +235,9 @@ final class DragonOverlayModel: ObservableObject {
     private static let weeklyCareCountKey = "PocketDMCompanion.weeklyCareCount"
     private static let weeklyRewardMaskKey = "PocketDMCompanion.weeklyRewardMask"
     private static let weeklyTrailAlbumMaskKey = "PocketDMCompanion.weeklyTrailAlbumMask"
+    private static let streakShieldCountKey = "PocketDMCompanion.streakShieldCount"
+    private static let recoveryAlbumMaskKey = "PocketDMCompanion.recoveryAlbumMask"
+    private static let latestRecoverySceneRawKey = "PocketDMCompanion.latestRecoverySceneRaw"
     private static let dailyNudgeDateKey = "PocketDMCompanion.dailyNudgeDate"
     private static let dailyNudgeOfferedMaskKey = "PocketDMCompanion.dailyNudgeOfferedMask"
     private static let dailyNudgeAnsweredMaskKey = "PocketDMCompanion.dailyNudgeAnsweredMask"
@@ -278,6 +281,14 @@ final class DragonOverlayModel: ObservableObject {
         let year = calendar.component(.yearForWeekOfYear, from: date)
         let week = calendar.component(.weekOfYear, from: date)
         return "\(year)-W\(String(format: "%02d", week))"
+    }
+
+    private static func dayGap(from lastDay: String, to date: Date) -> Int? {
+        guard let lastDate = dayFormatter.date(from: lastDay) else { return nil }
+        let calendar = Calendar.current
+        let start = calendar.startOfDay(for: lastDate)
+        let end = calendar.startOfDay(for: date)
+        return calendar.dateComponents([.day], from: start, to: end).day
     }
 
     @Published var message = "Pika pika! Your electric partner keeps a tiny bond spark. Pet once each day to earn +1 HP and refill joy."
@@ -338,6 +349,9 @@ final class DragonOverlayModel: ObservableObject {
     @Published var weeklyCareCount = UserDefaults.standard.object(forKey: DragonOverlayModel.weeklyCareCountKey) as? Int ?? 0
     @Published var weeklyRewardMask = UserDefaults.standard.object(forKey: DragonOverlayModel.weeklyRewardMaskKey) as? Int ?? 0
     @Published var weeklyTrailAlbumMask = UserDefaults.standard.object(forKey: DragonOverlayModel.weeklyTrailAlbumMaskKey) as? Int ?? 0
+    @Published var streakShieldCount = UserDefaults.standard.object(forKey: DragonOverlayModel.streakShieldCountKey) as? Int ?? 0
+    @Published var recoveryAlbumMask = UserDefaults.standard.object(forKey: DragonOverlayModel.recoveryAlbumMaskKey) as? Int ?? 0
+    @Published var latestRecoverySceneRaw = UserDefaults.standard.object(forKey: DragonOverlayModel.latestRecoverySceneRawKey) as? Int ?? 0
     @Published var dailyNudgeDate = UserDefaults.standard.string(forKey: DragonOverlayModel.dailyNudgeDateKey) ?? ""
     @Published var dailyNudgeOfferedMask = UserDefaults.standard.object(forKey: DragonOverlayModel.dailyNudgeOfferedMaskKey) as? Int ?? 0
     @Published var dailyNudgeAnsweredMask = UserDefaults.standard.object(forKey: DragonOverlayModel.dailyNudgeAnsweredMaskKey) as? Int ?? 0
@@ -676,13 +690,28 @@ final class DragonOverlayModel: ObservableObject {
         clearCheerBubble()
         syncDailyCombo()
         rechargeEnergy()
-        let today = Self.dayFormatter.string(from: Date())
+        let now = Date()
+        let today = Self.dayFormatter.string(from: now)
+        let gap = Self.dayGap(from: lastPetDay, to: now)
         if lastPetDay == today {
             happiness = min(5, happiness + 1)
             let energyBonus = spendEnergy() ? " Energy -1." : " Energy is recharging."
             earnSparkDust(2)
             message = pikaText("Already cared for today. Pikachu still leans in. Joy +1, Sparks +2.\(energyBonus)")
         } else {
+            let missedDays = max((gap ?? 1) - 1, 0)
+            var shieldUsed = false
+            var recoveryNote: String?
+            if missedDays > 0 {
+                if missedDays == 1 && streakShieldCount > 0 {
+                    shieldUsed = true
+                    streakShieldCount = max(0, streakShieldCount - 1)
+                } else {
+                    petStreak = 0
+                }
+                let scene = PetRecoveryScene.scene(daysMissed: missedDays, shieldUsed: shieldUsed)
+                recoveryNote = recordRecoveryScene(scene, daysMissed: missedDays, shieldUsed: shieldUsed)
+            }
             companionHP = min(10, companionHP + 1)
             happiness = 5
             petStreak += 1
@@ -690,7 +719,19 @@ final class DragonOverlayModel: ObservableObject {
             lastPetDay = today
             _ = spendEnergy()
             earnSparkDust(15)
-            message = pikaText("Daily care complete. Bond HP +1, Joy refilled, Sparks +15. \(growthStage.rewardLine)")
+            if missedDays > 0 {
+                let dayText = missedDays == 1 ? "1 day" : "\(missedDays) days"
+                let shieldText = shieldUsed ? " A Streak Shield kept the trail warm." : " The streak restarts softly."
+                message = pikaText("Comeback care complete after \(dayText). Bond HP +1, Joy refilled, Sparks +15.\(shieldText) \(growthStage.rewardLine)")
+            } else {
+                message = pikaText("Daily care complete. Bond HP +1, Joy refilled, Sparks +15. \(growthStage.rewardLine)")
+            }
+            if let recoveryNote {
+                message += " \(recoveryNote)"
+            }
+            if let shieldNote = awardStreakShieldIfNeeded() {
+                message += " \(shieldNote)"
+            }
             if let streakNote = awardWeeklyCareMilestones() {
                 message += " \(streakNote)"
             }
@@ -1163,7 +1204,7 @@ final class DragonOverlayModel: ObservableObject {
     }
 
     var careLine: String {
-        "\(growthStage.title) · \(petFeeling.title) · HP \(companionHP)/10"
+        "\(growthStage.title) · \(petFeeling.title) · HP \(companionHP)/10 · Shield \(streakShieldCount)/3"
     }
 
     var economyLine: String {
@@ -1283,6 +1324,18 @@ final class DragonOverlayModel: ObservableObject {
 
     var weeklyTrailChapters: [PetWeeklyTrailChapter] {
         PetWeeklyTrailChapter.allCases
+    }
+
+    var recoveryLine: String {
+        PetRecoveryScene.summary(
+            mask: recoveryAlbumMask,
+            shieldCount: streakShieldCount,
+            latest: PetRecoveryScene(rawValue: latestRecoverySceneRaw)
+        )
+    }
+
+    var recoveryScenes: [PetRecoveryScene] {
+        PetRecoveryScene.allCases
     }
 
     var cheerRhythmLine: String {
@@ -1582,7 +1635,7 @@ final class DragonOverlayModel: ObservableObject {
             careCount: weeklyCareCount,
             albumMask: weeklyTrailAlbumMask
         )
-        return "\(chapters) · streak \(petStreak)"
+        return "\(chapters) · streak \(petStreak) · shields \(streakShieldCount)/3"
     }
 
     var journalStreakProgress: Double {
@@ -1593,6 +1646,22 @@ final class DragonOverlayModel: ObservableObject {
         let next = PetWeeklyTrailChapter.next(careCount: weeklyCareCount)
             ?? PetWeeklyTrailChapter.latest(careCount: weeklyCareCount)
         return "Week chapter sprite: \(next.spriteRequestName.replacingOccurrences(of: "{stage}", with: growthStage.assetSlug))"
+    }
+
+    var journalRecoveryProgress: Double {
+        Double(PetRecoveryScene.count(mask: recoveryAlbumMask)) / Double(PetRecoveryScene.allCases.count)
+    }
+
+    var journalRecoveryCaption: String {
+        recoveryLine
+    }
+
+    var journalRecoverySpriteLine: String {
+        let latest = PetRecoveryScene(rawValue: latestRecoverySceneRaw)
+        let next = PetRecoveryScene.allCases.first { recoveryAlbumMask & $0.rawValue == 0 }
+            ?? latest
+            ?? .softReturn
+        return "Recovery sprite: \(next.spriteRequestName.replacingOccurrences(of: "{stage}", with: growthStage.assetSlug))"
     }
 
     var journalCheerProgress: Double {
@@ -1788,6 +1857,9 @@ final class DragonOverlayModel: ObservableObject {
         UserDefaults.standard.set(weeklyCareCount, forKey: Self.weeklyCareCountKey)
         UserDefaults.standard.set(weeklyRewardMask, forKey: Self.weeklyRewardMaskKey)
         UserDefaults.standard.set(weeklyTrailAlbumMask, forKey: Self.weeklyTrailAlbumMaskKey)
+        UserDefaults.standard.set(streakShieldCount, forKey: Self.streakShieldCountKey)
+        UserDefaults.standard.set(recoveryAlbumMask, forKey: Self.recoveryAlbumMaskKey)
+        UserDefaults.standard.set(latestRecoverySceneRaw, forKey: Self.latestRecoverySceneRawKey)
         UserDefaults.standard.set(dailyNudgeDate, forKey: Self.dailyNudgeDateKey)
         UserDefaults.standard.set(dailyNudgeOfferedMask, forKey: Self.dailyNudgeOfferedMaskKey)
         UserDefaults.standard.set(dailyNudgeAnsweredMask, forKey: Self.dailyNudgeAnsweredMaskKey)
@@ -1983,6 +2055,10 @@ final class DragonOverlayModel: ObservableObject {
 
     func isWeeklyTrailChapterInAlbum(_ chapter: PetWeeklyTrailChapter) -> Bool {
         weeklyTrailAlbumMask & chapter.rawValue != 0
+    }
+
+    func isRecoverySceneUnlocked(_ scene: PetRecoveryScene) -> Bool {
+        recoveryAlbumMask & scene.rawValue != 0
     }
 
     private func setVital(_ vital: PetCareVital, value: Int) {
@@ -2438,6 +2514,43 @@ final class DragonOverlayModel: ObservableObject {
         }
         guard changed else { return }
         persistCare()
+    }
+
+    private func recordRecoveryScene(_ scene: PetRecoveryScene, daysMissed: Int, shieldUsed: Bool) -> String? {
+        latestRecoverySceneRaw = scene.rawValue
+        let shieldLine = shieldUsed ? " Shield \(streakShieldCount)/3 left." : ""
+        guard recoveryAlbumMask & scene.rawValue == 0 else {
+            return "\(scene.title) remembered.\(shieldLine)"
+        }
+
+        recoveryAlbumMask |= scene.rawValue
+        sparkDust = min(999, sparkDust + scene.sparkReward)
+        happiness = min(5, happiness + scene.joyReward)
+        var notes = [
+            "\(scene.rewardLine) Joy +\(scene.joyReward), Sparks +\(scene.sparkReward).\(shieldLine)"
+        ]
+        if let vitalNote = refillVital(scene.vital, by: 1) {
+            notes.append(vitalNote)
+        }
+        if let moodCareNote = markMoodCare(scene.moodStep) {
+            notes.append(moodCareNote)
+        }
+        return notes.joined(separator: " ")
+    }
+
+    private func awardStreakShieldIfNeeded() -> String? {
+        var notes: [String] = []
+        if petStreak > 0, petStreak % 3 == 0, streakShieldCount < 3 {
+            streakShieldCount += 1
+            notes.append("Streak Shield earned: \(streakShieldCount)/3 ready for a missed day.")
+        }
+        if recoveryAlbumMask != 0,
+           petStreak >= 3,
+           recoveryAlbumMask & PetRecoveryScene.streakRekindled.rawValue == 0,
+           let rekindled = recordRecoveryScene(.streakRekindled, daysMissed: 0, shieldUsed: false) {
+            notes.append(rekindled)
+        }
+        return notes.isEmpty ? nil : notes.joined(separator: " ")
     }
 
     private func awardWeeklyCareMilestones() -> String? {
@@ -3791,6 +3904,9 @@ struct PetJournalPanel: View {
             detailLine(model.weeklyLine)
             milestoneGrid
             artLine(model.journalStreakSpriteLine)
+            journalHero("Streak Recovery", value: model.journalRecoveryProgress, caption: model.journalRecoveryCaption)
+            recoveryGrid
+            artLine(model.journalRecoverySpriteLine)
         case .cards:
             journalHero("Upgrade Cards", value: model.journalUpgradeProgress, caption: model.journalUpgradeCaption)
             upgradeDeckGrid
@@ -3945,6 +4061,14 @@ struct PetJournalPanel: View {
         LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 4), count: 2), spacing: 3) {
             ForEach(PetStreakMilestone.allCases, id: \.rawValue) { milestone in
                 journalChip("\(milestone.shortLabel) \(milestone.title)", isUnlocked: model.weeklyRewardMask & milestone.rawValue != 0)
+            }
+        }
+    }
+
+    private var recoveryGrid: some View {
+        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 4), count: 3), spacing: 3) {
+            ForEach(model.recoveryScenes, id: \.rawValue) { scene in
+                journalChip("\(scene.shortLabel) \(scene.title)", isUnlocked: model.isRecoverySceneUnlocked(scene))
             }
         }
     }

@@ -304,6 +304,10 @@ The native macOS companion now has the first version of the loop:
   sprite request in the Growth journal page.
 - Lifecycle catch-up on launch/open: long absence can soften Joy, open a
   comeback chest, refill some energy, and create a warmer welcome-back moment.
+- Streak Recovery now adds up to three Streak Shields, spends one shield on a
+  one-day miss, softly restarts longer gaps, and saves comeback scenes such as
+  Soft Return, Shield Saved, Quiet Repair, Moon Nap, Storm Shelter, and Streak
+  Rekindled in the Week journal.
 - Time-of-day proactive nudge copy for Sunrise, Focus, Afternoon, Evening, and
   Night care moments.
 - A daily care-need system that pays one bonus when the user does what the pet
