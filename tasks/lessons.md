@@ -231,3 +231,10 @@ viral daily games make collections and albums feel worth returning to.
 receipts and sprite requests, so petting, studying, adventuring, resting,
 playing, focusing, solving, events, upgrades, and weekly care become album
 progress rather than transient text.
+
+## 2026-06-13 — Growth needs quests, not only thresholds
+User wants the pet to grow from small to big like a proper companion with a life
+arc.
+**Rule:** evolution should be represented as staged quest cards with lore,
+progress, rewards, and sprite requests so Tiny Spark, Pocket Pal, Trail Buddy,
+Storm Scout, and Storm Guardian feel like earned relationship chapters.

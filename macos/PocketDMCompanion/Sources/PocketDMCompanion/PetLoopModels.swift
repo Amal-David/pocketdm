@@ -116,6 +116,170 @@ enum PetGrowthStage: CaseIterable {
     }
 }
 
+enum PetEvolutionQuest: Int, CaseIterable {
+    case firstBond = 1
+    case trustTrail = 2
+    case scoutTraining = 4
+    case guardianOath = 8
+
+    var title: String {
+        switch self {
+        case .firstBond:
+            return "First Bond"
+        case .trustTrail:
+            return "Trust Trail"
+        case .scoutTraining:
+            return "Scout Training"
+        case .guardianOath:
+            return "Guardian Oath"
+        }
+    }
+
+    var shortLabel: String {
+        switch self {
+        case .firstBond:
+            return "Bond"
+        case .trustTrail:
+            return "Trust"
+        case .scoutTraining:
+            return "Scout"
+        case .guardianOath:
+            return "Oath"
+        }
+    }
+
+    var targetStage: PetGrowthStage {
+        switch self {
+        case .firstBond:
+            return .pocketPal
+        case .trustTrail:
+            return .trailBuddy
+        case .scoutTraining:
+            return .stormScout
+        case .guardianOath:
+            return .stormGuardian
+        }
+    }
+
+    var actionLine: String {
+        switch self {
+        case .firstBond:
+            return "Pet once and gather the first bond spark."
+        case .trustTrail:
+            return "Create three memories or gather enough trail Sparks."
+        case .scoutTraining:
+            return "Fill the charm album or collect a strong Spark reserve."
+        case .guardianOath:
+            return "Complete a weekly trail, earn badges, or reach full Bond HP."
+        }
+    }
+
+    var loreLine: String {
+        switch self {
+        case .firstBond:
+            return "The tiny spark learns your hello means safety."
+        case .trustTrail:
+            return "It starts walking beside you instead of waiting behind."
+        case .scoutTraining:
+            return "It studies your rhythms and scouts the next quest early."
+        case .guardianOath:
+            return "It promises to guard your daily loop without guilt."
+        }
+    }
+
+    var spriteRequestName: String {
+        switch self {
+        case .firstBond:
+            return "pet-{stage}-evolution-quest-first-bond.png"
+        case .trustTrail:
+            return "pet-{stage}-evolution-quest-trust-trail.png"
+        case .scoutTraining:
+            return "pet-{stage}-evolution-quest-scout-training.png"
+        case .guardianOath:
+            return "pet-{stage}-evolution-quest-guardian-oath.png"
+        }
+    }
+
+    var sparkReward: Int {
+        switch self {
+        case .firstBond:
+            return 10
+        case .trustTrail:
+            return 18
+        case .scoutTraining:
+            return 28
+        case .guardianOath:
+            return 42
+        }
+    }
+
+    var bondHPReward: Int {
+        switch self {
+        case .firstBond, .trustTrail:
+            return 1
+        case .scoutTraining:
+            return 2
+        case .guardianOath:
+            return 0
+        }
+    }
+
+    func progress(
+        companionHP: Int,
+        sparkDust: Int,
+        memoryMask: Int,
+        charmMask: Int,
+        badgeMask: Int,
+        weeklyRewardMask: Int
+    ) -> Double {
+        switch self {
+        case .firstBond:
+            let hp = Double(min(companionHP, 4)) / 4.0
+            let sparks = Double(min(sparkDust, 50)) / 50.0
+            return max(hp, sparks)
+        case .trustTrail:
+            let memories = Double(min(PetBondMemory.count(mask: memoryMask), 3)) / 3.0
+            let hp = Double(min(companionHP, 6)) / 6.0
+            let sparks = Double(min(sparkDust, 120)) / 120.0
+            return max(memories, hp, sparks)
+        case .scoutTraining:
+            let charms = Double(min(PetCareCharm.count(mask: charmMask), 6)) / 6.0
+            let hp = Double(min(companionHP, 8)) / 8.0
+            let sparks = Double(min(sparkDust, 240)) / 240.0
+            return max(charms, hp, sparks)
+        case .guardianOath:
+            let weekly = weeklyRewardMask & PetStreakMilestone.daySeven.rawValue != 0 ? 1.0 : 0.0
+            let badges = Double(min(PetSeasonEvent.count(mask: badgeMask), 3)) / 3.0
+            let hp = Double(min(companionHP, 10)) / 10.0
+            return max(weekly, badges, hp)
+        }
+    }
+
+    func isComplete(
+        companionHP: Int,
+        sparkDust: Int,
+        memoryMask: Int,
+        charmMask: Int,
+        badgeMask: Int,
+        weeklyRewardMask: Int
+    ) -> Bool {
+        progress(
+            companionHP: companionHP,
+            sparkDust: sparkDust,
+            memoryMask: memoryMask,
+            charmMask: charmMask,
+            badgeMask: badgeMask,
+            weeklyRewardMask: weeklyRewardMask
+        ) >= 1
+    }
+
+    static func summary(claimedMask: Int) -> String {
+        let claimed = allCases.filter { claimedMask & $0.rawValue != 0 }.count
+        let next = allCases.first { claimedMask & $0.rawValue == 0 }
+        return "Evolution Quests \(claimed)/\(allCases.count) · next \(next?.targetStage.title ?? "guardian path complete")"
+    }
+}
+
 enum PetFeeling: Int, CaseIterable {
     case bright = 1
     case eager = 2
@@ -1111,6 +1275,10 @@ enum PetBondMemory: Int, CaseIterable {
         }
         return "Memories \(unlocked.count)/\(allCases.count): \(last.title)"
     }
+
+    static func count(mask: Int) -> Int {
+        allCases.filter { mask & $0.rawValue != 0 }.count
+    }
 }
 
 enum PetStoryCodex {
@@ -1272,6 +1440,10 @@ enum PetCareCharm: Int, CaseIterable {
         let next = allCases.first { mask & $0.rawValue == 0 }
         return "Charms \(count)/\(allCases.count) · next \(next?.title ?? "album complete")"
     }
+
+    static func count(mask: Int) -> Int {
+        allCases.filter { mask & $0.rawValue != 0 }.count
+    }
 }
 
 enum PetSeasonEvent: Int, CaseIterable {
@@ -1407,6 +1579,10 @@ enum PetSeasonEvent: Int, CaseIterable {
     static func badgeSummary(mask: Int) -> String {
         let count = allCases.filter { mask & $0.rawValue != 0 }.count
         return "Badges \(count)/\(allCases.count)"
+    }
+
+    static func count(mask: Int) -> Int {
+        allCases.filter { mask & $0.rawValue != 0 }.count
     }
 }
 

@@ -208,6 +208,7 @@ final class DragonOverlayModel: ObservableObject {
     private static let lastComebackChestDayKey = "PocketDMCompanion.lastComebackChestDay"
     private static let careMemoryMaskKey = "PocketDMCompanion.careMemoryMask"
     private static let careCharmMaskKey = "PocketDMCompanion.careCharmMask"
+    private static let evolutionQuestMaskKey = "PocketDMCompanion.evolutionQuestMask"
     private static let lastNeedBonusDayKey = "PocketDMCompanion.lastNeedBonusDay"
     private static let dailyEventDateKey = "PocketDMCompanion.dailyEventDate"
     private static let dailyEventProgressKey = "PocketDMCompanion.dailyEventProgress"
@@ -282,6 +283,7 @@ final class DragonOverlayModel: ObservableObject {
     @Published var dailyCipherSolved = UserDefaults.standard.bool(forKey: DragonOverlayModel.dailyCipherSolvedKey)
     @Published var careMemoryMask = UserDefaults.standard.object(forKey: DragonOverlayModel.careMemoryMaskKey) as? Int ?? 0
     @Published var careCharmMask = UserDefaults.standard.object(forKey: DragonOverlayModel.careCharmMaskKey) as? Int ?? 0
+    @Published var evolutionQuestMask = UserDefaults.standard.object(forKey: DragonOverlayModel.evolutionQuestMaskKey) as? Int ?? 0
     @Published var dailyEventDate = UserDefaults.standard.string(forKey: DragonOverlayModel.dailyEventDateKey) ?? ""
     @Published var dailyEventProgress = UserDefaults.standard.object(forKey: DragonOverlayModel.dailyEventProgressKey) as? Int ?? 0
     @Published var seasonBadgeMask = UserDefaults.standard.object(forKey: DragonOverlayModel.seasonBadgeMaskKey) as? Int ?? 0
@@ -343,6 +345,10 @@ final class DragonOverlayModel: ObservableObject {
         rechargeEnergy()
         applyVitalDecay()
         applyLifecycleCatchup(reason: "launch")
+        if let questNote = syncEvolutionQuests() {
+            appendPetNote(questNote)
+            speakPika()
+        }
         let collected = collectPassiveSparks()
         if collected > 0 {
             appendPetNote("Pikachu gathered \(collected) Sparks while you were away.")
@@ -529,10 +535,12 @@ final class DragonOverlayModel: ObservableObject {
 
     func openJournal() {
         guard learningMode != .journal else { return }
+        let priorStage = growthStage
         learningMode = .journal
         lastRequest = "Journal"
         message = pikaText("Journal opened. Growth, moods, memories, badges, and today's ritual are all in one place.")
         appendEmotionScene(trigger: "journal")
+        appendEvolutionNote(from: priorStage)
         play(.open)
         speakPika()
         setMood(.happy, duration: 1.2)
@@ -994,6 +1002,10 @@ final class DragonOverlayModel: ObservableObject {
         PetGrowthStage.progressLine(companionHP: companionHP, sparkDust: sparkDust)
     }
 
+    var evolutionQuestLine: String {
+        PetEvolutionQuest.summary(claimedMask: evolutionQuestMask)
+    }
+
     var taskLine: String {
         let quests = dailyQuests
         let done = quests.filter { dailyQuestMask & $0.rawValue != 0 }.count
@@ -1085,6 +1097,25 @@ final class DragonOverlayModel: ObservableObject {
 
     var journalGrowthProgress: Double {
         min(1, max(Double(companionHP) / 10.0, Double(sparkDust) / 420.0))
+    }
+
+    var journalEvolutionQuestProgress: Double {
+        Double(PetEvolutionQuest.allCases.filter { evolutionQuestMask & $0.rawValue != 0 }.count) / Double(PetEvolutionQuest.allCases.count)
+    }
+
+    var journalEvolutionQuestCaption: String {
+        let next = PetEvolutionQuest.allCases.first { evolutionQuestMask & $0.rawValue == 0 }
+        if let next {
+            let percent = Int((evolutionQuestProgress(for: next) * 100).rounded())
+            return "\(evolutionQuestLine) · \(percent)% \(next.shortLabel)"
+        }
+        return evolutionQuestLine
+    }
+
+    var journalEvolutionQuestSpriteLine: String {
+        let next = PetEvolutionQuest.allCases.first { evolutionQuestMask & $0.rawValue == 0 }
+            ?? PetEvolutionQuest.guardianOath
+        return "Evolution sprite: \(next.spriteRequestName.replacingOccurrences(of: "{stage}", with: growthStage.assetSlug))"
     }
 
     var journalMoodCaption: String {
@@ -1258,6 +1289,7 @@ final class DragonOverlayModel: ObservableObject {
         UserDefaults.standard.set(lastComebackChestDay, forKey: Self.lastComebackChestDayKey)
         UserDefaults.standard.set(careMemoryMask, forKey: Self.careMemoryMaskKey)
         UserDefaults.standard.set(careCharmMask, forKey: Self.careCharmMaskKey)
+        UserDefaults.standard.set(evolutionQuestMask, forKey: Self.evolutionQuestMaskKey)
         UserDefaults.standard.set(lastNeedBonusDay, forKey: Self.lastNeedBonusDayKey)
         UserDefaults.standard.set(dailyEventDate, forKey: Self.dailyEventDateKey)
         UserDefaults.standard.set(dailyEventProgress, forKey: Self.dailyEventProgressKey)
@@ -1359,6 +1391,25 @@ final class DragonOverlayModel: ObservableObject {
         case .focus:
             return focusVital
         }
+    }
+
+    func evolutionQuestProgress(for quest: PetEvolutionQuest) -> Double {
+        quest.progress(
+            companionHP: companionHP,
+            sparkDust: sparkDust,
+            memoryMask: careMemoryMask,
+            charmMask: careCharmMask,
+            badgeMask: seasonBadgeMask,
+            weeklyRewardMask: weeklyRewardMask
+        )
+    }
+
+    func isEvolutionQuestComplete(_ quest: PetEvolutionQuest) -> Bool {
+        evolutionQuestProgress(for: quest) >= 1
+    }
+
+    func isEvolutionQuestClaimed(_ quest: PetEvolutionQuest) -> Bool {
+        evolutionQuestMask & quest.rawValue != 0
     }
 
     private func setVital(_ vital: PetCareVital, value: Int) {
@@ -1463,6 +1514,26 @@ final class DragonOverlayModel: ObservableObject {
         return unlockCharm(.vitalGlow)
     }
 
+    private func syncEvolutionQuests() -> String? {
+        var notes: [String] = []
+        for quest in PetEvolutionQuest.allCases where evolutionQuestMask & quest.rawValue == 0 {
+            guard isEvolutionQuestComplete(quest) else { continue }
+
+            evolutionQuestMask |= quest.rawValue
+            sparkDust = min(999, sparkDust + quest.sparkReward)
+            if quest.bondHPReward > 0 {
+                companionHP = min(10, companionHP + quest.bondHPReward)
+            }
+            notes.append(
+                "\(quest.title) complete: \(quest.loreLine) \(quest.targetStage.title) path lit. Sparks +\(quest.sparkReward)\(quest.bondHPReward > 0 ? ", Bond HP +\(quest.bondHPReward)" : "")."
+            )
+        }
+
+        guard !notes.isEmpty else { return nil }
+        persistCare()
+        return notes.joined(separator: " ")
+    }
+
     private func appendEmotionScene(trigger: String) {
         if let emotionNote = recordEmotionScene(trigger: trigger) {
             message += " \(emotionNote)"
@@ -1530,6 +1601,9 @@ final class DragonOverlayModel: ObservableObject {
     }
 
     private func appendEvolutionNote(from priorStage: PetGrowthStage) {
+        if let questNote = syncEvolutionQuests() {
+            message += " \(questNote)"
+        }
         let nextStage = growthStage
         guard priorStage.title != nextStage.title else { return }
 
@@ -2306,6 +2380,11 @@ struct DragonOverlayView: View {
                 .foregroundStyle(Color.gold.opacity(0.78))
                 .lineLimit(1)
                 .minimumScaleFactor(0.58)
+            Text(model.evolutionQuestLine)
+                .font(.system(size: 8.2, weight: .black, design: .rounded))
+                .foregroundStyle(Color.ivory.opacity(0.68))
+                .lineLimit(1)
+                .minimumScaleFactor(0.48)
             Text(model.taskLine)
                 .font(.system(size: 8.5, weight: .black, design: .rounded))
                 .foregroundStyle(Color.ivory.opacity(0.72))
@@ -2595,6 +2674,9 @@ struct PetJournalPanel: View {
             journalHero("Growth", value: model.journalGrowthProgress, caption: model.journalGrowthCaption)
             detailLine(model.evolutionLine)
             detailLine(model.loreLine)
+            journalHero("Evolution Quests", value: model.journalEvolutionQuestProgress, caption: model.journalEvolutionQuestCaption)
+            evolutionQuestGrid
+            artLine(model.journalEvolutionQuestSpriteLine)
             detailLine(model.journalArtContextLine)
         case .moods:
             journalHero("Mood Album", value: model.journalMoodProgress, caption: model.journalMoodCaption)
@@ -2680,6 +2762,30 @@ struct PetJournalPanel: View {
                 journalChip(feeling.title, isUnlocked: model.emotionAlbumMask & feeling.rawValue != 0)
             }
         }
+    }
+
+    private var evolutionQuestGrid: some View {
+        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 4), count: 2), spacing: 3) {
+            ForEach(PetEvolutionQuest.allCases, id: \.rawValue) { quest in
+                evolutionQuestChip(quest)
+            }
+        }
+    }
+
+    private func evolutionQuestChip(_ quest: PetEvolutionQuest) -> some View {
+        let claimed = model.isEvolutionQuestClaimed(quest)
+        let complete = model.isEvolutionQuestComplete(quest)
+        let progress = Int((model.evolutionQuestProgress(for: quest) * 100).rounded())
+        let label = claimed ? "\(quest.shortLabel) ✓" : "\(quest.shortLabel) \(min(100, progress))%"
+        return Text(label)
+            .font(.system(size: 7.5, weight: .black, design: .rounded))
+            .foregroundStyle(claimed ? Color.black : Color.ivory.opacity(complete ? 0.86 : 0.62))
+            .lineLimit(1)
+            .minimumScaleFactor(0.62)
+            .frame(height: 18)
+            .frame(maxWidth: .infinity)
+            .background(claimed ? Color.gold.opacity(0.9) : Color.black.opacity(complete ? 0.44 : 0.3), in: RoundedRectangle(cornerRadius: 5))
+            .overlay(RoundedRectangle(cornerRadius: 5).stroke(Color.ivory.opacity(claimed ? 0 : 0.14), lineWidth: 1))
     }
 
     private var memoryList: some View {

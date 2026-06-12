@@ -191,6 +191,8 @@ The new layer should add:
   than shame.
 - A visible evolution progress receipt so growth from small to big is always
   legible.
+- Evolution quest cards that make each growth stage feel like a relationship
+  milestone, not a hidden threshold.
 - Pet feelings that are visible enough to drive sprite selection.
 - A mood album that turns those feelings into collectible emotional states,
   giving the pet a visible arc across each day rather than one static idle.
@@ -251,6 +253,9 @@ The native macOS companion now has the first version of the loop:
   Map, Cozy Nest, Cheer Signal, Spark Wheel, Focus Charm, and Cipher Stone.
 - Growth stages computed from Bond HP and Sparks.
 - A visible next-evolution line based on Bond HP or Sparks.
+- Evolution Quest cards now track First Bond, Trust Trail, Scout Training, and
+  Guardian Oath progress, pay one-time rewards, and surface the next evolution
+  sprite request in the Growth journal page.
 - Lifecycle catch-up on launch/open: long absence can soften Joy, open a
   comeback chest, refill some energy, and create a warmer welcome-back moment.
 - Time-of-day proactive nudge copy for Sunrise, Focus, Afternoon, Evening, and

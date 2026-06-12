@@ -199,6 +199,17 @@ Generate these first. They unlock the most visible upgrade with the least code:
    - Weekly trail charm, several path lights turn on under the pet.
 89. `pet-buddy-charm-vital-glow.png`
    - All-vitals charm, Snack/Rest/Play/Focus glow together.
+90. `pet-buddy-evolution-quest-first-bond.png`
+   - First Bond quest card: tiny spark notices the user and lights the path to
+     Pocket Pal.
+91. `pet-buddy-evolution-quest-trust-trail.png`
+   - Trust Trail quest card: walks beside the user with memory charms glowing.
+92. `pet-buddy-evolution-quest-scout-training.png`
+   - Scout Training quest card: studies the desk, charm album, and next route.
+93. `pet-buddy-evolution-quest-guardian-oath.png`
+   - Guardian Oath quest card: calm protective promise, no guilt or pressure.
+94. `pet-buddy-journal-evolution-quests.png`
+   - Opens a journal page with four abstract evolution quest cards.
 
 ## Generate In Separate Batches
 
@@ -288,7 +299,15 @@ consistent:
 - `pet-buddy-charm-weekly-trail.png`
 - `pet-buddy-charm-vital-glow.png`
 
-### Batch 9: Full Stage Matrix
+### Batch 9: Evolution Quest Cards
+
+- `pet-buddy-evolution-quest-first-bond.png`
+- `pet-buddy-evolution-quest-trust-trail.png`
+- `pet-buddy-evolution-quest-scout-training.png`
+- `pet-buddy-evolution-quest-guardian-oath.png`
+- `pet-buddy-journal-evolution-quests.png`
+
+### Batch 10: Full Stage Matrix
 
 After the buddy form works, repeat the stage matrix for:
 
@@ -440,6 +459,16 @@ Evolution and growth:
 
 - `pet-{stage}-evolution-progress.png`
   - Looks at a glowing progress mark for the next stage.
+- `pet-{stage}-evolution-quest-first-bond.png`
+  - First Bond quest card, tiny hello, path to Pocket Pal lights up.
+- `pet-{stage}-evolution-quest-trust-trail.png`
+  - Trust Trail quest card, memory charms become a walking path.
+- `pet-{stage}-evolution-quest-scout-training.png`
+  - Scout Training quest card, pet studies desk rhythms and points ahead.
+- `pet-{stage}-evolution-quest-guardian-oath.png`
+  - Guardian Oath quest card, protective stance without guilt or urgency.
+- `pet-{stage}-journal-evolution-quests.png`
+  - Opens four abstract evolution quest cards in a journal page, no labels.
 - `pet-{stage}-ready-to-evolve.png`
   - Excited, electricity gathers, body glows.
 - `pet-{stage}-evolve-to-{next-stage}.png`
@@ -733,6 +762,9 @@ These are for the progression layer:
 - Daily boost claimed.
 - Pika pika voice reaction.
 - Evolution progress updated.
+- Evolution quest card progressed.
+- Evolution quest card completed.
+- Evolution quest journal viewed.
 - Ready to evolve.
 - Evolution complete.
 - Mood decay after long absence.
