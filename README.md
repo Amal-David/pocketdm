@@ -58,11 +58,12 @@ uv run python app.py
 ```
 
 The app serves a `gradio.Server` backend with a custom HTML/CSS/JS frontend. The
-fixed Pikachu desktop pet uses local 3D mood sprite strips at
-`app/static/dragon-sprites*.png`; the native companion uses macOS system voices
-for Spanish and Mandarin lesson phrases, ships 100 words plus 100 sentences per
-language, emotes between happy/nap/hyper/alert states, and does not call an
-external API for the language coach.
+web fallback still reads its Pikachu strips from the older
+`app/static/dragon-sprites*.png` asset names; the native companion bundles its
+own cleaned 3D mood strips under `macos/PocketDMCompanion`. The native companion
+uses macOS system voices for Spanish and Mandarin lesson phrases, ships 100
+words plus 100 sentences per language, emotes between happy/nap/hyper/alert
+states, and does not call an external API for the language coach.
 
 By default the app reports `Backend: Scripted` and uses deterministic turns for
 the playable checkpoint. To use the local trained GGUF model:
@@ -146,7 +147,9 @@ Then open `http://127.0.0.1:7860`.
 
 - Demo video: TODO
 - Social post: TODO
-- Field notes/blog: TODO
+- Field notes/blog: TODO; draft in `docs/field-notes-draft.md`
+- Submission copy kit: `docs/submission-copy.md`
+- Hackathon plan: `tasks/hackathon-submission-plan.md`
 - Model repo: TODO after WP-4 training/export
 - Dataset/traces repo: TODO after WP-3 filtering and split
 
