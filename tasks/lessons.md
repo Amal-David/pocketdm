@@ -244,3 +244,16 @@ User wants the pet to go through real emotions, not just display mood names.
 **Rule:** each meaningful feeling should map to care actions that help it
 recover, express, or complete a daily arc; the app should track recipe progress,
 reward completion, and request matching mood-care sprite sheets.
+
+## 2026-06-13 — Proactive bubbles should help the current emotion
+User wants the pet to proactively cheer and ask how the user is doing
+throughout the day.
+**Rule:** minimized check-ins should sometimes ask for the next mood-care step
+and accepting the bubble should mark real recipe progress, so proactive text
+feels like companion care instead of a generic notification.
+
+## 2026-06-13 — Proactive voice needs the catchphrase too
+User clarified that the model should say "pika pika" in text and in voice.
+**Rule:** minimized check-ins and assistant reply moments should visibly keep
+the guarded "Pika pika!" prefix and force a short native voice cue when the
+pet initiates a new check-in.

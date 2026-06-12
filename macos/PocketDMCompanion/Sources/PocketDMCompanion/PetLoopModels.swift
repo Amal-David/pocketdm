@@ -1947,6 +1947,42 @@ enum PetNudgeLibrary {
         }
     }
 
+    static func moodCarePrompt(
+        feeling: PetFeeling,
+        recipe: PetMoodCareRecipe,
+        step: PetMoodCareStep,
+        stage: PetGrowthStage
+    ) -> PetCheerPrompt {
+        let body: String
+        switch step {
+        case .soothe:
+            body = "I feel \(feeling.title.lowercased()). Can we do one gentle check-in?"
+        case .snack:
+            body = "My \(feeling.title.lowercased()) mood wants a tiny snack spark."
+        case .rest:
+            body = "I can keep watch. Want to let this mood rest for a moment?"
+        case .play:
+            body = "This mood has extra sparks. Want a tiny play burst?"
+        case .study:
+            body = "I am listening. Want to practice one small phrase together?"
+        case .adventure:
+            body = "This mood wants a little trail. Want one tiny quest step?"
+        case .focus:
+            body = "I can sit beside the task. Want one quiet focus spark?"
+        case .puzzle:
+            body = "This mood is curious. Want to solve one tiny clue?"
+        case .cheer:
+            body = "How are you doing? I can turn this into a warm check-in."
+        }
+
+        return PetCheerPrompt(
+            title: "\(feeling.title) care",
+            body: body,
+            action: step == .rest ? "Open a rest check-in" : "Open \(step.title) care",
+            rewardLine: "\(recipe.title) \(step.title) answered for \(stage.title)"
+        )
+    }
+
     static func cheerPrompt(
         feeling: PetFeeling,
         stage: PetGrowthStage,

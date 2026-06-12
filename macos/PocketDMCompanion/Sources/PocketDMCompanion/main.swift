@@ -315,6 +315,7 @@ final class DragonOverlayModel: ObservableObject {
     @Published var cheerAction = ""
     @Published var cheerRewardLine = ""
     @Published var cheerDaypartRaw = 0
+    @Published var cheerMoodCareStepRaw = 0
 
     let languageCoach = LanguageCoachStore()
 
@@ -727,6 +728,7 @@ final class DragonOverlayModel: ObservableObject {
         applyVitalDecay()
         let prompt = cheerTitle.isEmpty ? "Check in" : cheerTitle
         let rewardLine = cheerRewardLine.isEmpty ? "Check-in answered" : cheerRewardLine
+        let moodCareStep = PetMoodCareStep(rawValue: cheerMoodCareStepRaw)
         let daypartNote = recordCheerAnswer()
         clearCheerBubble()
         lastRequest = "Cheer"
@@ -745,6 +747,9 @@ final class DragonOverlayModel: ObservableObject {
         }
         if let charmNote = unlockCharm(.focusCharm) {
             message += " \(charmNote)"
+        }
+        if let moodCareStep, let moodCareNote = markMoodCare(moodCareStep) {
+            message += " \(moodCareNote)"
         }
         if let moodCareNote = markMoodCare(.cheer) {
             message += " \(moodCareNote)"
@@ -1342,6 +1347,7 @@ final class DragonOverlayModel: ObservableObject {
         cheerAction = ""
         cheerRewardLine = ""
         cheerDaypartRaw = 0
+        cheerMoodCareStepRaw = 0
     }
 
     private func persistCare() {
@@ -2062,14 +2068,25 @@ final class DragonOverlayModel: ObservableObject {
         let index = defaults.integer(forKey: Self.cheerIndexKey)
         let daypart = daypartNudge
         let shouldUseDaypart = dailyNudgeOfferedMask & daypart.rawValue == 0
-        let prompt = shouldUseDaypart
-            ? PetNudgeLibrary.PetCheerPrompt(
+        let nextMoodCareStep = moodCareRecipe.nextStep(mask: dailyMoodCareMask)
+        let shouldUseMoodCare = !shouldUseDaypart && nextMoodCareStep != nil && index % 2 == 0
+        let prompt: PetNudgeLibrary.PetCheerPrompt
+        if shouldUseDaypart {
+            prompt = PetNudgeLibrary.PetCheerPrompt(
                 title: daypart.title,
                 body: daypart.body,
                 action: daypart.action,
                 rewardLine: daypart.rewardLine
             )
-            : PetNudgeLibrary.cheerPrompt(
+        } else if shouldUseMoodCare, let nextMoodCareStep {
+            prompt = PetNudgeLibrary.moodCarePrompt(
+                feeling: moodCareFeeling,
+                recipe: moodCareRecipe,
+                step: nextMoodCareStep,
+                stage: growthStage
+            )
+        } else {
+            prompt = PetNudgeLibrary.cheerPrompt(
                 feeling: petFeeling,
                 stage: growthStage,
                 combo: dailyComboActions,
@@ -2087,10 +2104,12 @@ final class DragonOverlayModel: ObservableObject {
                 sparkDust: sparkDust,
                 index: index
             )
+        }
         cheerTitle = prompt.title
         cheerAction = prompt.action
         cheerRewardLine = prompt.rewardLine
         cheerDaypartRaw = shouldUseDaypart ? daypart.rawValue : 0
+        cheerMoodCareStepRaw = shouldUseMoodCare ? (nextMoodCareStep?.rawValue ?? 0) : 0
         cheerBubble = pikaText(prompt.body)
         if shouldUseDaypart {
             dailyNudgeOfferedMask |= daypart.rawValue
@@ -2100,7 +2119,7 @@ final class DragonOverlayModel: ObservableObject {
         defaults.set(index + 1, forKey: Self.cheerIndexKey)
         defaults.set(now, forKey: Self.lastCheerAtKey)
         play(.happy)
-        speakPika()
+        speakPika(force: true)
         setMood(.hyper, duration: 1.2)
     }
 

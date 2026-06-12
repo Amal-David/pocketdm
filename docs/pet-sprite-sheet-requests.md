@@ -230,6 +230,12 @@ Generate these first. They unlock the most visible upgrade with the least code:
    - Cheer care recipe step: checks on the user warmly without guilt.
 104. `pet-buddy-journal-mood-care.png`
    - Opens today's mood-care recipe with three abstract step charms.
+105. `pet-buddy-proactive-mood-care-checkin.png`
+   - Pops up with a gentle mood-care prompt tied to today's feeling.
+106. `pet-buddy-proactive-mood-care-answer.png`
+   - User accepts a mood-care prompt; pet warms, nods, and stores progress.
+107. `pet-buddy-proactive-mood-care-dismiss.png`
+   - User skips a mood-care prompt; pet accepts it kindly and returns to idle.
 
 ## Generate In Separate Batches
 
@@ -339,6 +345,9 @@ consistent:
 - `pet-buddy-mood-care-puzzle.png`
 - `pet-buddy-mood-care-cheer.png`
 - `pet-buddy-journal-mood-care.png`
+- `pet-buddy-proactive-mood-care-checkin.png`
+- `pet-buddy-proactive-mood-care-answer.png`
+- `pet-buddy-proactive-mood-care-dismiss.png`
 
 ### Batch 11: Full Stage Matrix
 
@@ -670,6 +679,12 @@ Proactive check-ins:
   - Quiet focus-support pose, sits beside the user's work.
 - `pet-{stage}-proactive-care-checkin.png`
   - Gently asks for the current care need without looking needy.
+- `pet-{stage}-proactive-mood-care-checkin.png`
+  - Gently asks for the next mood-care recipe step with a warm face.
+- `pet-{stage}-proactive-mood-care-answer.png`
+  - Mood-care bubble accepted; pet warms and marks recipe progress.
+- `pet-{stage}-proactive-mood-care-dismiss.png`
+  - Mood-care bubble dismissed; pet accepts it kindly and returns to idle.
 - `pet-{stage}-proactive-event-checkin.png`
   - Points toward the daily event charm.
 - `pet-{stage}-proactive-cipher-checkin.png`
@@ -857,6 +872,9 @@ These are for the progression layer:
 - Proactive check-in appeared.
 - Proactive check-in accepted.
 - Proactive check-in dismissed.
+- Proactive mood-care check-in appeared.
+- Proactive mood-care check-in accepted.
+- Proactive mood-care check-in dismissed.
 - Proactive focus/care/event/cipher/boost/comeback check-in variants.
 - Daily event step.
 - Daily event complete.
