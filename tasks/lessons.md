@@ -302,3 +302,9 @@ throwaway notifications.
 **Rule:** answered proactive bubbles should unlock named Cheer Memories with
 daily progress, permanent album progress, care effects, and exact sprite
 filenames so "how are you doing?" becomes relationship history.
+
+## 2026-06-13 — Growth must affect actual runtime art
+Stage names and scale changes are not enough for a proper digital pet.
+**Rule:** the native sprite renderer should prefer stage-specific sheets for
+Tiny Spark, Pocket Pal, Trail Buddy, Storm Scout, and Storm Guardian, then fall
+back to generic sheets until generated art arrives.

@@ -1643,6 +1643,10 @@ final class DragonOverlayModel: ObservableObject {
         return "Next sprite: \(latest.spriteRequestName(stage: growthStage))"
     }
 
+    var journalRuntimeSpriteLine: String {
+        "Runtime target: \(mood.preferredSpriteName(stage: growthStage)).png"
+    }
+
     var journalArtContextLine: String {
         let latest = PetFeeling(rawValue: latestFeelingRaw) ?? petFeeling
         return "Stage \(growthStage.assetSlug) · Feeling \(latest.assetSlug)"
@@ -1794,7 +1798,7 @@ final class DragonOverlayModel: ObservableObject {
             || lowered.contains("what next")
     }
 
-    private var growthStage: PetGrowthStage {
+    var growthStage: PetGrowthStage {
         PetGrowthStage(companionHP: companionHP, sparkDust: sparkDust)
     }
 
@@ -2855,7 +2859,7 @@ enum PetMood: String, CaseIterable {
     case alert
     case thinking
 
-    var assetName: String {
+    var fallbackAssetName: String {
         switch self {
         case .idle, .happy:
             return "pet-happy"
@@ -2866,6 +2870,54 @@ enum PetMood: String, CaseIterable {
         case .alert, .thinking:
             return "pet-alert"
         }
+    }
+
+    func spriteCandidates(stage: PetGrowthStage) -> [String] {
+        let prefix = "pet-\(stage.assetSlug)"
+        let stageCandidates: [String]
+        switch self {
+        case .idle:
+            stageCandidates = [
+                "\(prefix)-eager-idle-look-smile",
+                "\(prefix)-idle-look-smile",
+                "\(prefix)-bright"
+            ]
+        case .happy:
+            stageCandidates = [
+                "\(prefix)-happy",
+                "\(prefix)-grateful-care-streak",
+                "\(prefix)-bright"
+            ]
+        case .nap:
+            stageCandidates = [
+                "\(prefix)-sleepy-nap",
+                "\(prefix)-nap",
+                "\(prefix)-need-rest"
+            ]
+        case .hyper:
+            stageCandidates = [
+                "\(prefix)-hyper",
+                "\(prefix)-playful-wiggle",
+                "\(prefix)-eager-idle-look-smile"
+            ]
+        case .alert:
+            stageCandidates = [
+                "\(prefix)-alert",
+                "\(prefix)-curious-listen",
+                "\(prefix)-focused-watch-mode"
+            ]
+        case .thinking:
+            stageCandidates = [
+                "\(prefix)-curious-listen",
+                "\(prefix)-focused-watch-mode",
+                "\(prefix)-alert"
+            ]
+        }
+        return stageCandidates + [fallbackAssetName]
+    }
+
+    func preferredSpriteName(stage: PetGrowthStage) -> String {
+        spriteCandidates(stage: stage).first ?? fallbackAssetName
     }
 
     var frameSequence: [Int] {
@@ -3072,7 +3124,7 @@ struct DragonOverlayView: View {
                     }
                 }
             } label: {
-                AnimatedPetSprite(mood: model.mood, size: CGFloat(petHovering ? 166 : 158) * model.petScale)
+                AnimatedPetSprite(stage: model.growthStage, mood: model.mood, size: CGFloat(petHovering ? 166 : 158) * model.petScale)
             }
             .buttonStyle(.plain)
             .simultaneousGesture(dragGesture)
@@ -3153,7 +3205,7 @@ struct DragonOverlayView: View {
 
             HStack(alignment: .top, spacing: 12) {
                 VStack(spacing: 8) {
-                    AnimatedPetSprite(mood: model.mood, size: 176 * model.petScale)
+                    AnimatedPetSprite(stage: model.growthStage, mood: model.mood, size: 176 * model.petScale)
                     careStatusPanel
                 }
 
@@ -3666,6 +3718,7 @@ struct PetJournalPanel: View {
             artLine(model.journalUpgradeSpriteLine)
         case .art:
             journalTitleBlock("Sprite Brief", caption: model.journalArtContextLine)
+            artLine(model.journalRuntimeSpriteLine)
             artLine(model.journalSpriteLine)
             detailLine(model.journalArtPromptLine)
             detailLine(model.journalPromptLine)
@@ -4128,6 +4181,7 @@ struct LanguageCoachPanel: View {
 }
 
 struct AnimatedPetSprite: View {
+    let stage: PetGrowthStage
     let mood: PetMood
     let size: CGFloat
 
@@ -4136,7 +4190,7 @@ struct AnimatedPetSprite: View {
 
     var body: some View {
         Group {
-            if let image = PetSpriteSheet.image(for: mood, frame: frameIndex) {
+            if let image = PetSpriteSheet.image(stage: stage, mood: mood, frame: frameIndex) {
                 Image(nsImage: image)
                     .resizable()
                     .interpolation(.high)
@@ -4153,32 +4207,41 @@ struct AnimatedPetSprite: View {
         .onChange(of: mood) {
             frameIndex = 0
         }
+        .onChange(of: stage) {
+            frameIndex = 0
+        }
     }
 }
 
 @MainActor
 enum PetSpriteSheet {
     static let frameCount = 12
-    private static var cache: [PetMood: [NSImage]] = [:]
+    private static var cache: [String: [NSImage]] = [:]
 
-    static func image(for mood: PetMood, frame: Int) -> NSImage? {
-        let frames = frames(for: mood)
+    static func image(stage: PetGrowthStage, mood: PetMood, frame: Int) -> NSImage? {
+        let frames = frames(stage: stage, mood: mood)
         guard !frames.isEmpty else { return nil }
         let sequence = mood.frameSequence
         let frameNumber = sequence[frame % sequence.count]
         return frames[frameNumber % frames.count]
     }
 
-    private static func frames(for mood: PetMood) -> [NSImage] {
-        if let cached = cache[mood] {
+    static func resolvedAssetName(stage: PetGrowthStage, mood: PetMood) -> String {
+        mood.spriteCandidates(stage: stage).first { Bundle.module.url(forResource: $0, withExtension: "png") != nil }
+            ?? mood.fallbackAssetName
+    }
+
+    private static func frames(stage: PetGrowthStage, mood: PetMood) -> [NSImage] {
+        let assetName = resolvedAssetName(stage: stage, mood: mood)
+        if let cached = cache[assetName] {
             return cached
         }
         guard
-            let url = Bundle.module.url(forResource: mood.assetName, withExtension: "png"),
+            let url = Bundle.module.url(forResource: assetName, withExtension: "png"),
             let sheet = NSImage(contentsOf: url),
             let cgImage = sheet.cgImage(forProposedRect: nil, context: nil, hints: nil)
         else {
-            cache[mood] = []
+            cache[assetName] = []
             return []
         }
 
@@ -4192,7 +4255,7 @@ enum PetSpriteSheet {
                 size: NSSize(width: CGFloat(frameWidth), height: CGFloat(frameHeight))
             )
         }
-        cache[mood] = frames
+        cache[assetName] = frames
         return frames
     }
 }

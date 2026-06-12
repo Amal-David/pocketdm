@@ -19,6 +19,46 @@ Use this for every sheet so extraction stays clean:
 
 Generate these first. They unlock the most visible upgrade with the least code:
 
+### Runtime Stage Sprite Pack
+
+These filenames are now loaded directly by the native macOS companion when
+present. If a stage-specific file is missing, the app falls back to the current
+generic `pet-happy.png`, `pet-hyper.png`, `pet-nap.png`, or `pet-alert.png`.
+
+For every growth stage:
+
+- `pet-tiny-spark-eager-idle-look-smile.png`
+- `pet-tiny-spark-happy.png`
+- `pet-tiny-spark-hyper.png`
+- `pet-tiny-spark-sleepy-nap.png`
+- `pet-tiny-spark-curious-listen.png`
+- `pet-pocket-pal-eager-idle-look-smile.png`
+- `pet-pocket-pal-happy.png`
+- `pet-pocket-pal-hyper.png`
+- `pet-pocket-pal-sleepy-nap.png`
+- `pet-pocket-pal-curious-listen.png`
+- `pet-trail-buddy-eager-idle-look-smile.png`
+- `pet-trail-buddy-happy.png`
+- `pet-trail-buddy-hyper.png`
+- `pet-trail-buddy-sleepy-nap.png`
+- `pet-trail-buddy-curious-listen.png`
+- `pet-storm-scout-eager-idle-look-smile.png`
+- `pet-storm-scout-happy.png`
+- `pet-storm-scout-hyper.png`
+- `pet-storm-scout-sleepy-nap.png`
+- `pet-storm-scout-curious-listen.png`
+- `pet-storm-guardian-eager-idle-look-smile.png`
+- `pet-storm-guardian-happy.png`
+- `pet-storm-guardian-hyper.png`
+- `pet-storm-guardian-sleepy-nap.png`
+- `pet-storm-guardian-curious-listen.png`
+
+Each is a 12-frame transparent strip. Keep the same foot baseline across all
+five stages so growth feels like the same pet maturing rather than a different
+character replacing it.
+
+### Relationship Loop Sheets
+
 1. `pet-baby-idle-look-smile.png`
    - Looking down, looking up, noticing the user, smiling.
 2. `pet-buddy-idle-look-smile.png`

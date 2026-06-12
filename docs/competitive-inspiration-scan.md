@@ -221,6 +221,9 @@ The new layer should add:
 - Stage life scenes that make Tiny Spark, Pocket Pal, Trail Buddy, Storm Scout,
   and Storm Guardian behave differently through small story moments, not only
   different scale values.
+- Runtime stage sprite loading so Tiny Spark, Pocket Pal, Trail Buddy, Storm
+  Scout, and Storm Guardian can each have their own idle, happy, hyper, nap,
+  and alert/listening animation strips instead of only changing scale.
 - A daily event rail with short multi-step activities such as Spark Picnic,
   Study Parade, Sky Sprint, Riddle Trail, Cozy Campfire, and Rescue Walk.
 - Seasonal badges that are earned by completing daily events, giving the
@@ -268,6 +271,10 @@ The native macOS companion now has the first version of the loop:
   Guardian Glow, so daily petting across a week unlocks story receipts,
   persistent album progress, care vitals, mood-care effects, and exact sprite
   filenames instead of only a streak counter.
+- The native sprite renderer now prefers stage-specific runtime sheets such as
+  `pet-tiny-spark-eager-idle-look-smile.png` and
+  `pet-storm-guardian-hyper.png`, falling back to generic sheets until the
+  generated art arrives.
 - Sparks earned from petting, asking, language practice, and combo completion.
 - Energy that recharges over time.
 - Passive Sparks collected after time away.
