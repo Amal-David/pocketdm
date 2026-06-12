@@ -745,6 +745,337 @@ enum PetFeeling: Int, CaseIterable {
     }
 }
 
+enum PetEmotionEpisode: Int, CaseIterable {
+    case freshStart = 1
+    case warmCare = 2
+    case sleepyNest = 4
+    case playfulBurst = 8
+    case overcharge = 16
+    case studyFocus = 32
+    case gentleRepair = 64
+    case curiousClue = 128
+    case braveQuest = 256
+    case careContract = 512
+    case proudUpgrade = 1024
+    case restlessCard = 2048
+    case celebrationEvent = 4096
+    case guardianNight = 8192
+    case snackyLow = 16384
+    case lonelyReturn = 32768
+
+    var title: String {
+        switch self {
+        case .freshStart:
+            return "Fresh Start"
+        case .warmCare:
+            return "Warm Care"
+        case .sleepyNest:
+            return "Sleepy Nest"
+        case .playfulBurst:
+            return "Playful Burst"
+        case .overcharge:
+            return "Overcharge"
+        case .studyFocus:
+            return "Study Focus"
+        case .gentleRepair:
+            return "Gentle Repair"
+        case .curiousClue:
+            return "Curious Clue"
+        case .braveQuest:
+            return "Brave Quest"
+        case .careContract:
+            return "Care Contract"
+        case .proudUpgrade:
+            return "Proud Upgrade"
+        case .restlessCard:
+            return "Restless Card"
+        case .celebrationEvent:
+            return "Event Glow"
+        case .guardianNight:
+            return "Night Watch"
+        case .snackyLow:
+            return "Snacky Low"
+        case .lonelyReturn:
+            return "Lonely Return"
+        }
+    }
+
+    var shortLabel: String {
+        switch self {
+        case .freshStart:
+            return "Fresh"
+        case .warmCare:
+            return "Care"
+        case .sleepyNest:
+            return "Nest"
+        case .playfulBurst:
+            return "Play"
+        case .overcharge:
+            return "Volt"
+        case .studyFocus:
+            return "Study"
+        case .gentleRepair:
+            return "Repair"
+        case .curiousClue:
+            return "Clue"
+        case .braveQuest:
+            return "Brave"
+        case .careContract:
+            return "Board"
+        case .proudUpgrade:
+            return "Proud"
+        case .restlessCard:
+            return "Card"
+        case .celebrationEvent:
+            return "Glow"
+        case .guardianNight:
+            return "Night"
+        case .snackyLow:
+            return "Snack"
+        case .lonelyReturn:
+            return "Return"
+        }
+    }
+
+    var feeling: PetFeeling {
+        switch self {
+        case .freshStart:
+            return .bright
+        case .warmCare:
+            return .grateful
+        case .sleepyNest:
+            return .sleepy
+        case .playfulBurst:
+            return .playful
+        case .overcharge:
+            return .overcharged
+        case .studyFocus:
+            return .focused
+        case .gentleRepair:
+            return .comfort
+        case .curiousClue:
+            return .curious
+        case .braveQuest:
+            return .eager
+        case .careContract:
+            return .determined
+        case .proudUpgrade:
+            return .proud
+        case .restlessCard:
+            return .restless
+        case .celebrationEvent:
+            return .celebrating
+        case .guardianNight:
+            return .protective
+        case .snackyLow:
+            return .hungry
+        case .lonelyReturn:
+            return .lonely
+        }
+    }
+
+    var storyLine: String {
+        switch self {
+        case .freshStart:
+            return "It looks down, looks up, and chooses a tiny fresh start."
+        case .warmCare:
+            return "A daily pet becomes proof that the bond is remembered."
+        case .sleepyNest:
+            return "It curls into a small nest and lets rest count as progress."
+        case .playfulBurst:
+            return "Extra sparks turn into a safe, happy burst."
+        case .overcharge:
+            return "A bright charge gets routed into something useful."
+        case .studyFocus:
+            return "It listens to one phrase and holds focus beside the user."
+        case .gentleRepair:
+            return "A miss or wait becomes a smaller, kinder next step."
+        case .curiousClue:
+            return "A question turns into a clue the pet can carry."
+        case .braveQuest:
+            return "It marks one brave step before the whole quest path."
+        case .careContract:
+            return "A daily contract becomes a visible care receipt."
+        case .proudUpgrade:
+            return "It sees a new charm and stands a little taller."
+        case .restlessCard:
+            return "Restless sparks point toward the next card without shame."
+        case .celebrationEvent:
+            return "A finished event becomes a warm, contained glow."
+        case .guardianNight:
+            return "It guards the quiet hours without asking for more."
+        case .snackyLow:
+            return "Low energy turns into a gentle snack request."
+        case .lonelyReturn:
+            return "Waiting becomes a welcome-back scene, not a punishment."
+        }
+    }
+
+    var careStep: PetMoodCareStep {
+        switch self {
+        case .freshStart, .warmCare:
+            return .soothe
+        case .sleepyNest, .guardianNight:
+            return .rest
+        case .playfulBurst, .celebrationEvent:
+            return .play
+        case .overcharge, .studyFocus, .careContract:
+            return .focus
+        case .gentleRepair, .lonelyReturn:
+            return .cheer
+        case .curiousClue:
+            return .puzzle
+        case .braveQuest:
+            return .adventure
+        case .proudUpgrade:
+            return .cheer
+        case .restlessCard:
+            return .focus
+        case .snackyLow:
+            return .snack
+        }
+    }
+
+    var vital: PetCareVital {
+        switch self {
+        case .warmCare, .snackyLow:
+            return .snack
+        case .sleepyNest, .gentleRepair, .guardianNight, .lonelyReturn:
+            return .rest
+        case .playfulBurst, .celebrationEvent, .braveQuest:
+            return .play
+        case .freshStart, .overcharge, .studyFocus, .curiousClue, .careContract, .proudUpgrade, .restlessCard:
+            return .focus
+        }
+    }
+
+    var sparkReward: Int {
+        switch self {
+        case .freshStart, .warmCare, .sleepyNest, .gentleRepair, .snackyLow, .lonelyReturn:
+            return 5
+        case .playfulBurst, .studyFocus, .curiousClue, .braveQuest, .guardianNight:
+            return 7
+        case .overcharge, .careContract, .proudUpgrade, .restlessCard, .celebrationEvent:
+            return 9
+        }
+    }
+
+    var assetSlug: String {
+        switch self {
+        case .freshStart:
+            return "fresh-start"
+        case .warmCare:
+            return "warm-care"
+        case .sleepyNest:
+            return "sleepy-nest"
+        case .playfulBurst:
+            return "playful-burst"
+        case .overcharge:
+            return "overcharge"
+        case .studyFocus:
+            return "study-focus"
+        case .gentleRepair:
+            return "gentle-repair"
+        case .curiousClue:
+            return "curious-clue"
+        case .braveQuest:
+            return "brave-quest"
+        case .careContract:
+            return "care-contract"
+        case .proudUpgrade:
+            return "proud-upgrade"
+        case .restlessCard:
+            return "restless-card"
+        case .celebrationEvent:
+            return "event-glow"
+        case .guardianNight:
+            return "night-watch"
+        case .snackyLow:
+            return "snacky-low"
+        case .lonelyReturn:
+            return "lonely-return"
+        }
+    }
+
+    var spriteRequestName: String {
+        "pet-{stage}-emotion-episode-\(assetSlug).png"
+    }
+
+    static func episode(for trigger: String, feeling: PetFeeling) -> PetEmotionEpisode {
+        switch trigger {
+        case "happy", "chat return":
+            return .freshStart
+        case "daily care":
+            return .warmCare
+        case "nap":
+            return .sleepyNest
+        case "hyper":
+            return .playfulBurst
+        case "boost", "spent boost":
+            return .overcharge
+        case "lesson open", "language reward":
+            return .studyFocus
+        case "lesson retry", "server wait":
+            return .gentleRepair
+        case "hint", "chat", "cipher", "cipher review":
+            return .curiousClue
+        case "quest open", "cheer":
+            return .braveQuest
+        case "bond board":
+            return .careContract
+        case "upgrade", "journal", "life scene":
+            return .proudUpgrade
+        case "upgrade wait":
+            return .restlessCard
+        case "daily event", "event review":
+            return .celebrationEvent
+        default:
+            switch feeling {
+            case .bright:
+                return .freshStart
+            case .eager:
+                return .braveQuest
+            case .proud:
+                return .proudUpgrade
+            case .overcharged:
+                return .overcharge
+            case .focused:
+                return .studyFocus
+            case .celebrating:
+                return .celebrationEvent
+            case .protective:
+                return .guardianNight
+            case .comfort:
+                return .gentleRepair
+            case .playful:
+                return .playfulBurst
+            case .grateful:
+                return .warmCare
+            case .determined:
+                return .careContract
+            case .restless:
+                return .restlessCard
+            case .hungry:
+                return .snackyLow
+            case .sleepy:
+                return .sleepyNest
+            case .curious:
+                return .curiousClue
+            case .lonely:
+                return .lonelyReturn
+            }
+        }
+    }
+
+    static func count(mask: Int) -> Int {
+        allCases.filter { mask & $0.rawValue != 0 }.count
+    }
+
+    static func summary(dailyMask: Int, albumMask: Int, latest: PetEmotionEpisode) -> String {
+        "Episodes \(count(mask: dailyMask))/\(allCases.count) today · Album \(count(mask: albumMask))/\(allCases.count): \(latest.title)"
+    }
+}
+
 enum PetMoodCareStep: Int, CaseIterable {
     case soothe = 1
     case snack = 2

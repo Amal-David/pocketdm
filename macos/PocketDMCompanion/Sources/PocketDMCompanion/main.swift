@@ -221,6 +221,10 @@ final class DragonOverlayModel: ObservableObject {
     private static let dailyFeelingMaskKey = "PocketDMCompanion.dailyFeelingMask"
     private static let emotionAlbumMaskKey = "PocketDMCompanion.emotionAlbumMask"
     private static let latestFeelingRawKey = "PocketDMCompanion.latestFeelingRaw"
+    private static let dailyEmotionEpisodeDateKey = "PocketDMCompanion.dailyEmotionEpisodeDate"
+    private static let dailyEmotionEpisodeMaskKey = "PocketDMCompanion.dailyEmotionEpisodeMask"
+    private static let emotionEpisodeAlbumMaskKey = "PocketDMCompanion.emotionEpisodeAlbumMask"
+    private static let latestEmotionEpisodeRawKey = "PocketDMCompanion.latestEmotionEpisodeRaw"
     private static let dailyMoodCareDateKey = "PocketDMCompanion.dailyMoodCareDate"
     private static let dailyMoodCareFeelingRawKey = "PocketDMCompanion.dailyMoodCareFeelingRaw"
     private static let dailyMoodCareMaskKey = "PocketDMCompanion.dailyMoodCareMask"
@@ -314,6 +318,10 @@ final class DragonOverlayModel: ObservableObject {
     @Published var dailyFeelingMask = UserDefaults.standard.object(forKey: DragonOverlayModel.dailyFeelingMaskKey) as? Int ?? 0
     @Published var emotionAlbumMask = UserDefaults.standard.object(forKey: DragonOverlayModel.emotionAlbumMaskKey) as? Int ?? 0
     @Published var latestFeelingRaw = UserDefaults.standard.object(forKey: DragonOverlayModel.latestFeelingRawKey) as? Int ?? 0
+    @Published var dailyEmotionEpisodeDate = UserDefaults.standard.string(forKey: DragonOverlayModel.dailyEmotionEpisodeDateKey) ?? ""
+    @Published var dailyEmotionEpisodeMask = UserDefaults.standard.object(forKey: DragonOverlayModel.dailyEmotionEpisodeMaskKey) as? Int ?? 0
+    @Published var emotionEpisodeAlbumMask = UserDefaults.standard.object(forKey: DragonOverlayModel.emotionEpisodeAlbumMaskKey) as? Int ?? 0
+    @Published var latestEmotionEpisodeRaw = UserDefaults.standard.object(forKey: DragonOverlayModel.latestEmotionEpisodeRawKey) as? Int ?? 0
     @Published var dailyMoodCareDate = UserDefaults.standard.string(forKey: DragonOverlayModel.dailyMoodCareDateKey) ?? ""
     @Published var dailyMoodCareFeelingRaw = UserDefaults.standard.object(forKey: DragonOverlayModel.dailyMoodCareFeelingRawKey) as? Int ?? 0
     @Published var dailyMoodCareMask = UserDefaults.standard.object(forKey: DragonOverlayModel.dailyMoodCareMaskKey) as? Int ?? 0
@@ -1384,6 +1392,36 @@ final class DragonOverlayModel: ObservableObject {
         Double(PetFeeling.count(mask: emotionAlbumMask)) / Double(PetFeeling.allCases.count)
     }
 
+    var emotionEpisodeLine: String {
+        let latest = PetEmotionEpisode(rawValue: latestEmotionEpisodeRaw) ?? PetEmotionEpisode.episode(
+            for: "current",
+            feeling: PetFeeling(rawValue: latestFeelingRaw) ?? petFeeling
+        )
+        return PetEmotionEpisode.summary(
+            dailyMask: dailyEmotionEpisodeMask,
+            albumMask: emotionEpisodeAlbumMask,
+            latest: latest
+        )
+    }
+
+    var emotionEpisodes: [PetEmotionEpisode] {
+        PetEmotionEpisode.allCases
+    }
+
+    var journalEmotionEpisodeProgress: Double {
+        Double(PetEmotionEpisode.count(mask: emotionEpisodeAlbumMask)) / Double(PetEmotionEpisode.allCases.count)
+    }
+
+    var journalEmotionEpisodeCaption: String {
+        emotionEpisodeLine
+    }
+
+    var journalEmotionEpisodeSpriteLine: String {
+        let latest = PetEmotionEpisode(rawValue: latestEmotionEpisodeRaw)
+            ?? PetEmotionEpisode.episode(for: "current", feeling: PetFeeling(rawValue: latestFeelingRaw) ?? petFeeling)
+        return "Episode sprite: \(latest.spriteRequestName.replacingOccurrences(of: "{stage}", with: growthStage.assetSlug))"
+    }
+
     var journalMoodCareProgress: Double {
         moodCareRecipe.progress(mask: dailyMoodCareMask)
     }
@@ -1662,6 +1700,10 @@ final class DragonOverlayModel: ObservableObject {
         UserDefaults.standard.set(dailyFeelingMask, forKey: Self.dailyFeelingMaskKey)
         UserDefaults.standard.set(emotionAlbumMask, forKey: Self.emotionAlbumMaskKey)
         UserDefaults.standard.set(latestFeelingRaw, forKey: Self.latestFeelingRawKey)
+        UserDefaults.standard.set(dailyEmotionEpisodeDate, forKey: Self.dailyEmotionEpisodeDateKey)
+        UserDefaults.standard.set(dailyEmotionEpisodeMask, forKey: Self.dailyEmotionEpisodeMaskKey)
+        UserDefaults.standard.set(emotionEpisodeAlbumMask, forKey: Self.emotionEpisodeAlbumMaskKey)
+        UserDefaults.standard.set(latestEmotionEpisodeRaw, forKey: Self.latestEmotionEpisodeRawKey)
         UserDefaults.standard.set(dailyMoodCareDate, forKey: Self.dailyMoodCareDateKey)
         UserDefaults.standard.set(dailyMoodCareFeelingRaw, forKey: Self.dailyMoodCareFeelingRawKey)
         UserDefaults.standard.set(dailyMoodCareMask, forKey: Self.dailyMoodCareMaskKey)
@@ -1805,6 +1847,14 @@ final class DragonOverlayModel: ObservableObject {
 
     func isMoodCareFeelingComplete(_ feeling: PetFeeling) -> Bool {
         moodCareAlbumMask & feeling.rawValue != 0
+    }
+
+    func isEmotionEpisodeSeenToday(_ episode: PetEmotionEpisode) -> Bool {
+        dailyEmotionEpisodeMask & episode.rawValue != 0
+    }
+
+    func isEmotionEpisodeUnlocked(_ episode: PetEmotionEpisode) -> Bool {
+        emotionEpisodeAlbumMask & episode.rawValue != 0
     }
 
     func isBondContractDone(_ contract: PetBondContract) -> Bool {
@@ -2002,24 +2052,58 @@ final class DragonOverlayModel: ObservableObject {
         let seenToday = dailyFeelingMask & bit != 0
         let seenEver = emotionAlbumMask & bit != 0
         latestFeelingRaw = bit
-        guard !seenToday || !seenEver else {
-            persistCare()
-            return nil
-        }
 
-        dailyFeelingMask |= bit
+        var notes: [String] = []
+        if !seenToday {
+            dailyFeelingMask |= bit
+        }
         if !seenEver {
             emotionAlbumMask |= bit
             let reward = 10 + sparkLevel * 2
             sparkDust = min(999, sparkDust + reward)
-            persistCare()
-            return "Mood discovered after \(trigger): \(feeling.title). \(feeling.discoveryLine) Sparks +\(reward)."
+            notes.append("Mood discovered after \(trigger): \(feeling.title). \(feeling.discoveryLine) Sparks +\(reward).")
+        } else if !seenToday {
+            let reward = 3
+            sparkDust = min(999, sparkDust + reward)
+            notes.append("Mood logged after \(trigger): \(feeling.title), Sparks +\(reward).")
         }
 
-        let reward = 3
-        sparkDust = min(999, sparkDust + reward)
+        if let episodeNote = recordEmotionEpisode(trigger: trigger, feeling: feeling) {
+            notes.append(episodeNote)
+        }
+
         persistCare()
-        return "Mood logged after \(trigger): \(feeling.title), Sparks +\(reward)."
+        return notes.isEmpty ? nil : notes.joined(separator: " ")
+    }
+
+    private func recordEmotionEpisode(trigger: String, feeling: PetFeeling) -> String? {
+        let episode = PetEmotionEpisode.episode(for: trigger, feeling: feeling)
+        let bit = episode.rawValue
+        let seenToday = dailyEmotionEpisodeMask & bit != 0
+        let seenEver = emotionEpisodeAlbumMask & bit != 0
+        latestEmotionEpisodeRaw = bit
+        guard !seenToday || !seenEver else { return nil }
+
+        if !seenToday {
+            dailyEmotionEpisodeMask |= bit
+        }
+        if !seenEver {
+            emotionEpisodeAlbumMask |= bit
+            let reward = episode.sparkReward + min(4, sparkLevel)
+            sparkDust = min(999, sparkDust + reward)
+            var notes = ["Episode saved: \(episode.title). \(episode.storyLine) Sparks +\(reward)."]
+            if let vitalNote = refillVital(episode.vital, by: 1) {
+                notes.append(vitalNote)
+            }
+            if let moodCareNote = markMoodCare(episode.careStep) {
+                notes.append(moodCareNote)
+            }
+            return notes.joined(separator: " ")
+        }
+
+        let reward = 2
+        sparkDust = min(999, sparkDust + reward)
+        return "Episode revisited: \(episode.title), Sparks +\(reward)."
     }
 
     private func emotionFeeling(for trigger: String) -> PetFeeling {
@@ -2203,6 +2287,11 @@ final class DragonOverlayModel: ObservableObject {
         if dailyFeelingDate != today {
             dailyFeelingDate = today
             dailyFeelingMask = 0
+            changed = true
+        }
+        if dailyEmotionEpisodeDate != today {
+            dailyEmotionEpisodeDate = today
+            dailyEmotionEpisodeMask = 0
             changed = true
         }
         if dailyMoodCareDate != today {
@@ -2772,6 +2861,7 @@ enum PetSound: CaseIterable {
 
 @MainActor
 final class PetSoundPlayer {
+    private static let catchphrase = "Pika pika!"
     private var cache: [PetSound: NSSound] = [:]
     private var lastPlayed: [PetSound: Date] = [:]
     private let speech = AVSpeechSynthesizer()
@@ -2791,7 +2881,7 @@ final class PetSoundPlayer {
     }
 
     func speakPika(enabled: Bool, force: Bool = false) {
-        speak("Pika pika!", enabled: enabled, force: force)
+        speak(Self.catchphrase, enabled: enabled, force: force)
     }
 
     func speakPikaLine(_ text: String, enabled: Bool, force: Bool = false) {
@@ -2813,20 +2903,22 @@ final class PetSoundPlayer {
     }
 
     private func pikaSpeechLine(from text: String) -> String {
-        let withoutCatchphrase = text
-            .replacingOccurrences(of: "Pika pika!", with: "", options: [.caseInsensitive])
-            .replacingOccurrences(of: "Pika pika", with: "", options: [.caseInsensitive])
+        let withoutCatchphrase = text.replacingOccurrences(
+            of: #"(?i)\bpika[\s,-]+pika[!,.:\s-]*"#,
+            with: "",
+            options: .regularExpression
+        )
         let compacted = withoutCatchphrase
             .components(separatedBy: .whitespacesAndNewlines)
             .filter { !$0.isEmpty }
             .joined(separator: " ")
             .trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !compacted.isEmpty else { return "Pika pika!" }
+        guard !compacted.isEmpty else { return Self.catchphrase }
         let maxCharacters = 180
         let clipped = compacted.count > maxCharacters
             ? String(compacted.prefix(maxCharacters)).trimmingCharacters(in: .whitespacesAndNewlines) + "..."
             : compacted
-        return "Pika pika! \(clipped)"
+        return "\(Self.catchphrase) \(clipped)"
     }
 
     func stopAll() {
@@ -3427,6 +3519,9 @@ struct PetJournalPanel: View {
         case .moods:
             journalHero("Mood Album", value: model.journalMoodProgress, caption: model.journalMoodCaption)
             moodGrid
+            journalHero("Emotion Episodes", value: model.journalEmotionEpisodeProgress, caption: model.journalEmotionEpisodeCaption)
+            emotionEpisodeGrid
+            artLine(model.journalEmotionEpisodeSpriteLine)
             journalHero("Mood Care", value: model.journalMoodCareProgress, caption: model.journalMoodCareCaption)
             moodCareGrid
             artLine(model.journalMoodCareSpriteLine)
@@ -3521,6 +3616,16 @@ struct PetJournalPanel: View {
         LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 3), count: 4), spacing: 3) {
             ForEach(PetFeeling.allCases, id: \.rawValue) { feeling in
                 journalChip(feeling.title, isUnlocked: model.emotionAlbumMask & feeling.rawValue != 0)
+            }
+        }
+    }
+
+    private var emotionEpisodeGrid: some View {
+        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 4), count: 4), spacing: 3) {
+            ForEach(model.emotionEpisodes, id: \.rawValue) { episode in
+                let today = model.isEmotionEpisodeSeenToday(episode)
+                let unlocked = model.isEmotionEpisodeUnlocked(episode)
+                journalChip("\(episode.shortLabel)\(today ? " ✓" : "")", isUnlocked: unlocked || today)
             }
         }
     }

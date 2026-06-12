@@ -222,8 +222,9 @@ Rest, Hyper for Play, and Learn/Hint/Boost for Focus.
 User clarified that the model itself should say "pika pika" in text and voice.
 **Rule:** assistant replies, lesson feedback, and pet actions should use a
 single guarded catchphrase wrapper and trigger the native pika-like voice cue
-when sound is enabled. Real model or coach replies should speak a concise
-preview of the visible response, not only a generic chirp.
+when sound is enabled. Real model or coach replies should visibly start with
+"Pika pika!" and the spoken preview should say the same catchphrase before the
+concise response, not only play a generic chirp.
 
 ## 2026-06-13 — Pet loops need keepsakes, not only payouts
 The broader pet fantasy needs visible proof of shared moments, similar to how

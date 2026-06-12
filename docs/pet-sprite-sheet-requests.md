@@ -474,7 +474,47 @@ consistent:
 - `pet-{stage}-journal-week-chapters.png`
 - `pet-{stage}-week-chapter-album-complete.png`
 
-### Batch 16: Full Stage Matrix
+### Batch 16: Emotion Episodes
+
+These are cause-care-resolution scenes. Each sheet should show a short
+emotional beat, the care action, and the pet settling into a better state.
+
+- `pet-{stage}-emotion-episode-fresh-start.png`
+  - Looks down, looks up, notices the user, and chooses a tiny fresh start.
+- `pet-{stage}-emotion-episode-warm-care.png`
+  - Receives daily care, relaxes, and stores the bond as a warm receipt.
+- `pet-{stage}-emotion-episode-sleepy-nest.png`
+  - Curls into a small nest, rests, and wakes with calmer eyes.
+- `pet-{stage}-emotion-episode-playful-burst.png`
+  - Turns excited sparks into a safe happy wiggle.
+- `pet-{stage}-emotion-episode-overcharge.png`
+  - Routes jittery charge into a controlled focus pose.
+- `pet-{stage}-emotion-episode-study-focus.png`
+  - Listens to one phrase, repeats softly, and glows with focus.
+- `pet-{stage}-emotion-episode-gentle-repair.png`
+  - A miss or wait becomes a smaller kinder next step.
+- `pet-{stage}-emotion-episode-curious-clue.png`
+  - Finds a clue, tilts its head, and carries it proudly.
+- `pet-{stage}-emotion-episode-brave-quest.png`
+  - Marks one brave step before the larger quest path.
+- `pet-{stage}-emotion-episode-care-contract.png`
+  - Completes a small daily care contract and saves the receipt.
+- `pet-{stage}-emotion-episode-proud-upgrade.png`
+  - Sees a new charm or card and stands taller with pride.
+- `pet-{stage}-emotion-episode-restless-card.png`
+  - Restless sparks point toward the next upgrade without shame.
+- `pet-{stage}-emotion-episode-event-glow.png`
+  - Finished event settles into a contained warm glow.
+- `pet-{stage}-emotion-episode-night-watch.png`
+  - Quiet guardian stance for late hours, calm and protective.
+- `pet-{stage}-emotion-episode-snacky-low.png`
+  - Low energy becomes a gentle snack request and recovery.
+- `pet-{stage}-emotion-episode-lonely-return.png`
+  - Waiting turns into a welcome-back scene, not a punishment.
+- `pet-{stage}-journal-emotion-episodes.png`
+  - Opens an album page of locked and unlocked emotion episode charms.
+
+### Batch 17: Full Stage Matrix
 
 After the buddy form works, repeat the stage matrix for:
 

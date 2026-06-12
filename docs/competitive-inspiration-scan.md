@@ -198,6 +198,8 @@ The new layer should add:
   giving the pet a visible arc across each day rather than one static idle.
 - Mood-care recipes that tell the user how to help the current feeling recover
   or complete a small emotional arc.
+- Emotion Episodes that save the cause, care beat, and resolution for each
+  feeling, so the pet's emotions become collectible scenes instead of labels.
 - Proactive mood-care bubbles that can ask for the next emotional care step
   while the pet is minimized.
 - A proactive Cheer Dialogue deck for warm "how are you doing?", "what is
@@ -301,6 +303,9 @@ The native macOS companion now has the first version of the loop:
 - A daily Mood Care recipe now selects one feeling, tracks three care steps
   such as Soothe, Rest, Play, Study, Adventure, Focus, Puzzle, or Cheer, and
   permanently records completed feelings in the Mood journal.
+- Emotion Episodes now map actions such as petting, hints, lessons, upgrades,
+  ciphers, events, and returns into named scenes with daily progress, permanent
+  album progress, care effects, rewards, and exact sprite filenames.
 - Minimized proactive bubbles can now choose the next Mood Care step and mark
   that recipe progress when the user accepts the check-in.
 - A native Journal tab alongside Chat and Learn. It shows progress bars for
