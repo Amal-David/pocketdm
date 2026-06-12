@@ -289,10 +289,10 @@ dd {
 
 .dragon-handle {
   display: grid;
-  grid-template-columns: 26px minmax(0, 1fr) 34px;
+  grid-template-columns: 26px minmax(68px, 1fr) auto 34px;
   gap: 8px;
   align-items: center;
-  width: min(264px, 100%);
+  width: min(360px, 100%);
   min-height: 34px;
   margin: 0 0 8px auto;
   padding: 5px 6px 5px 9px;
@@ -329,6 +329,18 @@ dd {
   white-space: nowrap;
 }
 
+.dragon-status {
+  min-width: 58px;
+  padding: 4px 7px;
+  border: 1px solid rgba(240, 186, 91, 0.2);
+  border-radius: 999px;
+  color: rgba(255, 247, 223, 0.82);
+  background: rgba(240, 186, 91, 0.1);
+  font: 800 0.62rem/1 ui-sans-serif, system-ui, sans-serif;
+  text-align: center;
+  text-transform: uppercase;
+}
+
 .dragon-minimize {
   width: 28px;
   height: 24px;
@@ -353,9 +365,35 @@ dd {
   font: 600 0.92rem/1.32 ui-sans-serif, system-ui, sans-serif;
 }
 
+.dragon-quickbar {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+  max-width: 330px;
+  margin: 0 0 9px auto;
+  pointer-events: auto;
+}
+
+.dragon-quickbar button {
+  min-height: 30px;
+  border: 1px solid rgba(240, 186, 91, 0.24);
+  border-radius: 5px;
+  color: #fff7df;
+  background: rgba(20, 27, 29, 0.84);
+  cursor: pointer;
+  font: 900 0.62rem/1 ui-sans-serif, system-ui, sans-serif;
+  text-transform: uppercase;
+}
+
+.dragon-quickbar button:hover,
+.dragon-quickbar button:focus-visible {
+  color: #1c120e;
+  background: var(--gold);
+}
+
 .dragon-row {
   display: grid;
-  grid-template-columns: 156px minmax(0, 1fr);
+  grid-template-columns: 170px minmax(0, 1fr);
   gap: 10px;
   align-items: end;
 }
@@ -368,8 +406,10 @@ dd {
 
 .dragon-avatar {
   position: relative;
-  width: 156px;
-  height: 156px;
+  display: grid;
+  place-items: center;
+  width: 170px;
+  height: 170px;
   border: 0;
   background: transparent;
   cursor: pointer;
@@ -378,14 +418,16 @@ dd {
 .dragon-avatar::after {
   content: "";
   position: absolute;
-  right: 10px;
-  top: 36px;
+  right: 0;
+  top: 42px;
   width: 0;
   height: 0;
-  border-top: 12px solid transparent;
-  border-bottom: 12px solid transparent;
-  border-left: 48px solid rgba(230, 95, 42, 0);
-  filter: drop-shadow(0 0 8px rgba(230, 95, 42, 0.6));
+  border-top: 14px solid transparent;
+  border-bottom: 14px solid transparent;
+  border-left: 58px solid rgba(90, 238, 255, 0);
+  filter:
+    drop-shadow(0 0 8px rgba(90, 238, 255, 0.7))
+    drop-shadow(0 0 16px rgba(255, 241, 92, 0.38));
   transform-origin: left center;
 }
 
@@ -393,8 +435,18 @@ dd {
   animation: fire-puff 0.7s ease-out 1;
 }
 
+.dragon-stage {
+  --dragon-frame: 168px;
+  position: relative;
+  display: block;
+  width: var(--dragon-frame);
+  height: var(--dragon-frame);
+  animation: dragon-hover 2.8s ease-in-out infinite;
+}
+
 .dragon-sprite {
-  --dragon-frame: 148px;
+  position: relative;
+  z-index: 2;
   display: block;
   width: var(--dragon-frame);
   height: var(--dragon-frame);
@@ -403,14 +455,39 @@ dd {
   filter: drop-shadow(0 18px 18px rgba(0, 0, 0, 0.44));
 }
 
+.dragon-aura {
+  position: absolute;
+  inset: 16% 10% 14%;
+  z-index: 1;
+  border-radius: 999px;
+  background:
+    radial-gradient(circle, rgba(255, 236, 87, 0.34), rgba(88, 235, 255, 0.16) 48%, transparent 72%);
+  filter: blur(12px);
+  animation: ember-glow 2.4s ease-in-out infinite;
+}
+
+.dragon-shadow {
+  position: absolute;
+  left: 18%;
+  right: 14%;
+  bottom: 2%;
+  z-index: 0;
+  height: 16%;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.38);
+  filter: blur(7px);
+  transform: scaleX(0.82);
+  animation: shadow-pulse 2.8s ease-in-out infinite;
+}
+
 .dragon-assistant[data-mood="thinking"] .dragon-sprite {
   animation-duration: 0.56s;
   filter:
     drop-shadow(0 18px 18px rgba(0, 0, 0, 0.44))
-    drop-shadow(0 0 14px rgba(240, 186, 91, 0.36));
+    drop-shadow(0 0 14px rgba(88, 235, 255, 0.42));
 }
 
-.dragon-assistant[data-mood="listening"] .dragon-sprite {
+.dragon-assistant[data-mood="listening"] .dragon-stage {
   animation-duration: 1.15s;
   transform: rotate(-3deg) translateY(-2px);
 }
@@ -438,8 +515,9 @@ dd {
   text-transform: uppercase;
 }
 
-.dragon-tab .dragon-sprite {
+.dragon-tab .dragon-stage {
   --dragon-frame: 54px;
+  animation-duration: 2.2s;
 }
 
 .dragon-tab-label {
@@ -480,17 +558,51 @@ dd {
   }
 }
 
+@keyframes dragon-hover {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  45% {
+    transform: translateY(-7px) rotate(-1deg);
+  }
+}
+
+@keyframes ember-glow {
+  0%,
+  100% {
+    opacity: 0.58;
+    transform: scale(0.92);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+}
+
+@keyframes shadow-pulse {
+  0%,
+  100% {
+    opacity: 0.36;
+    transform: scaleX(0.82);
+  }
+  45% {
+    opacity: 0.22;
+    transform: scaleX(0.68);
+  }
+}
+
 @keyframes fire-puff {
   0% {
-    border-left-color: rgba(230, 95, 42, 0);
+    border-left-color: rgba(88, 235, 255, 0);
     transform: scaleX(0.2);
   }
   35% {
-    border-left-color: rgba(230, 95, 42, 0.9);
+    border-left-color: rgba(88, 235, 255, 0.95);
     transform: scaleX(1.2);
   }
   100% {
-    border-left-color: rgba(230, 95, 42, 0);
+    border-left-color: rgba(88, 235, 255, 0);
     transform: scaleX(0.3);
   }
 }
@@ -554,7 +666,7 @@ dd {
   }
 
   .dragon-row {
-    grid-template-columns: 64px minmax(0, 1fr);
+    grid-template-columns: 92px minmax(0, 1fr);
     gap: 7px;
   }
 
@@ -581,13 +693,24 @@ dd {
     overflow: auto;
   }
 
-  .dragon-avatar {
-    width: 64px;
-    height: 64px;
+  .dragon-quickbar {
+    max-width: none;
+    gap: 5px;
+    margin-bottom: 6px;
   }
 
-  .dragon-sprite {
-    --dragon-frame: 62px;
+  .dragon-quickbar button {
+    min-height: 28px;
+    font-size: 0.58rem;
+  }
+
+  .dragon-avatar {
+    width: 92px;
+    height: 92px;
+  }
+
+  .dragon-stage {
+    --dragon-frame: 88px;
   }
 
   .dragon-chat {
@@ -626,8 +749,11 @@ dd {
 
 @media (prefers-reduced-motion: reduce) {
   .dragon-sprite,
+  .dragon-stage,
+  .dragon-aura,
+  .dragon-shadow,
   .dragon-assistant[data-mood="thinking"] .dragon-sprite,
-  .dragon-assistant[data-mood="listening"] .dragon-sprite,
+  .dragon-assistant[data-mood="listening"] .dragon-stage,
   .dragon-assistant[data-mood="fire"] .dragon-sprite,
   .dragon-avatar.is-fire::after,
   .dice-roll.is-rolling {

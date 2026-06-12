@@ -35,3 +35,18 @@ old `/api/tts` responses could still start after the next turn began.
 **Rule:** when a new turn/action starts, abort pending TTS, stop any current
 narration, cancel browser speech, and make turn-result assistant text silent
 unless the user explicitly asks Ember to speak.
+
+## 2026-06-12 — The dragon visual must be cinematic, not cute mascot art
+User rejected the green cute sprite and clarified the target is a How to Train
+Your Dragon-like 3D companion feel: sleek, dark, expressive, pet-like, and
+always-on above the screen.
+**Rule:** keep Ember original, but steer the artifact toward glossy black
+cinematic dragon traits, expressive eyes, wing silhouette, and desktop-pet
+behavior; do not ship a generic cartoon dragon or a chat widget with a mascot.
+
+## 2026-06-12 — Use anime-mascot energy without shipping protected characters
+User suggested a top anime pet direction such as Pikachu because the shape reads
+faster than the custom dragon attempts.
+**Rule:** do not use official character sprites, names, or catchphrases in the
+public hackathon artifact. Build an original electric familiar with yellow
+mascot readability, cheek sparks, and short custom chirps like "zip-zip" instead.

@@ -20,8 +20,8 @@ tags:
 PocketDM is a tiny-model Dungeon Master for the Build Small Hackathon's
 Thousand Token Wood track. The pitch is simple: a custom Gradio adventure game
 where the model writes the prose, the deterministic engine owns game state, and
-Ember, a Clippy-style dragon assistant, hovers over the whole screen with a
-local sprite sheet, hints, speech, and fire.
+Spark, an original anime-style electric familiar, hovers over the whole screen
+with a local sprite sheet, hints, speech, and tiny thunderbolt animations.
 
 The first-cut app is a reliable playable demo while the fine-tuned student
 model pipeline finishes. It uses the frozen engine contract and a scripted local
@@ -33,7 +33,7 @@ all under the 32B rule and designed for offline play.
 ## Why It Fits Build Small
 
 - Track: Thousand Token Wood.
-- Delight: a short playable adventure with a persistent animated dragon aide.
+- Delight: a short playable adventure with a persistent animated electric familiar.
 - AI load-bearing path: teacher-generated adventures train the tiny model to
   produce valid turn JSON; the engine never lets the model own logic.
 - Custom Gradio UI: `gradio.Server` serves a fully custom parchment frontend,
@@ -42,7 +42,7 @@ all under the 32B rule and designed for offline play.
   no cloud inference is needed once the model artifact is baked in.
 - Voice: narration uses the local Kokoro path when installed, including a
   custom-blended Lore Narrator voice artifact. Lore Narrator is a Kokoro tensor
-  blend, not a TTS fine-tune. Ember's quick chatter uses browser speech
+  blend, not a TTS fine-tune. Spark's quick chatter uses browser speech
   synthesis so the assistant stays responsive.
 - Evidence path: Modal data-generation costs are logged in `tasks/costs.md`,
   smoke data lives under `data/out/`, and the train/eval scripts are in place
@@ -57,7 +57,7 @@ uv run python app.py
 ```
 
 The app serves a `gradio.Server` backend with a custom HTML/CSS/JS frontend. The
-fixed Ember dragon assistant uses a local sprite sheet at
+fixed Spark electric familiar uses a local sprite sheet at
 `app/static/dragon-sprites.png`; it talks through browser speech synthesis and
 does not call an external API.
 
@@ -127,7 +127,7 @@ POCKETDM_GGUF=models/gemma-4-e2b-it/gguf/gemma-4-E2B-it-BF16.gguf POCKETDM_LLAMA
 
 Narration audio is a progressive enhancement. If Kokoro dependencies and local
 model files are available, `/api/tts` returns WAV audio for each turn. If they
-are missing, the text adventure and dragon assistant continue without blocking.
+are missing, the text adventure and electric familiar continue without blocking.
 The Space entrypoint preloads the Kokoro ONNX assets at startup when needed;
 turn-time play never downloads them.
 

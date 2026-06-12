@@ -167,7 +167,7 @@ final class FloatingDragonPanel: NSPanel {
 
 @MainActor
 final class DragonOverlayModel: ObservableObject {
-    @Published var message = "I am Ember. I can hover above your Mac while PocketDM runs."
+    @Published var message = "Zip-zip. I am Spark. I can hover above your Mac while PocketDM runs."
     @Published var serverLine = "Checking PocketDM..."
     @Published var minimized = UserDefaults.standard.bool(forKey: "PocketDMCompanion.minimized")
     @Published var busy = false
@@ -234,7 +234,7 @@ struct DragonOverlayView: View {
         } label: {
             HStack(spacing: 8) {
                 dragonGlyph(size: 48)
-                Text("Ember")
+                Text("Spark")
                     .font(.system(size: 13, weight: .black, design: .rounded))
                     .foregroundStyle(Color.ivory)
             }
@@ -254,7 +254,7 @@ struct DragonOverlayView: View {
                 Image(systemName: "circle.grid.2x2.fill")
                     .font(.system(size: 15, weight: .bold))
                     .foregroundStyle(Color.ivory.opacity(0.72))
-                Text("Ember")
+                Text("Spark")
                     .font(.system(size: 12, weight: .black, design: .rounded))
                     .foregroundStyle(Color.ivory)
                 Spacer()
@@ -266,7 +266,7 @@ struct DragonOverlayView: View {
                 }
                 .buttonStyle(.plain)
                 .foregroundStyle(Color.ivory)
-                .accessibilityLabel("Minimize dragon overlay")
+                .accessibilityLabel("Minimize electric familiar overlay")
             }
             .padding(.horizontal, 10)
             .frame(height: 34)
@@ -300,7 +300,7 @@ struct DragonOverlayView: View {
                     .disabled(model.busy)
 
                     HStack(spacing: 7) {
-                        TextField("Ask Ember", text: $customPrompt)
+                        TextField("Ask Spark", text: $customPrompt)
                             .textFieldStyle(.plain)
                             .font(.system(size: 13, weight: .semibold))
                             .padding(.horizontal, 9)
@@ -450,7 +450,7 @@ actor PocketDMClient {
         let response: StartResponse = try await post(
             StartRequest(
                 genre: "whispering_wood",
-                premise: "A floating desktop dragon checks on the adventure.",
+                premise: "A floating electric familiar checks on the adventure.",
                 voice: "lore"
             ),
             path: "api/start"
@@ -539,8 +539,8 @@ final class PocketDMServerProcess {
 private extension Color {
     static let ivory = Color(red: 1.0, green: 0.96, blue: 0.84)
     static let gold = Color(red: 0.94, green: 0.72, blue: 0.34)
-    static let emerald = Color(red: 0.14, green: 0.42, blue: 0.34)
-    static let emeraldLight = Color(red: 0.48, green: 0.78, blue: 0.55)
-    static let deepTeal = Color(red: 0.08, green: 0.22, blue: 0.2)
-    static let wing = Color(red: 0.74, green: 0.28, blue: 0.2)
+    static let emerald = Color(red: 0.96, green: 0.66, blue: 0.1)
+    static let emeraldLight = Color(red: 1.0, green: 0.94, blue: 0.4)
+    static let deepTeal = Color(red: 0.82, green: 0.36, blue: 0.04)
+    static let wing = Color(red: 1.0, green: 0.84, blue: 0.18)
 }

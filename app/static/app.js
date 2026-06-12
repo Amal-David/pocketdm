@@ -13,9 +13,11 @@ const state = {
   currentVoice: "auto",
   dragonMinimized: false,
   dragonDrag: null,
+  dragonMoodTimer: null,
 };
 
-const DRAGON_POSITION_KEY = "pocketdm.dragonOverlayPosition";
+const DRAGON_POSITION_KEY = "pocketdm.sparkOverlayPosition";
+const DRAGON_MINIMIZED_KEY = "pocketdm.sparkOverlayMinimized";
 
 const els = {
   genre: document.querySelector("#genre"),
@@ -46,6 +48,8 @@ const els = {
   dragonAssistant: document.querySelector("#dragon-assistant"),
   dragonHandle: document.querySelector("#dragon-handle"),
   dragonMinimize: document.querySelector("#dragon-minimize"),
+  dragonQuickActions: document.querySelectorAll("[data-dragon-action]"),
+  dragonStatus: document.querySelector("#dragon-status"),
   dragonTab: document.querySelector("#dragon-tab"),
   voiceToggle: document.querySelector("#voice-toggle"),
 };
@@ -67,6 +71,10 @@ els.dragonAvatar.addEventListener("click", () => askDragon("hint"));
 els.dragonTab.addEventListener("click", () => setDragonMinimized(false));
 els.dragonMinimize.addEventListener("click", () => setDragonMinimized(!state.dragonMinimized));
 els.dragonHandle.addEventListener("pointerdown", startDragonDrag);
+els.dragonHandle.addEventListener("dblclick", () => setDragonMinimized(true));
+els.dragonQuickActions.forEach((button) => {
+  button.addEventListener("click", () => handleDragonQuickAction(button.dataset.dragonAction));
+});
 window.addEventListener("pointermove", dragDragon);
 window.addEventListener("pointerup", stopDragonDrag);
 window.addEventListener("resize", clampDragonPosition);
@@ -126,7 +134,7 @@ async function choose(action) {
 
 async function askDragon(message) {
   if (!state.sessionId) {
-    dragonSay("Start a tale first, then I can hover with useful opinions.", { fire: true });
+    dragonSay("Start a tale first, then I can zip in with useful opinions.", { fire: true });
     return;
   }
   setDragonMinimized(false);
@@ -138,9 +146,31 @@ async function askDragon(message) {
     });
     dragonSay(payload.reply, { fire: /fire|flame|scorch|victory/i.test(payload.reply) });
   } catch (error) {
-    dragonSay(`My tiny scroll jammed: ${error.message}`, { fire: true });
+    dragonSay(`My tiny spark jammed: ${error.message}`, { fire: true });
   } finally {
     setDragonMood("idle");
+  }
+}
+
+function handleDragonQuickAction(action) {
+  switch (action) {
+    case "hint":
+      askDragon("hint");
+      return;
+    case "status":
+      askDragon("status");
+      return;
+    case "perch":
+      perchDragon();
+      return;
+    case "fire":
+      dragonSay("Zip-zip. Static check complete. Tiny thunderbolt ready for one heroic story.", {
+        fire: true,
+        speak: false,
+      });
+      return;
+    default:
+      return;
   }
 }
 
@@ -270,6 +300,14 @@ function dragonSay(text, options = {}) {
     els.dragonAvatar.classList.remove("is-fire");
     void els.dragonAvatar.offsetWidth;
     els.dragonAvatar.classList.add("is-fire");
+    window.clearTimeout(state.dragonMoodTimer);
+    state.dragonMoodTimer = window.setTimeout(() => {
+      if (!state.isBusy && els.dragonAssistant.dataset.mood === "fire") {
+        setDragonMood("idle");
+      }
+    }, 900);
+  } else if (!state.isBusy) {
+    setDragonMood("idle");
   }
   if (options.speak === false) return;
   speak(text);
@@ -386,24 +424,34 @@ function initDragonOverlay() {
   } catch (_error) {
     localStorage.removeItem(DRAGON_POSITION_KEY);
   }
-  setDragonMinimized(false);
+  const savedMinimized = localStorage.getItem(DRAGON_MINIMIZED_KEY);
+  const startsCompact = window.matchMedia("(max-width: 430px)").matches;
+  setDragonMinimized(savedMinimized === null ? startsCompact : savedMinimized === "true");
+  setDragonMood("idle");
   requestAnimationFrame(clampDragonPosition);
 }
 
 function setDragonMinimized(isMinimized) {
   state.dragonMinimized = isMinimized;
   els.dragonAssistant.classList.toggle("is-minimized", isMinimized);
+  localStorage.setItem(DRAGON_MINIMIZED_KEY, String(isMinimized));
   els.dragonMinimize.textContent = isMinimized ? "+" : "-";
   els.dragonMinimize.setAttribute("aria-expanded", String(!isMinimized));
   els.dragonMinimize.setAttribute(
     "aria-label",
-    isMinimized ? "Open dragon overlay" : "Minimize dragon overlay",
+    isMinimized ? "Open electric familiar overlay" : "Minimize electric familiar overlay",
   );
   if (!isMinimized) requestAnimationFrame(clampDragonPosition);
 }
 
 function setDragonMood(mood) {
   els.dragonAssistant.dataset.mood = mood;
+  els.dragonStatus.textContent = {
+    thinking: "Thinking",
+    listening: "Listening",
+    fire: "Spark",
+    idle: "Idle",
+  }[mood] || "Idle";
 }
 
 function startDragonDrag(event) {
@@ -439,6 +487,18 @@ function stopDragonDrag(event) {
     // Pointer capture may already be released if the browser cancels the drag.
   }
   persistDragonPosition();
+}
+
+function perchDragon() {
+  setDragonMinimized(false);
+  requestAnimationFrame(() => {
+    const rect = els.dragonAssistant.getBoundingClientRect();
+    positionDragon(window.innerWidth - rect.width - 18, window.innerHeight - rect.height - 18);
+    dragonSay("Perched at the screen edge. Drag my handle when you want me closer. Zip.", {
+      fire: false,
+      speak: false,
+    });
+  });
 }
 
 function clampDragonPosition() {

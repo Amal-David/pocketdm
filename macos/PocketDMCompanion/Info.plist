@@ -7,7 +7,11 @@
   <string>PocketDMCompanion</string>
   <key>CFBundleIdentifier</key>
   <string>com.listenowl.pocketdm.companion</string>
+  <key>CFBundleInfoDictionaryVersion</key>
+  <string>6.0</string>
   <key>CFBundleName</key>
+  <string>PocketDM Companion</string>
+  <key>CFBundleDisplayName</key>
   <string>PocketDM Companion</string>
   <key>CFBundlePackageType</key>
   <string>APPL</string>
@@ -20,6 +24,10 @@
   <key>LSUIElement</key>
   <true/>
   <key>NSHighResolutionCapable</key>
+  <true/>
+  <key>NSSupportsAutomaticTermination</key>
+  <true/>
+  <key>NSSupportsSuddenTermination</key>
   <true/>
 </dict>
 </plist>
