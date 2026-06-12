@@ -231,6 +231,11 @@ final class DragonOverlayModel: ObservableObject {
     private static let dailyNudgeOfferedMaskKey = "PocketDMCompanion.dailyNudgeOfferedMask"
     private static let dailyNudgeAnsweredMaskKey = "PocketDMCompanion.dailyNudgeAnsweredMask"
     private static let dailyNudgeDismissedMaskKey = "PocketDMCompanion.dailyNudgeDismissedMask"
+    private static let dailyCheerDialogueDateKey = "PocketDMCompanion.dailyCheerDialogueDate"
+    private static let dailyCheerDialogueOfferedMaskKey = "PocketDMCompanion.dailyCheerDialogueOfferedMask"
+    private static let dailyCheerDialogueAnsweredMaskKey = "PocketDMCompanion.dailyCheerDialogueAnsweredMask"
+    private static let dailyCheerDialogueDismissedMaskKey = "PocketDMCompanion.dailyCheerDialogueDismissedMask"
+    private static let cheerDialogueAlbumMaskKey = "PocketDMCompanion.cheerDialogueAlbumMask"
     private static let snackVitalKey = "PocketDMCompanion.snackVital"
     private static let restVitalKey = "PocketDMCompanion.restVital"
     private static let playVitalKey = "PocketDMCompanion.playVital"
@@ -312,6 +317,11 @@ final class DragonOverlayModel: ObservableObject {
     @Published var dailyNudgeOfferedMask = UserDefaults.standard.object(forKey: DragonOverlayModel.dailyNudgeOfferedMaskKey) as? Int ?? 0
     @Published var dailyNudgeAnsweredMask = UserDefaults.standard.object(forKey: DragonOverlayModel.dailyNudgeAnsweredMaskKey) as? Int ?? 0
     @Published var dailyNudgeDismissedMask = UserDefaults.standard.object(forKey: DragonOverlayModel.dailyNudgeDismissedMaskKey) as? Int ?? 0
+    @Published var dailyCheerDialogueDate = UserDefaults.standard.string(forKey: DragonOverlayModel.dailyCheerDialogueDateKey) ?? ""
+    @Published var dailyCheerDialogueOfferedMask = UserDefaults.standard.object(forKey: DragonOverlayModel.dailyCheerDialogueOfferedMaskKey) as? Int ?? 0
+    @Published var dailyCheerDialogueAnsweredMask = UserDefaults.standard.object(forKey: DragonOverlayModel.dailyCheerDialogueAnsweredMaskKey) as? Int ?? 0
+    @Published var dailyCheerDialogueDismissedMask = UserDefaults.standard.object(forKey: DragonOverlayModel.dailyCheerDialogueDismissedMaskKey) as? Int ?? 0
+    @Published var cheerDialogueAlbumMask = UserDefaults.standard.object(forKey: DragonOverlayModel.cheerDialogueAlbumMaskKey) as? Int ?? 0
     @Published var snackVital = UserDefaults.standard.object(forKey: DragonOverlayModel.snackVitalKey) as? Int ?? DragonOverlayModel.maxVital
     @Published var restVital = UserDefaults.standard.object(forKey: DragonOverlayModel.restVitalKey) as? Int ?? DragonOverlayModel.maxVital
     @Published var playVital = UserDefaults.standard.object(forKey: DragonOverlayModel.playVitalKey) as? Int ?? DragonOverlayModel.maxVital
@@ -323,6 +333,7 @@ final class DragonOverlayModel: ObservableObject {
     @Published var cheerDaypartRaw = 0
     @Published var cheerMoodCareStepRaw = 0
     @Published var cheerBondContractRaw = 0
+    @Published var cheerDialogueRaw = 0
 
     let languageCoach = LanguageCoachStore()
 
@@ -737,7 +748,9 @@ final class DragonOverlayModel: ObservableObject {
         let rewardLine = cheerRewardLine.isEmpty ? "Check-in answered" : cheerRewardLine
         let moodCareStep = PetMoodCareStep(rawValue: cheerMoodCareStepRaw)
         let bondContract = PetBondContract(rawValue: cheerBondContractRaw)
+        let cheerDialogue = PetCheerDialogue(rawValue: cheerDialogueRaw)
         let daypartNote = recordCheerAnswer()
+        let dialogueNote = recordCheerDialogueAnswer()
         clearCheerBubble()
         lastRequest = "Cheer"
         happiness = min(5, happiness + 1)
@@ -745,6 +758,9 @@ final class DragonOverlayModel: ObservableObject {
         message = pikaText("\(rewardLine). Pikachu turns \(prompt.lowercased()) into Joy +1 and Sparks +3.")
         if let daypartNote {
             message += " \(daypartNote)"
+        }
+        if let dialogueNote {
+            message += " \(dialogueNote)"
         }
         recordDailyQuest(.cheer)
         if let needNote = awardCareNeed(.focus) {
@@ -766,6 +782,14 @@ final class DragonOverlayModel: ObservableObject {
                 message += " \(vitalNote)"
             }
             if let moodCareNote = markMoodCare(bondContract.moodStep) {
+                message += " \(moodCareNote)"
+            }
+        }
+        if let cheerDialogue {
+            if let vitalNote = refillVital(cheerDialogue.vital, by: 1) {
+                message += " \(vitalNote)"
+            }
+            if let moodCareNote = markMoodCare(cheerDialogue.moodStep) {
                 message += " \(moodCareNote)"
             }
         }
@@ -1166,6 +1190,14 @@ final class DragonOverlayModel: ObservableObject {
         )
     }
 
+    var cheerDialogueLine: String {
+        PetCheerDialogue.summary(
+            offeredMask: dailyCheerDialogueOfferedMask,
+            answeredMask: dailyCheerDialogueAnsweredMask,
+            dismissedMask: dailyCheerDialogueDismissedMask
+        )
+    }
+
     var cipherLine: String {
         if dailyCipherSolved {
             return "\(careMoment.title) · Cipher \(dailyCipher.answer) ✓ · Boost \(dailyBoosterUsed ? "used" : "ready")"
@@ -1365,17 +1397,42 @@ final class DragonOverlayModel: ObservableObject {
     }
 
     var journalCheerProgress: Double {
-        Double(PetDaypartNudge.count(mask: dailyNudgeAnsweredMask)) / Double(PetDaypartNudge.allCases.count)
+        let answered = PetDaypartNudge.count(mask: dailyNudgeAnsweredMask)
+            + PetCheerDialogue.count(mask: dailyCheerDialogueAnsweredMask)
+        let total = PetDaypartNudge.allCases.count + PetCheerDialogue.allCases.count
+        return Double(answered) / Double(max(1, total))
     }
 
     var journalCheerCaption: String {
-        "\(PetDaypartNudge.count(mask: dailyNudgeAnsweredMask))/\(PetDaypartNudge.allCases.count) answered today · \(PetDaypartNudge.count(mask: dailyNudgeOfferedMask)) seen"
+        let answered = PetDaypartNudge.count(mask: dailyNudgeAnsweredMask)
+            + PetCheerDialogue.count(mask: dailyCheerDialogueAnsweredMask)
+        let offered = PetDaypartNudge.count(mask: dailyNudgeOfferedMask)
+            + PetCheerDialogue.count(mask: dailyCheerDialogueOfferedMask)
+        let albumDone = PetCheerDialogue.count(mask: cheerDialogueAlbumMask)
+        return "\(answered)/\(PetDaypartNudge.allCases.count + PetCheerDialogue.allCases.count) answered today · \(offered) seen · Dialogue album \(albumDone)/\(PetCheerDialogue.allCases.count)"
     }
 
     var journalCheerSpriteLine: String {
         let next = PetDaypartNudge.allCases.first { dailyNudgeOfferedMask & $0.rawValue == 0 }
             ?? daypartNudge
         return "Cheer sprite: \(next.spriteRequestName.replacingOccurrences(of: "{stage}", with: growthStage.assetSlug))"
+    }
+
+    var journalCheerDialogueProgress: Double {
+        Double(PetCheerDialogue.count(mask: dailyCheerDialogueAnsweredMask)) / Double(PetCheerDialogue.allCases.count)
+    }
+
+    var journalCheerDialogueCaption: String {
+        cheerDialogueLine
+    }
+
+    var journalCheerDialogueSpriteLine: String {
+        let next = PetCheerDialogue.next(
+            offeredMask: dailyCheerDialogueOfferedMask,
+            index: PetCheerDialogue.count(mask: dailyCheerDialogueOfferedMask)
+                + PetCheerDialogue.count(mask: dailyCheerDialogueAnsweredMask)
+        ) ?? .howAreYou
+        return "Dialogue sprite: \(next.spriteRequestName.replacingOccurrences(of: "{stage}", with: growthStage.assetSlug))"
     }
 
     var journalSpriteLine: String {
@@ -1430,6 +1487,7 @@ final class DragonOverlayModel: ObservableObject {
         cheerDaypartRaw = 0
         cheerMoodCareStepRaw = 0
         cheerBondContractRaw = 0
+        cheerDialogueRaw = 0
     }
 
     private func persistCare() {
@@ -1484,6 +1542,11 @@ final class DragonOverlayModel: ObservableObject {
         UserDefaults.standard.set(dailyNudgeOfferedMask, forKey: Self.dailyNudgeOfferedMaskKey)
         UserDefaults.standard.set(dailyNudgeAnsweredMask, forKey: Self.dailyNudgeAnsweredMaskKey)
         UserDefaults.standard.set(dailyNudgeDismissedMask, forKey: Self.dailyNudgeDismissedMaskKey)
+        UserDefaults.standard.set(dailyCheerDialogueDate, forKey: Self.dailyCheerDialogueDateKey)
+        UserDefaults.standard.set(dailyCheerDialogueOfferedMask, forKey: Self.dailyCheerDialogueOfferedMaskKey)
+        UserDefaults.standard.set(dailyCheerDialogueAnsweredMask, forKey: Self.dailyCheerDialogueAnsweredMaskKey)
+        UserDefaults.standard.set(dailyCheerDialogueDismissedMask, forKey: Self.dailyCheerDialogueDismissedMaskKey)
+        UserDefaults.standard.set(cheerDialogueAlbumMask, forKey: Self.cheerDialogueAlbumMaskKey)
         UserDefaults.standard.set(snackVital, forKey: Self.snackVitalKey)
         UserDefaults.standard.set(restVital, forKey: Self.restVitalKey)
         UserDefaults.standard.set(playVital, forKey: Self.playVitalKey)
@@ -1613,6 +1676,14 @@ final class DragonOverlayModel: ObservableObject {
 
     func isBondContractUnlocked(_ contract: PetBondContract) -> Bool {
         bondContractAlbumMask & contract.rawValue != 0
+    }
+
+    func isCheerDialogueAnswered(_ dialogue: PetCheerDialogue) -> Bool {
+        dailyCheerDialogueAnsweredMask & dialogue.rawValue != 0
+    }
+
+    func isCheerDialogueUnlocked(_ dialogue: PetCheerDialogue) -> Bool {
+        cheerDialogueAlbumMask & dialogue.rawValue != 0
     }
 
     private func setVital(_ vital: PetCareVital, value: Int) {
@@ -1926,6 +1997,13 @@ final class DragonOverlayModel: ObservableObject {
             dailyNudgeDismissedMask = 0
             changed = true
         }
+        if dailyCheerDialogueDate != today {
+            dailyCheerDialogueDate = today
+            dailyCheerDialogueOfferedMask = 0
+            dailyCheerDialogueAnsweredMask = 0
+            dailyCheerDialogueDismissedMask = 0
+            changed = true
+        }
         if dailyComboDate != today {
             dailyComboDate = today
             dailyComboMask = 0
@@ -2021,11 +2099,40 @@ final class DragonOverlayModel: ObservableObject {
         return "\(daypart.title) logged in Cheer Rhythm: Joy +1, Sparks +\(reward)."
     }
 
+    private func recordCheerDialogueAnswer() -> String? {
+        syncDailyCombo()
+        guard let dialogue = PetCheerDialogue(rawValue: cheerDialogueRaw) else { return nil }
+        let wasAnswered = dailyCheerDialogueAnsweredMask & dialogue.rawValue != 0
+        dailyCheerDialogueOfferedMask |= dialogue.rawValue
+        dailyCheerDialogueAnsweredMask |= dialogue.rawValue
+        dailyCheerDialogueDismissedMask &= ~dialogue.rawValue
+        cheerDialogueAlbumMask |= dialogue.rawValue
+        guard !wasAnswered else {
+            persistCare()
+            return nil
+        }
+
+        let reward = 5 + cheerLevel + sparkLevel
+        sparkDust = min(999, sparkDust + reward)
+        happiness = min(5, happiness + 1)
+        persistCare()
+        return "\(dialogue.title) saved in Cheer Dialogues: Joy +1, Sparks +\(reward). \(dialogue.rewardReceipt)"
+    }
+
     private func recordCheerDismissal() {
         syncDailyCombo()
-        guard let daypart = PetDaypartNudge(rawValue: cheerDaypartRaw) else { return }
-        dailyNudgeOfferedMask |= daypart.rawValue
-        dailyNudgeDismissedMask |= daypart.rawValue
+        var changed = false
+        if let daypart = PetDaypartNudge(rawValue: cheerDaypartRaw) {
+            dailyNudgeOfferedMask |= daypart.rawValue
+            dailyNudgeDismissedMask |= daypart.rawValue
+            changed = true
+        }
+        if let dialogue = PetCheerDialogue(rawValue: cheerDialogueRaw) {
+            dailyCheerDialogueOfferedMask |= dialogue.rawValue
+            dailyCheerDialogueDismissedMask |= dialogue.rawValue
+            changed = true
+        }
+        guard changed else { return }
         persistCare()
     }
 
@@ -2218,6 +2325,8 @@ final class DragonOverlayModel: ObservableObject {
         let shouldUseMoodCare = !shouldUseDaypart && nextMoodCareStep != nil && index % 2 == 0
         let nextContract = nextBondContract
         let shouldUseBondBoard = !shouldUseDaypart && !shouldUseMoodCare && nextContract != nil && index % 3 == 2
+        let nextDialogue = PetCheerDialogue.next(offeredMask: dailyCheerDialogueOfferedMask, index: index)
+        let shouldUseDialogue = !shouldUseDaypart && !shouldUseMoodCare && !shouldUseBondBoard && nextDialogue != nil
         let prompt: PetNudgeLibrary.PetCheerPrompt
         if shouldUseDaypart {
             prompt = PetNudgeLibrary.PetCheerPrompt(
@@ -2239,6 +2348,13 @@ final class DragonOverlayModel: ObservableObject {
                 body: "\(nextContract.title) is ready. Want to \(nextContract.actionLine)?",
                 action: "Open \(nextContract.shortLabel)",
                 rewardLine: "\(nextContract.title) answered"
+            )
+        } else if shouldUseDialogue, let nextDialogue {
+            prompt = PetNudgeLibrary.PetCheerPrompt(
+                title: nextDialogue.title,
+                body: nextDialogue.body,
+                action: nextDialogue.action,
+                rewardLine: nextDialogue.rewardLine
             )
         } else {
             prompt = PetNudgeLibrary.cheerPrompt(
@@ -2266,10 +2382,15 @@ final class DragonOverlayModel: ObservableObject {
         cheerDaypartRaw = shouldUseDaypart ? daypart.rawValue : 0
         cheerMoodCareStepRaw = shouldUseMoodCare ? (nextMoodCareStep?.rawValue ?? 0) : 0
         cheerBondContractRaw = shouldUseBondBoard ? (nextContract?.rawValue ?? 0) : 0
+        cheerDialogueRaw = shouldUseDialogue ? (nextDialogue?.rawValue ?? 0) : 0
         cheerBubble = pikaText(prompt.body)
         if shouldUseDaypart {
             dailyNudgeOfferedMask |= daypart.rawValue
             dailyNudgeDismissedMask &= ~daypart.rawValue
+            persistCare()
+        } else if shouldUseDialogue, let nextDialogue {
+            dailyCheerDialogueOfferedMask |= nextDialogue.rawValue
+            dailyCheerDialogueDismissedMask &= ~nextDialogue.rawValue
             persistCare()
         }
         defaults.set(index + 1, forKey: Self.cheerIndexKey)
@@ -2724,6 +2845,11 @@ struct DragonOverlayView: View {
                 .foregroundStyle(Color.ivory.opacity(0.66))
                 .lineLimit(1)
                 .minimumScaleFactor(0.48)
+            Text(model.cheerDialogueLine)
+                .font(.system(size: 8.1, weight: .black, design: .rounded))
+                .foregroundStyle(Color.gold.opacity(0.62))
+                .lineLimit(1)
+                .minimumScaleFactor(0.44)
             Text(model.cipherLine)
                 .font(.system(size: 8.5, weight: .bold, design: .rounded))
                 .foregroundStyle(Color.ivory.opacity(0.7))
@@ -3031,6 +3157,9 @@ struct PetJournalPanel: View {
             journalHero("Cheer Rhythm", value: model.journalCheerProgress, caption: model.journalCheerCaption)
             detailLine(model.cheerRhythmLine)
             artLine(model.journalCheerSpriteLine)
+            journalHero("Cheer Dialogues", value: model.journalCheerDialogueProgress, caption: model.journalCheerDialogueCaption)
+            cheerDialogueGrid
+            artLine(model.journalCheerDialogueSpriteLine)
             detailLine(model.cipherLine)
         case .streak:
             journalHero("Week Trail", value: model.journalStreakProgress, caption: model.journalStreakCaption)
@@ -3172,6 +3301,28 @@ struct PetJournalPanel: View {
                 bondContractChip(contract)
             }
         }
+    }
+
+    private var cheerDialogueGrid: some View {
+        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 4), count: 4), spacing: 3) {
+            ForEach(PetCheerDialogue.allCases, id: \.rawValue) { dialogue in
+                cheerDialogueChip(dialogue)
+            }
+        }
+    }
+
+    private func cheerDialogueChip(_ dialogue: PetCheerDialogue) -> some View {
+        let answered = model.isCheerDialogueAnswered(dialogue)
+        let unlocked = model.isCheerDialogueUnlocked(dialogue)
+        return Text("\(dialogue.shortLabel) \(answered ? "✓" : unlocked ? "•" : "○")")
+            .font(.system(size: 7.4, weight: .black, design: .rounded))
+            .foregroundStyle(answered ? Color.black : Color.ivory.opacity(unlocked ? 0.78 : 0.62))
+            .lineLimit(1)
+            .minimumScaleFactor(0.58)
+            .frame(height: 18)
+            .frame(maxWidth: .infinity)
+            .background(answered ? Color.gold.opacity(0.92) : Color.black.opacity(unlocked ? 0.42 : 0.32), in: RoundedRectangle(cornerRadius: 5))
+            .overlay(RoundedRectangle(cornerRadius: 5).stroke(Color.ivory.opacity(answered ? 0 : 0.12), lineWidth: 1))
     }
 
     private func bondContractChip(_ contract: PetBondContract) -> some View {

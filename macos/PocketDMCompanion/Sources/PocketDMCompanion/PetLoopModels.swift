@@ -1373,6 +1373,209 @@ enum PetDaypartNudge: Int, CaseIterable {
     }
 }
 
+enum PetCheerDialogue: Int, CaseIterable {
+    case howAreYou = 1
+    case whatsHappening = 2
+    case tinyWin = 4
+    case tooMuch = 8
+    case focusStart = 16
+    case softReset = 32
+    case braveNext = 64
+    case quietCompany = 128
+
+    var title: String {
+        switch self {
+        case .howAreYou:
+            return "How are you?"
+        case .whatsHappening:
+            return "What is happening?"
+        case .tinyWin:
+            return "Tiny win"
+        case .tooMuch:
+            return "Too much?"
+        case .focusStart:
+            return "Start beside me"
+        case .softReset:
+            return "Soft reset"
+        case .braveNext:
+            return "Brave next"
+        case .quietCompany:
+            return "Quiet company"
+        }
+    }
+
+    var shortLabel: String {
+        switch self {
+        case .howAreYou:
+            return "How"
+        case .whatsHappening:
+            return "What"
+        case .tinyWin:
+            return "Win"
+        case .tooMuch:
+            return "Ease"
+        case .focusStart:
+            return "Start"
+        case .softReset:
+            return "Reset"
+        case .braveNext:
+            return "Next"
+        case .quietCompany:
+            return "Sit"
+        }
+    }
+
+    var body: String {
+        switch self {
+        case .howAreYou:
+            return "How are you doing? I can hold one tiny thought with you."
+        case .whatsHappening:
+            return "What is happening over there? Tell me one small piece."
+        case .tinyWin:
+            return "Did anything go even a little right? I want to save that spark."
+        case .tooMuch:
+            return "Does it feel like too much? We can shrink it to one soft step."
+        case .focusStart:
+            return "Want me to sit beside the first minute while you start?"
+        case .softReset:
+            return "Want a reset? Breathe, stretch, then one tiny click."
+        case .braveNext:
+            return "What is the next brave little move? I can walk beside it."
+        case .quietCompany:
+            return "No big quest needed. Want quiet company for a moment?"
+        }
+    }
+
+    var action: String {
+        switch self {
+        case .howAreYou:
+            return "Open gentle check-in"
+        case .whatsHappening:
+            return "Open chat"
+        case .tinyWin:
+            return "Save tiny win"
+        case .tooMuch:
+            return "Open soft step"
+        case .focusStart:
+            return "Start first minute"
+        case .softReset:
+            return "Open reset"
+        case .braveNext:
+            return "Open next step"
+        case .quietCompany:
+            return "Sit together"
+        }
+    }
+
+    var rewardLine: String {
+        switch self {
+        case .howAreYou:
+            return "Gentle check-in answered"
+        case .whatsHappening:
+            return "What-is-happening check-in answered"
+        case .tinyWin:
+            return "Tiny win saved"
+        case .tooMuch:
+            return "Soft-step check-in answered"
+        case .focusStart:
+            return "First-minute check-in answered"
+        case .softReset:
+            return "Reset check-in answered"
+        case .braveNext:
+            return "Brave-next check-in answered"
+        case .quietCompany:
+            return "Quiet-company check-in answered"
+        }
+    }
+
+    var rewardReceipt: String {
+        switch self {
+        case .howAreYou:
+            return "Pikachu stores the answer as a warm check-in."
+        case .whatsHappening:
+            return "The messy middle becomes one named spark."
+        case .tinyWin:
+            return "A tiny win joins the day trail."
+        case .tooMuch:
+            return "The big feeling shrinks into one gentler step."
+        case .focusStart:
+            return "The first minute gets a companion perch."
+        case .softReset:
+            return "A reset glow clears space around the next step."
+        case .braveNext:
+            return "The next move gets a small courage mark."
+        case .quietCompany:
+            return "Quiet company counts as care."
+        }
+    }
+
+    var vital: PetCareVital {
+        switch self {
+        case .howAreYou, .tooMuch, .quietCompany:
+            return .rest
+        case .whatsHappening, .focusStart, .braveNext:
+            return .focus
+        case .tinyWin, .softReset:
+            return .play
+        }
+    }
+
+    var moodStep: PetMoodCareStep {
+        switch self {
+        case .howAreYou, .tooMuch, .quietCompany:
+            return .soothe
+        case .whatsHappening, .focusStart:
+            return .focus
+        case .tinyWin:
+            return .cheer
+        case .softReset:
+            return .rest
+        case .braveNext:
+            return .adventure
+        }
+    }
+
+    var spriteRequestName: String {
+        switch self {
+        case .howAreYou:
+            return "pet-{stage}-cheer-dialogue-how-are-you.png"
+        case .whatsHappening:
+            return "pet-{stage}-cheer-dialogue-whats-happening.png"
+        case .tinyWin:
+            return "pet-{stage}-cheer-dialogue-tiny-win.png"
+        case .tooMuch:
+            return "pet-{stage}-cheer-dialogue-too-much.png"
+        case .focusStart:
+            return "pet-{stage}-cheer-dialogue-focus-start.png"
+        case .softReset:
+            return "pet-{stage}-cheer-dialogue-soft-reset.png"
+        case .braveNext:
+            return "pet-{stage}-cheer-dialogue-brave-next.png"
+        case .quietCompany:
+            return "pet-{stage}-cheer-dialogue-quiet-company.png"
+        }
+    }
+
+    static func count(mask: Int) -> Int {
+        allCases.filter { mask & $0.rawValue != 0 }.count
+    }
+
+    static func next(offeredMask: Int, index: Int) -> PetCheerDialogue? {
+        let remaining = allCases.filter { offeredMask & $0.rawValue == 0 }
+        guard !remaining.isEmpty else { return nil }
+        return remaining[index % remaining.count]
+    }
+
+    static func summary(offeredMask: Int, answeredMask: Int, dismissedMask: Int) -> String {
+        let offered = count(mask: offeredMask)
+        let answered = count(mask: answeredMask)
+        let dismissed = count(mask: dismissedMask)
+        let nextText = next(offeredMask: offeredMask, index: offered + answered + dismissed)
+            .map { "Next \($0.title)" } ?? "All dialogue checks seen"
+        return "Cheer Dialogues \(answered)/\(allCases.count) answered · \(offered) seen · \(dismissed) skipped · \(nextText)"
+    }
+}
+
 enum PetCareNeed: Int, CaseIterable {
     case affection
     case study

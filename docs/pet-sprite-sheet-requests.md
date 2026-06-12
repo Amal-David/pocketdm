@@ -244,6 +244,22 @@ Generate these first. They unlock the most visible upgrade with the least code:
    - Contract accepted; pet stores the receipt and gains Joy/Sparks.
 111. `pet-buddy-bond-board-complete.png`
    - All four daily contracts complete; pet celebrates Bond HP without confetti text.
+112. `pet-buddy-cheer-dialogue-how-are-you.png`
+   - Proactive "how are you doing?" check-in, warm face and open posture.
+113. `pet-buddy-cheer-dialogue-whats-happening.png`
+   - Proactive "what is happening over there?" check-in, curious and listening.
+114. `pet-buddy-cheer-dialogue-tiny-win.png`
+   - Saves one tiny win as a spark, proud but gentle.
+115. `pet-buddy-cheer-dialogue-too-much.png`
+   - Helps shrink an overwhelming moment into one soft step.
+116. `pet-buddy-cheer-dialogue-focus-start.png`
+   - Sits beside the first minute of a task.
+117. `pet-buddy-cheer-dialogue-soft-reset.png`
+   - Breathes, stretches, and resets without guilt.
+118. `pet-buddy-cheer-dialogue-brave-next.png`
+   - Points toward the next brave small move.
+119. `pet-buddy-cheer-dialogue-quiet-company.png`
+   - Quiet company pose, calm and present.
 
 ## Generate In Separate Batches
 
@@ -377,7 +393,21 @@ consistent:
 - `pet-buddy-proactive-bond-board-answer.png`
 - `pet-buddy-proactive-bond-board-dismiss.png`
 
-### Batch 12: Full Stage Matrix
+### Batch 12: Cheer Dialogue Moments
+
+- `pet-buddy-cheer-dialogue-how-are-you.png`
+- `pet-buddy-cheer-dialogue-whats-happening.png`
+- `pet-buddy-cheer-dialogue-tiny-win.png`
+- `pet-buddy-cheer-dialogue-too-much.png`
+- `pet-buddy-cheer-dialogue-focus-start.png`
+- `pet-buddy-cheer-dialogue-soft-reset.png`
+- `pet-buddy-cheer-dialogue-brave-next.png`
+- `pet-buddy-cheer-dialogue-quiet-company.png`
+- `pet-buddy-cheer-dialogue-answer-reward.png`
+- `pet-buddy-cheer-dialogue-dismiss-soft.png`
+- `pet-buddy-journal-cheer-dialogues.png`
+
+### Batch 13: Full Stage Matrix
 
 After the buddy form works, repeat the stage matrix for:
 
@@ -730,6 +760,31 @@ Proactive check-ins:
 - `pet-{stage}-proactive-dismiss.png`
   - Calmly accepts dismissal and returns to idle, no sad guilt.
 
+Cheer dialogue moments:
+
+- `pet-{stage}-cheer-dialogue-how-are-you.png`
+  - Warm "how are you doing?" listening pose with open, soft expression.
+- `pet-{stage}-cheer-dialogue-whats-happening.png`
+  - Curious "what is happening over there?" pose, leaning in gently.
+- `pet-{stage}-cheer-dialogue-tiny-win.png`
+  - Pet saves one tiny win as a glowing spark.
+- `pet-{stage}-cheer-dialogue-too-much.png`
+  - Pet helps make an overwhelming moment smaller and softer.
+- `pet-{stage}-cheer-dialogue-focus-start.png`
+  - Pet perches beside the first minute of a task.
+- `pet-{stage}-cheer-dialogue-soft-reset.png`
+  - Pet breathes, stretches, and invites a reset without guilt.
+- `pet-{stage}-cheer-dialogue-brave-next.png`
+  - Pet points toward the next brave small move.
+- `pet-{stage}-cheer-dialogue-quiet-company.png`
+  - Pet sits quietly with the user; no task pressure.
+- `pet-{stage}-cheer-dialogue-answer-reward.png`
+  - Dialogue answered; pet stores a warm receipt in the journal.
+- `pet-{stage}-cheer-dialogue-dismiss-soft.png`
+  - Dialogue skipped; pet accepts softly and goes back to idle.
+- `pet-{stage}-journal-cheer-dialogues.png`
+  - Journal page showing answered, skipped, and saved dialogue moments.
+
 Bond Board contracts:
 
 - `pet-{stage}-bond-board-open.png`
@@ -904,6 +959,18 @@ These are for the progression layer:
 - Bond Board proactive check-in appeared.
 - Bond Board proactive check-in accepted.
 - Bond Board proactive check-in dismissed.
+- Cheer dialogue appeared.
+- Cheer dialogue answered.
+- Cheer dialogue dismissed.
+- Cheer dialogue album updated.
+- How-are-you check-in saved.
+- What-is-happening check-in saved.
+- Tiny-win check-in saved.
+- Too-much check-in softened.
+- Focus-start check-in saved.
+- Soft-reset check-in saved.
+- Brave-next check-in saved.
+- Quiet-company check-in saved.
 - Daily cipher clue found.
 - Daily cipher solved.
 - Daily boost ready.

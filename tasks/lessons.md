@@ -264,3 +264,10 @@ emotion, growth, and lore.
 **Rule:** daily board mechanics should become care contracts with visible
 receipts, vitals, mood-care progress, proactive prompts, and sprite requests,
 not abstract coin tapping or finance-style progression.
+
+## 2026-06-13 — Proactive cheer needs real conversation beats
+User wants the pet to ask how the user is doing and what is happening
+throughout the day, not only show task notifications.
+**Rule:** proactive check-ins should include a rotating dialogue deck with
+answer/skip state, warm receipts, care impact, and matching sprite requests,
+while avoiding guilt when the user dismisses them.

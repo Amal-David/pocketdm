@@ -200,6 +200,9 @@ The new layer should add:
   or complete a small emotional arc.
 - Proactive mood-care bubbles that can ask for the next emotional care step
   while the pet is minimized.
+- A proactive Cheer Dialogue deck for warm "how are you doing?", "what is
+  happening?", tiny-win, overwhelm, reset, and quiet-company moments that can be
+  answered or skipped without guilt.
 - A daily Bond Board: four rotating care contracts inspired by daily
   combo/cipher/upgrade retention loops, but expressed as care, study, focus,
   rest, story, and adventure rituals instead of finance mechanics.
@@ -237,6 +240,9 @@ The native macOS companion now has the first version of the loop:
 - Cheer Rhythm now tracks five daypart nudges per day: sunrise, focus,
   afternoon, evening, and night, with answered/skipped receipts and matching
   sprite requests.
+- Cheer Dialogues now track eight more conversational proactive check-ins per
+  day, save answered moments to a dialogue album, and refill the matching care
+  vital or Mood Care step.
 - Weekly care trail rewards now track separate day 1, 3, 5, and 7 milestones,
   surface in the journal, and request matching sprite sheets for each growth
   stage.
