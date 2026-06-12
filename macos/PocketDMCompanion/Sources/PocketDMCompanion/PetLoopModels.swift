@@ -504,6 +504,158 @@ enum PetFeeling: Int, CaseIterable {
     }
 }
 
+enum PetMoodCareStep: Int, CaseIterable {
+    case soothe = 1
+    case snack = 2
+    case rest = 4
+    case play = 8
+    case study = 16
+    case adventure = 32
+    case focus = 64
+    case puzzle = 128
+    case cheer = 256
+
+    var title: String {
+        switch self {
+        case .soothe:
+            return "Soothe"
+        case .snack:
+            return "Snack"
+        case .rest:
+            return "Rest"
+        case .play:
+            return "Play"
+        case .study:
+            return "Study"
+        case .adventure:
+            return "Adventure"
+        case .focus:
+            return "Focus"
+        case .puzzle:
+            return "Puzzle"
+        case .cheer:
+            return "Cheer"
+        }
+    }
+
+    var shortLabel: String {
+        switch self {
+        case .soothe:
+            return "Soothe"
+        case .snack:
+            return "Snack"
+        case .rest:
+            return "Rest"
+        case .play:
+            return "Play"
+        case .study:
+            return "Study"
+        case .adventure:
+            return "Quest"
+        case .focus:
+            return "Focus"
+        case .puzzle:
+            return "Puzzle"
+        case .cheer:
+            return "Cheer"
+        }
+    }
+
+    var spriteSlug: String {
+        switch self {
+        case .soothe:
+            return "soothe"
+        case .snack:
+            return "snack"
+        case .rest:
+            return "rest"
+        case .play:
+            return "play"
+        case .study:
+            return "study"
+        case .adventure:
+            return "adventure"
+        case .focus:
+            return "focus"
+        case .puzzle:
+            return "puzzle"
+        case .cheer:
+            return "cheer"
+        }
+    }
+}
+
+struct PetMoodCareRecipe {
+    let feeling: PetFeeling
+    let steps: [PetMoodCareStep]
+
+    var title: String {
+        "\(feeling.title) Care"
+    }
+
+    var actionLine: String {
+        steps.map(\.title).joined(separator: " + ")
+    }
+
+    func progress(mask: Int) -> Double {
+        guard !steps.isEmpty else { return 0 }
+        let done = steps.filter { mask & $0.rawValue != 0 }.count
+        return Double(done) / Double(steps.count)
+    }
+
+    func isComplete(mask: Int) -> Bool {
+        steps.allSatisfy { mask & $0.rawValue != 0 }
+    }
+
+    func nextStep(mask: Int) -> PetMoodCareStep? {
+        steps.first { mask & $0.rawValue == 0 }
+    }
+
+    func spriteRequestName(stage: PetGrowthStage) -> String {
+        let step = nextStep(mask: 0) ?? steps.first ?? .soothe
+        return "pet-\(stage.assetSlug)-mood-care-\(feeling.assetSlug)-\(step.spriteSlug).png"
+    }
+}
+
+extension PetFeeling {
+    var careRecipe: PetMoodCareRecipe {
+        switch self {
+        case .bright:
+            return PetMoodCareRecipe(feeling: self, steps: [.soothe, .play, .adventure])
+        case .eager:
+            return PetMoodCareRecipe(feeling: self, steps: [.play, .adventure, .focus])
+        case .proud:
+            return PetMoodCareRecipe(feeling: self, steps: [.cheer, .play, .focus])
+        case .overcharged:
+            return PetMoodCareRecipe(feeling: self, steps: [.play, .focus, .rest])
+        case .focused:
+            return PetMoodCareRecipe(feeling: self, steps: [.focus, .study, .cheer])
+        case .celebrating:
+            return PetMoodCareRecipe(feeling: self, steps: [.cheer, .play, .soothe])
+        case .protective:
+            return PetMoodCareRecipe(feeling: self, steps: [.rest, .soothe, .focus])
+        case .comfort:
+            return PetMoodCareRecipe(feeling: self, steps: [.soothe, .rest, .cheer])
+        case .playful:
+            return PetMoodCareRecipe(feeling: self, steps: [.play, .adventure, .snack])
+        case .grateful:
+            return PetMoodCareRecipe(feeling: self, steps: [.soothe, .cheer, .study])
+        case .determined:
+            return PetMoodCareRecipe(feeling: self, steps: [.focus, .adventure, .puzzle])
+        case .restless:
+            return PetMoodCareRecipe(feeling: self, steps: [.play, .focus, .adventure])
+        case .hungry:
+            return PetMoodCareRecipe(feeling: self, steps: [.snack, .soothe, .rest])
+        case .sleepy:
+            return PetMoodCareRecipe(feeling: self, steps: [.rest, .soothe, .snack])
+        case .curious:
+            return PetMoodCareRecipe(feeling: self, steps: [.study, .puzzle, .adventure])
+        case .lonely:
+            return PetMoodCareRecipe(feeling: self, steps: [.soothe, .cheer, .play])
+        }
+    }
+}
+
 enum PetComboAction: Int, CaseIterable {
     case pet = 1
     case hint = 2

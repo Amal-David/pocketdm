@@ -217,6 +217,10 @@ final class DragonOverlayModel: ObservableObject {
     private static let dailyFeelingMaskKey = "PocketDMCompanion.dailyFeelingMask"
     private static let emotionAlbumMaskKey = "PocketDMCompanion.emotionAlbumMask"
     private static let latestFeelingRawKey = "PocketDMCompanion.latestFeelingRaw"
+    private static let dailyMoodCareDateKey = "PocketDMCompanion.dailyMoodCareDate"
+    private static let dailyMoodCareFeelingRawKey = "PocketDMCompanion.dailyMoodCareFeelingRaw"
+    private static let dailyMoodCareMaskKey = "PocketDMCompanion.dailyMoodCareMask"
+    private static let moodCareAlbumMaskKey = "PocketDMCompanion.moodCareAlbumMask"
     private static let weeklyCareWeekKey = "PocketDMCompanion.weeklyCareWeek"
     private static let weeklyCareCountKey = "PocketDMCompanion.weeklyCareCount"
     private static let weeklyRewardMaskKey = "PocketDMCompanion.weeklyRewardMask"
@@ -291,6 +295,10 @@ final class DragonOverlayModel: ObservableObject {
     @Published var dailyFeelingMask = UserDefaults.standard.object(forKey: DragonOverlayModel.dailyFeelingMaskKey) as? Int ?? 0
     @Published var emotionAlbumMask = UserDefaults.standard.object(forKey: DragonOverlayModel.emotionAlbumMaskKey) as? Int ?? 0
     @Published var latestFeelingRaw = UserDefaults.standard.object(forKey: DragonOverlayModel.latestFeelingRawKey) as? Int ?? 0
+    @Published var dailyMoodCareDate = UserDefaults.standard.string(forKey: DragonOverlayModel.dailyMoodCareDateKey) ?? ""
+    @Published var dailyMoodCareFeelingRaw = UserDefaults.standard.object(forKey: DragonOverlayModel.dailyMoodCareFeelingRawKey) as? Int ?? 0
+    @Published var dailyMoodCareMask = UserDefaults.standard.object(forKey: DragonOverlayModel.dailyMoodCareMaskKey) as? Int ?? 0
+    @Published var moodCareAlbumMask = UserDefaults.standard.object(forKey: DragonOverlayModel.moodCareAlbumMaskKey) as? Int ?? 0
     @Published var weeklyCareWeek = UserDefaults.standard.string(forKey: DragonOverlayModel.weeklyCareWeekKey) ?? ""
     @Published var weeklyCareCount = UserDefaults.standard.object(forKey: DragonOverlayModel.weeklyCareCountKey) as? Int ?? 0
     @Published var weeklyRewardMask = UserDefaults.standard.object(forKey: DragonOverlayModel.weeklyRewardMaskKey) as? Int ?? 0
@@ -387,6 +395,9 @@ final class DragonOverlayModel: ObservableObject {
         if let charmNote = unlockCharm(.trailMap) {
             message += " \(charmNote)"
         }
+        if let moodCareNote = markMoodCare(.adventure) {
+            message += " \(moodCareNote)"
+        }
         if let memoryNote = unlockMemory(.firstQuest) {
             message += " \(memoryNote)"
         }
@@ -438,6 +449,9 @@ final class DragonOverlayModel: ObservableObject {
         if let charmNote = unlockCharm(.helloSpark) {
             message += " \(charmNote)"
         }
+        if let moodCareNote = markMoodCare(.soothe) {
+            message += " \(moodCareNote)"
+        }
         appendEmotionScene(trigger: "happy")
         play(.happy)
         speakPika()
@@ -455,6 +469,9 @@ final class DragonOverlayModel: ObservableObject {
         }
         if let charmNote = unlockCharm(.restNest) {
             message += " \(charmNote)"
+        }
+        if let moodCareNote = markMoodCare(.rest) {
+            message += " \(moodCareNote)"
         }
         lastRequest = "Mood"
         appendEmotionScene(trigger: "nap")
@@ -478,6 +495,9 @@ final class DragonOverlayModel: ObservableObject {
         }
         if let charmNote = unlockCharm(.playBolt) {
             message += " \(charmNote)"
+        }
+        if let moodCareNote = markMoodCare(.play) {
+            message += " \(moodCareNote)"
         }
         appendEmotionScene(trigger: "hyper")
         appendEvolutionNote(from: priorStage)
@@ -521,6 +541,9 @@ final class DragonOverlayModel: ObservableObject {
         }
         if let charmNote = unlockCharm(.studyBell) {
             message += " \(charmNote)"
+        }
+        if let moodCareNote = markMoodCare(.study) {
+            message += " \(moodCareNote)"
         }
         if let memoryNote = unlockMemory(.firstLesson) {
             message += " \(memoryNote)"
@@ -567,6 +590,9 @@ final class DragonOverlayModel: ObservableObject {
             }
             if let charmNote = unlockCharm(.studyBell) {
                 message += " \(charmNote)"
+            }
+            if let moodCareNote = markMoodCare(.study) {
+                message += " \(moodCareNote)"
             }
             if let memoryNote = unlockMemory(.firstLesson) {
                 message += " \(memoryNote)"
@@ -622,6 +648,12 @@ final class DragonOverlayModel: ObservableObject {
         if let charmNote = unlockCharm(.snackHeart) {
             message += " \(charmNote)"
         }
+        if let moodCareNote = markMoodCare(.snack) {
+            message += " \(moodCareNote)"
+        }
+        if let moodCareNote = markMoodCare(.soothe) {
+            message += " \(moodCareNote)"
+        }
         if let memoryNote = unlockMemory(.firstCare) {
             message += " \(memoryNote)"
         }
@@ -663,9 +695,17 @@ final class DragonOverlayModel: ObservableObject {
                 if let charmNote = unlockCharm(.trailMap) {
                     message += " \(charmNote)"
                 }
+                if let moodCareNote = markMoodCare(.adventure) {
+                    message += " \(moodCareNote)"
+                }
+                if let moodCareNote = markMoodCare(.focus) {
+                    message += " \(moodCareNote)"
+                }
                 if let memoryNote = unlockMemory(.firstHint) {
                     message += " \(memoryNote)"
                 }
+            } else if let moodCareNote = markMoodCare(.cheer) {
+                message += " \(moodCareNote)"
             }
             appendEmotionScene(trigger: asksForHint ? "hint" : "chat")
             appendEvolutionNote(from: priorStage)
@@ -705,6 +745,12 @@ final class DragonOverlayModel: ObservableObject {
         }
         if let charmNote = unlockCharm(.focusCharm) {
             message += " \(charmNote)"
+        }
+        if let moodCareNote = markMoodCare(.cheer) {
+            message += " \(moodCareNote)"
+        }
+        if let moodCareNote = markMoodCare(.focus) {
+            message += " \(moodCareNote)"
         }
         appendEmotionScene(trigger: "cheer")
         appendEvolutionNote(from: priorStage)
@@ -768,6 +814,9 @@ final class DragonOverlayModel: ObservableObject {
         if let charmNote = unlockCharm(.upgradeCard) {
             message += " \(charmNote)"
         }
+        if let moodCareNote = markMoodCare(.focus) {
+            message += " \(moodCareNote)"
+        }
         if let memoryNote = unlockMemory(.firstUpgrade) {
             message += " \(memoryNote)"
         }
@@ -812,6 +861,9 @@ final class DragonOverlayModel: ObservableObject {
         if let charmNote = unlockCharm(.focusCharm) {
             message += " \(charmNote)"
         }
+        if let moodCareNote = markMoodCare(.focus) {
+            message += " \(moodCareNote)"
+        }
         if let memoryNote = unlockMemory(.firstBoost) {
             message += " \(memoryNote)"
         }
@@ -855,6 +907,9 @@ final class DragonOverlayModel: ObservableObject {
         if let charmNote = unlockCharm(.cipherStone) {
             message += " \(charmNote)"
         }
+        if let moodCareNote = markMoodCare(.puzzle) {
+            message += " \(moodCareNote)"
+        }
         if let memoryNote = unlockMemory(.firstCipher) {
             message += " \(memoryNote)"
         }
@@ -893,6 +948,12 @@ final class DragonOverlayModel: ObservableObject {
         }
         if let charmNote = unlockCharm(.eventRibbon) {
             message += " \(charmNote)"
+        }
+        if let moodCareNote = markMoodCare(.play) {
+            message += " \(moodCareNote)"
+        }
+        if let moodCareNote = markMoodCare(.adventure) {
+            message += " \(moodCareNote)"
         }
 
         if dailyEventProgress >= event.requiredSteps {
@@ -989,6 +1050,16 @@ final class DragonOverlayModel: ObservableObject {
             albumMask: emotionAlbumMask,
             latest: PetFeeling(rawValue: latestFeelingRaw) ?? petFeeling
         )
+    }
+
+    var moodCareLine: String {
+        let done = moodCareRecipe.steps.filter { dailyMoodCareMask & $0.rawValue != 0 }.count
+        let next = moodCareRecipe.nextStep(mask: dailyMoodCareMask)?.title ?? "complete"
+        return "Mood Care \(moodCareFeeling.title) \(done)/\(moodCareRecipe.steps.count) · next \(next)"
+    }
+
+    var moodCareSteps: [PetMoodCareStep] {
+        moodCareRecipe.steps
     }
 
     var comboLine: String {
@@ -1125,6 +1196,19 @@ final class DragonOverlayModel: ObservableObject {
 
     var journalMoodProgress: Double {
         Double(PetFeeling.count(mask: emotionAlbumMask)) / Double(PetFeeling.allCases.count)
+    }
+
+    var journalMoodCareProgress: Double {
+        moodCareRecipe.progress(mask: dailyMoodCareMask)
+    }
+
+    var journalMoodCareCaption: String {
+        "\(moodCareLine) · Album \(PetFeeling.count(mask: moodCareAlbumMask))/\(PetFeeling.allCases.count)"
+    }
+
+    var journalMoodCareSpriteLine: String {
+        let step = moodCareRecipe.nextStep(mask: dailyMoodCareMask) ?? moodCareRecipe.steps.last ?? .soothe
+        return "Mood care sprite: pet-\(growthStage.assetSlug)-mood-care-\(moodCareFeeling.assetSlug)-\(step.spriteSlug).png"
     }
 
     var journalMemoryProgress: Double {
@@ -1298,6 +1382,10 @@ final class DragonOverlayModel: ObservableObject {
         UserDefaults.standard.set(dailyFeelingMask, forKey: Self.dailyFeelingMaskKey)
         UserDefaults.standard.set(emotionAlbumMask, forKey: Self.emotionAlbumMaskKey)
         UserDefaults.standard.set(latestFeelingRaw, forKey: Self.latestFeelingRawKey)
+        UserDefaults.standard.set(dailyMoodCareDate, forKey: Self.dailyMoodCareDateKey)
+        UserDefaults.standard.set(dailyMoodCareFeelingRaw, forKey: Self.dailyMoodCareFeelingRawKey)
+        UserDefaults.standard.set(dailyMoodCareMask, forKey: Self.dailyMoodCareMaskKey)
+        UserDefaults.standard.set(moodCareAlbumMask, forKey: Self.moodCareAlbumMaskKey)
         UserDefaults.standard.set(weeklyCareWeek, forKey: Self.weeklyCareWeekKey)
         UserDefaults.standard.set(weeklyCareCount, forKey: Self.weeklyCareCountKey)
         UserDefaults.standard.set(weeklyRewardMask, forKey: Self.weeklyRewardMaskKey)
@@ -1346,6 +1434,14 @@ final class DragonOverlayModel: ObservableObject {
             minimized: minimized,
             hour: currentHour
         )
+    }
+
+    private var moodCareFeeling: PetFeeling {
+        PetFeeling(rawValue: dailyMoodCareFeelingRaw) ?? petFeeling
+    }
+
+    private var moodCareRecipe: PetMoodCareRecipe {
+        moodCareFeeling.careRecipe
     }
 
     private var currentHour: Int {
@@ -1410,6 +1506,14 @@ final class DragonOverlayModel: ObservableObject {
 
     func isEvolutionQuestClaimed(_ quest: PetEvolutionQuest) -> Bool {
         evolutionQuestMask & quest.rawValue != 0
+    }
+
+    func isMoodCareStepDone(_ step: PetMoodCareStep) -> Bool {
+        dailyMoodCareMask & step.rawValue != 0
+    }
+
+    func isMoodCareFeelingComplete(_ feeling: PetFeeling) -> Bool {
+        moodCareAlbumMask & feeling.rawValue != 0
     }
 
     private func setVital(_ vital: PetCareVital, value: Int) {
@@ -1506,6 +1610,30 @@ final class DragonOverlayModel: ObservableObject {
         sparkDust = min(999, sparkDust + reward)
         persistCare()
         return "Charm found: \(charm.title). \(charm.unlockLine) Sparks +\(reward)."
+    }
+
+    private func markMoodCare(_ step: PetMoodCareStep) -> String? {
+        syncDailyCombo()
+        let recipe = moodCareRecipe
+        guard recipe.steps.contains(step), dailyMoodCareMask & step.rawValue == 0 else { return nil }
+
+        dailyMoodCareMask |= step.rawValue
+        let done = recipe.steps.filter { dailyMoodCareMask & $0.rawValue != 0 }.count
+        var notes = ["Mood care: \(step.title) \(done)/\(recipe.steps.count) for \(recipe.feeling.title)."]
+
+        if recipe.isComplete(mask: dailyMoodCareMask),
+           moodCareAlbumMask & recipe.feeling.rawValue == 0 {
+            moodCareAlbumMask |= recipe.feeling.rawValue
+            let reward = 12 + sparkLevel * 2
+            sparkDust = min(999, sparkDust + reward)
+            happiness = min(5, happiness + 1)
+            notes.append("\(recipe.title) complete: Joy +1, Sparks +\(reward). \(recipe.feeling.discoveryLine)")
+            play(.happy)
+            setMood(.hyper, duration: 1.4)
+        }
+
+        persistCare()
+        return notes.joined(separator: " ")
     }
 
     private func unlockVitalGlowIfReady() -> String? {
@@ -1725,6 +1853,12 @@ final class DragonOverlayModel: ObservableObject {
         if dailyFeelingDate != today {
             dailyFeelingDate = today
             dailyFeelingMask = 0
+            changed = true
+        }
+        if dailyMoodCareDate != today {
+            dailyMoodCareDate = today
+            dailyMoodCareFeelingRaw = petFeeling.rawValue
+            dailyMoodCareMask = 0
             changed = true
         }
         guard changed else { return }
@@ -2340,6 +2474,11 @@ struct DragonOverlayView: View {
                 .foregroundStyle(Color.ivory.opacity(0.72))
                 .lineLimit(1)
                 .minimumScaleFactor(0.54)
+            Text(model.moodCareLine)
+                .font(.system(size: 8.2, weight: .black, design: .rounded))
+                .foregroundStyle(Color.gold.opacity(0.68))
+                .lineLimit(1)
+                .minimumScaleFactor(0.48)
             Text(model.loreLine)
                 .font(.system(size: 9, weight: .bold, design: .rounded))
                 .foregroundStyle(Color.ivory.opacity(0.76))
@@ -2681,6 +2820,9 @@ struct PetJournalPanel: View {
         case .moods:
             journalHero("Mood Album", value: model.journalMoodProgress, caption: model.journalMoodCaption)
             moodGrid
+            journalHero("Mood Care", value: model.journalMoodCareProgress, caption: model.journalMoodCareCaption)
+            moodCareGrid
+            artLine(model.journalMoodCareSpriteLine)
         case .memories:
             journalHero("Memories", value: model.journalMemoryProgress, caption: model.memoryLine)
             memoryList
@@ -2760,6 +2902,14 @@ struct PetJournalPanel: View {
         LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 3), count: 4), spacing: 3) {
             ForEach(PetFeeling.allCases, id: \.rawValue) { feeling in
                 journalChip(feeling.title, isUnlocked: model.emotionAlbumMask & feeling.rawValue != 0)
+            }
+        }
+    }
+
+    private var moodCareGrid: some View {
+        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 4), count: 3), spacing: 3) {
+            ForEach(model.moodCareSteps, id: \.rawValue) { step in
+                journalChip(step.shortLabel, isUnlocked: model.isMoodCareStepDone(step))
             }
         }
     }

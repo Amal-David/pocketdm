@@ -238,3 +238,9 @@ arc.
 **Rule:** evolution should be represented as staged quest cards with lore,
 progress, rewards, and sprite requests so Tiny Spark, Pocket Pal, Trail Buddy,
 Storm Scout, and Storm Guardian feel like earned relationship chapters.
+
+## 2026-06-13 — Emotions need care recipes
+User wants the pet to go through real emotions, not just display mood names.
+**Rule:** each meaningful feeling should map to care actions that help it
+recover, express, or complete a daily arc; the app should track recipe progress,
+reward completion, and request matching mood-care sprite sheets.

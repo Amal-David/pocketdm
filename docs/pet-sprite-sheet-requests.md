@@ -210,6 +210,26 @@ Generate these first. They unlock the most visible upgrade with the least code:
    - Guardian Oath quest card: calm protective promise, no guilt or pressure.
 94. `pet-buddy-journal-evolution-quests.png`
    - Opens a journal page with four abstract evolution quest cards.
+95. `pet-buddy-mood-care-soothe.png`
+   - Gentle care recipe step: pet calms down and leans in.
+96. `pet-buddy-mood-care-snack.png`
+   - Snack care recipe step: cheeks brighten after a tiny snack.
+97. `pet-buddy-mood-care-rest.png`
+   - Rest care recipe step: sleepy breathing and soft recovery.
+98. `pet-buddy-mood-care-play.png`
+   - Play care recipe step: small hop, wiggle, and happy spark.
+99. `pet-buddy-mood-care-study.png`
+   - Study care recipe step: listens, repeats, and nods.
+100. `pet-buddy-mood-care-adventure.png`
+   - Adventure care recipe step: points at a trail and steps forward.
+101. `pet-buddy-mood-care-focus.png`
+   - Focus care recipe step: sits beside the user's task and watches calmly.
+102. `pet-buddy-mood-care-puzzle.png`
+   - Puzzle care recipe step: thinks, solves, and stores a clue.
+103. `pet-buddy-mood-care-cheer.png`
+   - Cheer care recipe step: checks on the user warmly without guilt.
+104. `pet-buddy-journal-mood-care.png`
+   - Opens today's mood-care recipe with three abstract step charms.
 
 ## Generate In Separate Batches
 
@@ -307,7 +327,20 @@ consistent:
 - `pet-buddy-evolution-quest-guardian-oath.png`
 - `pet-buddy-journal-evolution-quests.png`
 
-### Batch 10: Full Stage Matrix
+### Batch 10: Mood Care Recipes
+
+- `pet-buddy-mood-care-soothe.png`
+- `pet-buddy-mood-care-snack.png`
+- `pet-buddy-mood-care-rest.png`
+- `pet-buddy-mood-care-play.png`
+- `pet-buddy-mood-care-study.png`
+- `pet-buddy-mood-care-adventure.png`
+- `pet-buddy-mood-care-focus.png`
+- `pet-buddy-mood-care-puzzle.png`
+- `pet-buddy-mood-care-cheer.png`
+- `pet-buddy-journal-mood-care.png`
+
+### Batch 11: Full Stage Matrix
 
 After the buddy form works, repeat the stage matrix for:
 
@@ -550,6 +583,32 @@ Mood album:
 - `pet-{stage}-mood-revisit.png`
   - Recognizes a familiar feeling and gives a small "I remember this" reaction.
 
+Mood care recipes:
+
+- `pet-{stage}-mood-care-soothe.png`
+  - Generic soothe step for care recipes.
+- `pet-{stage}-mood-care-snack.png`
+  - Generic snack step for care recipes.
+- `pet-{stage}-mood-care-rest.png`
+  - Generic rest step for care recipes.
+- `pet-{stage}-mood-care-play.png`
+  - Generic play step for care recipes.
+- `pet-{stage}-mood-care-study.png`
+  - Generic study step for care recipes.
+- `pet-{stage}-mood-care-adventure.png`
+  - Generic adventure step for care recipes.
+- `pet-{stage}-mood-care-focus.png`
+  - Generic focus step for care recipes.
+- `pet-{stage}-mood-care-puzzle.png`
+  - Generic puzzle step for care recipes.
+- `pet-{stage}-mood-care-cheer.png`
+  - Generic cheer/check-in step for care recipes.
+- `pet-{stage}-journal-mood-care.png`
+  - Shows today's three-step mood-care recipe as visual charms, no labels.
+- `pet-{stage}-mood-care-{feeling}-{step}.png`
+  - High-fidelity matrix item for a specific feeling and recipe step, for
+    example `pet-buddy-mood-care-lonely-soothe.png`.
+
 Journal / album view:
 
 - `pet-{stage}-journal-open.png`
@@ -769,6 +828,9 @@ These are for the progression layer:
 - Evolution complete.
 - Mood decay after long absence.
 - Mood repaired by care.
+- Mood-care recipe step completed.
+- Mood-care recipe completed.
+- Mood-care journal page viewed.
 - Time-of-day nudge: sunrise.
 - Time-of-day nudge: focus.
 - Time-of-day nudge: afternoon.
