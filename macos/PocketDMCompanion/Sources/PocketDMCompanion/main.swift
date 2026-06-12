@@ -1,4 +1,5 @@
 import AppKit
+import AVFoundation
 import Combine
 import Foundation
 import SwiftUI
@@ -190,6 +191,15 @@ final class DragonOverlayModel: ObservableObject {
     private static let questLevelKey = "PocketDMCompanion.questLevel"
     private static let nestLevelKey = "PocketDMCompanion.nestLevel"
     private static let cheerLevelKey = "PocketDMCompanion.cheerLevel"
+    private static let sparkLevelKey = "PocketDMCompanion.sparkLevel"
+    private static let focusLevelKey = "PocketDMCompanion.focusLevel"
+    private static let cipherLevelKey = "PocketDMCompanion.cipherLevel"
+    private static let dailyQuestDateKey = "PocketDMCompanion.dailyQuestDate"
+    private static let dailyQuestMaskKey = "PocketDMCompanion.dailyQuestMask"
+    private static let dailyBoosterDateKey = "PocketDMCompanion.dailyBoosterDate"
+    private static let dailyBoosterUsedKey = "PocketDMCompanion.dailyBoosterUsed"
+    private static let dailyCipherDateKey = "PocketDMCompanion.dailyCipherDate"
+    private static let dailyCipherSolvedKey = "PocketDMCompanion.dailyCipherSolved"
     private static let maxEnergy = 5
     private static let energyRechargeSeconds: TimeInterval = 30 * 60
     private static let passiveSparkSeconds: TimeInterval = 15 * 60
@@ -202,7 +212,7 @@ final class DragonOverlayModel: ObservableObject {
         return formatter
     }()
 
-    @Published var message = "Your electric partner keeps a tiny bond spark. Pet once each day to earn +1 HP and refill joy."
+    @Published var message = "Pika pika! Your electric partner keeps a tiny bond spark. Pet once each day to earn +1 HP and refill joy."
     @Published var lastRequest = ""
     @Published var serverLine = "Checking PocketDM..."
     @Published var minimized = UserDefaults.standard.object(forKey: DragonOverlayModel.petOnlyKey) as? Bool ?? true
@@ -223,6 +233,15 @@ final class DragonOverlayModel: ObservableObject {
     @Published var questLevel = UserDefaults.standard.object(forKey: DragonOverlayModel.questLevelKey) as? Int ?? 0
     @Published var nestLevel = UserDefaults.standard.object(forKey: DragonOverlayModel.nestLevelKey) as? Int ?? 0
     @Published var cheerLevel = UserDefaults.standard.object(forKey: DragonOverlayModel.cheerLevelKey) as? Int ?? 0
+    @Published var sparkLevel = UserDefaults.standard.object(forKey: DragonOverlayModel.sparkLevelKey) as? Int ?? 0
+    @Published var focusLevel = UserDefaults.standard.object(forKey: DragonOverlayModel.focusLevelKey) as? Int ?? 0
+    @Published var cipherLevel = UserDefaults.standard.object(forKey: DragonOverlayModel.cipherLevelKey) as? Int ?? 0
+    @Published var dailyQuestDate = UserDefaults.standard.string(forKey: DragonOverlayModel.dailyQuestDateKey) ?? ""
+    @Published var dailyQuestMask = UserDefaults.standard.object(forKey: DragonOverlayModel.dailyQuestMaskKey) as? Int ?? 0
+    @Published var dailyBoosterDate = UserDefaults.standard.string(forKey: DragonOverlayModel.dailyBoosterDateKey) ?? ""
+    @Published var dailyBoosterUsed = UserDefaults.standard.bool(forKey: DragonOverlayModel.dailyBoosterUsedKey)
+    @Published var dailyCipherDate = UserDefaults.standard.string(forKey: DragonOverlayModel.dailyCipherDateKey) ?? ""
+    @Published var dailyCipherSolved = UserDefaults.standard.bool(forKey: DragonOverlayModel.dailyCipherSolvedKey)
     @Published var cheerBubble: String?
 
     let languageCoach = LanguageCoachStore()
@@ -250,7 +269,8 @@ final class DragonOverlayModel: ObservableObject {
         rechargeEnergy()
         let collected = collectPassiveSparks()
         if collected > 0 {
-            message = "Welcome back. Pikachu gathered \(collected) Sparks while you were away."
+            message = pikaText("Welcome back. Pikachu gathered \(collected) Sparks while you were away.")
+            speakPika()
         }
         startEnergyLoop()
         startCheerLoop()
@@ -270,7 +290,11 @@ final class DragonOverlayModel: ObservableObject {
     }
 
     func openGame() {
+        lastRequest = "Open"
+        message = pikaText("Quest opened. Your buddy marks the map and saves a Spark trail back here.")
         markCombo(.open)
+        recordDailyQuest(.adventure)
+        speakPika()
         launcher.openGame()
     }
 
@@ -280,7 +304,8 @@ final class DragonOverlayModel: ObservableObject {
         if !value {
             let collected = collectPassiveSparks()
             if collected > 0 {
-                message = "Welcome back. Pikachu gathered \(collected) passive Sparks."
+                message = pikaText("Welcome back. Pikachu gathered \(collected) passive Sparks.")
+                speakPika()
             }
         }
         UserDefaults.standard.set(value, forKey: Self.petOnlyKey)
@@ -300,9 +325,10 @@ final class DragonOverlayModel: ObservableObject {
     }
 
     func happy() {
-        message = "Pikachu perks up. Joy is high and it is ready for a quest or a quick lesson."
+        message = pikaText("Pikachu perks up. Joy is high and it is ready for a quest or a quick lesson.")
         lastRequest = "Mood"
         play(.happy)
+        speakPika()
         setMood(.happy, duration: 1.6)
     }
 
@@ -314,11 +340,12 @@ final class DragonOverlayModel: ObservableObject {
     }
 
     func hyper() {
-        message = "Pikachu is buzzing with energy. Great moment to ask for a hint or practice a phrase."
+        message = pikaText("Pikachu is buzzing with energy. Great moment to ask for a hint or practice a phrase.")
         lastRequest = "Mood"
         earnSparkDust(1)
         markCombo(.hyper)
         play(.hyper)
+        speakPika()
         setMood(.hyper, duration: 1.5)
     }
 
@@ -326,21 +353,23 @@ final class DragonOverlayModel: ObservableObject {
         learningMode = learningMode == .lesson ? .chat : .lesson
         if learningMode == .lesson {
             lastRequest = "Learn"
-            message = "Lesson mode opened. Pick a pack, listen once, slow it down, then quiz for Joy."
+            message = pikaText("Lesson mode opened. Pick a pack, listen once, slow it down, then quiz for Joy.")
             markCombo(.learn)
+            recordDailyQuest(.learn)
             play(.open)
+            speakPika()
             languageCoach.speakCurrent()
             setMood(.happy, duration: 1.2)
         } else {
             lastRequest = ""
-            message = "Back to chat. Ask for a hint, check status, or pet for today's bond spark."
+            message = pikaText("Back to chat. Ask for a hint, check status, or pet for today's bond spark.")
             play(.minimize)
         }
     }
 
     func applyLanguageReward(_ reward: LanguagePracticeReward) {
         lastRequest = "Language"
-        message = reward.message
+        message = pikaText(reward.message)
         if reward.correct {
             happiness = min(5, happiness + 1)
             earnSparkDust(reward.dailyBond ? 8 : 3)
@@ -348,8 +377,10 @@ final class DragonOverlayModel: ObservableObject {
                 companionHP = min(10, companionHP + 1)
             }
             markCombo(.learn)
+            recordDailyQuest(.learn)
             persistCare()
             play(reward.dailyBond ? .pet : .happy)
+            speakPika()
             setMood(.happy, duration: 1.4)
         } else {
             play(.alert)
@@ -366,7 +397,7 @@ final class DragonOverlayModel: ObservableObject {
             happiness = min(5, happiness + 1)
             let energyBonus = spendEnergy() ? " Energy -1." : " Energy is recharging."
             earnSparkDust(2)
-            message = "Already cared for today. Pikachu still leans in. Joy +1, Sparks +2.\(energyBonus)"
+            message = pikaText("Already cared for today. Pikachu still leans in. Joy +1, Sparks +2.\(energyBonus)")
         } else {
             companionHP = min(10, companionHP + 1)
             happiness = 5
@@ -374,11 +405,13 @@ final class DragonOverlayModel: ObservableObject {
             lastPetDay = today
             _ = spendEnergy()
             earnSparkDust(15)
-            message = "Daily care complete. Bond HP +1, Joy refilled, Sparks +15. \(growthStage.rewardLine)"
+            message = pikaText("Daily care complete. Bond HP +1, Joy refilled, Sparks +15. \(growthStage.rewardLine)")
         }
         markCombo(.pet)
+        recordDailyQuest(.care)
         persistCare()
         play(.pet)
+        speakPika()
         setMood(.happy, duration: 2.2)
     }
 
@@ -394,16 +427,18 @@ final class DragonOverlayModel: ObservableObject {
         setMood(.thinking)
         defer { busy = false }
         do {
-            message = try await client.assistantReply(for: prompt)
+            message = pikaText(try await client.assistantReply(for: prompt))
             serverLine = "PocketDM companion online"
             earnSparkDust(1)
             if isHintPrompt(prompt) {
                 markCombo(.hint)
+                recordDailyQuest(.hint)
             }
             play(.reply)
+            speakPika()
             setMood(.happy, duration: 1.5)
         } catch {
-            message = "I cannot reach the tale yet. Open PocketDM, start a run, then ask me again."
+            message = pikaText("I cannot reach the tale yet. Open PocketDM, start a run, then ask me again.")
             serverLine = "Waiting for local server"
             play(.nap)
             setMood(.nap, duration: 2.4)
@@ -416,10 +451,12 @@ final class DragonOverlayModel: ObservableObject {
         lastRequest = "Cheer"
         happiness = min(5, happiness + 1)
         earnSparkDust(3)
-        message = "\(prompt) Pikachu turns it into Joy +1 and Sparks +3. Open the game for one tiny quest."
+        message = pikaText("\(prompt) Pikachu turns it into Joy +1 and Sparks +3. Open the game for one tiny quest.")
+        recordDailyQuest(.cheer)
         UserDefaults.standard.set(Date().timeIntervalSince1970, forKey: Self.lastCheerAtKey)
         persistCare()
         play(.reply)
+        speakPika()
         setMood(.hyper, duration: 1.6)
         setMinimized(false)
     }
@@ -435,7 +472,7 @@ final class DragonOverlayModel: ObservableObject {
         let candidate = nextUpgradeCandidate
         guard sparkDust >= candidate.cost else {
             lastRequest = "Upgrade"
-            message = "\(candidate.name) needs \(candidate.cost) Sparks. You have \(sparkDust). Finish today's combo or pet again."
+            message = pikaText("\(candidate.name) needs \(candidate.cost) Sparks. You have \(sparkDust). Finish today's combo or pet again.")
             play(.alert)
             setMood(.alert, duration: 1.1)
             return
@@ -453,14 +490,73 @@ final class DragonOverlayModel: ObservableObject {
             nestLevel += 1
         case .cheer:
             cheerLevel += 1
+        case .spark:
+            sparkLevel += 1
+        case .focus:
+            focusLevel += 1
+        case .cipher:
+            cipherLevel += 1
         }
 
         lastRequest = "Upgrade"
-        message = "\(candidate.name) upgraded. \(candidate.kind.unlockLine) Passive Sparks now +\(passiveSparkRate) every 15 minutes."
+        message = pikaText("\(candidate.name) upgraded. \(candidate.kind.unlockLine) Passive Sparks now +\(passiveSparkRate) every 15 minutes.")
         markCombo(.upgrade)
+        recordDailyQuest(.upgrade)
         persistCare()
         play(.happy)
+        speakPika()
         setMood(.happy, duration: 1.4)
+    }
+
+    func activateDailyBoost() {
+        syncDailyCombo()
+        guard !dailyBoosterUsed else {
+            lastRequest = "Boost"
+            message = pikaText("Today's Spark Boost is already spent. It will refill tomorrow.")
+            play(.alert)
+            setMood(.alert, duration: 1.0)
+            return
+        }
+
+        dailyBoosterUsed = true
+        dailyBoosterDate = Self.dayFormatter.string(from: Date())
+        let sparkGain = 10 + focusLevel * 5
+        energy = Self.maxEnergy
+        happiness = min(5, happiness + 1)
+        sparkDust = min(999, sparkDust + sparkGain)
+        lastRequest = "Boost"
+        message = pikaText("Spark Boost claimed. Energy refilled, Joy +1, Sparks +\(sparkGain).")
+        markCombo(.boost)
+        recordDailyQuest(.boost)
+        persistCare()
+        play(.hyper)
+        speakPika()
+        setMood(.hyper, duration: 1.6)
+    }
+
+    func solveDailyCipher() {
+        syncDailyCombo()
+        let cipher = dailyCipher
+        guard !dailyCipherSolved else {
+            lastRequest = "Cipher"
+            message = pikaText("Today's cipher is already solved: \(cipher.answer). New clue tomorrow.")
+            play(.happy)
+            setMood(.happy, duration: 1.0)
+            return
+        }
+
+        dailyCipherSolved = true
+        dailyCipherDate = Self.dayFormatter.string(from: Date())
+        sparkDust = min(999, sparkDust + cipher.reward)
+        happiness = min(5, happiness + 1)
+        lastRequest = "Cipher"
+        message = pikaText("Daily cipher solved: \(cipher.answer). Joy +1 and Sparks +\(cipher.reward).")
+        markCombo(.cipher)
+        recordDailyQuest(.cipher)
+        persistCare()
+        play(.happy)
+        speakPika()
+        setMood(.hyper, duration: 1.5)
     }
 
     func setMood(_ next: PetMood, duration: TimeInterval? = nil) {
@@ -488,7 +584,7 @@ final class DragonOverlayModel: ObservableObject {
     }
 
     var economyLine: String {
-        "Sparks \(sparkDust) · Energy \(energy)/\(Self.maxEnergy) · Streak \(petStreak)d"
+        "Sparks \(sparkDust) · Energy \(energy)/\(Self.maxEnergy) · +\(passiveSparkRate)/15m"
     }
 
     var comboLine: String {
@@ -496,6 +592,22 @@ final class DragonOverlayModel: ObservableObject {
             "\(action.label) \(dailyComboMask & action.rawValue == 0 ? "○" : "✓")"
         }
         return "Combo " + pieces.joined(separator: " · ")
+    }
+
+    var taskLine: String {
+        let quests = dailyQuests
+        let done = quests.filter { dailyQuestMask & $0.rawValue != 0 }.count
+        let labels = quests.map { quest in
+            "\(quest.shortLabel)\(dailyQuestMask & quest.rawValue == 0 ? "○" : "✓")"
+        }
+        return "Tasks \(done)/\(quests.count) " + labels.joined(separator: " ")
+    }
+
+    var cipherLine: String {
+        if dailyCipherSolved {
+            return "Cipher \(dailyCipher.answer) ✓ · Boost \(dailyBoosterUsed ? "used" : "ready")"
+        }
+        return "Cipher: \(dailyCipher.clue) · Boost \(dailyBoosterUsed ? "used" : "ready")"
     }
 
     var upgradeLine: String {
@@ -515,12 +627,26 @@ final class DragonOverlayModel: ObservableObject {
             lessonLevel: lessonLevel,
             questLevel: questLevel,
             nestLevel: nestLevel,
-            cheerLevel: cheerLevel
+            cheerLevel: cheerLevel,
+            sparkLevel: sparkLevel,
+            focusLevel: focusLevel,
+            cipherLevel: cipherLevel
         )
     }
 
     private func play(_ sound: PetSound) {
         soundPlayer.play(sound, enabled: soundEnabled)
+    }
+
+    private func speakPika() {
+        soundPlayer.speakPika(enabled: soundEnabled)
+    }
+
+    private func pikaText(_ text: String) -> String {
+        if text.localizedCaseInsensitiveContains("pika pika") {
+            return text
+        }
+        return "Pika pika! \(text)"
     }
 
     private func persistCare() {
@@ -539,6 +665,15 @@ final class DragonOverlayModel: ObservableObject {
         UserDefaults.standard.set(questLevel, forKey: Self.questLevelKey)
         UserDefaults.standard.set(nestLevel, forKey: Self.nestLevelKey)
         UserDefaults.standard.set(cheerLevel, forKey: Self.cheerLevelKey)
+        UserDefaults.standard.set(sparkLevel, forKey: Self.sparkLevelKey)
+        UserDefaults.standard.set(focusLevel, forKey: Self.focusLevelKey)
+        UserDefaults.standard.set(cipherLevel, forKey: Self.cipherLevelKey)
+        UserDefaults.standard.set(dailyQuestDate, forKey: Self.dailyQuestDateKey)
+        UserDefaults.standard.set(dailyQuestMask, forKey: Self.dailyQuestMaskKey)
+        UserDefaults.standard.set(dailyBoosterDate, forKey: Self.dailyBoosterDateKey)
+        UserDefaults.standard.set(dailyBoosterUsed, forKey: Self.dailyBoosterUsedKey)
+        UserDefaults.standard.set(dailyCipherDate, forKey: Self.dailyCipherDateKey)
+        UserDefaults.standard.set(dailyCipherSolved, forKey: Self.dailyCipherSolvedKey)
     }
 
     private func handlesCare(_ prompt: String) -> Bool {
@@ -567,8 +702,13 @@ final class DragonOverlayModel: ObservableObject {
             happiness: happiness,
             energy: energy,
             comboComplete: isDailyComboComplete,
+            dailyTasksComplete: isDailyQuestSetComplete,
+            cipherSolved: dailyCipherSolved,
+            boosterReady: !dailyBoosterUsed,
             sparkDust: sparkDust,
-            streak: petStreak
+            streak: petStreak,
+            minimized: minimized,
+            hour: Calendar.current.component(.hour, from: Date())
         )
     }
 
@@ -586,7 +726,7 @@ final class DragonOverlayModel: ObservableObject {
     }
 
     private var passiveSparkRate: Int {
-        max(1, 1 + snackLevel + lessonLevel + questLevel + nestLevel + cheerLevel)
+        max(1, 1 + snackLevel + lessonLevel + questLevel + nestLevel + cheerLevel + sparkLevel)
     }
 
     private func collectPassiveSparks() -> Int {
@@ -607,9 +747,28 @@ final class DragonOverlayModel: ObservableObject {
 
     private func syncDailyCombo() {
         let today = Self.dayFormatter.string(from: Date())
-        guard dailyComboDate != today else { return }
-        dailyComboDate = today
-        dailyComboMask = 0
+        var changed = false
+        if dailyComboDate != today {
+            dailyComboDate = today
+            dailyComboMask = 0
+            changed = true
+        }
+        if dailyQuestDate != today {
+            dailyQuestDate = today
+            dailyQuestMask = 0
+            changed = true
+        }
+        if dailyBoosterDate != today {
+            dailyBoosterDate = today
+            dailyBoosterUsed = false
+            changed = true
+        }
+        if dailyCipherDate != today {
+            dailyCipherDate = today
+            dailyCipherSolved = false
+            changed = true
+        }
+        guard changed else { return }
         persistCare()
     }
 
@@ -627,8 +786,35 @@ final class DragonOverlayModel: ObservableObject {
         persistCare()
     }
 
+    private func recordDailyQuest(_ quest: PetDailyQuest) {
+        syncDailyCombo()
+        let wasComplete = isDailyQuestSetComplete
+        guard dailyQuestMask & quest.rawValue == 0 else {
+            persistCare()
+            return
+        }
+
+        dailyQuestMask |= quest.rawValue
+        let reward = 6 + questLevel + sparkLevel
+        sparkDust = min(999, sparkDust + reward)
+        happiness = min(5, happiness + 1)
+        message += " Task clear: \(quest.title) +\(reward) Sparks."
+        if !wasComplete, isDailyQuestSetComplete {
+            companionHP = min(10, companionHP + 1)
+            sparkDust = min(999, sparkDust + 30)
+            message += " Daily board complete: Bond HP +1 and Sparks +30."
+            play(.happy)
+            setMood(.hyper, duration: 1.8)
+        }
+        persistCare()
+    }
+
     private var isDailyComboComplete: Bool {
         dailyComboActions.allSatisfy { dailyComboMask & $0.rawValue != 0 }
+    }
+
+    private var isDailyQuestSetComplete: Bool {
+        dailyQuests.allSatisfy { dailyQuestMask & $0.rawValue != 0 }
     }
 
     private var nextUpgradeCandidate: PetUpgradeCandidate {
@@ -637,12 +823,30 @@ final class DragonOverlayModel: ObservableObject {
             PetUpgradeCandidate(kind: .lesson, level: lessonLevel),
             PetUpgradeCandidate(kind: .quest, level: questLevel),
             PetUpgradeCandidate(kind: .nest, level: nestLevel),
-            PetUpgradeCandidate(kind: .cheer, level: cheerLevel)
+            PetUpgradeCandidate(kind: .cheer, level: cheerLevel),
+            PetUpgradeCandidate(kind: .spark, level: sparkLevel),
+            PetUpgradeCandidate(kind: .focus, level: focusLevel),
+            PetUpgradeCandidate(kind: .cipher, level: cipherLevel)
         ].min { $0.cost < $1.cost } ?? PetUpgradeCandidate(kind: .snack, level: snackLevel)
     }
 
     private var dailyComboActions: [PetComboAction] {
         PetComboAction.dailyCombo(for: dailyComboDate.isEmpty ? Self.dayFormatter.string(from: Date()) : dailyComboDate)
+    }
+
+    private var dailyQuests: [PetDailyQuest] {
+        PetDailyQuest.dailyDeck(for: dailyQuestDate.isEmpty ? Self.dayFormatter.string(from: Date()) : dailyQuestDate)
+    }
+
+    private var nextDailyQuest: PetDailyQuest? {
+        dailyQuests.first { dailyQuestMask & $0.rawValue == 0 }
+    }
+
+    private var dailyCipher: PetDailyCipher {
+        PetDailyCipher.daily(
+            for: dailyCipherDate.isEmpty ? Self.dayFormatter.string(from: Date()) : dailyCipherDate,
+            cipherLevel: cipherLevel
+        )
     }
 
     private var effectiveCheerCooldown: TimeInterval {
@@ -699,18 +903,23 @@ final class DragonOverlayModel: ObservableObject {
         guard lastCheerAt == 0 || now - lastCheerAt >= effectiveCheerCooldown else { return }
 
         let index = defaults.integer(forKey: Self.cheerIndexKey)
-        cheerBubble = PetNudgeLibrary.cheerLine(
+        cheerBubble = pikaText(PetNudgeLibrary.cheerLine(
             feeling: petFeeling,
             stage: growthStage,
             combo: dailyComboActions,
             comboMask: dailyComboMask,
+            nextQuest: nextDailyQuest,
+            cipher: dailyCipher,
+            cipherSolved: dailyCipherSolved,
+            boosterReady: !dailyBoosterUsed,
             energy: energy,
             sparkDust: sparkDust,
             index: index
-        )
+        ))
         defaults.set(index + 1, forKey: Self.cheerIndexKey)
         defaults.set(now, forKey: Self.lastCheerAtKey)
         play(.happy)
+        speakPika()
         setMood(.hyper, duration: 1.2)
     }
 }
@@ -824,6 +1033,8 @@ enum PetSound: CaseIterable {
 final class PetSoundPlayer {
     private var cache: [PetSound: NSSound] = [:]
     private var lastPlayed: [PetSound: Date] = [:]
+    private let speech = AVSpeechSynthesizer()
+    private var lastPikaAt = Date.distantPast
 
     func play(_ sound: PetSound, enabled: Bool) {
         guard enabled, let player = soundInstance(for: sound) else { return }
@@ -838,10 +1049,25 @@ final class PetSoundPlayer {
         player.play()
     }
 
+    func speakPika(enabled: Bool) {
+        guard enabled else { return }
+        let now = Date()
+        guard now.timeIntervalSince(lastPikaAt) >= 1.4 else { return }
+        lastPikaAt = now
+        speech.stopSpeaking(at: .immediate)
+        let utterance = AVSpeechUtterance(string: "pika pika")
+        utterance.rate = 0.48
+        utterance.volume = 0.42
+        utterance.pitchMultiplier = 1.18
+        utterance.voice = AVSpeechSynthesisVoice(language: "en-US")
+        speech.speak(utterance)
+    }
+
     func stopAll() {
         for player in cache.values {
             player.stop()
         }
+        speech.stopSpeaking(at: .immediate)
     }
 
     private func soundInstance(for sound: PetSound) -> NSSound? {
@@ -998,6 +1224,19 @@ struct DragonOverlayView: View {
                             .buttonStyle(DragonButtonStyle(kind: .secondary))
                             .accessibilityLabel("Open PocketDM")
                         }
+
+                        HStack(spacing: 8) {
+                            Button("Boost") {
+                                model.activateDailyBoost()
+                            }
+                            .buttonStyle(DragonButtonStyle(kind: .secondary))
+                            .disabled(model.busy)
+                            Button("Cipher") {
+                                model.solveDailyCipher()
+                            }
+                            .buttonStyle(DragonButtonStyle(kind: .secondary))
+                            .disabled(model.busy)
+                        }
                     }
                 }
                 .frame(width: 268)
@@ -1036,6 +1275,16 @@ struct DragonOverlayView: View {
                 .foregroundStyle(Color.ivory.opacity(0.74))
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
+            Text(model.taskLine)
+                .font(.system(size: 8.5, weight: .black, design: .rounded))
+                .foregroundStyle(Color.ivory.opacity(0.72))
+                .lineLimit(1)
+                .minimumScaleFactor(0.58)
+            Text(model.cipherLine)
+                .font(.system(size: 8.5, weight: .bold, design: .rounded))
+                .foregroundStyle(Color.ivory.opacity(0.7))
+                .lineLimit(1)
+                .minimumScaleFactor(0.58)
             Text(model.upgradeLine)
                 .font(.system(size: 9, weight: .black, design: .rounded))
                 .foregroundStyle(Color.ivory.opacity(0.68))
@@ -1044,7 +1293,7 @@ struct DragonOverlayView: View {
         }
         .multilineTextAlignment(.center)
         .frame(width: 170)
-        .frame(minHeight: 98)
+        .frame(minHeight: 122)
         .padding(.vertical, 7)
         .padding(.horizontal, 8)
         .background(.black.opacity(0.58), in: RoundedRectangle(cornerRadius: 7))

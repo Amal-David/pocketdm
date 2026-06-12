@@ -43,6 +43,13 @@ Generate these first. They unlock the most visible upgrade with the least code:
    - Finds a little charm/card, celebrates, then returns to idle.
 12. `pet-buddy-upgrade-denied.png`
    - Checks empty paws, encouraging shrug, no shame.
+13. `pet-buddy-say-pika-pika.png`
+   - Small mouth flaps, cheek twinkle, happy syllable bounce for the spoken
+     "pika pika" reaction.
+14. `pet-buddy-spark-boost.png`
+   - Fast wind-up, electric burst, then settles proudly.
+15. `pet-buddy-daily-cipher.png`
+   - Thinking pose, clue discovery, little solved-celebration.
 
 ## Growth Stages
 
@@ -95,6 +102,18 @@ Feelings:
   - Hyperactive default: looking down, looking up, noticing user, smiling.
 - `proud`
   - Combo complete, tiny chest-out victory, cheek glow.
+- `overcharged`
+  - Spark boost ready, jittery cheek sparks, wants to move.
+- `focused`
+  - Minimized watch mode, quiet breathing, eyes tracking the desktop.
+- `celebrating`
+  - Full daily board complete, bouncing victory.
+- `protective`
+  - Late-night guardian stance, calm and reassuring.
+- `gentle`
+  - Comfort mode after low joy or missed care.
+- `restless`
+  - Too many Sparks saved, asks for an upgrade.
 - `snacky`
   - Low energy, hungry, hopeful look toward snack bowl.
 - `sleepy`
@@ -108,10 +127,17 @@ Minimum matrix:
 
 - `pet-{stage}-eager-idle-look-smile.png`
 - `pet-{stage}-proud-combo-complete.png`
+- `pet-{stage}-overcharged-spark-boost-ready.png`
+- `pet-{stage}-focused-watch-mode.png`
+- `pet-{stage}-celebrating-board-complete.png`
+- `pet-{stage}-protective-night-watch.png`
+- `pet-{stage}-gentle-comfort.png`
+- `pet-{stage}-restless-upgrade-ready.png`
 - `pet-{stage}-snacky-low-energy.png`
 - `pet-{stage}-sleepy-nap.png`
 - `pet-{stage}-curious-listen.png`
 - `pet-{stage}-lonely-comeback.png`
+- `pet-{stage}-say-pika-pika.png`
 
 Full matrix:
 
@@ -166,6 +192,16 @@ These are for the progression layer:
 - Quest Map points to adventure.
 - Study Bell lesson reward.
 - Snack Bowl energy refill.
+- Spark Wheel passive-income upgrade.
+- Focus Charm boost upgrade.
+- Cipher Stone daily-puzzle upgrade.
+- Daily task board complete.
+- Daily task board almost complete.
+- Daily cipher clue found.
+- Daily cipher solved.
+- Daily boost ready.
+- Daily boost claimed.
+- Pika pika voice reaction.
 
 ## Submission-Inspired Experience Sheets
 

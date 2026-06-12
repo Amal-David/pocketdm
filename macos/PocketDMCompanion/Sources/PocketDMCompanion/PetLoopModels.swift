@@ -87,22 +87,51 @@ enum PetFeeling {
     case bright
     case eager
     case proud
+    case overcharged
+    case focused
+    case celebrating
+    case protective
+    case comfort
+    case restless
     case hungry
     case sleepy
     case curious
     case lonely
 
-    init(happiness: Int, energy: Int, comboComplete: Bool, sparkDust: Int, streak: Int) {
+    init(
+        happiness: Int,
+        energy: Int,
+        comboComplete: Bool,
+        dailyTasksComplete: Bool,
+        cipherSolved: Bool,
+        boosterReady: Bool,
+        sparkDust: Int,
+        streak: Int,
+        minimized: Bool,
+        hour: Int
+    ) {
         if energy == 0 {
             self = .sleepy
         } else if happiness <= 1 {
             self = .lonely
+        } else if dailyTasksComplete && comboComplete && cipherSolved {
+            self = .celebrating
+        } else if hour >= 22 || hour < 6 {
+            self = .protective
+        } else if boosterReady && energy >= 4 {
+            self = .overcharged
         } else if energy <= 1 {
             self = .hungry
         } else if comboComplete {
             self = .proud
+        } else if minimized {
+            self = .focused
         } else if streak == 0 || sparkDust < 20 {
             self = .curious
+        } else if happiness <= 2 {
+            self = .comfort
+        } else if sparkDust >= 120 {
+            self = .restless
         } else {
             self = .eager
         }
@@ -116,6 +145,18 @@ enum PetFeeling {
             return "Eager"
         case .proud:
             return "Proud"
+        case .overcharged:
+            return "Overcharged"
+        case .focused:
+            return "Focused"
+        case .celebrating:
+            return "Celebrating"
+        case .protective:
+            return "Protective"
+        case .comfort:
+            return "Gentle"
+        case .restless:
+            return "Restless"
         case .hungry:
             return "Snacky"
         case .sleepy:
@@ -135,6 +176,18 @@ enum PetFeeling {
             return "Wants one more combo step."
         case .proud:
             return "Combo glow is warm."
+        case .overcharged:
+            return "A daily boost is ready."
+        case .focused:
+            return "Keeping watch from the corner."
+        case .celebrating:
+            return "Today's board is glowing."
+        case .protective:
+            return "Quietly guarding the late hours."
+        case .comfort:
+            return "Wants to make the next step smaller."
+        case .restless:
+            return "Sparks are asking for an upgrade."
         case .hungry:
             return "Energy is low; a snack upgrade helps."
         case .sleepy:
@@ -154,6 +207,8 @@ enum PetComboAction: Int, CaseIterable {
     case hyper = 8
     case upgrade = 16
     case open = 32
+    case cipher = 64
+    case boost = 128
 
     static func dailyCombo(for dateKey: String) -> [PetComboAction] {
         let seed = dateKey.unicodeScalars.reduce(0) { $0 + Int($1.value) }
@@ -163,7 +218,10 @@ enum PetComboAction: Int, CaseIterable {
             [.learn, .hint, .upgrade],
             [.pet, .learn, .hyper],
             [.hint, .open, .upgrade],
-            [.pet, .open, .learn]
+            [.pet, .open, .learn],
+            [.pet, .cipher, .boost],
+            [.hint, .cipher, .learn],
+            [.upgrade, .boost, .open]
         ]
         return decks[seed % decks.count]
     }
@@ -182,6 +240,10 @@ enum PetComboAction: Int, CaseIterable {
             return "Upgrade"
         case .open:
             return "Open"
+        case .cipher:
+            return "Cipher"
+        case .boost:
+            return "Boost"
         }
     }
 
@@ -199,6 +261,10 @@ enum PetComboAction: Int, CaseIterable {
             return "buy one upgrade"
         case .open:
             return "open the quest"
+        case .cipher:
+            return "solve today's tiny cipher"
+        case .boost:
+            return "use today's spark boost"
         }
     }
 }
@@ -209,6 +275,9 @@ enum PetUpgradeKind: CaseIterable {
     case quest
     case nest
     case cheer
+    case spark
+    case focus
+    case cipher
 
     var baseCost: Int {
         switch self {
@@ -222,6 +291,12 @@ enum PetUpgradeKind: CaseIterable {
             return 42
         case .cheer:
             return 48
+        case .spark:
+            return 56
+        case .focus:
+            return 64
+        case .cipher:
+            return 72
         }
     }
 
@@ -237,6 +312,12 @@ enum PetUpgradeKind: CaseIterable {
             return "Cozy Nest"
         case .cheer:
             return "Cheer Signal"
+        case .spark:
+            return "Spark Wheel"
+        case .focus:
+            return "Focus Charm"
+        case .cipher:
+            return "Cipher Stone"
         }
     }
 
@@ -252,6 +333,12 @@ enum PetUpgradeKind: CaseIterable {
             return "Nest"
         case .cheer:
             return "Cheer"
+        case .spark:
+            return "Wheel"
+        case .focus:
+            return "Focus"
+        case .cipher:
+            return "Cipher"
         }
     }
 
@@ -267,6 +354,12 @@ enum PetUpgradeKind: CaseIterable {
             return "Comeback rewards feel safer."
         case .cheer:
             return "Check-ins can arrive a little sooner."
+        case .spark:
+            return "Passive Sparks and task rewards climb."
+        case .focus:
+            return "Daily boosts carry more energy."
+        case .cipher:
+            return "Daily ciphers pay brighter rewards."
         }
     }
 }
@@ -288,6 +381,115 @@ struct PetUpgradeCandidate {
     }
 }
 
+enum PetDailyQuest: Int, CaseIterable {
+    case care = 1
+    case hint = 2
+    case learn = 4
+    case adventure = 8
+    case upgrade = 16
+    case cheer = 32
+    case cipher = 64
+    case boost = 128
+
+    static func dailyDeck(for dateKey: String) -> [PetDailyQuest] {
+        let seed = dateKey.unicodeScalars.reduce(0) { $0 + Int($1.value) }
+        let decks: [[PetDailyQuest]] = [
+            [.care, .hint, .learn, .cipher],
+            [.care, .adventure, .boost, .cheer],
+            [.learn, .hint, .upgrade, .cipher],
+            [.care, .learn, .boost, .adventure],
+            [.hint, .cheer, .upgrade, .cipher],
+            [.care, .boost, .learn, .upgrade]
+        ]
+        return decks[seed % decks.count]
+    }
+
+    var title: String {
+        switch self {
+        case .care:
+            return "Daily Care"
+        case .hint:
+            return "Ask Hint"
+        case .learn:
+            return "Practice Phrase"
+        case .adventure:
+            return "Open Quest"
+        case .upgrade:
+            return "Buy Upgrade"
+        case .cheer:
+            return "Answer Cheer"
+        case .cipher:
+            return "Daily Cipher"
+        case .boost:
+            return "Spark Boost"
+        }
+    }
+
+    var shortLabel: String {
+        switch self {
+        case .care:
+            return "Care"
+        case .hint:
+            return "Hint"
+        case .learn:
+            return "Learn"
+        case .adventure:
+            return "Quest"
+        case .upgrade:
+            return "Up"
+        case .cheer:
+            return "Cheer"
+        case .cipher:
+            return "Cipher"
+        case .boost:
+            return "Boost"
+        }
+    }
+
+    var nudgeText: String {
+        switch self {
+        case .care:
+            return "pet me once"
+        case .hint:
+            return "ask for one hint"
+        case .learn:
+            return "practice one phrase"
+        case .adventure:
+            return "open the adventure"
+        case .upgrade:
+            return "buy the next card"
+        case .cheer:
+            return "answer a check-in"
+        case .cipher:
+            return "solve today's cipher"
+        case .boost:
+            return "claim the spark boost"
+        }
+    }
+}
+
+struct PetDailyCipher {
+    let clue: String
+    let answer: String
+    let reward: Int
+
+    static func daily(for dateKey: String, cipherLevel: Int) -> PetDailyCipher {
+        let seed = dateKey.unicodeScalars.reduce(0) { $0 + Int($1.value) }
+        let bank = [
+            ("Tiny thunder word", "SPARK"),
+            ("Best daily care word", "BOND"),
+            ("What the pet guards", "QUEST"),
+            ("Mood after a good lesson", "JOY"),
+            ("Comeback treasure", "CHEST"),
+            ("Soft night mode", "NEST"),
+            ("Helpful whisper", "HINT"),
+            ("Brave little step", "TRY")
+        ]
+        let entry = bank[seed % bank.count]
+        return PetDailyCipher(clue: entry.0, answer: entry.1, reward: 16 + cipherLevel * 4)
+    }
+}
+
 enum PetLoreCodex {
     static func line(
         stage: PetGrowthStage,
@@ -296,14 +498,20 @@ enum PetLoreCodex {
         lessonLevel: Int,
         questLevel: Int,
         nestLevel: Int,
-        cheerLevel: Int
+        cheerLevel: Int,
+        sparkLevel: Int,
+        focusLevel: Int,
+        cipherLevel: Int
     ) -> String {
         let strongestUpgrade = [
             ("snack", snackLevel),
             ("lesson", lessonLevel),
             ("quest", questLevel),
             ("nest", nestLevel),
-            ("cheer", cheerLevel)
+            ("cheer", cheerLevel),
+            ("spark", sparkLevel),
+            ("focus", focusLevel),
+            ("cipher", cipherLevel)
         ].max { $0.1 < $1.1 }
 
         if let strongestUpgrade, strongestUpgrade.1 > 0 {
@@ -319,6 +527,10 @@ enum PetNudgeLibrary {
         stage: PetGrowthStage,
         combo: [PetComboAction],
         comboMask: Int,
+        nextQuest: PetDailyQuest?,
+        cipher: PetDailyCipher,
+        cipherSolved: Bool,
+        boosterReady: Bool,
         energy: Int,
         sparkDust: Int,
         index: Int
@@ -326,8 +538,17 @@ enum PetNudgeLibrary {
         if energy == 0 {
             return "I am sleepy, but I saved your quest. Come back after a recharge?"
         }
+        if boosterReady {
+            return "Your Spark Boost is ready. Want a quick burst before the next quest?"
+        }
+        if !cipherSolved {
+            return "Tiny cipher today: \(cipher.clue). I can solve it with you for Sparks."
+        }
         if sparkDust >= 80 {
             return "You have \(sparkDust) Sparks. Want to upgrade my little kit?"
+        }
+        if let nextQuest {
+            return "How are you doing? Today's board wants you to \(nextQuest.nudgeText)."
         }
         if let nextAction = combo.first(where: { comboMask & $0.rawValue == 0 }) {
             return "How are you doing? Today's tiny combo wants you to \(nextAction.nudgeText)."
@@ -338,7 +559,9 @@ enum PetNudgeLibrary {
             "I kept watch. Want a 60-second quest?",
             "\(feeling.title) mood today. Need a hint or a phrase?",
             "Tiny check-in: breathe, stretch, then one spark?",
-            "Your pocket buddy is awake. What is happening?"
+            "Your pocket buddy is awake. What is happening?",
+            "I found a tiny task. Want me to sit with you while you start?",
+            "No big quest needed. One tap is enough to keep the bond warm."
         ]
         return fallback[index % fallback.count]
     }

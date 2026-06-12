@@ -180,11 +180,15 @@ The current native companion already has:
 
 The new layer should add:
 
-- Rotating daily combo tracking.
+- Daily task-board tracking inspired by Telegram mini-game loops.
+- A daily cipher that gives a small puzzle reward.
+- A daily boost that refills energy and creates a quick return hook.
 - Pet feelings that are visible enough to drive sprite selection.
 - Lore receipts that make each stage feel like a relationship, not a number.
 - Upgrade cards that change behavior: faster check-ins, better comeback
-  rewards, stronger learning rewards, and more generous passive Sparks.
+  rewards, stronger learning rewards, richer ciphers, daily boosts, and more
+  generous passive Sparks.
+- A visible and spoken pet catchphrase: "Pika pika!" for high-signal reactions.
 - A richer sprite request queue for the user to generate.
 
 ## Current Native Checkpoint
@@ -197,12 +201,19 @@ The native macOS companion now has the first version of the loop:
 - Energy that recharges over time.
 - Passive Sparks collected after time away.
 - Rotating daily combos such as Pet + Hint + Learn, Pet + Hyper + Open, and
-  Learn + Hint + Upgrade.
+  Learn + Hint + Upgrade, plus Cipher and Boost variants.
+- A daily task board with care, hint, learn, quest, upgrade, cheer, cipher, and
+  boost tasks.
+- A daily cipher with deterministic clue, answer, and Spark reward.
+- A daily Spark Boost that refills energy and pays extra Sparks.
 - A rotating Upgrade button that spends Sparks on Snack Bowl, Study Bell, Quest
-  Map, Cozy Nest, and Cheer Signal levels.
+  Map, Cozy Nest, Cheer Signal, Spark Wheel, Focus Charm, and Cipher Stone.
 - Growth stages computed from Bond HP and Sparks.
-- Visible feelings such as Eager, Proud, Snacky, Sleepy, Curious, and Lonely.
+- Visible feelings such as Eager, Proud, Overcharged, Focused, Celebrating,
+  Protective, Gentle, Restless, Snacky, Sleepy, Curious, and Lonely.
 - A short lore line inside the care panel.
+- Native text and voice "Pika pika!" reactions for pet care, cheer, boosts,
+  ciphers, learning rewards, and assistant replies.
 
 This is not the full final pet fantasy yet. It is the backbone that lets the
 next sprite sheets matter: new art can now map to real emotions, upgrades,

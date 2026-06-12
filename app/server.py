@@ -270,7 +270,7 @@ def _truthy_env(name: str) -> bool:
 
 
 def _assistant_opening(genre: str) -> str:
-    return (
+    return _pika(
         f"I am Pikachu, your pocket electric familiar. I will hover here while "
         f"the {GENRE_LABELS[genre]} tries to misbehave."
     )
@@ -278,21 +278,21 @@ def _assistant_opening(genre: str) -> str:
 
 def _assistant_for_turn(session: PlaySession, action: str) -> str:
     if session.last_turn is None:
-        return "I am ready when you are."
+        return _pika("I am ready when you are.")
     if session.last_turn.is_ending:
-        return "That is a proper ending. Tiny victory jump."
+        return _pika("That is a proper ending. Tiny victory jump.")
     if session.state.hp <= 3:
-        return (
+        return _pika(
             f"Careful: {session.state.hp}/10 HP at {session.state.location}. "
             f"I would avoid swagger and pick: {_recommended_choice(session)}"
         )
     if "inspect" in action.casefold() or "search" in action.casefold():
         inventory = _inventory_hint(session)
-        return (
+        return _pika(
             "Good instinct. Inspection gives the engine a concrete next move"
             f"{inventory}."
         )
-    return (
+    return _pika(
         "Choice logged. Tail glowing. "
         f"My current read: {_choice_reason(session, _recommended_choice(session))}"
     )
@@ -302,25 +302,31 @@ def _dragon_reply(session: PlaySession, message: str) -> str:
     lowered = message.casefold()
     turn = session.last_turn
     if turn is None:
-        return "Start an adventure and I will start hovering."
+        return _pika("Start an adventure and I will start hovering.")
     if "status" in lowered or "hp" in lowered or "inventory" in lowered:
-        return (
+        return _pika(
             f"Adventure: {session.state.hp}/10 HP. Location {session.state.location}, "
             f"inventory {_inventory_list(session)}. Turn {session.state.turn_count}. "
             "Pet Bond HP lives in the desktop companion."
         )
     if "pet" in lowered or "care" in lowered or "happy" in lowered:
-        return "Pet me from the desktop companion once a day to charge Bond HP and keep my joy high."
+        return _pika("Pet me from the desktop companion once a day to charge Bond HP and keep my joy high.")
     if "hint" in lowered or "help" in lowered or "what" in lowered:
         if turn.is_ending:
-            return "The tale has landed. Start a fresh scroll if you want another flight."
+            return _pika("The tale has landed. Start a fresh scroll if you want another flight.")
         choice = _recommended_choice(session)
-        return f"My hint: try '{choice}'. {_choice_reason(session, choice)}"
+        return _pika(f"My hint: try '{choice}'. {_choice_reason(session, choice)}")
     if "hyper" in lowered or "fire" in lowered or "flame" in lowered or "bolt" in lowered:
-        return "Hyper mode. Quick and bright, not reckless."
+        return _pika("Hyper mode. Quick and bright, not reckless.")
     if "offline" in lowered or "tiny" in lowered:
-        return "The winning trick is receipts: small model, local rules, no hidden cloud calls."
-    return "I heard you. Ask me for a hint, check status, or pet me for today's spark."
+        return _pika("The winning trick is receipts: small model, local rules, no hidden cloud calls.")
+    return _pika("I heard you. Ask me for a hint, check status, or pet me for today's spark.")
+
+
+def _pika(text: str) -> str:
+    if "pika pika" in text.casefold():
+        return text
+    return f"Pika pika! {text}"
 
 
 def _voice_for_genre(genre: str) -> str:

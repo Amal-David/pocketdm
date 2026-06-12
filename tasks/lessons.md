@@ -128,3 +128,10 @@ sprite cleanup because the SwiftUI image had a black shadow.
 **Rule:** for transparent desktop-pet sprites, avoid black silhouette shadows in
 pet-only mode; use no shadow or a non-dark glow only after checking on a white
 desktop.
+
+## 2026-06-12 — Pet catchphrases need text and audio together
+User explicitly wanted the companion/model to say "pika pika" in text and in
+voice.
+**Rule:** mascot catchphrases should appear in the visible response text and
+trigger a native voice or sound reaction on meaningful pet events, with mute
+still respected.

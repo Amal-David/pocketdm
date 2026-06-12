@@ -24,6 +24,7 @@ def test_custom_server_starts_adventure_and_dragon_hint() -> None:
     assert body["state"]["last_turn_tokens"] > 0
     assert body["state"]["last_turn_tokens_per_second"] is None
     assert "Pikachu" in body["assistant"]
+    assert "Pika pika!" in body["assistant"]
 
     hint = client.post(
         "/api/assistant",
@@ -31,6 +32,7 @@ def test_custom_server_starts_adventure_and_dragon_hint() -> None:
     )
     assert hint.status_code == 200
     assert "My hint" in hint.json()["reply"]
+    assert "Pika pika!" in hint.json()["reply"]
     assert "precise" in hint.json()["reply"] or "state" in hint.json()["reply"]
 
     status = client.post(
