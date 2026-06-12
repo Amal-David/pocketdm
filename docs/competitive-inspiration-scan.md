@@ -259,6 +259,10 @@ The native macOS companion now has the first version of the loop:
 - A Life button now unlocks stage-specific life scenes for the current growth
   form, rewards Joy/Sparks, refills the matching vital, advances Mood Care, and
   surfaces the next life-scene sprite request in the Growth journal.
+- Week Trail now has seven named chapter beats, from First Hello through
+  Guardian Glow, so daily petting across a week unlocks story receipts,
+  persistent album progress, care vitals, mood-care effects, and exact sprite
+  filenames instead of only a streak counter.
 - Sparks earned from petting, asking, language practice, and combo completion.
 - Energy that recharges over time.
 - Passive Sparks collected after time away.

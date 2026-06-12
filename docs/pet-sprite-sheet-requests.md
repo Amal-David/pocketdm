@@ -118,159 +118,165 @@ Generate these first. They unlock the most visible upgrade with the least code:
    - Points toward today's event charm without text.
 49. `pet-buddy-proactive-comeback-checkin.png`
    - Welcomes the user back with a saved tiny chest.
-50. `pet-buddy-week-day-1-first-spark.png`
+50. `pet-buddy-week-chapter-day-1-first-hello.png`
+   - First weekly chapter: looks down, looks up, recognizes the user, warms into
+     a hello.
+51. `pet-buddy-week-chapter-day-3-focus-perch.png`
+   - Perches beside an invisible task, focused but comforting.
+52. `pet-buddy-week-chapter-day-7-guardian-glow.png`
+   - Full week chapter completion: protective glow, proud bow, soft celebration.
+53. `pet-buddy-week-day-1-first-spark.png`
    - First weekly care stamp: notices the week trail lighting up.
-51. `pet-buddy-week-day-3-warm-trail.png`
+54. `pet-buddy-week-day-3-warm-trail.png`
    - Three-day return: follows a glowing trail and looks proud.
-52. `pet-buddy-week-day-5-trust-charm.png`
+55. `pet-buddy-week-day-5-trust-charm.png`
    - Five-day return: receives a tiny trust charm and holds it carefully.
-53. `pet-buddy-week-day-7-guardian-glow.png`
+56. `pet-buddy-week-day-7-guardian-glow.png`
    - Full-week return: guardian glow, happy bounce, then calm pride.
-54. `pet-buddy-journal-week-page.png`
+57. `pet-buddy-journal-week-page.png`
    - Opens the week trail page and points at day 1/3/5/7 milestones.
-55. `pet-buddy-week-reward-claim.png`
+58. `pet-buddy-week-reward-claim.png`
    - Claims a weekly reward chest/charm with no text, labels, or UI chrome.
-56. `pet-buddy-daypart-sunrise-check.png`
+59. `pet-buddy-daypart-sunrise-check.png`
    - Morning check-in: looks up warmly and invites one tiny quest.
-57. `pet-buddy-daypart-focus-buddy.png`
+60. `pet-buddy-daypart-focus-buddy.png`
    - Focus check-in: sits beside the user quietly, attentive and steady.
-58. `pet-buddy-daypart-afternoon-reset.png`
+61. `pet-buddy-daypart-afternoon-reset.png`
    - Afternoon reset: low-energy wobble, stretch, then encouraging smile.
-59. `pet-buddy-daypart-evening-loop.png`
+62. `pet-buddy-daypart-evening-loop.png`
    - Evening loop: points to one closing task and settles by a warm glow.
-60. `pet-buddy-daypart-night-watch.png`
+63. `pet-buddy-daypart-night-watch.png`
    - Night watch: protective soft breathing, calm eyes, no urgency.
-61. `pet-buddy-card-snack-bowl.png`
+64. `pet-buddy-card-snack-bowl.png`
    - Upgrade card animation for energy/snack care.
-62. `pet-buddy-card-study-bell.png`
+65. `pet-buddy-card-study-bell.png`
    - Upgrade card animation for language lessons.
-63. `pet-buddy-card-quest-map.png`
+66. `pet-buddy-card-quest-map.png`
    - Upgrade card animation for adventure hints and quest help.
-64. `pet-buddy-card-cozy-nest.png`
+67. `pet-buddy-card-cozy-nest.png`
    - Upgrade card animation for comeback rewards and rest.
-65. `pet-buddy-card-cheer-signal.png`
+68. `pet-buddy-card-cheer-signal.png`
    - Upgrade card animation for proactive check-ins.
-66. `pet-buddy-card-spark-wheel.png`
+69. `pet-buddy-card-spark-wheel.png`
    - Upgrade card animation for passive Spark earning.
-67. `pet-buddy-card-focus-charm.png`
+70. `pet-buddy-card-focus-charm.png`
    - Upgrade card animation for boosts and focus support.
-68. `pet-buddy-card-cipher-stone.png`
+71. `pet-buddy-card-cipher-stone.png`
    - Upgrade card animation for daily ciphers.
-69. `pet-buddy-card-deck-open.png`
+72. `pet-buddy-card-deck-open.png`
    - Opens a tiny upgrade-card album and points at the next card.
-70. `pet-buddy-card-upgrade-claim.png`
+73. `pet-buddy-card-upgrade-claim.png`
    - Spends Sparks, card glows, pet celebrates the new level.
-71. `pet-buddy-vital-snack-low.png`
+74. `pet-buddy-vital-snack-low.png`
    - Notices its snack meter is low, checks paws, then brightens when cared
      for.
-72. `pet-buddy-vital-rest-low.png`
+75. `pet-buddy-vital-rest-low.png`
    - Starts sleepy, curls up, breathes softly, then reopens its eyes.
-73. `pet-buddy-vital-play-low.png`
+76. `pet-buddy-vital-play-low.png`
    - Looks under-stimulated, does a tiny wiggle, then hops happily.
-74. `pet-buddy-vital-focus-low.png`
+77. `pet-buddy-vital-focus-low.png`
    - Looks distracted, settles beside the task, then nods attentively.
-75. `pet-buddy-vital-refill.png`
+78. `pet-buddy-vital-refill.png`
    - Generic care refill glow for Snack, Rest, Play, or Focus without text.
-76. `pet-buddy-journal-vitals-page.png`
+79. `pet-buddy-journal-vitals-page.png`
    - Opens the journal to four care charms for Snack, Rest, Play, and Focus.
-77. `pet-buddy-charm-album-open.png`
+80. `pet-buddy-charm-album-open.png`
    - Opens a collectible charm album and looks proud without text.
-78. `pet-buddy-charm-hello-spark.png`
+81. `pet-buddy-charm-hello-spark.png`
    - First hello charm, notices user, small cheek glow.
-79. `pet-buddy-charm-snack-heart.png`
+82. `pet-buddy-charm-snack-heart.png`
    - Snack/care charm, leans into daily care and stores a tiny heart spark.
-80. `pet-buddy-charm-study-bell.png`
+83. `pet-buddy-charm-study-bell.png`
    - Study charm, listens, repeats, and rings a small bell.
-81. `pet-buddy-charm-trail-map.png`
+84. `pet-buddy-charm-trail-map.png`
    - Hint/adventure charm, unfolds a tiny map and points forward.
-82. `pet-buddy-charm-rest-nest.png`
+85. `pet-buddy-charm-rest-nest.png`
    - Rest charm, curls in a cozy nest and wakes softly.
-83. `pet-buddy-charm-play-bolt.png`
+86. `pet-buddy-charm-play-bolt.png`
    - Play charm, happy hop with a tiny bolt.
-84. `pet-buddy-charm-focus-charm.png`
+87. `pet-buddy-charm-focus-charm.png`
    - Focus charm, sits beside the user's work and nods.
-85. `pet-buddy-charm-cipher-stone.png`
+88. `pet-buddy-charm-cipher-stone.png`
    - Puzzle charm, solves a small glowing stone clue.
-86. `pet-buddy-charm-event-ribbon.png`
+89. `pet-buddy-charm-event-ribbon.png`
    - Daily event charm, receives a small ribbon and celebrates.
-87. `pet-buddy-charm-upgrade-card.png`
+90. `pet-buddy-charm-upgrade-card.png`
    - Upgrade charm, card glows and the pet reacts proudly.
-88. `pet-buddy-charm-weekly-trail.png`
+91. `pet-buddy-charm-weekly-trail.png`
    - Weekly trail charm, several path lights turn on under the pet.
-89. `pet-buddy-charm-vital-glow.png`
+92. `pet-buddy-charm-vital-glow.png`
    - All-vitals charm, Snack/Rest/Play/Focus glow together.
-90. `pet-buddy-evolution-quest-first-bond.png`
+93. `pet-buddy-evolution-quest-first-bond.png`
    - First Bond quest card: tiny spark notices the user and lights the path to
      Pocket Pal.
-91. `pet-buddy-evolution-quest-trust-trail.png`
+94. `pet-buddy-evolution-quest-trust-trail.png`
    - Trust Trail quest card: walks beside the user with memory charms glowing.
-92. `pet-buddy-evolution-quest-scout-training.png`
+95. `pet-buddy-evolution-quest-scout-training.png`
    - Scout Training quest card: studies the desk, charm album, and next route.
-93. `pet-buddy-evolution-quest-guardian-oath.png`
+96. `pet-buddy-evolution-quest-guardian-oath.png`
    - Guardian Oath quest card: calm protective promise, no guilt or pressure.
-94. `pet-buddy-journal-evolution-quests.png`
+97. `pet-buddy-journal-evolution-quests.png`
    - Opens a journal page with four abstract evolution quest cards.
-95. `pet-buddy-mood-care-soothe.png`
+98. `pet-buddy-mood-care-soothe.png`
    - Gentle care recipe step: pet calms down and leans in.
-96. `pet-buddy-mood-care-snack.png`
+99. `pet-buddy-mood-care-snack.png`
    - Snack care recipe step: cheeks brighten after a tiny snack.
-97. `pet-buddy-mood-care-rest.png`
+100. `pet-buddy-mood-care-rest.png`
    - Rest care recipe step: sleepy breathing and soft recovery.
-98. `pet-buddy-mood-care-play.png`
+101. `pet-buddy-mood-care-play.png`
    - Play care recipe step: small hop, wiggle, and happy spark.
-99. `pet-buddy-mood-care-study.png`
+102. `pet-buddy-mood-care-study.png`
    - Study care recipe step: listens, repeats, and nods.
-100. `pet-buddy-mood-care-adventure.png`
+103. `pet-buddy-mood-care-adventure.png`
    - Adventure care recipe step: points at a trail and steps forward.
-101. `pet-buddy-mood-care-focus.png`
+104. `pet-buddy-mood-care-focus.png`
    - Focus care recipe step: sits beside the user's task and watches calmly.
-102. `pet-buddy-mood-care-puzzle.png`
+105. `pet-buddy-mood-care-puzzle.png`
    - Puzzle care recipe step: thinks, solves, and stores a clue.
-103. `pet-buddy-mood-care-cheer.png`
+106. `pet-buddy-mood-care-cheer.png`
    - Cheer care recipe step: checks on the user warmly without guilt.
-104. `pet-buddy-journal-mood-care.png`
+107. `pet-buddy-journal-mood-care.png`
    - Opens today's mood-care recipe with three abstract step charms.
-105. `pet-buddy-proactive-mood-care-checkin.png`
+108. `pet-buddy-proactive-mood-care-checkin.png`
    - Pops up with a gentle mood-care prompt tied to today's feeling.
-106. `pet-buddy-proactive-mood-care-answer.png`
+109. `pet-buddy-proactive-mood-care-answer.png`
    - User accepts a mood-care prompt; pet warms, nods, and stores progress.
-107. `pet-buddy-proactive-mood-care-dismiss.png`
+110. `pet-buddy-proactive-mood-care-dismiss.png`
    - User skips a mood-care prompt; pet accepts it kindly and returns to idle.
-108. `pet-buddy-bond-board-open.png`
+111. `pet-buddy-bond-board-open.png`
    - Opens four daily care contracts as small visual task charms.
-109. `pet-buddy-bond-board-contract-ready.png`
+112. `pet-buddy-bond-board-contract-ready.png`
    - One contract glows and invites a tiny care action.
-110. `pet-buddy-bond-board-contract-complete.png`
+113. `pet-buddy-bond-board-contract-complete.png`
    - Contract accepted; pet stores the receipt and gains Joy/Sparks.
-111. `pet-buddy-bond-board-complete.png`
+114. `pet-buddy-bond-board-complete.png`
    - All four daily contracts complete; pet celebrates Bond HP without confetti text.
-112. `pet-buddy-cheer-dialogue-how-are-you.png`
+115. `pet-buddy-cheer-dialogue-how-are-you.png`
    - Proactive "how are you doing?" check-in, warm face and open posture.
-113. `pet-buddy-cheer-dialogue-whats-happening.png`
+116. `pet-buddy-cheer-dialogue-whats-happening.png`
    - Proactive "what is happening over there?" check-in, curious and listening.
-114. `pet-buddy-cheer-dialogue-tiny-win.png`
+117. `pet-buddy-cheer-dialogue-tiny-win.png`
    - Saves one tiny win as a spark, proud but gentle.
-115. `pet-buddy-cheer-dialogue-too-much.png`
+118. `pet-buddy-cheer-dialogue-too-much.png`
    - Helps shrink an overwhelming moment into one soft step.
-116. `pet-buddy-cheer-dialogue-focus-start.png`
+119. `pet-buddy-cheer-dialogue-focus-start.png`
    - Sits beside the first minute of a task.
-117. `pet-buddy-cheer-dialogue-soft-reset.png`
+120. `pet-buddy-cheer-dialogue-soft-reset.png`
    - Breathes, stretches, and resets without guilt.
-118. `pet-buddy-cheer-dialogue-brave-next.png`
+121. `pet-buddy-cheer-dialogue-brave-next.png`
    - Points toward the next brave small move.
-119. `pet-buddy-cheer-dialogue-quiet-company.png`
+122. `pet-buddy-cheer-dialogue-quiet-company.png`
    - Quiet company pose, calm and present.
-120. `pet-tiny-spark-life-first-look.png`
+123. `pet-tiny-spark-life-first-look.png`
    - Tiny Spark looks up, recognizes the user, and chooses the desk as safe.
-121. `pet-pocket-pal-life-first-prompt.png`
+124. `pet-pocket-pal-life-first-prompt.png`
    - Pocket Pal learns to ask a gentle proactive question.
-122. `pet-trail-buddy-life-map-step.png`
+125. `pet-trail-buddy-life-map-step.png`
    - Trail Buddy unfolds the first safe trail map step.
-123. `pet-storm-scout-life-focus-patrol.png`
+126. `pet-storm-scout-life-focus-patrol.png`
    - Storm Scout quietly patrols around one focus task.
-124. `pet-storm-guardian-life-quiet-oath.png`
+127. `pet-storm-guardian-life-quiet-oath.png`
    - Storm Guardian promises to guard the loop without guilt.
-
 ## Generate In Separate Batches
 
 Use these as independent image-generation jobs so each set stays visually
@@ -437,7 +443,19 @@ consistent:
 - `pet-{stage}-journal-life-scenes.png`
 - `pet-{stage}-life-scene-complete.png`
 
-### Batch 14: Full Stage Matrix
+### Batch 14: Weekly Trail Chapters
+
+- `pet-{stage}-week-chapter-day-1-first-hello.png`
+- `pet-{stage}-week-chapter-day-2-snack-promise.png`
+- `pet-{stage}-week-chapter-day-3-focus-perch.png`
+- `pet-{stage}-week-chapter-day-4-brave-loop.png`
+- `pet-{stage}-week-chapter-day-5-lesson-spark.png`
+- `pet-{stage}-week-chapter-day-6-soft-rest.png`
+- `pet-{stage}-week-chapter-day-7-guardian-glow.png`
+- `pet-{stage}-journal-week-chapters.png`
+- `pet-{stage}-week-chapter-album-complete.png`
+
+### Batch 15: Full Stage Matrix
 
 After the buddy form works, repeat the stage matrix for:
 
@@ -851,6 +869,35 @@ Stage life scenes:
   - Journal page with three stage life-scene charms and unlocked states.
 - `pet-{stage}-life-scene-complete.png`
   - Current stage's three life scenes complete; pet gives a stage-chapter glow.
+
+Weekly trail chapters:
+
+- `pet-{stage}-week-chapter-day-1-first-hello.png`
+  - Day 1 weekly chapter. Pet looks down, looks up, recognizes the user, and
+    warms into a clear hello.
+- `pet-{stage}-week-chapter-day-2-snack-promise.png`
+  - Day 2 weekly chapter. Pet saves a snack spark for the next return and
+    protects it proudly.
+- `pet-{stage}-week-chapter-day-3-focus-perch.png`
+  - Day 3 weekly chapter. Pet perches beside an invisible task and keeps quiet
+    focus company.
+- `pet-{stage}-week-chapter-day-4-brave-loop.png`
+  - Day 4 weekly chapter. Pet walks one small brave loop, then invites the next
+    quest step.
+- `pet-{stage}-week-chapter-day-5-lesson-spark.png`
+  - Day 5 weekly chapter. Pet listens, repeats one phrase, and stores the
+    lesson as a spark.
+- `pet-{stage}-week-chapter-day-6-soft-rest.png`
+  - Day 6 weekly chapter. Pet guards a soft rest moment and lowers the energy
+    without sadness.
+- `pet-{stage}-week-chapter-day-7-guardian-glow.png`
+  - Day 7 weekly chapter. Pet completes the week trail with protective glow and
+    a proud but gentle celebration.
+- `pet-{stage}-journal-week-chapters.png`
+  - Pet opens a seven-stamp week trail page, with locked and unlocked chapter
+    spaces visible as charms.
+- `pet-{stage}-week-chapter-album-complete.png`
+  - Pet celebrates a full weekly chapter album with a warm guardian pose.
 
 Bond Board contracts:
 

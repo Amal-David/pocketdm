@@ -2519,6 +2519,189 @@ enum PetStreakMilestone: Int, CaseIterable {
     }
 }
 
+enum PetWeeklyTrailChapter: Int, CaseIterable {
+    case firstHello = 1
+    case snackPromise = 2
+    case focusPerch = 4
+    case braveLoop = 8
+    case lessonSpark = 16
+    case softRest = 32
+    case guardianGlow = 64
+
+    var requiredDays: Int {
+        switch self {
+        case .firstHello:
+            return 1
+        case .snackPromise:
+            return 2
+        case .focusPerch:
+            return 3
+        case .braveLoop:
+            return 4
+        case .lessonSpark:
+            return 5
+        case .softRest:
+            return 6
+        case .guardianGlow:
+            return 7
+        }
+    }
+
+    var title: String {
+        switch self {
+        case .firstHello:
+            return "First Hello"
+        case .snackPromise:
+            return "Snack Promise"
+        case .focusPerch:
+            return "Focus Perch"
+        case .braveLoop:
+            return "Brave Loop"
+        case .lessonSpark:
+            return "Lesson Spark"
+        case .softRest:
+            return "Soft Rest"
+        case .guardianGlow:
+            return "Guardian Glow"
+        }
+    }
+
+    var shortLabel: String {
+        "D\(requiredDays)"
+    }
+
+    var storyLine: String {
+        switch self {
+        case .firstHello:
+            return "It learns the shape of your first check-in."
+        case .snackPromise:
+            return "It saves one snack spark for the next return."
+        case .focusPerch:
+            return "It finds a quiet perch beside your work."
+        case .braveLoop:
+            return "It walks one small loop before the quest grows."
+        case .lessonSpark:
+            return "It repeats one phrase until the spark sticks."
+        case .softRest:
+            return "It guards a softer ending instead of pushing."
+        case .guardianGlow:
+            return "The whole week turns into a tiny guardian glow."
+        }
+    }
+
+    var rewardLine: String {
+        "\(title): \(storyLine)"
+    }
+
+    var sparkReward: Int {
+        switch self {
+        case .firstHello:
+            return 6
+        case .snackPromise:
+            return 8
+        case .focusPerch:
+            return 10
+        case .braveLoop:
+            return 12
+        case .lessonSpark:
+            return 14
+        case .softRest:
+            return 16
+        case .guardianGlow:
+            return 24
+        }
+    }
+
+    var joyReward: Int {
+        self == .guardianGlow ? 2 : 1
+    }
+
+    var bondHPReward: Int {
+        self == .guardianGlow ? 1 : 0
+    }
+
+    var vital: PetCareVital {
+        switch self {
+        case .firstHello, .snackPromise:
+            return .snack
+        case .focusPerch, .lessonSpark:
+            return .focus
+        case .braveLoop:
+            return .play
+        case .softRest, .guardianGlow:
+            return .rest
+        }
+    }
+
+    var moodStep: PetMoodCareStep {
+        switch self {
+        case .firstHello:
+            return .soothe
+        case .snackPromise:
+            return .snack
+        case .focusPerch:
+            return .focus
+        case .braveLoop:
+            return .adventure
+        case .lessonSpark:
+            return .study
+        case .softRest:
+            return .rest
+        case .guardianGlow:
+            return .cheer
+        }
+    }
+
+    var spriteRequestName: String {
+        switch self {
+        case .firstHello:
+            return "pet-{stage}-week-chapter-day-1-first-hello.png"
+        case .snackPromise:
+            return "pet-{stage}-week-chapter-day-2-snack-promise.png"
+        case .focusPerch:
+            return "pet-{stage}-week-chapter-day-3-focus-perch.png"
+        case .braveLoop:
+            return "pet-{stage}-week-chapter-day-4-brave-loop.png"
+        case .lessonSpark:
+            return "pet-{stage}-week-chapter-day-5-lesson-spark.png"
+        case .softRest:
+            return "pet-{stage}-week-chapter-day-6-soft-rest.png"
+        case .guardianGlow:
+            return "pet-{stage}-week-chapter-day-7-guardian-glow.png"
+        }
+    }
+
+    static func count(careCount: Int) -> Int {
+        allCases.filter { careCount >= $0.requiredDays }.count
+    }
+
+    static func albumCount(mask: Int) -> Int {
+        allCases.filter { mask & $0.rawValue != 0 }.count
+    }
+
+    static func latest(careCount: Int) -> PetWeeklyTrailChapter {
+        allCases.last { careCount >= $0.requiredDays } ?? .firstHello
+    }
+
+    static func next(careCount: Int) -> PetWeeklyTrailChapter? {
+        allCases.first { careCount < $0.requiredDays }
+    }
+
+    static func newlyUnlocked(careCount: Int, albumMask: Int) -> [PetWeeklyTrailChapter] {
+        allCases.filter { chapter in
+            careCount >= chapter.requiredDays && albumMask & chapter.rawValue == 0
+        }
+    }
+
+    static func summary(careCount: Int, albumMask: Int) -> String {
+        let done = count(careCount: careCount)
+        let album = albumCount(mask: albumMask)
+        let nextText = next(careCount: careCount).map { "Next \($0.shortLabel) \($0.title)" }
+            ?? "Guardian week complete"
+        return "Week Chapters \(done)/\(allCases.count) · Album \(album)/\(allCases.count) · \(nextText)"
+    }
+}
+
 struct PetComebackReward {
     let sparks: Int
     let joy: Int

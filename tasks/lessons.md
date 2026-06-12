@@ -279,3 +279,10 @@ User wants the pet to grow from small to big like a proper companion.
 care effects, stage-specific sprite requests, and journal receipts so Tiny
 Spark, Pocket Pal, Trail Buddy, Storm Scout, and Storm Guardian feel behaviorally
 different.
+
+## 2026-06-13 — Weekly loops should become story chapters
+The Hamster-style retention loop is useful only if it feels like relationship
+progress instead of abstract streak pressure.
+**Rule:** week-long care should unlock named story chapters, persistent album
+receipts, vitals, mood-care effects, and sprite filenames, while the high-value
+weekly payouts remain secondary to the pet bond.

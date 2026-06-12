@@ -228,6 +228,7 @@ final class DragonOverlayModel: ObservableObject {
     private static let weeklyCareWeekKey = "PocketDMCompanion.weeklyCareWeek"
     private static let weeklyCareCountKey = "PocketDMCompanion.weeklyCareCount"
     private static let weeklyRewardMaskKey = "PocketDMCompanion.weeklyRewardMask"
+    private static let weeklyTrailAlbumMaskKey = "PocketDMCompanion.weeklyTrailAlbumMask"
     private static let dailyNudgeDateKey = "PocketDMCompanion.dailyNudgeDate"
     private static let dailyNudgeOfferedMaskKey = "PocketDMCompanion.dailyNudgeOfferedMask"
     private static let dailyNudgeAnsweredMaskKey = "PocketDMCompanion.dailyNudgeAnsweredMask"
@@ -315,6 +316,7 @@ final class DragonOverlayModel: ObservableObject {
     @Published var weeklyCareWeek = UserDefaults.standard.string(forKey: DragonOverlayModel.weeklyCareWeekKey) ?? ""
     @Published var weeklyCareCount = UserDefaults.standard.object(forKey: DragonOverlayModel.weeklyCareCountKey) as? Int ?? 0
     @Published var weeklyRewardMask = UserDefaults.standard.object(forKey: DragonOverlayModel.weeklyRewardMaskKey) as? Int ?? 0
+    @Published var weeklyTrailAlbumMask = UserDefaults.standard.object(forKey: DragonOverlayModel.weeklyTrailAlbumMaskKey) as? Int ?? 0
     @Published var dailyNudgeDate = UserDefaults.standard.string(forKey: DragonOverlayModel.dailyNudgeDateKey) ?? ""
     @Published var dailyNudgeOfferedMask = UserDefaults.standard.object(forKey: DragonOverlayModel.dailyNudgeOfferedMaskKey) as? Int ?? 0
     @Published var dailyNudgeAnsweredMask = UserDefaults.standard.object(forKey: DragonOverlayModel.dailyNudgeAnsweredMaskKey) as? Int ?? 0
@@ -1222,7 +1224,19 @@ final class DragonOverlayModel: ObservableObject {
     }
 
     var weeklyLine: String {
-        PetStreakMilestone.summary(careCount: weeklyCareCount, rewardMask: weeklyRewardMask)
+        let chapters = PetWeeklyTrailChapter.summary(
+            careCount: weeklyCareCount,
+            albumMask: weeklyTrailAlbumMask
+        )
+        let milestones = PetStreakMilestone.summary(
+            careCount: weeklyCareCount,
+            rewardMask: weeklyRewardMask
+        )
+        return "\(chapters) · \(milestones)"
+    }
+
+    var weeklyTrailChapters: [PetWeeklyTrailChapter] {
+        PetWeeklyTrailChapter.allCases
     }
 
     var cheerRhythmLine: String {
@@ -1440,7 +1454,11 @@ final class DragonOverlayModel: ObservableObject {
     }
 
     var journalStreakCaption: String {
-        "This week \(min(7, weeklyCareCount))/7 care days · total streak \(petStreak)"
+        let chapters = PetWeeklyTrailChapter.summary(
+            careCount: weeklyCareCount,
+            albumMask: weeklyTrailAlbumMask
+        )
+        return "\(chapters) · streak \(petStreak)"
     }
 
     var journalStreakProgress: Double {
@@ -1448,9 +1466,9 @@ final class DragonOverlayModel: ObservableObject {
     }
 
     var journalStreakSpriteLine: String {
-        let next = PetStreakMilestone.allCases.first { weeklyCareCount < $0.requiredDays }
-            ?? PetStreakMilestone.daySeven
-        return "Week sprite: \(next.spriteRequestName.replacingOccurrences(of: "{stage}", with: growthStage.assetSlug))"
+        let next = PetWeeklyTrailChapter.next(careCount: weeklyCareCount)
+            ?? PetWeeklyTrailChapter.latest(careCount: weeklyCareCount)
+        return "Week chapter sprite: \(next.spriteRequestName.replacingOccurrences(of: "{stage}", with: growthStage.assetSlug))"
     }
 
     var journalCheerProgress: Double {
@@ -1600,6 +1618,7 @@ final class DragonOverlayModel: ObservableObject {
         UserDefaults.standard.set(weeklyCareWeek, forKey: Self.weeklyCareWeekKey)
         UserDefaults.standard.set(weeklyCareCount, forKey: Self.weeklyCareCountKey)
         UserDefaults.standard.set(weeklyRewardMask, forKey: Self.weeklyRewardMaskKey)
+        UserDefaults.standard.set(weeklyTrailAlbumMask, forKey: Self.weeklyTrailAlbumMaskKey)
         UserDefaults.standard.set(dailyNudgeDate, forKey: Self.dailyNudgeDateKey)
         UserDefaults.standard.set(dailyNudgeOfferedMask, forKey: Self.dailyNudgeOfferedMaskKey)
         UserDefaults.standard.set(dailyNudgeAnsweredMask, forKey: Self.dailyNudgeAnsweredMaskKey)
@@ -1750,6 +1769,14 @@ final class DragonOverlayModel: ObservableObject {
 
     func isLifeSceneUnlocked(_ scene: PetLifeScene) -> Bool {
         lifeSceneMask & scene.rawValue != 0
+    }
+
+    func isWeeklyTrailChapterUnlocked(_ chapter: PetWeeklyTrailChapter) -> Bool {
+        weeklyCareCount >= chapter.requiredDays
+    }
+
+    func isWeeklyTrailChapterInAlbum(_ chapter: PetWeeklyTrailChapter) -> Bool {
+        weeklyTrailAlbumMask & chapter.rawValue != 0
     }
 
     private func setVital(_ vital: PetCareVital, value: Int) {
@@ -2118,14 +2145,36 @@ final class DragonOverlayModel: ObservableObject {
     }
 
     private func awardWeeklyCareMilestones() -> String? {
+        let chapters = PetWeeklyTrailChapter.newlyUnlocked(
+            careCount: weeklyCareCount,
+            albumMask: weeklyTrailAlbumMask
+        )
         let milestones = PetStreakMilestone.newlyUnlocked(
             careCount: weeklyCareCount,
             rewardMask: weeklyRewardMask
         )
-        guard !milestones.isEmpty else { return nil }
+        guard !chapters.isEmpty || !milestones.isEmpty else { return nil }
 
         let priorMask = weeklyRewardMask
         var notes: [String] = []
+        for chapter in chapters {
+            weeklyTrailAlbumMask |= chapter.rawValue
+            sparkDust = min(999, sparkDust + chapter.sparkReward)
+            happiness = min(5, happiness + chapter.joyReward)
+            if chapter.bondHPReward > 0 {
+                companionHP = min(10, companionHP + chapter.bondHPReward)
+            }
+            notes.append(
+                "\(chapter.rewardLine) Joy +\(chapter.joyReward), Sparks +\(chapter.sparkReward)\(chapter.bondHPReward > 0 ? ", Bond HP +\(chapter.bondHPReward)" : "")."
+            )
+            if let vitalNote = refillVital(chapter.vital, by: 1) {
+                notes.append(vitalNote)
+            }
+            if let moodCareNote = markMoodCare(chapter.moodStep) {
+                notes.append(moodCareNote)
+            }
+        }
+
         for milestone in milestones {
             weeklyRewardMask |= milestone.rawValue
             sparkDust = min(999, sparkDust + milestone.sparkReward)
@@ -2137,7 +2186,7 @@ final class DragonOverlayModel: ObservableObject {
                 "\(milestone.title): \(milestone.rewardLine) Joy +\(milestone.joyReward), Sparks +\(milestone.sparkReward)\(milestone.bondHPReward > 0 ? ", Bond HP +\(milestone.bondHPReward)" : "")."
             )
         }
-        if priorMask != weeklyRewardMask {
+        if priorMask != weeklyRewardMask || !chapters.isEmpty {
             setMood(.hyper, duration: 1.8)
             play(.happy)
             if let charmNote = unlockCharm(.weeklyTrail) {
@@ -3302,6 +3351,7 @@ struct PetJournalPanel: View {
             journalHero("Week Trail", value: model.journalStreakProgress, caption: model.journalStreakCaption)
             streakGrid
             detailLine(model.weeklyLine)
+            milestoneGrid
             artLine(model.journalStreakSpriteLine)
         case .cards:
             journalHero("Upgrade Cards", value: model.journalUpgradeProgress, caption: model.journalUpgradeCaption)
@@ -3425,6 +3475,16 @@ struct PetJournalPanel: View {
     }
 
     private var streakGrid: some View {
+        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 4), count: 3), spacing: 3) {
+            ForEach(model.weeklyTrailChapters, id: \.rawValue) { chapter in
+                let unlocked = model.isWeeklyTrailChapterUnlocked(chapter)
+                let saved = model.isWeeklyTrailChapterInAlbum(chapter)
+                journalChip("\(chapter.shortLabel) \(chapter.title)\(saved ? " ✓" : "")", isUnlocked: unlocked)
+            }
+        }
+    }
+
+    private var milestoneGrid: some View {
         LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 4), count: 2), spacing: 3) {
             ForEach(PetStreakMilestone.allCases, id: \.rawValue) { milestone in
                 journalChip("\(milestone.shortLabel) \(milestone.title)", isUnlocked: model.weeklyRewardMask & milestone.rawValue != 0)
