@@ -49,7 +49,7 @@ def test_scripted_play_loop_and_dragon_need_no_outbound_sockets(monkeypatch) -> 
     assert sprite.status_code == 200
     for sprite_name in (
         "dragon-sprites-sad.png",
-        "dragon-sprites-angry.png",
+        "dragon-sprites-hyper.png",
         "dragon-sprites-scared.png",
     ):
         mood_sprite = client.get(f"/static/{sprite_name}")

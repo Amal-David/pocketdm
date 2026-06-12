@@ -4,6 +4,7 @@ __pycache__/
 .env
 *.gguf
 *.wav
+!macos/PocketDMCompanion/Sources/PocketDMCompanion/Resources/chirp-*.wav
 app/voices/auditions/
 app/voices/models/
 data/raw/

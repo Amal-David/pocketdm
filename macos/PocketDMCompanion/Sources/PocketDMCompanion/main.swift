@@ -113,7 +113,7 @@ final class DragonOverlayController {
     }
 
     private func setMinimized(_ minimized: Bool) {
-        let size = minimized ? NSSize(width: 176, height: 78) : NSSize(width: 374, height: 304)
+        let size = minimized ? NSSize(width: 426, height: 136) : NSSize(width: 386, height: 318)
         var frame = panel.frame
         let top = frame.maxY
         frame.size = size
@@ -128,7 +128,7 @@ final class DragonOverlayController {
         let savedY = defaults.double(forKey: "PocketDMCompanion.y")
         let screen = NSScreen.main?.visibleFrame ?? NSRect(x: 0, y: 0, width: 1200, height: 800)
         let origin = savedX == 0 && savedY == 0
-            ? NSPoint(x: screen.maxX - 390, y: screen.minY + 72)
+            ? NSPoint(x: screen.maxX - 402, y: screen.minY + 72)
             : NSPoint(x: savedX, y: savedY)
         panel.setFrameOrigin(origin)
     }
@@ -151,7 +151,7 @@ final class DragonOverlayController {
 final class FloatingDragonPanel: NSPanel {
     init() {
         super.init(
-            contentRect: NSRect(x: 0, y: 0, width: 374, height: 304),
+            contentRect: NSRect(x: 0, y: 0, width: 386, height: 318),
             styleMask: [.borderless, .nonactivatingPanel],
             backing: .buffered,
             defer: false
@@ -171,14 +171,18 @@ final class FloatingDragonPanel: NSPanel {
 
 @MainActor
 final class DragonOverlayModel: ObservableObject {
+    private static let soundEnabledKey = "PocketDMCompanion.soundEnabled"
+
     @Published var message = "Pika-pika. I am on your desktop now."
     @Published var serverLine = "Checking PocketDM..."
     @Published var minimized = UserDefaults.standard.bool(forKey: "PocketDMCompanion.minimized")
+    @Published var soundEnabled = UserDefaults.standard.object(forKey: DragonOverlayModel.soundEnabledKey) as? Bool ?? true
     @Published var busy = false
     @Published var mood: PetMood = .happy
 
     private let client: PocketDMClient
     private let launcher: GameLauncher
+    private let soundPlayer = PetSoundPlayer()
     private var moodTask: Task<Void, Never>?
 
     init(client: PocketDMClient, launcher: GameLauncher) {
@@ -203,33 +207,47 @@ final class DragonOverlayModel: ObservableObject {
         UserDefaults.standard.set(value, forKey: "PocketDMCompanion.minimized")
     }
 
+    func toggleSound() {
+        soundEnabled.toggle()
+        UserDefaults.standard.set(soundEnabled, forKey: Self.soundEnabledKey)
+        if !soundEnabled {
+            soundPlayer.stopAll()
+        }
+    }
+
     func happy() {
         message = "Happy."
+        play(.happy)
         setMood(.happy, duration: 1.6)
     }
 
     func nap() {
-        message = "Tiny recharge nap. Still listening."
-        setMood(.sad, duration: 2.4)
+        message = "Nap."
+        play(.nap)
+        setMood(.nap, duration: 2.4)
     }
 
-    func angry() {
-        message = "Angry."
-        setMood(.angry, duration: 1.5)
+    func hyper() {
+        message = "Hyper."
+        play(.hyper)
+        setMood(.hyper, duration: 1.5)
     }
 
     func ask(_ prompt: String) async {
         busy = true
-        setMood(.scared)
+        play(.alert)
+        setMood(.alert)
         defer { busy = false }
         do {
             message = try await client.assistantReply(for: prompt)
             serverLine = "PocketDM companion online"
+            play(.reply)
             setMood(.happy, duration: 1.5)
         } catch {
             message = "I cannot reach the tale yet. Open PocketDM, start a run, then ask me again."
             serverLine = "Waiting for local server"
-            setMood(.sad, duration: 2.4)
+            play(.nap)
+            setMood(.nap, duration: 2.4)
         }
     }
 
@@ -245,25 +263,94 @@ final class DragonOverlayModel: ObservableObject {
             }
         }
     }
+
+    private func play(_ sound: PetSound) {
+        soundPlayer.play(sound, enabled: soundEnabled)
+    }
 }
 
 enum PetMood: String, CaseIterable {
     case happy
-    case sad
-    case angry
-    case scared
+    case nap
+    case hyper
+    case alert
 
     var assetName: String {
         switch self {
         case .happy:
-            return "spark-happy"
-        case .sad:
-            return "spark-sad"
-        case .angry:
-            return "spark-angry"
-        case .scared:
-            return "spark-scared"
+            return "pet-happy"
+        case .nap:
+            return "pet-nap"
+        case .hyper:
+            return "pet-hyper"
+        case .alert:
+            return "pet-alert"
         }
+    }
+}
+
+enum PetSound: CaseIterable {
+    case happy
+    case nap
+    case hyper
+    case alert
+    case reply
+
+    var resourceName: String {
+        switch self {
+        case .happy:
+            return "chirp-happy"
+        case .nap:
+            return "chirp-nap"
+        case .hyper:
+            return "chirp-hyper"
+        case .alert:
+            return "chirp-alert"
+        case .reply:
+            return "chirp-reply"
+        }
+    }
+
+    var volume: Float {
+        switch self {
+        case .hyper:
+            return 0.18
+        case .reply:
+            return 0.17
+        default:
+            return 0.15
+        }
+    }
+}
+
+@MainActor
+final class PetSoundPlayer {
+    private var cache: [PetSound: NSSound] = [:]
+
+    func play(_ sound: PetSound, enabled: Bool) {
+        guard enabled, let player = soundInstance(for: sound) else { return }
+        player.stop()
+        player.currentTime = 0
+        player.volume = sound.volume
+        player.play()
+    }
+
+    func stopAll() {
+        for player in cache.values {
+            player.stop()
+        }
+    }
+
+    private func soundInstance(for sound: PetSound) -> NSSound? {
+        if let cached = cache[sound] {
+            return cached
+        }
+        guard let url = Bundle.module.url(forResource: sound.resourceName, withExtension: "wav") else {
+            return nil
+        }
+        let player = NSSound(contentsOf: url, byReference: false)
+        cache[sound] = player
+        return player
     }
 }
 
@@ -285,24 +372,66 @@ struct DragonOverlayView: View {
     }
 
     private var minimizedBody: some View {
-        Button {
-            model.setMinimized(false)
-            onSizeChange(false)
-        } label: {
+        VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 8) {
-                AnimatedPetSprite(mood: model.mood, size: 52)
+                Image(systemName: "circle.grid.2x2.fill")
+                    .font(.system(size: 13, weight: .bold))
+                    .foregroundStyle(Color.ivory.opacity(0.66))
                 Text("Pikachu")
-                    .font(.system(size: 13, weight: .black, design: .rounded))
+                    .font(.system(size: 12, weight: .black, design: .rounded))
                     .foregroundStyle(Color.ivory)
+                Spacer()
+                soundButton
+                Button {
+                    model.setMinimized(false)
+                    onSizeChange(false)
+                } label: {
+                    Image(systemName: "arrow.up.left.and.arrow.down.right")
+                }
+                .buttonStyle(.plain)
+                .foregroundStyle(Color.ivory)
+                .frame(width: 26, height: 24)
+                .accessibilityLabel("Expand Pikachu chat")
             }
-            .padding(8)
-            .background(.black.opacity(0.76), in: RoundedRectangle(cornerRadius: 8))
-            .overlay(
-                RoundedRectangle(cornerRadius: 8)
-                    .stroke(Color.gold.opacity(0.55), lineWidth: 1)
-            )
+            .padding(.horizontal, 8)
+            .frame(height: 28)
+            .background(.black.opacity(0.78), in: RoundedRectangle(cornerRadius: 7))
+            .gesture(dragGesture)
+
+            HStack(spacing: 8) {
+                AnimatedPetSprite(mood: model.mood, size: 58)
+
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(model.message)
+                        .font(.system(size: 12, weight: .semibold, design: .rounded))
+                        .foregroundStyle(Color.ivory)
+                        .lineLimit(2)
+                        .frame(maxWidth: .infinity, minHeight: 32, alignment: .topLeading)
+
+                    HStack(spacing: 6) {
+                        TextField("Ask Pikachu", text: $customPrompt)
+                            .textFieldStyle(.plain)
+                            .font(.system(size: 12, weight: .semibold))
+                            .padding(.horizontal, 8)
+                            .frame(height: 30)
+                            .background(.white.opacity(0.12), in: RoundedRectangle(cornerRadius: 6))
+                            .foregroundStyle(Color.ivory)
+                            .onSubmit(submitPrompt)
+                        Button {
+                            submitPrompt()
+                        } label: {
+                            Image(systemName: "paperplane.fill")
+                        }
+                        .buttonStyle(DragonIconButtonStyle(kind: .primary))
+                        .disabled(model.busy)
+                    }
+                }
+            }
         }
-        .buttonStyle(.plain)
+        .padding(8)
+        .frame(width: 426, height: 136)
+        .background(.black.opacity(0.74), in: RoundedRectangle(cornerRadius: 8))
+        .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.gold.opacity(0.32), lineWidth: 1))
     }
 
     private var expandedBody: some View {
@@ -315,6 +444,7 @@ struct DragonOverlayView: View {
                     .font(.system(size: 12, weight: .black, design: .rounded))
                     .foregroundStyle(Color.ivory)
                 Spacer()
+                soundButton
                 Button {
                     model.setMinimized(true)
                     onSizeChange(true)
@@ -340,7 +470,6 @@ struct DragonOverlayView: View {
 
             HStack(alignment: .bottom, spacing: 10) {
                 AnimatedPetSprite(mood: model.mood, size: 154)
-                    .shadow(color: .black.opacity(0.42), radius: 12, y: 10)
 
                 VStack(spacing: 8) {
                     Text(model.serverLine)
@@ -358,7 +487,7 @@ struct DragonOverlayView: View {
 
                     HStack(spacing: 8) {
                         Button("Nap") { model.nap() }
-                        Button("Angry") { model.angry() }
+                        Button("Hyper") { model.hyper() }
                     }
                     .buttonStyle(DragonButtonStyle())
                     .disabled(model.busy)
@@ -371,11 +500,9 @@ struct DragonOverlayView: View {
                             .frame(height: 34)
                             .background(.white.opacity(0.12), in: RoundedRectangle(cornerRadius: 6))
                             .foregroundStyle(Color.ivory)
+                            .onSubmit(submitPrompt)
                         Button("Ask") {
-                            let prompt = customPrompt.trimmingCharacters(in: .whitespacesAndNewlines)
-                            customPrompt = ""
-                            guard !prompt.isEmpty else { return }
-                            Task { await model.ask(prompt) }
+                            submitPrompt()
                         }
                         .buttonStyle(DragonButtonStyle())
                         .disabled(model.busy)
@@ -390,8 +517,27 @@ struct DragonOverlayView: View {
             }
         }
         .padding(8)
-        .frame(width: 374, height: 304)
+        .frame(width: 386, height: 318)
         .background(.clear)
+    }
+
+    private var soundButton: some View {
+        Button {
+            model.toggleSound()
+        } label: {
+            Image(systemName: model.soundEnabled ? "speaker.wave.2.fill" : "speaker.slash.fill")
+        }
+        .buttonStyle(.plain)
+        .foregroundStyle(model.soundEnabled ? Color.ivory : Color.ivory.opacity(0.58))
+        .frame(width: 26, height: 24)
+        .accessibilityLabel(model.soundEnabled ? "Mute Pikachu sounds" : "Unmute Pikachu sounds")
+    }
+
+    private func submitPrompt() {
+        let prompt = customPrompt.trimmingCharacters(in: .whitespacesAndNewlines)
+        customPrompt = ""
+        guard !prompt.isEmpty else { return }
+        Task { await model.ask(prompt) }
     }
 
     private var dragGesture: some Gesture {
@@ -498,6 +644,25 @@ struct DragonButtonStyle: ButtonStyle {
             .foregroundStyle(kind == .primary ? Color.black : Color.ivory)
             .frame(height: 34)
             .frame(maxWidth: .infinity)
+            .background(kind == .primary ? Color.gold : Color.black.opacity(0.34), in: RoundedRectangle(cornerRadius: 6))
+            .overlay(RoundedRectangle(cornerRadius: 6).stroke(Color.ivory.opacity(kind == .primary ? 0 : 0.18), lineWidth: 1))
+            .opacity(configuration.isPressed ? 0.72 : 1)
+    }
+}
+
+struct DragonIconButtonStyle: ButtonStyle {
+    enum Kind {
+        case primary
+        case secondary
+    }
+
+    var kind: Kind = .secondary
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(.system(size: 12, weight: .black, design: .rounded))
+            .foregroundStyle(kind == .primary ? Color.black : Color.ivory)
+            .frame(width: 34, height: 30)
             .background(kind == .primary ? Color.gold : Color.black.opacity(0.34), in: RoundedRectangle(cornerRadius: 6))
             .overlay(RoundedRectangle(cornerRadius: 6).stroke(Color.ivory.opacity(kind == .primary ? 0 : 0.18), lineWidth: 1))
             .opacity(configuration.isPressed ? 0.72 : 1)

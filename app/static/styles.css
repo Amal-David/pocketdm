@@ -527,8 +527,8 @@ dd {
     saturate(0.86);
 }
 
-.dragon-assistant[data-mood="fire"] .dragon-sprite {
-  background-image: url("/static/dragon-sprites-angry.png");
+.dragon-assistant[data-mood="hyper"] .dragon-sprite {
+  background-image: url("/static/dragon-sprites-hyper.png");
   animation-duration: 0.66s;
   filter:
     drop-shadow(0 18px 18px rgba(0, 0, 0, 0.44))
@@ -536,7 +536,7 @@ dd {
     drop-shadow(0 0 22px rgba(88, 235, 255, 0.38));
 }
 
-.dragon-assistant[data-mood="fire"] .dragon-stage {
+.dragon-assistant[data-mood="hyper"] .dragon-stage {
   animation: pet-spark 0.72s ease-in-out infinite;
 }
 
@@ -838,7 +838,7 @@ dd {
   .dragon-shadow,
   .dragon-assistant[data-mood="thinking"] .dragon-sprite,
   .dragon-assistant[data-mood="listening"] .dragon-stage,
-  .dragon-assistant[data-mood="fire"] .dragon-sprite,
+  .dragon-assistant[data-mood="hyper"] .dragon-sprite,
   .dragon-avatar.is-fire::after,
   .dice-roll.is-rolling {
     animation: none;

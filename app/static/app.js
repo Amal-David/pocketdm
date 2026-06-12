@@ -171,8 +171,8 @@ function handleDragonQuickAction(action) {
         speak: false,
       });
       return;
-    case "fire":
-      dragonSay("Angry.", {
+    case "hyper":
+      dragonSay("Hyper.", {
         fire: true,
         speak: false,
       });
@@ -303,9 +303,9 @@ function typeText(target, text) {
 
 function dragonSay(text, options = {}) {
   els.dragonSpeech.textContent = text;
-  const mood = options.mood || (options.fire ? "fire" : "idle");
+  const mood = options.mood || (options.fire ? "hyper" : "idle");
   if (options.fire) {
-    setTemporaryDragonMood("fire", 1100);
+    setTemporaryDragonMood("hyper", 1100);
     els.dragonAvatar.classList.remove("is-fire");
     void els.dragonAvatar.offsetWidth;
     els.dragonAvatar.classList.add("is-fire");
@@ -457,7 +457,8 @@ function setDragonMood(mood) {
     scared: "Alert",
     thinking: "Thinking",
     listening: "Listening",
-    fire: "Angry",
+    hyper: "Hyper",
+    fire: "Hyper",
     idle: "Happy",
   }[mood] || "Happy";
 }

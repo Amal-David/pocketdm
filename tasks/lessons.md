@@ -55,11 +55,19 @@ mascot readability, cheek sparks, and short custom chirps like "zip-zip" instead
 User provided 3D mood sheets and wanted the whole app to pick up that livelier
 desktop-pet feeling.
 **Rule:** when good reference sheets arrive, extract a consistent frame format
-and wire the app around visible states like happy, sad, angry, and scared; don't
+and wire the app around visible states like happy, nap, hyper, and alert; don't
 leave the asset as a static mascot beside a normal chat UI.
 
 ## 2026-06-12 — Native pet polish beats branded action names
 User cared about the macOS overlay itself, not the browser, and called out the
 sprite extraction border plus marketing-heavy labels like Spark.
 **Rule:** verify the actual desktop overlay, regenerate masks when source-sheet
-halos appear, and prefer literal state labels such as Happy, Nap, and Angry.
+halos appear, and prefer literal state labels such as Happy, Nap, and Hyper.
+
+## 2026-06-12 — Minimized native pets still need core utility
+User wanted the minimized macOS companion to remain a real chat surface, not a
+tiny decorative pill.
+**Rule:** collapsed native overlays should keep the animated pet, response
+preview, direct input, send control, mute toggle, and expand control; avoid
+marketing-heavy visible labels and remove source-sheet halo pixels before
+shipping screenshots.

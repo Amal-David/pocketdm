@@ -21,7 +21,7 @@ PocketDM is a tiny-model Dungeon Master for the Build Small Hackathon's
 Thousand Token Wood track. The pitch is simple: a custom Gradio adventure game
 where the model writes the prose, the deterministic engine owns game state, and
 a native Pikachu desktop pet hovers over the Mac with local mood sprite sheets,
-hints, speech, and simple Happy/Nap/Angry reactions.
+hints, compact chat, subtle original chirps, and simple Happy/Nap/Hyper reactions.
 
 The first-cut app is a reliable playable demo while the fine-tuned student
 model pipeline finishes. It uses the frozen engine contract and a scripted local
@@ -59,7 +59,7 @@ uv run python app.py
 The app serves a `gradio.Server` backend with a custom HTML/CSS/JS frontend. The
 fixed Pikachu desktop pet uses local 3D mood sprite strips at
 `app/static/dragon-sprites*.png`; it talks through browser speech synthesis,
-emotes between happy/sad/angry/scared states, and does not call an external API.
+emotes between happy/nap/hyper/alert states, and does not call an external API.
 
 By default the app reports `Backend: Scripted` and uses deterministic turns for
 the playable checkpoint. To use the local trained GGUF model:

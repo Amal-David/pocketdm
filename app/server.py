@@ -313,11 +313,11 @@ def _dragon_reply(session: PlaySession, message: str) -> str:
             return "The tale has landed. Start a fresh scroll if you want another flight."
         choice = _recommended_choice(session)
         return f"My hint: try '{choice}'. {_choice_reason(session, choice)}"
-    if "fire" in lowered or "flame" in lowered or "angry" in lowered or "bolt" in lowered:
-        return "Angry face, then. Dramatic, not reckless."
+    if "hyper" in lowered or "fire" in lowered or "flame" in lowered or "bolt" in lowered:
+        return "Hyper mode. Quick and bright, not reckless."
     if "offline" in lowered or "tiny" in lowered:
         return "The winning trick is receipts: small model, local rules, no hidden cloud calls."
-    return "I heard you. Ask me for a hint, a status read, or an angry face."
+    return "I heard you. Ask me for a hint, a status read, or hyper mode."
 
 
 def _voice_for_genre(genre: str) -> str:
