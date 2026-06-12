@@ -964,6 +964,25 @@ enum PetComboAction: Int, CaseIterable {
             return "use today's spark boost"
         }
     }
+
+    var cheerIntent: PetCheerIntent {
+        switch self {
+        case .pet:
+            return .care
+        case .hint, .open:
+            return .quest
+        case .learn:
+            return .lesson
+        case .hyper:
+            return .tinyWin
+        case .upgrade:
+            return .upgrade
+        case .cipher:
+            return .puzzle
+        case .boost:
+            return .boost
+        }
+    }
 }
 
 enum PetUpgradeKind: CaseIterable {
@@ -1207,6 +1226,23 @@ enum PetDailyQuest: Int, CaseIterable {
             return "solve today's cipher"
         case .boost:
             return "claim the spark boost"
+        }
+    }
+
+    var cheerIntent: PetCheerIntent {
+        switch self {
+        case .care, .cheer:
+            return .care
+        case .hint, .adventure:
+            return .quest
+        case .learn:
+            return .lesson
+        case .upgrade:
+            return .upgrade
+        case .cipher:
+            return .puzzle
+        case .boost:
+            return .boost
         }
     }
 }
@@ -1773,6 +1809,27 @@ enum PetCheerDialogue: Int, CaseIterable {
             return .rest
         case .braveNext:
             return .adventure
+        }
+    }
+
+    var intent: PetCheerIntent {
+        switch self {
+        case .howAreYou:
+            return .feeling
+        case .whatsHappening:
+            return .checkIn
+        case .tinyWin:
+            return .tinyWin
+        case .tooMuch:
+            return .feeling
+        case .focusStart:
+            return .focus
+        case .softReset:
+            return .reset
+        case .braveNext:
+            return .quest
+        case .quietCompany:
+            return .rest
         }
     }
 
@@ -2748,6 +2805,235 @@ enum PetLifecycleRules {
     }
 }
 
+enum PetCheerIntent: Int, CaseIterable {
+    case checkIn = 1
+    case feeling = 2
+    case focus = 4
+    case tinyWin = 8
+    case reset = 16
+    case quest = 32
+    case lesson = 64
+    case rest = 128
+    case comeback = 256
+    case board = 512
+    case puzzle = 1024
+    case boost = 2048
+    case upgrade = 4096
+    case event = 8192
+    case care = 16384
+
+    var title: String {
+        switch self {
+        case .checkIn:
+            return "Gentle Check"
+        case .feeling:
+            return "Feeling Check"
+        case .focus:
+            return "Focus Start"
+        case .tinyWin:
+            return "Tiny Win"
+        case .reset:
+            return "Soft Reset"
+        case .quest:
+            return "Quest Nudge"
+        case .lesson:
+            return "Lesson Spark"
+        case .rest:
+            return "Rest Watch"
+        case .comeback:
+            return "Comeback"
+        case .board:
+            return "Board Contract"
+        case .puzzle:
+            return "Puzzle Clue"
+        case .boost:
+            return "Spark Boost"
+        case .upgrade:
+            return "Upgrade"
+        case .event:
+            return "Event Step"
+        case .care:
+            return "Care Ritual"
+        }
+    }
+
+    var shortLabel: String {
+        switch self {
+        case .checkIn:
+            return "Hi"
+        case .feeling:
+            return "Feel"
+        case .focus:
+            return "Focus"
+        case .tinyWin:
+            return "Win"
+        case .reset:
+            return "Reset"
+        case .quest:
+            return "Quest"
+        case .lesson:
+            return "Learn"
+        case .rest:
+            return "Rest"
+        case .comeback:
+            return "Back"
+        case .board:
+            return "Board"
+        case .puzzle:
+            return "Clue"
+        case .boost:
+            return "Boost"
+        case .upgrade:
+            return "Card"
+        case .event:
+            return "Event"
+        case .care:
+            return "Care"
+        }
+    }
+
+    var receiptLine: String {
+        switch self {
+        case .checkIn:
+            return "A warm check-in joins today's trail."
+        case .feeling:
+            return "A feeling got named instead of ignored."
+        case .focus:
+            return "The first minute gets a companion perch."
+        case .tinyWin:
+            return "A tiny win is saved as proof of motion."
+        case .reset:
+            return "The next step gets smaller and softer."
+        case .quest:
+            return "The quest path gets one safe marker."
+        case .lesson:
+            return "One phrase turns into a lesson spark."
+        case .rest:
+            return "Rest counts as care, not falling behind."
+        case .comeback:
+            return "Coming back becomes part of the bond."
+        case .board:
+            return "A care contract gets a visible receipt."
+        case .puzzle:
+            return "A clue becomes one solved spark."
+        case .boost:
+            return "Extra energy is routed into the next loop."
+        case .upgrade:
+            return "Stored Sparks point toward the next charm."
+        case .event:
+            return "Today's event gets one story beat."
+        case .care:
+            return "The current care ritual gets answered."
+        }
+    }
+
+    var vital: PetCareVital {
+        switch self {
+        case .checkIn, .feeling, .reset, .rest, .comeback:
+            return .rest
+        case .focus, .lesson, .board, .puzzle, .boost, .upgrade:
+            return .focus
+        case .tinyWin, .quest, .event:
+            return .play
+        case .care:
+            return .snack
+        }
+    }
+
+    var moodStep: PetMoodCareStep {
+        switch self {
+        case .checkIn, .feeling, .comeback:
+            return .soothe
+        case .focus, .boost, .upgrade:
+            return .focus
+        case .tinyWin:
+            return .cheer
+        case .reset, .rest:
+            return .rest
+        case .quest, .event:
+            return .adventure
+        case .lesson:
+            return .study
+        case .board, .care:
+            return .cheer
+        case .puzzle:
+            return .puzzle
+        }
+    }
+
+    var spriteSlug: String {
+        switch self {
+        case .checkIn:
+            return "gentle-check"
+        case .feeling:
+            return "feeling-check"
+        case .focus:
+            return "focus-start"
+        case .tinyWin:
+            return "tiny-win"
+        case .reset:
+            return "soft-reset"
+        case .quest:
+            return "quest-nudge"
+        case .lesson:
+            return "lesson-spark"
+        case .rest:
+            return "rest-watch"
+        case .comeback:
+            return "comeback"
+        case .board:
+            return "board-contract"
+        case .puzzle:
+            return "puzzle-clue"
+        case .boost:
+            return "spark-boost"
+        case .upgrade:
+            return "upgrade"
+        case .event:
+            return "event-step"
+        case .care:
+            return "care-ritual"
+        }
+    }
+
+    var sparkReward: Int {
+        switch self {
+        case .checkIn, .feeling, .reset, .rest:
+            return 3
+        case .focus, .tinyWin, .care:
+            return 4
+        case .quest, .lesson, .board, .puzzle:
+            return 5
+        case .comeback, .boost, .upgrade, .event:
+            return 6
+        }
+    }
+
+    var spriteRequestName: String {
+        "pet-{stage}-proactive-intent-\(spriteSlug).png"
+    }
+
+    static func count(mask: Int) -> Int {
+        allCases.filter { mask & $0.rawValue != 0 }.count
+    }
+
+    static func next(offeredMask: Int, index: Int) -> PetCheerIntent? {
+        let remaining = allCases.filter { offeredMask & $0.rawValue == 0 }
+        guard !remaining.isEmpty else { return nil }
+        return remaining[index % remaining.count]
+    }
+
+    static func summary(offeredMask: Int, answeredMask: Int, dismissedMask: Int, albumMask: Int) -> String {
+        let answered = count(mask: answeredMask)
+        let offered = count(mask: offeredMask)
+        let dismissed = count(mask: dismissedMask)
+        let album = count(mask: albumMask)
+        let nextText = next(offeredMask: offeredMask, index: offered + answered + dismissed)
+            .map { "Next \($0.title)" } ?? "All check-in types seen"
+        return "Check-in Types \(answered)/\(allCases.count) answered · \(offered) seen · \(dismissed) skipped · Album \(album)/\(allCases.count) · \(nextText)"
+    }
+}
+
 enum PetLoreCodex {
     static func line(
         stage: PetGrowthStage,
@@ -2785,6 +3071,21 @@ enum PetNudgeLibrary {
         let body: String
         let action: String
         let rewardLine: String
+        let intent: PetCheerIntent
+
+        init(
+            title: String,
+            body: String,
+            action: String,
+            rewardLine: String,
+            intent: PetCheerIntent = .checkIn
+        ) {
+            self.title = title
+            self.body = body
+            self.action = action
+            self.rewardLine = rewardLine
+            self.intent = intent
+        }
 
         var bubbleText: String {
             "\(title): \(body)"
@@ -2819,11 +3120,32 @@ enum PetNudgeLibrary {
             body = "How are you doing? I can turn this into a warm check-in."
         }
 
+        let intent: PetCheerIntent
+        switch step {
+        case .soothe, .cheer:
+            intent = .feeling
+        case .snack:
+            intent = .care
+        case .rest:
+            intent = .rest
+        case .play:
+            intent = .tinyWin
+        case .study:
+            intent = .lesson
+        case .adventure:
+            intent = .quest
+        case .focus:
+            intent = .focus
+        case .puzzle:
+            intent = .puzzle
+        }
+
         return PetCheerPrompt(
             title: "\(feeling.title) care",
             body: body,
             action: step == .rest ? "Open a rest check-in" : "Open \(step.title) care",
-            rewardLine: "\(recipe.title) \(step.title) answered for \(stage.title)"
+            rewardLine: "\(recipe.title) \(step.title) answered for \(stage.title)",
+            intent: intent
         )
     }
 
@@ -2850,7 +3172,8 @@ enum PetNudgeLibrary {
                 title: "Welcome back",
                 body: "I saved a small chest while you were away.",
                 action: "Open the comeback check-in",
-                rewardLine: "Comeback answered"
+                rewardLine: "Comeback answered",
+                intent: .comeback
             )
         }
         if energy == 0 {
@@ -2858,7 +3181,8 @@ enum PetNudgeLibrary {
                 title: "Soft recharge",
                 body: "I am sleepy, but I saved your quest.",
                 action: "Open a gentle check-in",
-                rewardLine: "Quiet check-in answered"
+                rewardLine: "Quiet check-in answered",
+                intent: .rest
             )
         }
         if index % 3 == 1 {
@@ -2866,7 +3190,8 @@ enum PetNudgeLibrary {
                 title: "\(careNeed.title) check",
                 body: "How are you doing? Want to \(careNeed.actionLine)?",
                 action: "Open the care ritual",
-                rewardLine: "\(careNeed.title) check-in answered"
+                rewardLine: "\(careNeed.title) check-in answered",
+                intent: .care
             )
         }
         if eventProgress < seasonEvent.requiredSteps {
@@ -2874,7 +3199,8 @@ enum PetNudgeLibrary {
                 title: seasonEvent.title,
                 body: "Want to \(seasonEvent.actionLine)?",
                 action: "Open today's event",
-                rewardLine: "\(seasonEvent.title) check-in answered"
+                rewardLine: "\(seasonEvent.title) check-in answered",
+                intent: .event
             )
         }
         if index % 5 == 0 {
@@ -2882,7 +3208,8 @@ enum PetNudgeLibrary {
                 title: careMoment.title,
                 body: careMoment.nudgeLine,
                 action: "Open the time-of-day check-in",
-                rewardLine: "\(careMoment.title) check-in answered"
+                rewardLine: "\(careMoment.title) check-in answered",
+                intent: .checkIn
             )
         }
         if boosterReady {
@@ -2890,7 +3217,8 @@ enum PetNudgeLibrary {
                 title: "Boost ready",
                 body: "Want a quick burst before the next quest?",
                 action: "Open Spark Boost",
-                rewardLine: "Boost check-in answered"
+                rewardLine: "Boost check-in answered",
+                intent: .boost
             )
         }
         if !cipherSolved {
@@ -2898,7 +3226,8 @@ enum PetNudgeLibrary {
                 title: "Tiny cipher",
                 body: "\(cipher.clue). I can solve it with you.",
                 action: "Open today's cipher",
-                rewardLine: "Cipher check-in answered"
+                rewardLine: "Cipher check-in answered",
+                intent: .puzzle
             )
         }
         if sparkDust >= 80 {
@@ -2906,7 +3235,8 @@ enum PetNudgeLibrary {
                 title: "Kit upgrade",
                 body: "\(sparkDust) Sparks are glowing. Want an upgrade?",
                 action: "Open upgrade",
-                rewardLine: "Upgrade check-in answered"
+                rewardLine: "Upgrade check-in answered",
+                intent: .upgrade
             )
         }
         if let nextQuest {
@@ -2914,7 +3244,8 @@ enum PetNudgeLibrary {
                 title: "Daily board",
                 body: "How are you doing? Want to \(nextQuest.nudgeText)?",
                 action: "Open today's board",
-                rewardLine: "\(nextQuest.title) check-in answered"
+                rewardLine: "\(nextQuest.title) check-in answered",
+                intent: nextQuest.cheerIntent
             )
         }
         if let nextAction = combo.first(where: { comboMask & $0.rawValue == 0 }) {
@@ -2922,18 +3253,20 @@ enum PetNudgeLibrary {
                 title: "Tiny combo",
                 body: "How are you doing? Want to \(nextAction.nudgeText)?",
                 action: "Open the combo step",
-                rewardLine: "\(nextAction.label) combo check-in answered"
+                rewardLine: "\(nextAction.label) combo check-in answered",
+                intent: nextAction.cheerIntent
             )
         }
 
         let fallback = [
-            PetCheerPrompt(title: stage.title, body: "Want one brave click?", action: "Open a tiny quest", rewardLine: "Tiny quest check-in answered"),
-            PetCheerPrompt(title: "I kept watch", body: "Want a 60-second quest?", action: "Open a short quest", rewardLine: "Watch check-in answered"),
-            PetCheerPrompt(title: "\(feeling.title) mood", body: "Need a hint or a phrase?", action: "Open a mood check-in", rewardLine: "\(feeling.title) check-in answered"),
-            PetCheerPrompt(title: "Tiny reset", body: "Breathe, stretch, then one spark?", action: "Open a reset", rewardLine: "Reset check-in answered"),
-            PetCheerPrompt(title: "Pika check", body: "What is happening over there?", action: "Open chat", rewardLine: "Chat check-in answered"),
-            PetCheerPrompt(title: "I found a task", body: "Want me to sit with you while you start?", action: "Open focus mode", rewardLine: "Focus check-in answered"),
-            PetCheerPrompt(title: "Warm bond", body: "No big quest needed. One tap is enough.", action: "Open a gentle check-in", rewardLine: "Bond check-in answered")
+            PetCheerPrompt(title: stage.title, body: "Want one brave click?", action: "Open a tiny quest", rewardLine: "Tiny quest check-in answered", intent: .quest),
+            PetCheerPrompt(title: "I kept watch", body: "Want a 60-second quest?", action: "Open a short quest", rewardLine: "Watch check-in answered", intent: .quest),
+            PetCheerPrompt(title: "\(feeling.title) mood", body: "Need a hint or a phrase?", action: "Open a mood check-in", rewardLine: "\(feeling.title) check-in answered", intent: .feeling),
+            PetCheerPrompt(title: "Tiny lesson", body: "Want one phrase and one proud spark?", action: "Open a phrase", rewardLine: "Lesson check-in answered", intent: .lesson),
+            PetCheerPrompt(title: "Tiny reset", body: "Breathe, stretch, then one spark?", action: "Open a reset", rewardLine: "Reset check-in answered", intent: .reset),
+            PetCheerPrompt(title: "Pika check", body: "What is happening over there?", action: "Open chat", rewardLine: "Chat check-in answered", intent: .checkIn),
+            PetCheerPrompt(title: "I found a task", body: "Want me to sit with you while you start?", action: "Open focus mode", rewardLine: "Focus check-in answered", intent: .focus),
+            PetCheerPrompt(title: "Warm bond", body: "No big quest needed. One tap is enough.", action: "Open a gentle check-in", rewardLine: "Bond check-in answered", intent: .care)
         ]
         return fallback[index % fallback.count]
     }

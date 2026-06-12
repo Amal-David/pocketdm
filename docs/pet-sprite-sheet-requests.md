@@ -423,7 +423,26 @@ consistent:
 - `pet-buddy-cheer-dialogue-dismiss-soft.png`
 - `pet-buddy-journal-cheer-dialogues.png`
 
-### Batch 13: Stage Life Scenes
+### Batch 13: Proactive Check-in Intent Types
+
+- `pet-buddy-proactive-intent-gentle-check.png`
+- `pet-buddy-proactive-intent-feeling-check.png`
+- `pet-buddy-proactive-intent-focus-start.png`
+- `pet-buddy-proactive-intent-tiny-win.png`
+- `pet-buddy-proactive-intent-soft-reset.png`
+- `pet-buddy-proactive-intent-quest-nudge.png`
+- `pet-buddy-proactive-intent-lesson-spark.png`
+- `pet-buddy-proactive-intent-rest-watch.png`
+- `pet-buddy-proactive-intent-comeback.png`
+- `pet-buddy-proactive-intent-board-contract.png`
+- `pet-buddy-proactive-intent-puzzle-clue.png`
+- `pet-buddy-proactive-intent-spark-boost.png`
+- `pet-buddy-proactive-intent-upgrade.png`
+- `pet-buddy-proactive-intent-event-step.png`
+- `pet-buddy-proactive-intent-care-ritual.png`
+- `pet-buddy-journal-checkin-types.png`
+
+### Batch 14: Stage Life Scenes
 
 - `pet-tiny-spark-life-first-look.png`
 - `pet-tiny-spark-life-desk-nest.png`
@@ -443,7 +462,7 @@ consistent:
 - `pet-{stage}-journal-life-scenes.png`
 - `pet-{stage}-life-scene-complete.png`
 
-### Batch 14: Weekly Trail Chapters
+### Batch 15: Weekly Trail Chapters
 
 - `pet-{stage}-week-chapter-day-1-first-hello.png`
 - `pet-{stage}-week-chapter-day-2-snack-promise.png`
@@ -455,7 +474,7 @@ consistent:
 - `pet-{stage}-journal-week-chapters.png`
 - `pet-{stage}-week-chapter-album-complete.png`
 
-### Batch 15: Full Stage Matrix
+### Batch 16: Full Stage Matrix
 
 After the buddy form works, repeat the stage matrix for:
 
@@ -807,6 +826,42 @@ Proactive check-ins:
   - Bond Board bubble dismissed; pet remains warm and returns to idle.
 - `pet-{stage}-proactive-dismiss.png`
   - Calmly accepts dismissal and returns to idle, no sad guilt.
+
+Proactive check-in intent types:
+
+- `pet-{stage}-proactive-intent-gentle-check.png`
+  - Soft "how are you?" posture, open paws, patient eyes.
+- `pet-{stage}-proactive-intent-feeling-check.png`
+  - Notices the user's mood, tilts head, offers a small comfort spark.
+- `pet-{stage}-proactive-intent-focus-start.png`
+  - Sits beside an invisible task and starts a quiet first-minute timer pose.
+- `pet-{stage}-proactive-intent-tiny-win.png`
+  - Celebrates a very small win, stores a tiny spark, no confetti text.
+- `pet-{stage}-proactive-intent-soft-reset.png`
+  - Breathes, stretches, and shrinks a big task into one soft next step.
+- `pet-{stage}-proactive-intent-quest-nudge.png`
+  - Points toward a tiny quest trail and takes one brave step.
+- `pet-{stage}-proactive-intent-lesson-spark.png`
+  - Listens to one phrase, repeats it, and saves a learning spark.
+- `pet-{stage}-proactive-intent-rest-watch.png`
+  - Calm rest guard pose that makes pausing feel like care.
+- `pet-{stage}-proactive-intent-comeback.png`
+  - Welcomes the user back and shows that returning counts.
+- `pet-{stage}-proactive-intent-board-contract.png`
+  - Holds a small care-contract charm and invites one board action.
+- `pet-{stage}-proactive-intent-puzzle-clue.png`
+  - Holds a clue spark, thinks, and offers to solve one small puzzle.
+- `pet-{stage}-proactive-intent-spark-boost.png`
+  - Cheek sparks build into a controlled boost, then settle.
+- `pet-{stage}-proactive-intent-upgrade.png`
+  - Points at a glowing upgrade card/charm and looks proud.
+- `pet-{stage}-proactive-intent-event-step.png`
+  - Holds today's event charm and invites one story beat.
+- `pet-{stage}-proactive-intent-care-ritual.png`
+  - Gently asks for the current pet care ritual without neediness.
+- `pet-{stage}-journal-checkin-types.png`
+  - Opens a journal page with all check-in type charms: answered, seen, and
+    locked states.
 
 Cheer dialogue moments:
 

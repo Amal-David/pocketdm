@@ -286,3 +286,11 @@ progress instead of abstract streak pressure.
 **Rule:** week-long care should unlock named story chapters, persistent album
 receipts, vitals, mood-care effects, and sprite filenames, while the high-value
 weekly payouts remain secondary to the pet bond.
+
+## 2026-06-13 — Proactive bubbles need purpose types
+The user wants the pet to proactively ask how the user is doing throughout the
+day, not merely surface generic notifications.
+**Rule:** every proactive bubble should carry a visible intent type such as
+Feeling, Focus, Tiny Win, Reset, Quest, Lesson, Rest, Comeback, Board, Puzzle,
+Boost, Upgrade, Event, or Care, and that type should have answer/skip state,
+care effects, and a matching sprite request.

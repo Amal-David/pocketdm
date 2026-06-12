@@ -316,6 +316,9 @@ The native macOS companion now has the first version of the loop:
   ciphers, learning rewards, and assistant replies.
 - Pika text wrapping now treats punctuated or hyphenated variants as the same
   catchphrase, so model replies stay characterful without duplicate prefixes.
+- Proactive bubbles now carry a check-in type such as Feeling, Focus, Tiny Win,
+  Reset, Quest, Lesson, Rest, Comeback, Board, Puzzle, Boost, Upgrade, Event,
+  or Care, with separate answered/skipped state and sprite requests.
 
 This is not the full final pet fantasy yet. It is the backbone that lets the
 next sprite sheets matter: new art can now map to real emotions, upgrades,

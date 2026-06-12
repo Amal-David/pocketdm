@@ -238,6 +238,11 @@ final class DragonOverlayModel: ObservableObject {
     private static let dailyCheerDialogueAnsweredMaskKey = "PocketDMCompanion.dailyCheerDialogueAnsweredMask"
     private static let dailyCheerDialogueDismissedMaskKey = "PocketDMCompanion.dailyCheerDialogueDismissedMask"
     private static let cheerDialogueAlbumMaskKey = "PocketDMCompanion.cheerDialogueAlbumMask"
+    private static let dailyCheerIntentDateKey = "PocketDMCompanion.dailyCheerIntentDate"
+    private static let dailyCheerIntentOfferedMaskKey = "PocketDMCompanion.dailyCheerIntentOfferedMask"
+    private static let dailyCheerIntentAnsweredMaskKey = "PocketDMCompanion.dailyCheerIntentAnsweredMask"
+    private static let dailyCheerIntentDismissedMaskKey = "PocketDMCompanion.dailyCheerIntentDismissedMask"
+    private static let cheerIntentAlbumMaskKey = "PocketDMCompanion.cheerIntentAlbumMask"
     private static let snackVitalKey = "PocketDMCompanion.snackVital"
     private static let restVitalKey = "PocketDMCompanion.restVital"
     private static let playVitalKey = "PocketDMCompanion.playVital"
@@ -326,6 +331,11 @@ final class DragonOverlayModel: ObservableObject {
     @Published var dailyCheerDialogueAnsweredMask = UserDefaults.standard.object(forKey: DragonOverlayModel.dailyCheerDialogueAnsweredMaskKey) as? Int ?? 0
     @Published var dailyCheerDialogueDismissedMask = UserDefaults.standard.object(forKey: DragonOverlayModel.dailyCheerDialogueDismissedMaskKey) as? Int ?? 0
     @Published var cheerDialogueAlbumMask = UserDefaults.standard.object(forKey: DragonOverlayModel.cheerDialogueAlbumMaskKey) as? Int ?? 0
+    @Published var dailyCheerIntentDate = UserDefaults.standard.string(forKey: DragonOverlayModel.dailyCheerIntentDateKey) ?? ""
+    @Published var dailyCheerIntentOfferedMask = UserDefaults.standard.object(forKey: DragonOverlayModel.dailyCheerIntentOfferedMaskKey) as? Int ?? 0
+    @Published var dailyCheerIntentAnsweredMask = UserDefaults.standard.object(forKey: DragonOverlayModel.dailyCheerIntentAnsweredMaskKey) as? Int ?? 0
+    @Published var dailyCheerIntentDismissedMask = UserDefaults.standard.object(forKey: DragonOverlayModel.dailyCheerIntentDismissedMaskKey) as? Int ?? 0
+    @Published var cheerIntentAlbumMask = UserDefaults.standard.object(forKey: DragonOverlayModel.cheerIntentAlbumMaskKey) as? Int ?? 0
     @Published var snackVital = UserDefaults.standard.object(forKey: DragonOverlayModel.snackVitalKey) as? Int ?? DragonOverlayModel.maxVital
     @Published var restVital = UserDefaults.standard.object(forKey: DragonOverlayModel.restVitalKey) as? Int ?? DragonOverlayModel.maxVital
     @Published var playVital = UserDefaults.standard.object(forKey: DragonOverlayModel.playVitalKey) as? Int ?? DragonOverlayModel.maxVital
@@ -338,6 +348,7 @@ final class DragonOverlayModel: ObservableObject {
     @Published var cheerMoodCareStepRaw = 0
     @Published var cheerBondContractRaw = 0
     @Published var cheerDialogueRaw = 0
+    @Published var cheerIntentRaw = 0
 
     let languageCoach = LanguageCoachStore()
 
@@ -755,6 +766,7 @@ final class DragonOverlayModel: ObservableObject {
         let cheerDialogue = PetCheerDialogue(rawValue: cheerDialogueRaw)
         let daypartNote = recordCheerAnswer()
         let dialogueNote = recordCheerDialogueAnswer()
+        let intentNote = recordCheerIntentAnswer()
         clearCheerBubble()
         lastRequest = "Cheer"
         happiness = min(5, happiness + 1)
@@ -765,6 +777,9 @@ final class DragonOverlayModel: ObservableObject {
         }
         if let dialogueNote {
             message += " \(dialogueNote)"
+        }
+        if let intentNote {
+            message += " \(intentNote)"
         }
         recordDailyQuest(.cheer)
         if let needNote = awardCareNeed(.focus) {
@@ -815,6 +830,7 @@ final class DragonOverlayModel: ObservableObject {
 
     func dismissCheerBubble() {
         recordCheerDismissal()
+        recordCheerIntentDismissal()
         clearCheerBubble()
         UserDefaults.standard.set(Date().timeIntervalSince1970, forKey: Self.lastCheerAtKey)
         play(.minimize)
@@ -1255,6 +1271,19 @@ final class DragonOverlayModel: ObservableObject {
         )
     }
 
+    var cheerIntentLine: String {
+        PetCheerIntent.summary(
+            offeredMask: dailyCheerIntentOfferedMask,
+            answeredMask: dailyCheerIntentAnsweredMask,
+            dismissedMask: dailyCheerIntentDismissedMask,
+            albumMask: cheerIntentAlbumMask
+        )
+    }
+
+    var cheerIntentTitle: String {
+        (PetCheerIntent(rawValue: cheerIntentRaw) ?? .checkIn).title
+    }
+
     var cipherLine: String {
         if dailyCipherSolved {
             return "\(careMoment.title) · Cipher \(dailyCipher.answer) ✓ · Boost \(dailyBoosterUsed ? "used" : "ready")"
@@ -1474,17 +1503,21 @@ final class DragonOverlayModel: ObservableObject {
     var journalCheerProgress: Double {
         let answered = PetDaypartNudge.count(mask: dailyNudgeAnsweredMask)
             + PetCheerDialogue.count(mask: dailyCheerDialogueAnsweredMask)
-        let total = PetDaypartNudge.allCases.count + PetCheerDialogue.allCases.count
+            + PetCheerIntent.count(mask: dailyCheerIntentAnsweredMask)
+        let total = PetDaypartNudge.allCases.count + PetCheerDialogue.allCases.count + PetCheerIntent.allCases.count
         return Double(answered) / Double(max(1, total))
     }
 
     var journalCheerCaption: String {
         let answered = PetDaypartNudge.count(mask: dailyNudgeAnsweredMask)
             + PetCheerDialogue.count(mask: dailyCheerDialogueAnsweredMask)
+            + PetCheerIntent.count(mask: dailyCheerIntentAnsweredMask)
         let offered = PetDaypartNudge.count(mask: dailyNudgeOfferedMask)
             + PetCheerDialogue.count(mask: dailyCheerDialogueOfferedMask)
+            + PetCheerIntent.count(mask: dailyCheerIntentOfferedMask)
         let albumDone = PetCheerDialogue.count(mask: cheerDialogueAlbumMask)
-        return "\(answered)/\(PetDaypartNudge.allCases.count + PetCheerDialogue.allCases.count) answered today · \(offered) seen · Dialogue album \(albumDone)/\(PetCheerDialogue.allCases.count)"
+        let intentAlbumDone = PetCheerIntent.count(mask: cheerIntentAlbumMask)
+        return "\(answered)/\(PetDaypartNudge.allCases.count + PetCheerDialogue.allCases.count + PetCheerIntent.allCases.count) answered today · \(offered) seen · Dialogue album \(albumDone)/\(PetCheerDialogue.allCases.count) · Types \(intentAlbumDone)/\(PetCheerIntent.allCases.count)"
     }
 
     var journalCheerSpriteLine: String {
@@ -1508,6 +1541,23 @@ final class DragonOverlayModel: ObservableObject {
                 + PetCheerDialogue.count(mask: dailyCheerDialogueAnsweredMask)
         ) ?? .howAreYou
         return "Dialogue sprite: \(next.spriteRequestName.replacingOccurrences(of: "{stage}", with: growthStage.assetSlug))"
+    }
+
+    var journalCheerIntentProgress: Double {
+        Double(PetCheerIntent.count(mask: dailyCheerIntentAnsweredMask)) / Double(PetCheerIntent.allCases.count)
+    }
+
+    var journalCheerIntentCaption: String {
+        cheerIntentLine
+    }
+
+    var journalCheerIntentSpriteLine: String {
+        let next = PetCheerIntent.next(
+            offeredMask: dailyCheerIntentOfferedMask,
+            index: PetCheerIntent.count(mask: dailyCheerIntentOfferedMask)
+                + PetCheerIntent.count(mask: dailyCheerIntentAnsweredMask)
+        ) ?? .checkIn
+        return "Intent sprite: \(next.spriteRequestName.replacingOccurrences(of: "{stage}", with: growthStage.assetSlug))"
     }
 
     var journalSpriteLine: String {
@@ -1567,6 +1617,7 @@ final class DragonOverlayModel: ObservableObject {
         cheerMoodCareStepRaw = 0
         cheerBondContractRaw = 0
         cheerDialogueRaw = 0
+        cheerIntentRaw = 0
     }
 
     private func persistCare() {
@@ -1628,6 +1679,11 @@ final class DragonOverlayModel: ObservableObject {
         UserDefaults.standard.set(dailyCheerDialogueAnsweredMask, forKey: Self.dailyCheerDialogueAnsweredMaskKey)
         UserDefaults.standard.set(dailyCheerDialogueDismissedMask, forKey: Self.dailyCheerDialogueDismissedMaskKey)
         UserDefaults.standard.set(cheerDialogueAlbumMask, forKey: Self.cheerDialogueAlbumMaskKey)
+        UserDefaults.standard.set(dailyCheerIntentDate, forKey: Self.dailyCheerIntentDateKey)
+        UserDefaults.standard.set(dailyCheerIntentOfferedMask, forKey: Self.dailyCheerIntentOfferedMaskKey)
+        UserDefaults.standard.set(dailyCheerIntentAnsweredMask, forKey: Self.dailyCheerIntentAnsweredMaskKey)
+        UserDefaults.standard.set(dailyCheerIntentDismissedMask, forKey: Self.dailyCheerIntentDismissedMaskKey)
+        UserDefaults.standard.set(cheerIntentAlbumMask, forKey: Self.cheerIntentAlbumMaskKey)
         UserDefaults.standard.set(snackVital, forKey: Self.snackVitalKey)
         UserDefaults.standard.set(restVital, forKey: Self.restVitalKey)
         UserDefaults.standard.set(playVital, forKey: Self.playVitalKey)
@@ -1765,6 +1821,14 @@ final class DragonOverlayModel: ObservableObject {
 
     func isCheerDialogueUnlocked(_ dialogue: PetCheerDialogue) -> Bool {
         cheerDialogueAlbumMask & dialogue.rawValue != 0
+    }
+
+    func isCheerIntentAnswered(_ intent: PetCheerIntent) -> Bool {
+        dailyCheerIntentAnsweredMask & intent.rawValue != 0
+    }
+
+    func isCheerIntentUnlocked(_ intent: PetCheerIntent) -> Bool {
+        cheerIntentAlbumMask & intent.rawValue != 0
     }
 
     func isLifeSceneUnlocked(_ scene: PetLifeScene) -> Bool {
@@ -2099,6 +2163,13 @@ final class DragonOverlayModel: ObservableObject {
             dailyCheerDialogueDismissedMask = 0
             changed = true
         }
+        if dailyCheerIntentDate != today {
+            dailyCheerIntentDate = today
+            dailyCheerIntentOfferedMask = 0
+            dailyCheerIntentAnsweredMask = 0
+            dailyCheerIntentDismissedMask = 0
+            changed = true
+        }
         if dailyComboDate != today {
             dailyComboDate = today
             dailyComboMask = 0
@@ -2236,6 +2307,33 @@ final class DragonOverlayModel: ObservableObject {
         return "\(dialogue.title) saved in Cheer Dialogues: Joy +1, Sparks +\(reward). \(dialogue.rewardReceipt)"
     }
 
+    private func recordCheerIntentAnswer() -> String? {
+        syncDailyCombo()
+        guard let intent = PetCheerIntent(rawValue: cheerIntentRaw) else { return nil }
+        let wasAnswered = dailyCheerIntentAnsweredMask & intent.rawValue != 0
+        dailyCheerIntentOfferedMask |= intent.rawValue
+        dailyCheerIntentAnsweredMask |= intent.rawValue
+        dailyCheerIntentDismissedMask &= ~intent.rawValue
+        cheerIntentAlbumMask |= intent.rawValue
+        guard !wasAnswered else {
+            persistCare()
+            return nil
+        }
+
+        let reward = intent.sparkReward + cheerLevel + min(3, sparkLevel)
+        sparkDust = min(999, sparkDust + reward)
+        happiness = min(5, happiness + 1)
+        var notes = ["\(intent.title) saved in Check-in Types: Joy +1, Sparks +\(reward). \(intent.receiptLine)"]
+        if let vitalNote = refillVital(intent.vital, by: 1) {
+            notes.append(vitalNote)
+        }
+        if let moodCareNote = markMoodCare(intent.moodStep) {
+            notes.append(moodCareNote)
+        }
+        persistCare()
+        return notes.joined(separator: " ")
+    }
+
     private func recordCheerDismissal() {
         syncDailyCombo()
         var changed = false
@@ -2250,6 +2348,14 @@ final class DragonOverlayModel: ObservableObject {
             changed = true
         }
         guard changed else { return }
+        persistCare()
+    }
+
+    private func recordCheerIntentDismissal() {
+        syncDailyCombo()
+        guard let intent = PetCheerIntent(rawValue: cheerIntentRaw) else { return }
+        dailyCheerIntentOfferedMask |= intent.rawValue
+        dailyCheerIntentDismissedMask |= intent.rawValue
         persistCare()
     }
 
@@ -2493,14 +2599,16 @@ final class DragonOverlayModel: ObservableObject {
                 title: "Bond Board",
                 body: "\(nextContract.title) is ready. Want to \(nextContract.actionLine)?",
                 action: "Open \(nextContract.shortLabel)",
-                rewardLine: "\(nextContract.title) answered"
+                rewardLine: "\(nextContract.title) answered",
+                intent: .board
             )
         } else if shouldUseDialogue, let nextDialogue {
             prompt = PetNudgeLibrary.PetCheerPrompt(
                 title: nextDialogue.title,
                 body: nextDialogue.body,
                 action: nextDialogue.action,
-                rewardLine: nextDialogue.rewardLine
+                rewardLine: nextDialogue.rewardLine,
+                intent: nextDialogue.intent
             )
         } else {
             prompt = PetNudgeLibrary.cheerPrompt(
@@ -2529,7 +2637,10 @@ final class DragonOverlayModel: ObservableObject {
         cheerMoodCareStepRaw = shouldUseMoodCare ? (nextMoodCareStep?.rawValue ?? 0) : 0
         cheerBondContractRaw = shouldUseBondBoard ? (nextContract?.rawValue ?? 0) : 0
         cheerDialogueRaw = shouldUseDialogue ? (nextDialogue?.rawValue ?? 0) : 0
+        cheerIntentRaw = prompt.intent.rawValue
         cheerBubble = pikaText(prompt.body)
+        dailyCheerIntentOfferedMask |= prompt.intent.rawValue
+        dailyCheerIntentDismissedMask &= ~prompt.intent.rawValue
         if shouldUseDaypart {
             dailyNudgeOfferedMask |= daypart.rawValue
             dailyNudgeDismissedMask &= ~daypart.rawValue
@@ -2539,6 +2650,7 @@ final class DragonOverlayModel: ObservableObject {
             dailyCheerDialogueDismissedMask &= ~nextDialogue.rawValue
             persistCare()
         }
+        persistCare()
         defaults.set(index + 1, forKey: Self.cheerIndexKey)
         defaults.set(now, forKey: Self.lastCheerAtKey)
         play(.happy)
@@ -2796,7 +2908,7 @@ struct DragonOverlayView: View {
                                 .foregroundStyle(Color.black)
                                 .lineLimit(2)
                                 .minimumScaleFactor(0.72)
-                            Text(model.cheerAction.isEmpty ? "Open check-in" : model.cheerAction)
+                            Text("\(model.cheerIntentTitle) · \(model.cheerAction.isEmpty ? "Open check-in" : model.cheerAction)")
                                 .font(.system(size: 8.5, weight: .black, design: .rounded))
                                 .foregroundStyle(Color.black.opacity(0.58))
                                 .lineLimit(1)
@@ -3346,6 +3458,9 @@ struct PetJournalPanel: View {
             journalHero("Cheer Dialogues", value: model.journalCheerDialogueProgress, caption: model.journalCheerDialogueCaption)
             cheerDialogueGrid
             artLine(model.journalCheerDialogueSpriteLine)
+            journalHero("Check-in Types", value: model.journalCheerIntentProgress, caption: model.journalCheerIntentCaption)
+            cheerIntentGrid
+            artLine(model.journalCheerIntentSpriteLine)
             detailLine(model.cipherLine)
         case .streak:
             journalHero("Week Trail", value: model.journalStreakProgress, caption: model.journalStreakCaption)
@@ -3516,10 +3631,32 @@ struct PetJournalPanel: View {
         }
     }
 
+    private var cheerIntentGrid: some View {
+        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 4), count: 3), spacing: 3) {
+            ForEach(PetCheerIntent.allCases, id: \.rawValue) { intent in
+                cheerIntentChip(intent)
+            }
+        }
+    }
+
     private func cheerDialogueChip(_ dialogue: PetCheerDialogue) -> some View {
         let answered = model.isCheerDialogueAnswered(dialogue)
         let unlocked = model.isCheerDialogueUnlocked(dialogue)
         return Text("\(dialogue.shortLabel) \(answered ? "✓" : unlocked ? "•" : "○")")
+            .font(.system(size: 7.4, weight: .black, design: .rounded))
+            .foregroundStyle(answered ? Color.black : Color.ivory.opacity(unlocked ? 0.78 : 0.62))
+            .lineLimit(1)
+            .minimumScaleFactor(0.58)
+            .frame(height: 18)
+            .frame(maxWidth: .infinity)
+            .background(answered ? Color.gold.opacity(0.92) : Color.black.opacity(unlocked ? 0.42 : 0.32), in: RoundedRectangle(cornerRadius: 5))
+            .overlay(RoundedRectangle(cornerRadius: 5).stroke(Color.ivory.opacity(answered ? 0 : 0.12), lineWidth: 1))
+    }
+
+    private func cheerIntentChip(_ intent: PetCheerIntent) -> some View {
+        let answered = model.isCheerIntentAnswered(intent)
+        let unlocked = model.isCheerIntentUnlocked(intent)
+        return Text("\(intent.shortLabel) \(answered ? "✓" : unlocked ? "•" : "○")")
             .font(.system(size: 7.4, weight: .black, design: .rounded))
             .foregroundStyle(answered ? Color.black : Color.ivory.opacity(unlocked ? 0.78 : 0.62))
             .lineLimit(1)
