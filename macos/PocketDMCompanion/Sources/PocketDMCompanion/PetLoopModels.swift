@@ -502,6 +502,27 @@ enum PetUpgradeKind: CaseIterable {
             return "Daily ciphers pay brighter rewards."
         }
     }
+
+    var spriteRequestName: String {
+        switch self {
+        case .snack:
+            return "pet-{stage}-card-snack-bowl.png"
+        case .lesson:
+            return "pet-{stage}-card-study-bell.png"
+        case .quest:
+            return "pet-{stage}-card-quest-map.png"
+        case .nest:
+            return "pet-{stage}-card-cozy-nest.png"
+        case .cheer:
+            return "pet-{stage}-card-cheer-signal.png"
+        case .spark:
+            return "pet-{stage}-card-spark-wheel.png"
+        case .focus:
+            return "pet-{stage}-card-focus-charm.png"
+        case .cipher:
+            return "pet-{stage}-card-cipher-stone.png"
+        }
+    }
 }
 
 struct PetUpgradeCandidate {
@@ -518,6 +539,31 @@ struct PetUpgradeCandidate {
 
     var shortName: String {
         kind.shortName
+    }
+}
+
+struct PetUpgradeDeckCard: Identifiable {
+    let kind: PetUpgradeKind
+    let level: Int
+
+    var id: String {
+        kind.shortName
+    }
+
+    var nextCost: Int {
+        kind.baseCost * (level + 1)
+    }
+
+    var isUnlocked: Bool {
+        level > 0
+    }
+
+    var levelLine: String {
+        "Lv \(level) · next \(nextCost)"
+    }
+
+    var statusLine: String {
+        isUnlocked ? kind.unlockLine : "Locked behavior: \(kind.unlockLine)"
     }
 }
 

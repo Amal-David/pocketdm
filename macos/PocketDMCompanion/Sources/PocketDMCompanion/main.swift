@@ -894,6 +894,39 @@ final class DragonOverlayModel: ObservableObject {
         return "Next \(next.shortName) \(next.level + 1): \(next.cost) Sparks"
     }
 
+    var upgradeDeckCards: [PetUpgradeDeckCard] {
+        [
+            PetUpgradeDeckCard(kind: .snack, level: snackLevel),
+            PetUpgradeDeckCard(kind: .lesson, level: lessonLevel),
+            PetUpgradeDeckCard(kind: .quest, level: questLevel),
+            PetUpgradeDeckCard(kind: .nest, level: nestLevel),
+            PetUpgradeDeckCard(kind: .cheer, level: cheerLevel),
+            PetUpgradeDeckCard(kind: .spark, level: sparkLevel),
+            PetUpgradeDeckCard(kind: .focus, level: focusLevel),
+            PetUpgradeDeckCard(kind: .cipher, level: cipherLevel)
+        ]
+    }
+
+    var upgradeDeckLine: String {
+        let total = upgradeDeckCards.reduce(0) { $0 + $1.level }
+        let unlocked = upgradeDeckCards.filter(\.isUnlocked).count
+        let next = nextUpgradeCandidate
+        return "Cards \(unlocked)/\(upgradeDeckCards.count) · Levels \(total) · Next \(next.name) \(next.cost)"
+    }
+
+    var journalUpgradeProgress: Double {
+        Double(upgradeDeckCards.filter(\.isUnlocked).count) / Double(max(1, upgradeDeckCards.count))
+    }
+
+    var journalUpgradeCaption: String {
+        let next = nextUpgradeCandidate
+        return "\(upgradeDeckLine) · \(sparkDust) Sparks held · next \(next.shortName) Lv \(next.level + 1)"
+    }
+
+    var journalUpgradeSpriteLine: String {
+        "Card sprite: \(nextUpgradeCandidate.kind.spriteRequestName.replacingOccurrences(of: "{stage}", with: growthStage.assetSlug))"
+    }
+
     var petScale: CGFloat {
         growthStage.spriteScale
     }
@@ -2021,6 +2054,11 @@ struct DragonOverlayView: View {
                 .foregroundStyle(Color.ivory.opacity(0.68))
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
+            Text(model.upgradeDeckLine)
+                .font(.system(size: 8.2, weight: .black, design: .rounded))
+                .foregroundStyle(Color.gold.opacity(0.66))
+                .lineLimit(1)
+                .minimumScaleFactor(0.48)
             Text(model.memoryLine)
                 .font(.system(size: 8.3, weight: .bold, design: .rounded))
                 .foregroundStyle(Color.ivory.opacity(0.64))
@@ -2208,6 +2246,7 @@ enum PetJournalPage: String, CaseIterable {
     case badges
     case rituals
     case streak
+    case cards
     case art
 
     var label: String {
@@ -2224,6 +2263,8 @@ enum PetJournalPage: String, CaseIterable {
             return "Today"
         case .streak:
             return "Week"
+        case .cards:
+            return "Cards"
         case .art:
             return "Art"
         }
@@ -2296,6 +2337,11 @@ struct PetJournalPanel: View {
             streakGrid
             detailLine(model.weeklyLine)
             artLine(model.journalStreakSpriteLine)
+        case .cards:
+            journalHero("Upgrade Cards", value: model.journalUpgradeProgress, caption: model.journalUpgradeCaption)
+            upgradeDeckGrid
+            detailLine(model.upgradeLine)
+            artLine(model.journalUpgradeSpriteLine)
         case .art:
             journalTitleBlock("Sprite Brief", caption: model.journalArtContextLine)
             artLine(model.journalSpriteLine)
@@ -2370,6 +2416,32 @@ struct PetJournalPanel: View {
                 journalChip("\(milestone.shortLabel) \(milestone.title)", isUnlocked: model.weeklyRewardMask & milestone.rawValue != 0)
             }
         }
+    }
+
+    private var upgradeDeckGrid: some View {
+        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 4), count: 2), spacing: 3) {
+            ForEach(model.upgradeDeckCards) { card in
+                upgradeCardChip(card)
+            }
+        }
+    }
+
+    private func upgradeCardChip(_ card: PetUpgradeDeckCard) -> some View {
+        VStack(alignment: .leading, spacing: 1) {
+            Text("\(card.kind.shortName) Lv \(card.level)")
+                .font(.system(size: 7.5, weight: .black, design: .rounded))
+                .foregroundStyle(card.isUnlocked ? Color.black : Color.ivory.opacity(0.7))
+                .lineLimit(1)
+            Text("next \(card.nextCost)")
+                .font(.system(size: 6.6, weight: .black, design: .rounded))
+                .foregroundStyle(card.isUnlocked ? Color.black.opacity(0.7) : Color.ivory.opacity(0.48))
+                .lineLimit(1)
+        }
+        .frame(height: 27)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 5)
+        .background(card.isUnlocked ? Color.gold.opacity(0.92) : Color.black.opacity(0.32), in: RoundedRectangle(cornerRadius: 5))
+        .overlay(RoundedRectangle(cornerRadius: 5).stroke(Color.ivory.opacity(card.isUnlocked ? 0 : 0.12), lineWidth: 1))
     }
 
     private func journalChip(_ text: String, isUnlocked: Bool) -> some View {

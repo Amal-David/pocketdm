@@ -105,7 +105,7 @@ Generate these first. They unlock the most visible upgrade with the least code:
 42. `pet-buddy-next-sprite-request.png`
    - Holds up a small blank art card, asking for the next animation sheet.
 43. `pet-buddy-journal-page-tabs.png`
-   - Flips between growth, mood, memory, badge, ritual, and art pages.
+   - Flips between growth, mood, memory, badge, ritual, week, cards, and art pages.
 44. `pet-buddy-journal-mood-grid.png`
    - Points at locked and unlocked mood charms in a tiny album grid.
 45. `pet-buddy-journal-ritual-checklist.png`
@@ -140,6 +140,26 @@ Generate these first. They unlock the most visible upgrade with the least code:
    - Evening loop: points to one closing task and settles by a warm glow.
 60. `pet-buddy-daypart-night-watch.png`
    - Night watch: protective soft breathing, calm eyes, no urgency.
+61. `pet-buddy-card-snack-bowl.png`
+   - Upgrade card animation for energy/snack care.
+62. `pet-buddy-card-study-bell.png`
+   - Upgrade card animation for language lessons.
+63. `pet-buddy-card-quest-map.png`
+   - Upgrade card animation for adventure hints and quest help.
+64. `pet-buddy-card-cozy-nest.png`
+   - Upgrade card animation for comeback rewards and rest.
+65. `pet-buddy-card-cheer-signal.png`
+   - Upgrade card animation for proactive check-ins.
+66. `pet-buddy-card-spark-wheel.png`
+   - Upgrade card animation for passive Spark earning.
+67. `pet-buddy-card-focus-charm.png`
+   - Upgrade card animation for boosts and focus support.
+68. `pet-buddy-card-cipher-stone.png`
+   - Upgrade card animation for daily ciphers.
+69. `pet-buddy-card-deck-open.png`
+   - Opens a tiny upgrade-card album and points at the next card.
+70. `pet-buddy-card-upgrade-claim.png`
+   - Spends Sparks, card glows, pet celebrates the new level.
 
 ## Generate In Separate Batches
 
@@ -191,7 +211,20 @@ consistent:
 - `pet-buddy-daypart-night-watch.png`
 - `pet-buddy-proactive-dismiss.png`
 
-### Batch 6: Full Stage Matrix
+### Batch 6: Upgrade Card Deck
+
+- `pet-buddy-card-snack-bowl.png`
+- `pet-buddy-card-study-bell.png`
+- `pet-buddy-card-quest-map.png`
+- `pet-buddy-card-cozy-nest.png`
+- `pet-buddy-card-cheer-signal.png`
+- `pet-buddy-card-spark-wheel.png`
+- `pet-buddy-card-focus-charm.png`
+- `pet-buddy-card-cipher-stone.png`
+- `pet-buddy-card-deck-open.png`
+- `pet-buddy-card-upgrade-claim.png`
+
+### Batch 7: Full Stage Matrix
 
 After the buddy form works, repeat the stage matrix for:
 
@@ -418,7 +451,8 @@ Journal / album view:
 - `pet-{stage}-journal-next-sprite.png`
   - Presents the next needed sprite sheet as a blank art card.
 - `pet-{stage}-journal-page-tabs.png`
-  - Moves through journal tabs: growth, mood, memory, badge, ritual, week, art.
+  - Moves through journal tabs: growth, mood, memory, badge, ritual, week,
+    cards, art.
 - `pet-{stage}-journal-mood-grid.png`
   - Shows locked and unlocked mood charms with a proud pointing pose.
 - `pet-{stage}-journal-ritual-checklist.png`
@@ -478,6 +512,31 @@ Weekly streak trail:
   - Gentle restart pose, no shame; pet points to the first spark again.
 - `pet-{stage}-journal-week-page.png`
   - Pet opens the weekly trail page with four visual milestone charms.
+
+Upgrade card deck:
+
+- `pet-{stage}-card-snack-bowl.png`
+  - Pet discovers a snack bowl card, eats/charges gently, then shows pride.
+- `pet-{stage}-card-study-bell.png`
+  - Pet rings a tiny study bell, listens, repeats, and stores the card.
+- `pet-{stage}-card-quest-map.png`
+  - Pet unfolds a small quest map and points at a route.
+- `pet-{stage}-card-cozy-nest.png`
+  - Pet pads a tiny nest and looks relieved/safe.
+- `pet-{stage}-card-cheer-signal.png`
+  - Pet lifts a small signal charm that sends warm check-ins.
+- `pet-{stage}-card-spark-wheel.png`
+  - Pet spins a tiny Spark wheel and gathers passive sparks.
+- `pet-{stage}-card-focus-charm.png`
+  - Pet sits beside a focus charm, calm and steady.
+- `pet-{stage}-card-cipher-stone.png`
+  - Pet studies a small stone, finds a clue glow, and smiles.
+- `pet-{stage}-card-deck-open.png`
+  - Pet opens the card deck album and points at locked/unlocked cards.
+- `pet-{stage}-card-upgrade-claim.png`
+  - A card levels up with glow; pet reacts proudly without confetti text.
+- `pet-{stage}-card-upgrade-locked.png`
+  - Pet checks an unaffordable card and encourages more Sparks, no shame.
 
 Daily events and badges:
 

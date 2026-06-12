@@ -204,3 +204,9 @@ chat bubble on a timer.
 **Rule:** proactive nudges should be tracked by daypart with answered and
 dismissed state, rewards, journal receipts, and separate sprite requests for
 morning, focus, afternoon, evening, and night.
+
+## 2026-06-13 — Upgrade cards need a visible deck
+Hamster-style upgrades should not be hidden behind one purchase button.
+**Rule:** every upgrade card needs visible level, next cost, behavior effect,
+and a matching sprite request so the progression loop feels collectible and
+legible.
