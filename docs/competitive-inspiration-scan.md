@@ -224,6 +224,9 @@ The new layer should add:
 - Runtime stage sprite loading so Tiny Spark, Pocket Pal, Trail Buddy, Storm
   Scout, and Storm Guardian can each have their own idle, happy, hyper, nap,
   and alert/listening animation strips instead of only changing scale.
+- A Growth Journey album that remembers when each form is first reached,
+  backfills already-earned forms, gives care effects, and points at dedicated
+  arrival/evolution sprite sheets.
 - A daily event rail with short multi-step activities such as Spark Picnic,
   Study Parade, Sky Sprint, Riddle Trail, Cozy Campfire, and Rescue Walk.
 - Seasonal badges that are earned by completing daily events, giving the
@@ -275,6 +278,9 @@ The native macOS companion now has the first version of the loop:
   `pet-tiny-spark-eager-idle-look-smile.png` and
   `pet-storm-guardian-hyper.png`, falling back to generic sheets until the
   generated art arrives.
+- Growth Journey now saves stage arrivals such as Tiny Spark, Pocket Pal, Trail
+  Buddy, Storm Scout, and Storm Guardian into the Growth journal with rewards,
+  care effects, and transition sprite filenames.
 - Sparks earned from petting, asking, language practice, and combo completion.
 - Energy that recharges over time.
 - Passive Sparks collected after time away.

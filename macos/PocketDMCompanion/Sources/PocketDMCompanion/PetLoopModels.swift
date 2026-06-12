@@ -1,12 +1,12 @@
 import Foundation
 import SwiftUI
 
-enum PetGrowthStage: CaseIterable {
-    case tinySpark
-    case pocketPal
-    case trailBuddy
-    case stormScout
-    case stormGuardian
+enum PetGrowthStage: Int, CaseIterable {
+    case tinySpark = 1
+    case pocketPal = 2
+    case trailBuddy = 4
+    case stormScout = 8
+    case stormGuardian = 16
 
     init(companionHP: Int, sparkDust: Int) {
         if companionHP >= 10 || sparkDust >= 420 {
@@ -37,6 +37,21 @@ enum PetGrowthStage: CaseIterable {
         }
     }
 
+    var shortLabel: String {
+        switch self {
+        case .tinySpark:
+            return "Tiny"
+        case .pocketPal:
+            return "Pal"
+        case .trailBuddy:
+            return "Trail"
+        case .stormScout:
+            return "Scout"
+        case .stormGuardian:
+            return "Guard"
+        }
+    }
+
     var assetSlug: String {
         switch self {
         case .tinySpark:
@@ -50,6 +65,76 @@ enum PetGrowthStage: CaseIterable {
         case .stormGuardian:
             return "storm-guardian"
         }
+    }
+
+    var arrivalLine: String {
+        switch self {
+        case .tinySpark:
+            return "It looks up for the first time and decides the desktop is safe."
+        case .pocketPal:
+            return "It recognizes the user's rhythm and starts returning affection."
+        case .trailBuddy:
+            return "It trusts the path enough to walk beside quests and lessons."
+        case .stormScout:
+            return "It begins scouting tasks, check-ins, and hard moments before being asked."
+        case .stormGuardian:
+            return "It becomes a calm guardian of the daily loop and the user's returns."
+        }
+    }
+
+    var vital: PetCareVital {
+        switch self {
+        case .tinySpark, .pocketPal:
+            return .snack
+        case .trailBuddy, .stormScout:
+            return .focus
+        case .stormGuardian:
+            return .rest
+        }
+    }
+
+    var moodStep: PetMoodCareStep {
+        switch self {
+        case .tinySpark:
+            return .soothe
+        case .pocketPal:
+            return .cheer
+        case .trailBuddy:
+            return .adventure
+        case .stormScout:
+            return .focus
+        case .stormGuardian:
+            return .rest
+        }
+    }
+
+    var journeySparkReward: Int {
+        switch self {
+        case .tinySpark:
+            return 8
+        case .pocketPal:
+            return 12
+        case .trailBuddy:
+            return 18
+        case .stormScout:
+            return 26
+        case .stormGuardian:
+            return 40
+        }
+    }
+
+    var previousStage: PetGrowthStage? {
+        guard let index = Self.allCases.firstIndex(of: self), index > 0 else { return nil }
+        return Self.allCases[index - 1]
+    }
+
+    var arrivalSpriteName: String {
+        "pet-\(assetSlug)-growth-arrival.png"
+    }
+
+    var transitionSpriteName: String {
+        guard let previousStage else { return arrivalSpriteName }
+        return "pet-\(previousStage.assetSlug)-evolve-to-\(assetSlug).png"
     }
 
     var spriteScale: CGFloat {
@@ -113,6 +198,20 @@ enum PetGrowthStage: CaseIterable {
         let hpNeed = max(0, next.1 - companionHP)
         let sparkNeed = max(0, next.2 - sparkDust)
         return "Next \(next.0.title): \(hpNeed) HP or \(sparkNeed) Sparks"
+    }
+
+    static func reachedStages(upTo stage: PetGrowthStage) -> [PetGrowthStage] {
+        guard let index = allCases.firstIndex(of: stage) else { return [] }
+        return Array(allCases.prefix(index + 1))
+    }
+
+    static func count(mask: Int) -> Int {
+        allCases.filter { mask & $0.rawValue != 0 }.count
+    }
+
+    static func summary(mask: Int, latest: PetGrowthStage) -> String {
+        let count = count(mask: mask)
+        return "Growth Journey \(count)/\(allCases.count) · Latest \(latest.title)"
     }
 }
 

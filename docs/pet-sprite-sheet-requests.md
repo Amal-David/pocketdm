@@ -57,6 +57,33 @@ Each is a 12-frame transparent strip. Keep the same foot baseline across all
 five stages so growth feels like the same pet maturing rather than a different
 character replacing it.
 
+### Growth Journey Arrival Pack
+
+These filenames are now used by the Growth Journey album. They are the
+relationship beats where a form is first reached, separate from ordinary idle
+or mood loops.
+
+- `pet-tiny-spark-growth-arrival.png`
+  - First look up, first trust, tiny desktop arrival.
+- `pet-pocket-pal-growth-arrival.png`
+  - Recognizes the user's rhythm and returns affection.
+- `pet-trail-buddy-growth-arrival.png`
+  - Walks beside a tiny trail map, ready for quests and lessons.
+- `pet-storm-scout-growth-arrival.png`
+  - Scouts the desktop edge, focused and alert without pressure.
+- `pet-storm-guardian-growth-arrival.png`
+  - Calm guardian stance, protective glow, gentle pride.
+- `pet-tiny-spark-evolve-to-pocket-pal.png`
+  - Tiny Spark grows into Pocket Pal with a soft electric glow.
+- `pet-pocket-pal-evolve-to-trail-buddy.png`
+  - Pocket Pal becomes Trail Buddy, stepping onto a lit path.
+- `pet-trail-buddy-evolve-to-storm-scout.png`
+  - Trail Buddy becomes Storm Scout with confident scouting sparks.
+- `pet-storm-scout-evolve-to-storm-guardian.png`
+  - Storm Scout becomes Storm Guardian, calm protective aura.
+- `pet-{stage}-journal-growth-journey.png`
+  - Opens a page showing locked and unlocked stage-arrival charms.
+
 ### Relationship Loop Sheets
 
 1. `pet-baby-idle-look-smile.png`

@@ -308,3 +308,9 @@ Stage names and scale changes are not enough for a proper digital pet.
 **Rule:** the native sprite renderer should prefer stage-specific sheets for
 Tiny Spark, Pocket Pal, Trail Buddy, Storm Scout, and Storm Guardian, then fall
 back to generic sheets until generated art arrives.
+
+## 2026-06-13 — Evolution needs arrival memories
+A proper pet should remember becoming bigger, not silently cross a threshold.
+**Rule:** stage changes should unlock persistent Growth Journey entries with
+arrival lore, rewards, care effects, and exact arrival/transition sprite
+filenames.
