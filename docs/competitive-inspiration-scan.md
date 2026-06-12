@@ -347,6 +347,10 @@ The native macOS companion now has the first version of the loop:
 - Answered proactive bubbles now unlock Cheer Memories such as Warm Check,
   First Minute, Tiny Win Saved, Night Watch, Comeback Glow, and Event Beat,
   making proactive conversation part of the persistent pet album.
+- Cheer Scriptbook now adds 12 rotating proactive text moments across morning,
+  focus, afternoon, evening, night, comeback, and upgrade contexts; accepted
+  scripts pay care rewards, fill the journal, and request matching animation
+  sheets.
 
 This is not the full final pet fantasy yet. It is the backbone that lets the
 next sprite sheets matter: new art can now map to real emotions, upgrades,

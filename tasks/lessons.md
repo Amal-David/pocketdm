@@ -328,3 +328,10 @@ turn missed days into guilt.
 **Rule:** missed-day mechanics should use shields, soft returns, comeback
 albums, care effects, and concrete sprite requests so returning feels like
 repairing a relationship rather than losing a counter.
+
+## 2026-06-13 — Proactive text needs a scriptbook
+The user wants the pet to proactively ask how the user is doing throughout the
+day with many small text moments.
+**Rule:** proactive copy should live in a rotating, persistent scriptbook with
+daypart/intent targeting, accepted/skipped state, care rewards, journal
+receipts, and exact sprite requests, not as loose one-off bubble strings.

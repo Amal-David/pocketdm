@@ -1046,6 +1046,36 @@ Cheer dialogue moments:
 - `pet-{stage}-journal-cheer-dialogues.png`
   - Journal page showing answered, skipped, and saved dialogue moments.
 
+Cheer scriptbook moments:
+
+- `pet-{stage}-cheer-script-morning-spark.png`
+  - Looks down, looks up, recognizes the user, and asks what kind of morning
+    this is.
+- `pet-{stage}-cheer-script-first-sip.png`
+  - Offers one tiny care spark before the day gets loud.
+- `pet-{stage}-cheer-script-desk-perch.png`
+  - Perches beside the first task and points to the smallest desk piece.
+- `pet-{stage}-cheer-script-one-window.png`
+  - Helps make one crowded window feel simpler.
+- `pet-{stage}-cheer-script-pocket-win.png`
+  - Saves a tiny win as a glowing pocket spark.
+- `pet-{stage}-cheer-script-soft-stretch.png`
+  - Leads a soft stretch/reset without guilt.
+- `pet-{stage}-cheer-script-campfire-close.png`
+  - Tucks one open loop beside a small campfire glow.
+- `pet-{stage}-cheer-script-loop-tuck.png`
+  - Holds one loose end while the user chooses a gentle final step.
+- `pet-{stage}-cheer-script-moon-guard.png`
+  - Guards quiet night work with a calm, low-pressure stance.
+- `pet-{stage}-cheer-script-quiet-question.png`
+  - Listens to one sentence about what is happening in the user's head.
+- `pet-{stage}-cheer-script-comeback-wave.png`
+  - Welcomes the user back and shows the saved place marker.
+- `pet-{stage}-cheer-script-upgrade-wish.png`
+  - Looks at humming Sparks and wishes toward the next tiny charm.
+- `pet-{stage}-journal-cheer-scriptbook.png`
+  - Opens a page of seen, skipped, answered, and saved proactive script lines.
+
 Stage life scenes:
 
 - `pet-tiny-spark-life-first-look.png`
@@ -1316,6 +1346,10 @@ These are for the progression layer:
 - Cheer dialogue answered.
 - Cheer dialogue dismissed.
 - Cheer dialogue album updated.
+- Cheer script appeared.
+- Cheer script answered.
+- Cheer script dismissed.
+- Cheer scriptbook album updated.
 - How-are-you check-in saved.
 - What-is-happening check-in saved.
 - Tiny-win check-in saved.

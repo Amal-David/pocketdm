@@ -3624,6 +3624,285 @@ enum PetCheerIntent: Int, CaseIterable {
     }
 }
 
+enum PetCheerScript: Int, CaseIterable {
+    case morningSpark = 1
+    case firstSip = 2
+    case deskPerch = 4
+    case oneWindow = 8
+    case pocketWin = 16
+    case softStretch = 32
+    case campfireClose = 64
+    case loopTuck = 128
+    case moonGuard = 256
+    case quietQuestion = 512
+    case comebackWave = 1024
+    case upgradeWish = 2048
+
+    var title: String {
+        switch self {
+        case .morningSpark:
+            return "Morning Spark"
+        case .firstSip:
+            return "First Sip"
+        case .deskPerch:
+            return "Desk Perch"
+        case .oneWindow:
+            return "One Window"
+        case .pocketWin:
+            return "Pocket Win"
+        case .softStretch:
+            return "Soft Stretch"
+        case .campfireClose:
+            return "Campfire Close"
+        case .loopTuck:
+            return "Loop Tuck"
+        case .moonGuard:
+            return "Moon Guard"
+        case .quietQuestion:
+            return "Quiet Question"
+        case .comebackWave:
+            return "Comeback Wave"
+        case .upgradeWish:
+            return "Upgrade Wish"
+        }
+    }
+
+    var shortLabel: String {
+        switch self {
+        case .morningSpark:
+            return "AM"
+        case .firstSip:
+            return "Sip"
+        case .deskPerch:
+            return "Desk"
+        case .oneWindow:
+            return "Win"
+        case .pocketWin:
+            return "Save"
+        case .softStretch:
+            return "Move"
+        case .campfireClose:
+            return "Close"
+        case .loopTuck:
+            return "Tuck"
+        case .moonGuard:
+            return "Moon"
+        case .quietQuestion:
+            return "Ask"
+        case .comebackWave:
+            return "Back"
+        case .upgradeWish:
+            return "Wish"
+        }
+    }
+
+    var body: String {
+        switch self {
+        case .morningSpark:
+            return "Pika pika... I looked down, looked up, and found you. What kind of morning are we having?"
+        case .firstSip:
+            return "Before the day gets loud, want one tiny care spark with me?"
+        case .deskPerch:
+            return "I can perch beside the first task. What is the smallest piece on your desk?"
+        case .oneWindow:
+            return "Want to make one window feel less crowded before we move?"
+        case .pocketWin:
+            return "Did a tiny win happen? I can save it before the day rushes past."
+        case .softStretch:
+            return "Your shoulders look like they might want a reset. Want one soft stretch and a spark?"
+        case .campfireClose:
+            return "Want to tuck one open loop by the campfire before it follows you home?"
+        case .loopTuck:
+            return "I can hold the loose end while you choose one last gentle step."
+        case .moonGuard:
+            return "No pressure now. Want me to guard the quiet while you close this?"
+        case .quietQuestion:
+            return "What is happening in your head right now? One sentence is enough."
+        case .comebackWave:
+            return "You came back. I saved your place and one warm spark."
+        case .upgradeWish:
+            return "The Sparks are humming. Want to wish for the next tiny charm?"
+        }
+    }
+
+    var action: String {
+        switch self {
+        case .morningSpark:
+            return "Open morning check"
+        case .firstSip:
+            return "Take one care spark"
+        case .deskPerch:
+            return "Start first task"
+        case .oneWindow:
+            return "Clear one window"
+        case .pocketWin:
+            return "Save tiny win"
+        case .softStretch:
+            return "Open reset"
+        case .campfireClose:
+            return "Close one loop"
+        case .loopTuck:
+            return "Tuck loose end"
+        case .moonGuard:
+            return "Open night watch"
+        case .quietQuestion:
+            return "Answer softly"
+        case .comebackWave:
+            return "Open comeback"
+        case .upgradeWish:
+            return "Open upgrade"
+        }
+    }
+
+    var rewardLine: String {
+        "\(title) answered"
+    }
+
+    var daypart: PetDaypartNudge? {
+        switch self {
+        case .morningSpark, .firstSip:
+            return .sunrise
+        case .deskPerch, .oneWindow:
+            return .focus
+        case .pocketWin, .softStretch:
+            return .afternoon
+        case .campfireClose, .loopTuck:
+            return .evening
+        case .moonGuard, .quietQuestion:
+            return .night
+        case .comebackWave, .upgradeWish:
+            return nil
+        }
+    }
+
+    var intent: PetCheerIntent {
+        switch self {
+        case .morningSpark, .quietQuestion:
+            return .feeling
+        case .firstSip:
+            return .care
+        case .deskPerch, .oneWindow:
+            return .focus
+        case .pocketWin:
+            return .tinyWin
+        case .softStretch:
+            return .reset
+        case .campfireClose:
+            return .event
+        case .loopTuck:
+            return .board
+        case .moonGuard:
+            return .rest
+        case .comebackWave:
+            return .comeback
+        case .upgradeWish:
+            return .upgrade
+        }
+    }
+
+    var vital: PetCareVital {
+        switch self {
+        case .morningSpark, .firstSip, .pocketWin:
+            return .snack
+        case .deskPerch, .oneWindow, .quietQuestion, .upgradeWish:
+            return .focus
+        case .softStretch, .campfireClose, .loopTuck:
+            return .play
+        case .moonGuard, .comebackWave:
+            return .rest
+        }
+    }
+
+    var moodStep: PetMoodCareStep {
+        switch self {
+        case .morningSpark, .quietQuestion, .comebackWave:
+            return .soothe
+        case .firstSip:
+            return .snack
+        case .deskPerch, .oneWindow, .upgradeWish:
+            return .focus
+        case .pocketWin:
+            return .cheer
+        case .softStretch, .moonGuard:
+            return .rest
+        case .campfireClose, .loopTuck:
+            return .adventure
+        }
+    }
+
+    var sparkReward: Int {
+        switch self {
+        case .morningSpark, .firstSip, .deskPerch, .oneWindow:
+            return 5
+        case .pocketWin, .softStretch, .campfireClose, .loopTuck:
+            return 6
+        case .moonGuard, .quietQuestion, .comebackWave, .upgradeWish:
+            return 7
+        }
+    }
+
+    var spriteSlug: String {
+        switch self {
+        case .morningSpark:
+            return "morning-spark"
+        case .firstSip:
+            return "first-sip"
+        case .deskPerch:
+            return "desk-perch"
+        case .oneWindow:
+            return "one-window"
+        case .pocketWin:
+            return "pocket-win"
+        case .softStretch:
+            return "soft-stretch"
+        case .campfireClose:
+            return "campfire-close"
+        case .loopTuck:
+            return "loop-tuck"
+        case .moonGuard:
+            return "moon-guard"
+        case .quietQuestion:
+            return "quiet-question"
+        case .comebackWave:
+            return "comeback-wave"
+        case .upgradeWish:
+            return "upgrade-wish"
+        }
+    }
+
+    var spriteRequestName: String {
+        "pet-{stage}-cheer-script-\(spriteSlug).png"
+    }
+
+    static func count(mask: Int) -> Int {
+        allCases.filter { mask & $0.rawValue != 0 }.count
+    }
+
+    static func next(daypart: PetDaypartNudge, intent: PetCheerIntent, offeredMask: Int, index: Int) -> PetCheerScript? {
+        let remaining = allCases.filter { offeredMask & $0.rawValue == 0 }
+        guard !remaining.isEmpty else { return nil }
+        let daypartMatches = remaining.filter { $0.daypart == daypart }
+        if !daypartMatches.isEmpty {
+            return daypartMatches[index % daypartMatches.count]
+        }
+        let intentMatches = remaining.filter { $0.intent == intent }
+        if !intentMatches.isEmpty {
+            return intentMatches[index % intentMatches.count]
+        }
+        return remaining[index % remaining.count]
+    }
+
+    static func summary(offeredMask: Int, answeredMask: Int, dismissedMask: Int, albumMask: Int) -> String {
+        let offered = count(mask: offeredMask)
+        let answered = count(mask: answeredMask)
+        let dismissed = count(mask: dismissedMask)
+        let album = count(mask: albumMask)
+        let nextText = allCases.first { offeredMask & $0.rawValue == 0 }
+            .map { "Next \($0.title)" } ?? "All script lines seen"
+        return "Cheer Scripts \(answered)/\(allCases.count) answered · \(offered) seen · \(dismissed) skipped · Album \(album)/\(allCases.count) · \(nextText)"
+    }
+}
+
 enum PetCheerMemory: Int, CaseIterable {
     case warmCheck = 1
     case whatsHappening = 2
