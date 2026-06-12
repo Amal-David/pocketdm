@@ -305,9 +305,12 @@ def _dragon_reply(session: PlaySession, message: str) -> str:
         return "Start an adventure and I will start hovering."
     if "status" in lowered or "hp" in lowered or "inventory" in lowered:
         return (
-            f"Status: {session.state.hp}/10 HP, location {session.state.location}, "
-            f"inventory {_inventory_list(session)}. Turn {session.state.turn_count}."
+            f"Adventure: {session.state.hp}/10 HP. Location {session.state.location}, "
+            f"inventory {_inventory_list(session)}. Turn {session.state.turn_count}. "
+            "Pet Bond HP lives in the desktop companion."
         )
+    if "pet" in lowered or "care" in lowered or "happy" in lowered:
+        return "Pet me from the desktop companion once a day to charge Bond HP and keep my joy high."
     if "hint" in lowered or "help" in lowered or "what" in lowered:
         if turn.is_ending:
             return "The tale has landed. Start a fresh scroll if you want another flight."
@@ -317,7 +320,7 @@ def _dragon_reply(session: PlaySession, message: str) -> str:
         return "Hyper mode. Quick and bright, not reckless."
     if "offline" in lowered or "tiny" in lowered:
         return "The winning trick is receipts: small model, local rules, no hidden cloud calls."
-    return "I heard you. Ask me for a hint, a status read, or hyper mode."
+    return "I heard you. Ask me for a hint, check status, or pet me for today's spark."
 
 
 def _voice_for_genre(genre: str) -> str:

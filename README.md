@@ -21,7 +21,8 @@ PocketDM is a tiny-model Dungeon Master for the Build Small Hackathon's
 Thousand Token Wood track. The pitch is simple: a custom Gradio adventure game
 where the model writes the prose, the deterministic engine owns game state, and
 a native Pikachu desktop pet hovers over the Mac with local mood sprite sheets,
-hints, compact chat, subtle original chirps, and simple Happy/Nap/Hyper reactions.
+pet-only default mode, daily Bond HP care, hints, subtle original chirps, and
+simple Pet/Nap/Hyper reactions.
 
 The first-cut app is a reliable playable demo while the fine-tuned student
 model pipeline finishes. It uses the frozen engine contract and a scripted local

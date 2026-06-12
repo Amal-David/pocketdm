@@ -113,7 +113,7 @@ final class DragonOverlayController {
     }
 
     private func setMinimized(_ minimized: Bool) {
-        let size = minimized ? NSSize(width: 426, height: 136) : NSSize(width: 386, height: 318)
+        let size = minimized ? NSSize(width: 184, height: 190) : NSSize(width: 500, height: 386)
         var frame = panel.frame
         let top = frame.maxY
         frame.size = size
@@ -128,7 +128,7 @@ final class DragonOverlayController {
         let savedY = defaults.double(forKey: "PocketDMCompanion.y")
         let screen = NSScreen.main?.visibleFrame ?? NSRect(x: 0, y: 0, width: 1200, height: 800)
         let origin = savedX == 0 && savedY == 0
-            ? NSPoint(x: screen.maxX - 402, y: screen.minY + 72)
+            ? NSPoint(x: screen.maxX - 516, y: screen.minY + 72)
             : NSPoint(x: savedX, y: savedY)
         panel.setFrameOrigin(origin)
     }
@@ -151,7 +151,7 @@ final class DragonOverlayController {
 final class FloatingDragonPanel: NSPanel {
     init() {
         super.init(
-            contentRect: NSRect(x: 0, y: 0, width: 386, height: 318),
+            contentRect: NSRect(x: 0, y: 0, width: 500, height: 386),
             styleMask: [.borderless, .nonactivatingPanel],
             backing: .buffered,
             defer: false
@@ -171,14 +171,31 @@ final class FloatingDragonPanel: NSPanel {
 
 @MainActor
 final class DragonOverlayModel: ObservableObject {
+    private static let petOnlyKey = "PocketDMCompanion.petOnly"
     private static let soundEnabledKey = "PocketDMCompanion.soundEnabled"
+    private static let companionHPKey = "PocketDMCompanion.companionHP"
+    private static let happinessKey = "PocketDMCompanion.happiness"
+    private static let petStreakKey = "PocketDMCompanion.petStreak"
+    private static let lastPetDayKey = "PocketDMCompanion.lastPetDay"
+    private static let dayFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.calendar = Calendar(identifier: .gregorian)
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter
+    }()
 
-    @Published var message = "Pika-pika. I am on your desktop now."
+    @Published var message = "Your electric partner keeps a tiny bond spark. Pet once each day to earn +1 HP and refill joy."
+    @Published var lastRequest = ""
     @Published var serverLine = "Checking PocketDM..."
-    @Published var minimized = UserDefaults.standard.bool(forKey: "PocketDMCompanion.minimized")
+    @Published var minimized = true
     @Published var soundEnabled = UserDefaults.standard.object(forKey: DragonOverlayModel.soundEnabledKey) as? Bool ?? true
     @Published var busy = false
-    @Published var mood: PetMood = .happy
+    @Published var mood: PetMood = .idle
+    @Published var companionHP = UserDefaults.standard.object(forKey: DragonOverlayModel.companionHPKey) as? Int ?? 3
+    @Published var happiness = UserDefaults.standard.object(forKey: DragonOverlayModel.happinessKey) as? Int ?? 3
+    @Published var petStreak = UserDefaults.standard.object(forKey: DragonOverlayModel.petStreakKey) as? Int ?? 0
+    @Published var lastPetDay = UserDefaults.standard.string(forKey: DragonOverlayModel.lastPetDayKey) ?? ""
 
     private let client: PocketDMClient
     private let launcher: GameLauncher
@@ -203,40 +220,73 @@ final class DragonOverlayModel: ObservableObject {
     }
 
     func setMinimized(_ value: Bool) {
+        guard minimized != value else { return }
         minimized = value
-        UserDefaults.standard.set(value, forKey: "PocketDMCompanion.minimized")
+        UserDefaults.standard.set(value, forKey: Self.petOnlyKey)
+        play(value ? .minimize : .open)
     }
 
     func toggleSound() {
-        soundEnabled.toggle()
-        UserDefaults.standard.set(soundEnabled, forKey: Self.soundEnabledKey)
-        if !soundEnabled {
-            soundPlayer.stopAll()
+        let next = !soundEnabled
+        if soundEnabled {
+            play(.minimize)
+        }
+        soundEnabled = next
+        UserDefaults.standard.set(next, forKey: Self.soundEnabledKey)
+        if next {
+            play(.open)
         }
     }
 
     func happy() {
         message = "Happy."
+        lastRequest = "Mood"
         play(.happy)
         setMood(.happy, duration: 1.6)
     }
 
     func nap() {
         message = "Nap."
+        lastRequest = "Mood"
         play(.nap)
         setMood(.nap, duration: 2.4)
     }
 
     func hyper() {
         message = "Hyper."
+        lastRequest = "Mood"
         play(.hyper)
         setMood(.hyper, duration: 1.5)
     }
 
+    func petDaily(requestLabel: String = "Daily pet") {
+        lastRequest = requestLabel
+        let today = Self.dayFormatter.string(from: Date())
+        if lastPetDay == today {
+            happiness = min(5, happiness + 1)
+            message = "Already cared for today. Still happy to hear from you. Joy +1."
+        } else {
+            companionHP = min(10, companionHP + 1)
+            happiness = 5
+            petStreak += 1
+            lastPetDay = today
+            message = "Pikachu brightened up. +1 Bond HP today."
+        }
+        persistCare()
+        play(.pet)
+        setMood(.happy, duration: 2.2)
+    }
+
     func ask(_ prompt: String) async {
+        lastRequest = prompt
+        if handlesCare(prompt) {
+            petDaily(requestLabel: prompt)
+            return
+        }
+        message = "Thinking..."
         busy = true
-        play(.alert)
-        setMood(.alert)
+        play(.send)
+        setMood(.thinking)
         defer { busy = false }
         do {
             message = try await client.assistantReply(for: prompt)
@@ -259,32 +309,70 @@ final class DragonOverlayModel: ObservableObject {
             try? await Task.sleep(nanoseconds: UInt64(duration * 1_000_000_000))
             if Task.isCancelled { return }
             await MainActor.run {
-                self?.mood = .happy
+                self?.mood = .idle
             }
         }
+    }
+
+    func prepareClose() {
+        lastRequest = "Close"
+        message = "Curling up. See you next check-in."
+        play(.close)
+        setMood(.nap)
+    }
+
+    var careLine: String {
+        "Bond HP \(companionHP)/10 · Joy \(happiness)/5 · Day \(petStreak)"
     }
 
     private func play(_ sound: PetSound) {
         soundPlayer.play(sound, enabled: soundEnabled)
     }
+
+    private func persistCare() {
+        UserDefaults.standard.set(companionHP, forKey: Self.companionHPKey)
+        UserDefaults.standard.set(happiness, forKey: Self.happinessKey)
+        UserDefaults.standard.set(petStreak, forKey: Self.petStreakKey)
+        UserDefaults.standard.set(lastPetDay, forKey: Self.lastPetDayKey)
+    }
+
+    private func handlesCare(_ prompt: String) -> Bool {
+        let lowered = prompt.lowercased()
+        return lowered.contains("pet") || lowered.contains("happy") || lowered.contains("care")
+    }
 }
 
 enum PetMood: String, CaseIterable {
+    case idle
     case happy
     case nap
     case hyper
     case alert
+    case thinking
 
     var assetName: String {
         switch self {
-        case .happy:
+        case .idle, .happy:
             return "pet-happy"
         case .nap:
             return "pet-nap"
         case .hyper:
             return "pet-hyper"
-        case .alert:
+        case .alert, .thinking:
             return "pet-alert"
+        }
+    }
+
+    var frameSequence: [Int] {
+        switch self {
+        case .idle:
+            return [8, 8, 8, 0, 0, 10, 10, 1, 2, 3, 3, 0]
+        case .thinking:
+            return [0, 1, 2, 3, 4, 5, 4, 3, 2, 1, 0, 0]
+        case .hyper:
+            return [0, 3, 5, 6, 7, 8, 9, 10, 11, 4, 2, 1]
+        default:
+            return Array(0..<12)
         }
     }
 }
@@ -295,6 +383,11 @@ enum PetSound: CaseIterable {
     case hyper
     case alert
     case reply
+    case send
+    case open
+    case minimize
+    case close
+    case pet
 
     var resourceName: String {
         switch self {
@@ -308,6 +401,16 @@ enum PetSound: CaseIterable {
             return "chirp-alert"
         case .reply:
             return "chirp-reply"
+        case .send:
+            return "chirp-send"
+        case .open:
+            return "chirp-open"
+        case .minimize:
+            return "chirp-minimize"
+        case .close:
+            return "chirp-close"
+        case .pet:
+            return "chirp-pet"
         }
     }
 
@@ -315,10 +418,31 @@ enum PetSound: CaseIterable {
         switch self {
         case .hyper:
             return 0.18
-        case .reply:
+        case .reply, .open, .pet:
             return 0.17
+        case .send, .minimize, .close:
+            return 0.13
         default:
             return 0.15
+        }
+    }
+
+    var cooldown: TimeInterval {
+        switch self {
+        case .reply, .open, .minimize:
+            return 0.5
+        case .happy, .hyper:
+            return 0.7
+        case .nap:
+            return 1.0
+        case .send:
+            return 0.15
+        case .pet:
+            return 1.5
+        case .alert:
+            return 2.0
+        case .close:
+            return 0
         }
     }
 }
@@ -326,9 +450,15 @@ enum PetSound: CaseIterable {
 @MainActor
 final class PetSoundPlayer {
     private var cache: [PetSound: NSSound] = [:]
+    private var lastPlayed: [PetSound: Date] = [:]
 
     func play(_ sound: PetSound, enabled: Bool) {
         guard enabled, let player = soundInstance(for: sound) else { return }
+        let now = Date()
+        if let last = lastPlayed[sound], now.timeIntervalSince(last) < sound.cooldown {
+            return
+        }
+        lastPlayed[sound] = now
         player.stop()
         player.currentTime = 0
         player.volume = sound.volume
@@ -362,163 +492,209 @@ struct DragonOverlayView: View {
 
     @State private var dragOffset: CGSize = .zero
     @State private var customPrompt = ""
+    @State private var petHovering = false
 
     var body: some View {
-        if model.minimized {
-            minimizedBody
-        } else {
-            expandedBody
+        ZStack {
+            if model.minimized {
+                petOnlyBody
+                    .transition(.scale(scale: 0.84, anchor: .center).combined(with: .opacity))
+            } else {
+                expandedBody
+                    .transition(.scale(scale: 0.92, anchor: .topLeading).combined(with: .opacity))
+            }
         }
+        .animation(.spring(response: 0.26, dampingFraction: 0.78), value: model.minimized)
     }
 
-    private var minimizedBody: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            HStack(spacing: 8) {
-                Image(systemName: "circle.grid.2x2.fill")
-                    .font(.system(size: 13, weight: .bold))
-                    .foregroundStyle(Color.ivory.opacity(0.66))
-                Text("Pikachu")
-                    .font(.system(size: 12, weight: .black, design: .rounded))
-                    .foregroundStyle(Color.ivory)
-                Spacer()
-                soundButton
-                Button {
+    private var petOnlyBody: some View {
+        ZStack(alignment: .topTrailing) {
+            Button {
+                withAnimation(.spring(response: 0.26, dampingFraction: 0.76)) {
                     model.setMinimized(false)
                     onSizeChange(false)
-                } label: {
-                    Image(systemName: "arrow.up.left.and.arrow.down.right")
                 }
-                .buttonStyle(.plain)
-                .foregroundStyle(Color.ivory)
-                .frame(width: 26, height: 24)
-                .accessibilityLabel("Expand Pikachu chat")
+            } label: {
+                AnimatedPetSprite(mood: model.mood, size: petHovering ? 166 : 158)
+                    .shadow(color: .black.opacity(petHovering ? 0.22 : 0.14), radius: petHovering ? 16 : 10, y: 7)
             }
-            .padding(.horizontal, 8)
-            .frame(height: 28)
-            .background(.black.opacity(0.78), in: RoundedRectangle(cornerRadius: 7))
-            .gesture(dragGesture)
+            .buttonStyle(.plain)
+            .simultaneousGesture(dragGesture)
+            .accessibilityLabel("Open Pikachu chat")
 
-            HStack(spacing: 8) {
-                AnimatedPetSprite(mood: model.mood, size: 58)
-
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(model.message)
-                        .font(.system(size: 12, weight: .semibold, design: .rounded))
-                        .foregroundStyle(Color.ivory)
-                        .lineLimit(2)
-                        .frame(maxWidth: .infinity, minHeight: 32, alignment: .topLeading)
-
-                    HStack(spacing: 6) {
-                        TextField("Ask Pikachu", text: $customPrompt)
-                            .textFieldStyle(.plain)
-                            .font(.system(size: 12, weight: .semibold))
-                            .padding(.horizontal, 8)
-                            .frame(height: 30)
-                            .background(.white.opacity(0.12), in: RoundedRectangle(cornerRadius: 6))
-                            .foregroundStyle(Color.ivory)
-                            .onSubmit(submitPrompt)
-                        Button {
-                            submitPrompt()
-                        } label: {
-                            Image(systemName: "paperplane.fill")
-                        }
-                        .buttonStyle(DragonIconButtonStyle(kind: .primary))
-                        .disabled(model.busy)
-                    }
+            if petHovering {
+                Button {
+                    closeCompanion()
+                } label: {
+                    Image(systemName: "xmark")
                 }
+                .buttonStyle(DragonIconButtonStyle(kind: .secondary))
+                .frame(width: 30, height: 28)
+                .accessibilityLabel("Close Pikachu")
+                .transition(.opacity)
             }
         }
-        .padding(8)
-        .frame(width: 426, height: 136)
-        .background(.black.opacity(0.74), in: RoundedRectangle(cornerRadius: 8))
-        .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.gold.opacity(0.32), lineWidth: 1))
+        .frame(width: 184, height: 190)
+        .contentShape(Rectangle())
+        .onHover { isHovering in
+            withAnimation(.spring(response: 0.22, dampingFraction: 0.72)) {
+                petHovering = isHovering
+            }
+        }
     }
 
     private var expandedBody: some View {
-        VStack(alignment: .trailing, spacing: 8) {
-            HStack(spacing: 8) {
-                Image(systemName: "circle.grid.2x2.fill")
-                    .font(.system(size: 15, weight: .bold))
-                    .foregroundStyle(Color.ivory.opacity(0.72))
-                Text("Pikachu")
-                    .font(.system(size: 12, weight: .black, design: .rounded))
-                    .foregroundStyle(Color.ivory)
-                Spacer()
-                soundButton
-                Button {
-                    model.setMinimized(true)
-                    onSizeChange(true)
-                } label: {
-                    Image(systemName: "minus")
-                }
-                .buttonStyle(.plain)
-                .foregroundStyle(Color.ivory)
-                .accessibilityLabel("Minimize electric familiar overlay")
-            }
-            .padding(.horizontal, 10)
-            .frame(height: 34)
-            .background(.black.opacity(0.82), in: RoundedRectangle(cornerRadius: 7))
-            .gesture(dragGesture)
+        VStack(alignment: .leading, spacing: 9) {
+            headerBar(isCompact: false)
 
-            Text(model.message)
-                .font(.system(size: 14, weight: .semibold, design: .rounded))
-                .foregroundStyle(Color.ivory)
-                .frame(maxWidth: 302, minHeight: 58, alignment: .topLeading)
-                .padding(12)
-                .background(.black.opacity(0.82), in: RoundedRectangle(cornerRadius: 8))
-                .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.gold.opacity(0.38), lineWidth: 1))
-
-            HStack(alignment: .bottom, spacing: 10) {
-                AnimatedPetSprite(mood: model.mood, size: 154)
-
+            HStack(alignment: .top, spacing: 12) {
                 VStack(spacing: 8) {
-                    Text(model.serverLine)
-                        .font(.system(size: 11, weight: .bold, design: .rounded))
-                        .foregroundStyle(Color.ivory.opacity(0.82))
-                        .lineLimit(2)
-                        .frame(maxWidth: .infinity, alignment: .leading)
+                    AnimatedPetSprite(mood: model.mood, size: 176)
+                    careStatusPanel
+                }
+
+                VStack(alignment: .leading, spacing: 9) {
+                    chatTranscript(isCompact: false)
+                    emotionControls
+                    inputRow(isCompact: false)
 
                     HStack(spacing: 8) {
                         Button("Hint") { Task { await model.ask("hint") } }
-                        Button("Happy") { model.happy() }
-                    }
-                    .buttonStyle(DragonButtonStyle())
-                    .disabled(model.busy)
-
-                    HStack(spacing: 8) {
-                        Button("Nap") { model.nap() }
-                        Button("Hyper") { model.hyper() }
-                    }
-                    .buttonStyle(DragonButtonStyle())
-                    .disabled(model.busy)
-
-                    HStack(spacing: 7) {
-                        TextField("Ask Pikachu", text: $customPrompt)
-                            .textFieldStyle(.plain)
-                            .font(.system(size: 13, weight: .semibold))
-                            .padding(.horizontal, 9)
-                            .frame(height: 34)
-                            .background(.white.opacity(0.12), in: RoundedRectangle(cornerRadius: 6))
-                            .foregroundStyle(Color.ivory)
-                            .onSubmit(submitPrompt)
-                        Button("Ask") {
-                            submitPrompt()
+                            .buttonStyle(DragonButtonStyle(kind: .secondary))
+                            .disabled(model.busy)
+                        Button("Open PocketDM") {
+                            model.openGame()
                         }
-                        .buttonStyle(DragonButtonStyle())
-                        .disabled(model.busy)
+                        .buttonStyle(DragonButtonStyle(kind: .secondary))
                     }
-
-                    Button("Open PocketDM") {
-                        model.openGame()
-                    }
-                    .buttonStyle(DragonButtonStyle(kind: .secondary))
                 }
-                .frame(width: 190)
+                .frame(width: 268)
+                .padding(8)
+                .background(.black.opacity(0.58), in: RoundedRectangle(cornerRadius: 8))
+                .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.gold.opacity(0.22), lineWidth: 1))
             }
         }
         .padding(8)
-        .frame(width: 386, height: 318)
+        .frame(width: 500, height: 386)
         .background(.clear)
+    }
+
+    private var careStatusPanel: some View {
+        VStack(spacing: 4) {
+            Text(model.serverLine)
+                .font(.system(size: 11, weight: .bold, design: .rounded))
+                .foregroundStyle(Color.ivory.opacity(0.84))
+                .lineLimit(2)
+            Text(model.careLine)
+                .font(.system(size: 11, weight: .black, design: .rounded))
+                .foregroundStyle(Color.gold)
+                .lineLimit(2)
+        }
+        .multilineTextAlignment(.center)
+        .frame(width: 170)
+        .frame(minHeight: 50)
+        .padding(.vertical, 7)
+        .padding(.horizontal, 8)
+        .background(.black.opacity(0.58), in: RoundedRectangle(cornerRadius: 7))
+        .overlay(RoundedRectangle(cornerRadius: 7).stroke(Color.gold.opacity(0.18), lineWidth: 1))
+    }
+
+    private func headerBar(isCompact: Bool) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: "circle.grid.2x2.fill")
+                .font(.system(size: isCompact ? 13 : 15, weight: .bold))
+                .foregroundStyle(Color.ivory.opacity(0.68))
+            Text("Pikachu")
+                .font(.system(size: 12, weight: .black, design: .rounded))
+                .foregroundStyle(Color.ivory)
+            Spacer()
+            soundButton
+            Button {
+                withAnimation(.spring(response: 0.25, dampingFraction: 0.76)) {
+                    model.setMinimized(true)
+                    onSizeChange(true)
+                }
+            } label: {
+                Image(systemName: "minus")
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(Color.ivory)
+            .frame(width: 26, height: 24)
+            .accessibilityLabel("Minimize Pikachu to pet")
+            Button {
+                closeCompanion()
+            } label: {
+                Image(systemName: "xmark")
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(Color.ivory)
+            .frame(width: 26, height: 24)
+            .accessibilityLabel("Close Pikachu")
+        }
+        .padding(.horizontal, 10)
+        .frame(height: isCompact ? 30 : 34)
+        .background(.black.opacity(0.82), in: RoundedRectangle(cornerRadius: 7))
+        .gesture(dragGesture)
+    }
+
+    private func chatTranscript(isCompact: Bool) -> some View {
+        VStack(alignment: .leading, spacing: isCompact ? 3 : 6) {
+            if !model.lastRequest.isEmpty {
+                chatLine(label: "You", text: model.lastRequest, isCompact: isCompact)
+            }
+            chatLine(label: "Pikachu", text: model.message, isCompact: isCompact)
+        }
+        .padding(isCompact ? 8 : 10)
+        .frame(maxWidth: .infinity, minHeight: isCompact ? 56 : 142, alignment: .topLeading)
+        .background(.black.opacity(0.72), in: RoundedRectangle(cornerRadius: 7))
+        .overlay(RoundedRectangle(cornerRadius: 7).stroke(Color.gold.opacity(0.26), lineWidth: 1))
+    }
+
+    private func chatLine(label: String, text: String, isCompact: Bool) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: 6) {
+            Text(label)
+                .font(.system(size: isCompact ? 10 : 11, weight: .black, design: .rounded))
+                .foregroundStyle(label == "You" ? Color.gold : Color.ivory.opacity(0.72))
+                .frame(width: isCompact ? 44 : 56, alignment: .leading)
+            Text(text)
+                .font(.system(size: isCompact ? 11 : 13, weight: .semibold, design: .rounded))
+                .foregroundStyle(Color.ivory)
+                .lineLimit(isCompact ? 2 : 6)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+
+    private var emotionControls: some View {
+        HStack(spacing: 7) {
+            Button("Pet") { model.petDaily() }
+                .buttonStyle(DragonButtonStyle(kind: model.mood == .happy ? .primary : .secondary))
+            Button("Nap") { model.nap() }
+                .buttonStyle(DragonButtonStyle(kind: model.mood == .nap ? .primary : .secondary))
+            Button("Hyper") { model.hyper() }
+                .buttonStyle(DragonButtonStyle(kind: model.mood == .hyper ? .primary : .secondary))
+        }
+        .disabled(model.busy)
+    }
+
+    private func inputRow(isCompact: Bool) -> some View {
+        HStack(spacing: 7) {
+            TextField("Ask Pikachu", text: $customPrompt)
+                .textFieldStyle(.plain)
+                .font(.system(size: isCompact ? 12 : 13, weight: .semibold))
+                .padding(.horizontal, 9)
+                .frame(height: isCompact ? 32 : 36)
+                .background(.white.opacity(0.12), in: RoundedRectangle(cornerRadius: 6))
+                .overlay(RoundedRectangle(cornerRadius: 6).stroke(Color.ivory.opacity(0.12), lineWidth: 1))
+                .foregroundStyle(Color.ivory)
+                .disabled(model.busy)
+                .onSubmit(submitPrompt)
+            Button(model.busy ? "..." : "Enter") {
+                submitPrompt()
+            }
+            .buttonStyle(DragonButtonStyle())
+            .frame(width: isCompact ? 72 : 82)
+            .disabled(!canSubmit)
+        }
     }
 
     private var soundButton: some View {
@@ -533,11 +709,22 @@ struct DragonOverlayView: View {
         .accessibilityLabel(model.soundEnabled ? "Mute Pikachu sounds" : "Unmute Pikachu sounds")
     }
 
+    private var canSubmit: Bool {
+        !model.busy && !customPrompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
     private func submitPrompt() {
         let prompt = customPrompt.trimmingCharacters(in: .whitespacesAndNewlines)
         customPrompt = ""
         guard !prompt.isEmpty else { return }
         Task { await model.ask(prompt) }
+    }
+
+    private func closeCompanion() {
+        model.prepareClose()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.18) {
+            NSApplication.shared.terminate(nil)
+        }
     }
 
     private var dragGesture: some Gesture {
@@ -573,17 +760,13 @@ struct AnimatedPetSprite: View {
                     .interpolation(.high)
                     .scaledToFit()
             } else {
-                Image(systemName: "bolt.fill")
-                    .resizable()
-                    .scaledToFit()
-                    .foregroundStyle(Color.gold)
-                    .padding(size * 0.22)
+                Color.clear
             }
         }
         .frame(width: size, height: size)
         .contentShape(Rectangle())
         .onReceive(timer) { _ in
-            frameIndex = (frameIndex + 1) % PetSpriteSheet.frameCount
+            frameIndex = (frameIndex + 1) % mood.frameSequence.count
         }
         .onChange(of: mood) {
             frameIndex = 0
@@ -599,7 +782,9 @@ enum PetSpriteSheet {
     static func image(for mood: PetMood, frame: Int) -> NSImage? {
         let frames = frames(for: mood)
         guard !frames.isEmpty else { return nil }
-        return frames[frame % frames.count]
+        let sequence = mood.frameSequence
+        let frameNumber = sequence[frame % sequence.count]
+        return frames[frameNumber % frames.count]
     }
 
     private static func frames(for mood: PetMood) -> [NSImage] {
@@ -636,6 +821,7 @@ struct DragonButtonStyle: ButtonStyle {
         case secondary
     }
 
+    @Environment(\.isEnabled) private var isEnabled
     var kind: Kind = .primary
 
     func makeBody(configuration: Configuration) -> some View {
@@ -646,7 +832,7 @@ struct DragonButtonStyle: ButtonStyle {
             .frame(maxWidth: .infinity)
             .background(kind == .primary ? Color.gold : Color.black.opacity(0.34), in: RoundedRectangle(cornerRadius: 6))
             .overlay(RoundedRectangle(cornerRadius: 6).stroke(Color.ivory.opacity(kind == .primary ? 0 : 0.18), lineWidth: 1))
-            .opacity(configuration.isPressed ? 0.72 : 1)
+            .opacity(isEnabled ? (configuration.isPressed ? 0.72 : 1) : 0.48)
     }
 }
 
@@ -656,6 +842,7 @@ struct DragonIconButtonStyle: ButtonStyle {
         case secondary
     }
 
+    @Environment(\.isEnabled) private var isEnabled
     var kind: Kind = .secondary
 
     func makeBody(configuration: Configuration) -> some View {
@@ -665,33 +852,7 @@ struct DragonIconButtonStyle: ButtonStyle {
             .frame(width: 34, height: 30)
             .background(kind == .primary ? Color.gold : Color.black.opacity(0.34), in: RoundedRectangle(cornerRadius: 6))
             .overlay(RoundedRectangle(cornerRadius: 6).stroke(Color.ivory.opacity(kind == .primary ? 0 : 0.18), lineWidth: 1))
-            .opacity(configuration.isPressed ? 0.72 : 1)
-    }
-}
-
-struct Triangle: Shape {
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        path.move(to: CGPoint(x: rect.midX, y: rect.minY))
-        path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
-        path.addLine(to: CGPoint(x: rect.minX, y: rect.maxY))
-        path.closeSubpath()
-        return path
-    }
-}
-
-struct BoltTail: Shape {
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        path.move(to: CGPoint(x: rect.minX + rect.width * 0.1, y: rect.minY + rect.height * 0.2))
-        path.addLine(to: CGPoint(x: rect.minX + rect.width * 0.72, y: rect.minY))
-        path.addLine(to: CGPoint(x: rect.minX + rect.width * 0.52, y: rect.minY + rect.height * 0.36))
-        path.addLine(to: CGPoint(x: rect.maxX, y: rect.minY + rect.height * 0.36))
-        path.addLine(to: CGPoint(x: rect.minX + rect.width * 0.28, y: rect.maxY))
-        path.addLine(to: CGPoint(x: rect.minX + rect.width * 0.48, y: rect.minY + rect.height * 0.54))
-        path.addLine(to: CGPoint(x: rect.minX, y: rect.minY + rect.height * 0.58))
-        path.closeSubpath()
-        return path
+            .opacity(isEnabled ? (configuration.isPressed ? 0.72 : 1) : 0.48)
     }
 }
 

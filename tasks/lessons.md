@@ -71,3 +71,10 @@ tiny decorative pill.
 preview, direct input, send control, mute toggle, and expand control; avoid
 marketing-heavy visible labels and remove source-sheet halo pixels before
 shipping screenshots.
+
+## 2026-06-12 — Default desktop-pet mode must be pet-first, not chat-first
+User corrected the minimized state again: the default surface should show only
+the animated pet, and clicking the pet should expand the chat/care interface.
+**Rule:** for the native companion, make the character the primary affordance:
+pet-only default, click-to-expand chat, visible close in expanded mode, and a
+small daily care loop with Bond HP/Joy rather than a generic compact chat strip.
