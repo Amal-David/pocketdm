@@ -192,10 +192,13 @@ final class DragonOverlayModel: ObservableObject {
     @Published var soundEnabled = UserDefaults.standard.object(forKey: DragonOverlayModel.soundEnabledKey) as? Bool ?? true
     @Published var busy = false
     @Published var mood: PetMood = .idle
+    @Published var learningMode: LearningMode = .chat
     @Published var companionHP = UserDefaults.standard.object(forKey: DragonOverlayModel.companionHPKey) as? Int ?? 3
     @Published var happiness = UserDefaults.standard.object(forKey: DragonOverlayModel.happinessKey) as? Int ?? 3
     @Published var petStreak = UserDefaults.standard.object(forKey: DragonOverlayModel.petStreakKey) as? Int ?? 0
     @Published var lastPetDay = UserDefaults.standard.string(forKey: DragonOverlayModel.lastPetDayKey) ?? ""
+
+    let languageCoach = LanguageCoachStore()
 
     private let client: PocketDMClient
     private let launcher: GameLauncher
@@ -257,6 +260,38 @@ final class DragonOverlayModel: ObservableObject {
         lastRequest = "Mood"
         play(.hyper)
         setMood(.hyper, duration: 1.5)
+    }
+
+    func toggleLearning() {
+        learningMode = learningMode == .lesson ? .chat : .lesson
+        if learningMode == .lesson {
+            lastRequest = "Learn"
+            message = "Pick Spanish or Mandarin, listen, then quiz."
+            play(.open)
+            languageCoach.speakCurrent()
+            setMood(.happy, duration: 1.2)
+        } else {
+            lastRequest = ""
+            message = "Back to chat. Ask for a hint or pet for today's spark."
+            play(.minimize)
+        }
+    }
+
+    func applyLanguageReward(_ reward: LanguagePracticeReward) {
+        lastRequest = "Language"
+        message = reward.message
+        if reward.correct {
+            happiness = min(5, happiness + 1)
+            if reward.dailyBond {
+                companionHP = min(10, companionHP + 1)
+            }
+            persistCare()
+            play(reward.dailyBond ? .pet : .happy)
+            setMood(.happy, duration: 1.4)
+        } else {
+            play(.alert)
+            setMood(.alert, duration: 1.2)
+        }
     }
 
     func petDaily(requestLabel: String = "Daily pet") {
@@ -554,18 +589,30 @@ struct DragonOverlayView: View {
                 }
 
                 VStack(alignment: .leading, spacing: 9) {
-                    chatTranscript(isCompact: false)
+                    if model.learningMode == .lesson {
+                        LanguageCoachPanel(
+                            coach: model.languageCoach,
+                            onReward: { reward in
+                                model.applyLanguageReward(reward)
+                            }
+                        )
+                    } else {
+                        chatTranscript(isCompact: false)
+                    }
                     emotionControls
-                    inputRow(isCompact: false)
 
-                    HStack(spacing: 8) {
-                        Button("Hint") { Task { await model.ask("hint") } }
+                    if model.learningMode == .chat {
+                        inputRow(isCompact: false)
+
+                        HStack(spacing: 8) {
+                            Button("Hint") { Task { await model.ask("hint") } }
+                                .buttonStyle(DragonButtonStyle(kind: .secondary))
+                                .disabled(model.busy)
+                            Button("Open PocketDM") {
+                                model.openGame()
+                            }
                             .buttonStyle(DragonButtonStyle(kind: .secondary))
-                            .disabled(model.busy)
-                        Button("Open PocketDM") {
-                            model.openGame()
                         }
-                        .buttonStyle(DragonButtonStyle(kind: .secondary))
                     }
                 }
                 .frame(width: 268)
@@ -665,9 +712,11 @@ struct DragonOverlayView: View {
     }
 
     private var emotionControls: some View {
-        HStack(spacing: 7) {
+        HStack(spacing: 6) {
             Button("Pet") { model.petDaily() }
                 .buttonStyle(DragonButtonStyle(kind: model.mood == .happy ? .primary : .secondary))
+            Button("Learn") { model.toggleLearning() }
+                .buttonStyle(DragonButtonStyle(kind: model.learningMode == .lesson ? .primary : .secondary))
             Button("Nap") { model.nap() }
                 .buttonStyle(DragonButtonStyle(kind: model.mood == .nap ? .primary : .secondary))
             Button("Hyper") { model.hyper() }
@@ -743,6 +792,164 @@ struct DragonOverlayView: View {
             }
     }
 
+}
+
+struct LanguageCoachPanel: View {
+    @ObservedObject var coach: LanguageCoachStore
+    let onReward: (LanguagePracticeReward) -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 7) {
+            packPicker
+            Text(coach.progressLine)
+                .font(.system(size: 10, weight: .black, design: .rounded))
+                .foregroundStyle(Color.gold)
+                .lineLimit(1)
+                .minimumScaleFactor(0.78)
+            lessonCard
+        }
+        .padding(10)
+        .frame(maxWidth: .infinity, minHeight: 216, alignment: .topLeading)
+        .background(.black.opacity(0.72), in: RoundedRectangle(cornerRadius: 7))
+        .overlay(RoundedRectangle(cornerRadius: 7).stroke(Color.gold.opacity(0.26), lineWidth: 1))
+    }
+
+    private var packPicker: some View {
+        HStack(spacing: 6) {
+            ForEach(coach.packs) { pack in
+                Button {
+                    coach.selectPack(pack)
+                    coach.speakCurrent()
+                } label: {
+                    Text(pack.nativeTitle)
+                        .font(.system(size: 12, weight: .black, design: .rounded))
+                        .foregroundStyle(coach.selectedPackID == pack.id ? Color.black : Color.ivory)
+                        .frame(width: 121, height: 34)
+                        .background(
+                            coach.selectedPackID == pack.id ? Color.gold : Color.black.opacity(0.34),
+                            in: RoundedRectangle(cornerRadius: 6)
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 6)
+                                .stroke(Color.ivory.opacity(coach.selectedPackID == pack.id ? 0 : 0.18), lineWidth: 1)
+                        )
+                }
+                .buttonStyle(.plain)
+            }
+        }
+    }
+
+    private var lessonCard: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(coach.stepTitle)
+                .font(.system(size: 11, weight: .black, design: .rounded))
+                .foregroundStyle(Color.ivory.opacity(0.72))
+                .lineLimit(1)
+            stepContent
+            Text(coach.feedback)
+                .font(.system(size: 10, weight: .semibold, design: .rounded))
+                .foregroundStyle(Color.ivory.opacity(0.78))
+                .lineLimit(2)
+                .frame(minHeight: 24, alignment: .topLeading)
+        }
+    }
+
+    @ViewBuilder
+    private var stepContent: some View {
+        switch coach.step {
+        case .teach:
+            phraseBlock
+            soundRow
+            Button("Start Quiz") {
+                coach.startQuiz()
+            }
+            .buttonStyle(DragonButtonStyle())
+        case .meaningQuiz:
+            prompt("What does \(coach.currentCard.target) mean?")
+            ForEach(coach.meaningChoices, id: \.self) { choice in
+                lessonChoice(choice) {
+                    onReward(coach.submitMeaning(choice))
+                }
+            }
+        case .phraseQuiz:
+            prompt("Pick: \(coach.currentCard.english)")
+            ForEach(coach.phraseChoices, id: \.self) { choice in
+                lessonChoice(choice) {
+                    onReward(coach.submitPhrase(choice))
+                }
+            }
+        case .repeatPrompt:
+            phraseBlock
+            soundRow
+            Button("I Said It") {
+                onReward(coach.finishRepeat())
+            }
+            .buttonStyle(DragonButtonStyle())
+        case .complete:
+            prompt("Three phrases cleared.")
+            Text("Pikachu logged today's language spark.")
+                .font(.system(size: 12, weight: .semibold, design: .rounded))
+                .foregroundStyle(Color.ivory)
+                .lineLimit(2)
+            Button("Review Again") {
+                coach.restartLesson()
+            }
+            .buttonStyle(DragonButtonStyle())
+        }
+    }
+
+    private var phraseBlock: some View {
+        VStack(alignment: .leading, spacing: 3) {
+            Text(coach.currentCard.target)
+                .font(.system(size: 21, weight: .black, design: .rounded))
+                .foregroundStyle(Color.ivory)
+                .lineLimit(1)
+                .minimumScaleFactor(0.62)
+            Text(coach.currentCard.romanization)
+                .font(.system(size: 13, weight: .black, design: .rounded))
+                .foregroundStyle(Color.gold)
+                .lineLimit(1)
+                .minimumScaleFactor(0.72)
+            Text(coach.currentCard.english)
+                .font(.system(size: 12, weight: .semibold, design: .rounded))
+                .foregroundStyle(Color.ivory.opacity(0.88))
+                .lineLimit(1)
+            Text(coach.currentCard.pronunciationTip)
+                .font(.system(size: 10, weight: .semibold, design: .rounded))
+                .foregroundStyle(Color.ivory.opacity(0.72))
+                .lineLimit(2)
+        }
+    }
+
+    private var soundRow: some View {
+        HStack(spacing: 7) {
+            Button("Hear") {
+                coach.speakCurrent()
+            }
+            .buttonStyle(DragonButtonStyle(kind: .secondary))
+            Button("Slow") {
+                coach.speakCurrent(slow: true)
+            }
+            .buttonStyle(DragonButtonStyle(kind: .secondary))
+        }
+    }
+
+    private func prompt(_ text: String) -> some View {
+        Text(text)
+            .font(.system(size: 12, weight: .black, design: .rounded))
+            .foregroundStyle(Color.ivory)
+            .lineLimit(2)
+            .frame(minHeight: 30, alignment: .bottomLeading)
+    }
+
+    private func lessonChoice(_ text: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Text(text)
+                .lineLimit(1)
+                .minimumScaleFactor(0.64)
+        }
+        .buttonStyle(LanguageChoiceButtonStyle())
+    }
 }
 
 struct AnimatedPetSprite: View {
@@ -852,6 +1059,21 @@ struct DragonIconButtonStyle: ButtonStyle {
             .frame(width: 34, height: 30)
             .background(kind == .primary ? Color.gold : Color.black.opacity(0.34), in: RoundedRectangle(cornerRadius: 6))
             .overlay(RoundedRectangle(cornerRadius: 6).stroke(Color.ivory.opacity(kind == .primary ? 0 : 0.18), lineWidth: 1))
+            .opacity(isEnabled ? (configuration.isPressed ? 0.72 : 1) : 0.48)
+    }
+}
+
+struct LanguageChoiceButtonStyle: ButtonStyle {
+    @Environment(\.isEnabled) private var isEnabled
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(.system(size: 11, weight: .black, design: .rounded))
+            .foregroundStyle(Color.ivory)
+            .frame(height: 30)
+            .frame(maxWidth: .infinity)
+            .background(Color.black.opacity(0.34), in: RoundedRectangle(cornerRadius: 6))
+            .overlay(RoundedRectangle(cornerRadius: 6).stroke(Color.ivory.opacity(0.18), lineWidth: 1))
             .opacity(isEnabled ? (configuration.isPressed ? 0.72 : 1) : 0.48)
     }
 }

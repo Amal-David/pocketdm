@@ -1,0 +1,84 @@
+[
+  {
+    "id": "spanish",
+    "title": "Spanish",
+    "nativeTitle": "Español",
+    "subtitle": "Travel basics",
+    "languageCode": "es-ES",
+    "cards": [
+      {
+        "id": "spanish-hello",
+        "english": "Hello",
+        "target": "Hola",
+        "romanization": "OH-lah",
+        "pronunciationTip": "Open with a round OH, then finish softly on lah.",
+        "distractors": ["Goodbye", "Please", "Water"]
+      },
+      {
+        "id": "spanish-thanks",
+        "english": "Thank you",
+        "target": "Gracias",
+        "romanization": "GRAH-syahs",
+        "pronunciationTip": "Start with GRAH, then let syahs glide quickly.",
+        "distractors": ["Excuse me", "Good night", "I am sorry"]
+      },
+      {
+        "id": "spanish-water",
+        "english": "I want water",
+        "target": "Quiero agua",
+        "romanization": "KYEH-roh AH-gwah",
+        "pronunciationTip": "Keep quiero two beats, then open wide on agua.",
+        "distractors": ["I need help", "Where is the station?", "The food is good"]
+      },
+      {
+        "id": "spanish-station",
+        "english": "Where is the station?",
+        "target": "¿Dónde está la estación?",
+        "romanization": "DON-deh es-TAH lah es-tah-SYON",
+        "pronunciationTip": "Stress TAH and finish estacion with a bright SYON.",
+        "distractors": ["How much is it?", "I like coffee", "See you tomorrow"]
+      }
+    ]
+  },
+  {
+    "id": "mandarin",
+    "title": "Mandarin",
+    "nativeTitle": "中文",
+    "subtitle": "Simplified basics",
+    "languageCode": "zh-CN",
+    "cards": [
+      {
+        "id": "mandarin-hello",
+        "english": "Hello",
+        "target": "你好",
+        "romanization": "nǐ hǎo",
+        "pronunciationTip": "Both syllables dip then rise. Smile slightly on hao.",
+        "distractors": ["Thank you", "Goodbye", "Water"]
+      },
+      {
+        "id": "mandarin-thanks",
+        "english": "Thank you",
+        "target": "谢谢",
+        "romanization": "xiè xie",
+        "pronunciationTip": "First xie falls clearly; the second is lighter.",
+        "distractors": ["Hello", "Please", "I want water"]
+      },
+      {
+        "id": "mandarin-water",
+        "english": "I want water",
+        "target": "我要水",
+        "romanization": "wǒ yào shuǐ",
+        "pronunciationTip": "Wo dips, yao falls, shui dips then rises.",
+        "distractors": ["Where is the station?", "I am sorry", "Good morning"]
+      },
+      {
+        "id": "mandarin-station",
+        "english": "Where is the station?",
+        "target": "车站在哪里？",
+        "romanization": "chē zhàn zài nǎ lǐ",
+        "pronunciationTip": "Che stays high, zhan falls, then na and li dip.",
+        "distractors": ["How much is it?", "The food is good", "See you tomorrow"]
+      }
+    ]
+  }
+]

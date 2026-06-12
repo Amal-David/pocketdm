@@ -78,3 +78,12 @@ the animated pet, and clicking the pet should expand the chat/care interface.
 **Rule:** for the native companion, make the character the primary affordance:
 pet-only default, click-to-expand chat, visible close in expanded mode, and a
 small daily care loop with Bond HP/Joy rather than a generic compact chat strip.
+
+## 2026-06-12 — Low-alpha dark pixels still read as a border
+User pointed at a black contour around the minimized 3D pet even after the
+SwiftUI border was gone. The line came from semi-transparent dark pixels baked
+into the extracted sprite edge.
+**Rule:** when extracting 3D mascot sheets, pixel-check the alpha fringe on a
+white background, remove dark/gray low-alpha halo pixels, and regenerate native
+plus web strips from the original sheets instead of trying to hide the issue in
+layout code.
