@@ -101,3 +101,10 @@ reliably.
 **Rule:** keep draggable title/handle regions separate from close, minimize,
 mute, send, and other controls. A `DragGesture` on the same SwiftUI row as
 buttons can swallow tiny pointer movements and make the buttons feel dead.
+
+## 2026-06-12 — Rebuild pet sprites from source sheets, not damaged strips
+User showed the black contour still visible after previous alpha cleanup. The
+remaining line was baked into the generated source-sheet contour, not SwiftUI.
+**Rule:** keep a repeatable source-sheet rebuild script, segment from the
+high-resolution generated sheets, and verify on a white background. Do not keep
+patching already-extracted strips when the contour is part of the pixels.

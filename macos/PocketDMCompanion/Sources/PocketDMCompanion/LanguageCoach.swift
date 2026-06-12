@@ -199,13 +199,13 @@ final class LanguageCoachStore: ObservableObject {
         selectedPackID = pack.id
         currentCardIndex = 0
         step = .teach
-        feedback = "Learn \(pack.title). Start with the sound."
+        feedback = "\(pack.title) pack ready. Listen first, then slow it down before the quiz."
         persistSelectedPack()
     }
 
     func startQuiz() {
         step = .meaningQuiz
-        feedback = "What does \(currentCard.target) mean?"
+        feedback = "Quiz time. What does \(currentCard.target) mean?"
     }
 
     func speakCurrent(slow: Bool = false) {
@@ -215,23 +215,23 @@ final class LanguageCoachStore: ObservableObject {
 
     func submitMeaning(_ answer: String) -> LanguagePracticeReward {
         guard answer == currentCard.english else {
-            markMiss("Almost. \(currentCard.target) means \(currentCard.english).")
+            markMiss("Almost. \(currentCard.target) means \(currentCard.english). Listen again, then retry the meaning.")
             return LanguagePracticeReward(correct: false, dailyBond: false, message: feedback)
         }
         markCorrect()
         step = .phraseQuiz
-        feedback = "Correct. Now find the phrase."
+        feedback = "Correct. Meaning locked. Now pick the phrase you heard."
         return LanguagePracticeReward(correct: true, dailyBond: false, message: feedback)
     }
 
     func submitPhrase(_ answer: String) -> LanguagePracticeReward {
         guard answer == currentCard.target else {
-            markMiss("Close. The phrase is \(currentCard.target).")
+            markMiss("Close. The phrase is \(currentCard.target). Replay it once and watch the syllables.")
             return LanguagePracticeReward(correct: false, dailyBond: false, message: feedback)
         }
         markCorrect()
         step = .repeatPrompt
-        feedback = "Nice. Say it out loud: \(currentCard.romanization)."
+        feedback = "Nice. Phrase matched. Say it out loud: \(currentCard.romanization)."
         speakCurrent(slow: true)
         return LanguagePracticeReward(correct: true, dailyBond: false, message: feedback)
     }
@@ -246,24 +246,24 @@ final class LanguageCoachStore: ObservableObject {
 
         if currentCardIndex + 1 >= lessonCards.count {
             step = .complete
-            feedback = "\(selectedPack.title) spark complete. Come back tomorrow for review."
+            feedback = "\(selectedPack.title) spark complete. Come back tomorrow to keep the streak warm."
         } else {
             currentCardIndex += 1
             step = .teach
-            feedback = "Next phrase unlocked."
+            feedback = "Next card unlocked. Listen first, then quiz again."
         }
 
         return LanguagePracticeReward(
             correct: true,
             dailyBond: earnedDailyBond,
-            message: earnedDailyBond ? "Daily language spark earned. +1 Bond HP." : "Practice logged. Joy +1."
+            message: earnedDailyBond ? "Daily language spark earned: +1 Bond HP and Joy +1." : "Practice logged. Joy +1."
         )
     }
 
     func restartLesson() {
         currentCardIndex = 0
         step = .teach
-        feedback = "Fresh run. Listen first, then quiz."
+        feedback = "Fresh run started. Listen first, slow it down, then quiz."
     }
 
     private func markCorrect() {

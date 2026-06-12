@@ -247,21 +247,21 @@ final class DragonOverlayModel: ObservableObject {
     }
 
     func happy() {
-        message = "Happy."
+        message = "Pikachu perks up. Joy is high and it is ready for a quest or a quick lesson."
         lastRequest = "Mood"
         play(.happy)
         setMood(.happy, duration: 1.6)
     }
 
     func nap() {
-        message = "Nap."
+        message = "Pikachu curls up for a tiny recharge. It will keep watch quietly."
         lastRequest = "Mood"
         play(.nap)
         setMood(.nap, duration: 2.4)
     }
 
     func hyper() {
-        message = "Hyper."
+        message = "Pikachu is buzzing with energy. Great moment to ask for a hint or practice a phrase."
         lastRequest = "Mood"
         play(.hyper)
         setMood(.hyper, duration: 1.5)
@@ -271,13 +271,13 @@ final class DragonOverlayModel: ObservableObject {
         learningMode = learningMode == .lesson ? .chat : .lesson
         if learningMode == .lesson {
             lastRequest = "Learn"
-            message = "Pick Spanish or Mandarin, listen, then quiz."
+            message = "Lesson mode opened. Pick a pack, listen once, slow it down, then quiz for Joy."
             play(.open)
             languageCoach.speakCurrent()
             setMood(.happy, duration: 1.2)
         } else {
             lastRequest = ""
-            message = "Back to chat. Ask for a hint or pet for today's spark."
+            message = "Back to chat. Ask for a hint, check status, or pet for today's bond spark."
             play(.minimize)
         }
     }
@@ -304,13 +304,13 @@ final class DragonOverlayModel: ObservableObject {
         let today = Self.dayFormatter.string(from: Date())
         if lastPetDay == today {
             happiness = min(5, happiness + 1)
-            message = "Already cared for today. Still happy to hear from you. Joy +1."
+            message = "Already cared for today. Pikachu still leans in. Joy +1."
         } else {
             companionHP = min(10, companionHP + 1)
             happiness = 5
             petStreak += 1
             lastPetDay = today
-            message = "Pikachu brightened up. +1 Bond HP today."
+            message = "Daily care complete. Pikachu brightened up: +1 Bond HP and Joy refilled."
         }
         persistCare()
         play(.pet)
