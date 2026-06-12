@@ -939,6 +939,98 @@ enum PetCareNeed: Int, CaseIterable {
     }
 }
 
+enum PetCareVital: Int, CaseIterable, Hashable {
+    case snack
+    case rest
+    case play
+    case focus
+
+    var title: String {
+        switch self {
+        case .snack:
+            return "Snack"
+        case .rest:
+            return "Rest"
+        case .play:
+            return "Play"
+        case .focus:
+            return "Focus"
+        }
+    }
+
+    var shortLabel: String {
+        switch self {
+        case .snack:
+            return "S"
+        case .rest:
+            return "R"
+        case .play:
+            return "P"
+        case .focus:
+            return "F"
+        }
+    }
+
+    var refillLine: String {
+        switch self {
+        case .snack:
+            return "Cheeks warm up after care."
+        case .rest:
+            return "Breathing settles into a softer loop."
+        case .play:
+            return "Extra sparks burn off in a happy hop."
+        case .focus:
+            return "It sits beside the next tiny task."
+        }
+    }
+
+    var lowLine: String {
+        switch self {
+        case .snack:
+            return "Snack is low; pet once or claim a snack card."
+        case .rest:
+            return "Rest is low; Nap helps it recover."
+        case .play:
+            return "Play is low; Hyper gives it movement."
+        case .focus:
+            return "Focus is low; Learn, Hint, or Boost helps."
+        }
+    }
+
+    var spriteRequestName: String {
+        switch self {
+        case .snack:
+            return "pet-{stage}-vital-snack-low.png"
+        case .rest:
+            return "pet-{stage}-vital-rest-low.png"
+        case .play:
+            return "pet-{stage}-vital-play-low.png"
+        case .focus:
+            return "pet-{stage}-vital-focus-low.png"
+        }
+    }
+
+    static func lowest(snack: Int, rest: Int, play: Int, focus: Int) -> PetCareVital {
+        let pairs: [(PetCareVital, Int)] = [
+            (.snack, snack),
+            (.rest, rest),
+            (.play, play),
+            (.focus, focus)
+        ]
+        return pairs.min { lhs, rhs in
+            if lhs.1 == rhs.1 {
+                return lhs.0.rawValue < rhs.0.rawValue
+            }
+            return lhs.1 < rhs.1
+        }?.0 ?? .snack
+    }
+
+    static func summary(snack: Int, rest: Int, play: Int, focus: Int) -> String {
+        let low = lowest(snack: snack, rest: rest, play: play, focus: focus)
+        return "Vitals S\(snack) R\(rest) P\(play) F\(focus) · low \(low.title)"
+    }
+}
+
 enum PetBondMemory: Int, CaseIterable {
     case firstCare = 1
     case firstHint = 2

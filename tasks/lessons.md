@@ -210,3 +210,16 @@ Hamster-style upgrades should not be hidden behind one purchase button.
 **Rule:** every upgrade card needs visible level, next cost, behavior effect,
 and a matching sprite request so the progression loop feels collectible and
 legible.
+
+## 2026-06-13 — Pet needs should drift and refill
+User wants the companion to feel like a real desktop pet, not a static helper
+with rewards only.
+**Rule:** core care needs should have persistent vitals that gently decay with
+time and refill through obvious actions, such as petting for Snack, Nap for
+Rest, Hyper for Play, and Learn/Hint/Boost for Focus.
+
+## 2026-06-13 — Pika voice must cover model replies
+User clarified that the model itself should say "pika pika" in text and voice.
+**Rule:** assistant replies, lesson feedback, and pet actions should use a
+single guarded catchphrase wrapper and trigger the native pika-like voice cue
+when sound is enabled.

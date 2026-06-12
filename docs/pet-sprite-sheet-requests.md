@@ -160,6 +160,19 @@ Generate these first. They unlock the most visible upgrade with the least code:
    - Opens a tiny upgrade-card album and points at the next card.
 70. `pet-buddy-card-upgrade-claim.png`
    - Spends Sparks, card glows, pet celebrates the new level.
+71. `pet-buddy-vital-snack-low.png`
+   - Notices its snack meter is low, checks paws, then brightens when cared
+     for.
+72. `pet-buddy-vital-rest-low.png`
+   - Starts sleepy, curls up, breathes softly, then reopens its eyes.
+73. `pet-buddy-vital-play-low.png`
+   - Looks under-stimulated, does a tiny wiggle, then hops happily.
+74. `pet-buddy-vital-focus-low.png`
+   - Looks distracted, settles beside the task, then nods attentively.
+75. `pet-buddy-vital-refill.png`
+   - Generic care refill glow for Snack, Rest, Play, or Focus without text.
+76. `pet-buddy-journal-vitals-page.png`
+   - Opens the journal to four care charms for Snack, Rest, Play, and Focus.
 
 ## Generate In Separate Batches
 
@@ -224,7 +237,16 @@ consistent:
 - `pet-buddy-card-deck-open.png`
 - `pet-buddy-card-upgrade-claim.png`
 
-### Batch 7: Full Stage Matrix
+### Batch 7: Care Vitals
+
+- `pet-buddy-vital-snack-low.png`
+- `pet-buddy-vital-rest-low.png`
+- `pet-buddy-vital-play-low.png`
+- `pet-buddy-vital-focus-low.png`
+- `pet-buddy-vital-refill.png`
+- `pet-buddy-journal-vitals-page.png`
+
+### Batch 8: Full Stage Matrix
 
 After the buddy form works, repeat the stage matrix for:
 
@@ -399,6 +421,27 @@ Care needs:
   - Wants a focus check-in, sits still, watches the screen.
 - `pet-{stage}-need-puzzle.png`
   - Wants a cipher, thinks, discovers a small clue.
+
+Care vitals:
+
+- `pet-{stage}-vital-snack-low.png`
+  - Low Snack state; cheeks dim slightly, then brighten after care.
+- `pet-{stage}-vital-rest-low.png`
+  - Low Rest state; sleepy wobble, soft breathing, calm recovery.
+- `pet-{stage}-vital-play-low.png`
+  - Low Play state; under-stimulated wiggle, then a happy hop.
+- `pet-{stage}-vital-focus-low.png`
+  - Low Focus state; distracted glance, settles beside an invisible task.
+- `pet-{stage}-vital-refill-snack.png`
+  - Snack refill reaction with warm cheek glow.
+- `pet-{stage}-vital-refill-rest.png`
+  - Rest refill reaction with cozy breathing.
+- `pet-{stage}-vital-refill-play.png`
+  - Play refill reaction with motion and cheek sparks.
+- `pet-{stage}-vital-refill-focus.png`
+  - Focus refill reaction with attentive eyes and calm nod.
+- `pet-{stage}-journal-vitals-page.png`
+  - Opens a tiny journal page showing four abstract care charms, no labels.
 
 Bond memories:
 
@@ -629,6 +672,9 @@ These are for the progression layer:
 - Time-of-day nudge: evening.
 - Time-of-day nudge: night.
 - Daily care need satisfied.
+- Care vital decayed.
+- Care vital refilled.
+- Care vitals journal page viewed.
 - Bond memory unlocked.
 - Story chapter advanced.
 - Mood discovered.

@@ -222,8 +222,15 @@ final class DragonOverlayModel: ObservableObject {
     private static let dailyNudgeOfferedMaskKey = "PocketDMCompanion.dailyNudgeOfferedMask"
     private static let dailyNudgeAnsweredMaskKey = "PocketDMCompanion.dailyNudgeAnsweredMask"
     private static let dailyNudgeDismissedMaskKey = "PocketDMCompanion.dailyNudgeDismissedMask"
+    private static let snackVitalKey = "PocketDMCompanion.snackVital"
+    private static let restVitalKey = "PocketDMCompanion.restVital"
+    private static let playVitalKey = "PocketDMCompanion.playVital"
+    private static let focusVitalKey = "PocketDMCompanion.focusVital"
+    private static let lastVitalAtKey = "PocketDMCompanion.lastVitalAt"
     private static let maxEnergy = 5
+    private static let maxVital = 5
     private static let energyRechargeSeconds: TimeInterval = 30 * 60
+    private static let vitalDecaySeconds: TimeInterval = 4 * 60 * 60
     private static let passiveSparkSeconds: TimeInterval = 15 * 60
     private static let cheerCooldownSeconds: TimeInterval = 2 * 60 * 60
     private static let dayFormatter: DateFormatter = {
@@ -287,6 +294,10 @@ final class DragonOverlayModel: ObservableObject {
     @Published var dailyNudgeOfferedMask = UserDefaults.standard.object(forKey: DragonOverlayModel.dailyNudgeOfferedMaskKey) as? Int ?? 0
     @Published var dailyNudgeAnsweredMask = UserDefaults.standard.object(forKey: DragonOverlayModel.dailyNudgeAnsweredMaskKey) as? Int ?? 0
     @Published var dailyNudgeDismissedMask = UserDefaults.standard.object(forKey: DragonOverlayModel.dailyNudgeDismissedMaskKey) as? Int ?? 0
+    @Published var snackVital = UserDefaults.standard.object(forKey: DragonOverlayModel.snackVitalKey) as? Int ?? DragonOverlayModel.maxVital
+    @Published var restVital = UserDefaults.standard.object(forKey: DragonOverlayModel.restVitalKey) as? Int ?? DragonOverlayModel.maxVital
+    @Published var playVital = UserDefaults.standard.object(forKey: DragonOverlayModel.playVitalKey) as? Int ?? DragonOverlayModel.maxVital
+    @Published var focusVital = UserDefaults.standard.object(forKey: DragonOverlayModel.focusVitalKey) as? Int ?? DragonOverlayModel.maxVital
     @Published var cheerBubble: String?
     @Published var cheerTitle = ""
     @Published var cheerAction = ""
@@ -306,6 +317,7 @@ final class DragonOverlayModel: ObservableObject {
     private var lastLifecycleAt = UserDefaults.standard.double(forKey: DragonOverlayModel.lastLifecycleAtKey)
     private var lastComebackChestDay = UserDefaults.standard.string(forKey: DragonOverlayModel.lastComebackChestDayKey) ?? ""
     private var lastNeedBonusDay = UserDefaults.standard.string(forKey: DragonOverlayModel.lastNeedBonusDayKey) ?? ""
+    private var lastVitalAt = UserDefaults.standard.double(forKey: DragonOverlayModel.lastVitalAtKey)
     init(client: PocketDMClient, launcher: GameLauncher) {
         self.client = client
         self.launcher = launcher
@@ -321,8 +333,13 @@ final class DragonOverlayModel: ObservableObject {
             lastLifecycleAt = Date().timeIntervalSince1970
             UserDefaults.standard.set(lastLifecycleAt, forKey: Self.lastLifecycleAtKey)
         }
+        if lastVitalAt == 0 {
+            lastVitalAt = Date().timeIntervalSince1970
+            UserDefaults.standard.set(lastVitalAt, forKey: Self.lastVitalAtKey)
+        }
         syncDailyCombo()
         rechargeEnergy()
+        applyVitalDecay()
         applyLifecycleCatchup(reason: "launch")
         let collected = collectPassiveSparks()
         if collected > 0 {
@@ -348,12 +365,16 @@ final class DragonOverlayModel: ObservableObject {
 
     func openGame() {
         let priorStage = growthStage
+        applyVitalDecay()
         lastRequest = "Open"
         message = pikaText("Quest opened. Your buddy marks the map and saves a Spark trail back here.")
         markCombo(.open)
         recordDailyQuest(.adventure)
         if let needNote = awardCareNeed(.adventure) {
             message += " \(needNote)"
+        }
+        if let vitalNote = refillVital(.focus, by: 1) {
+            message += " \(vitalNote)"
         }
         if let memoryNote = unlockMemory(.firstQuest) {
             message += " \(memoryNote)"
@@ -369,6 +390,7 @@ final class DragonOverlayModel: ObservableObject {
         minimized = value
         if !value {
             applyLifecycleCatchup(reason: "open")
+            applyVitalDecay()
             let collected = collectPassiveSparks()
             if collected > 0 {
                 appendPetNote("Pikachu gathered \(collected) passive Sparks.")
@@ -392,8 +414,12 @@ final class DragonOverlayModel: ObservableObject {
     }
 
     func happy() {
+        applyVitalDecay()
         message = pikaText("Pikachu perks up. Joy is high and it is ready for a quest or a quick lesson.")
         lastRequest = "Mood"
+        if let vitalNote = refillVital(.play, by: 1) {
+            message += " \(vitalNote)"
+        }
         appendEmotionScene(trigger: "happy")
         play(.happy)
         speakPika()
@@ -401,9 +427,13 @@ final class DragonOverlayModel: ObservableObject {
     }
 
     func nap() {
+        applyVitalDecay()
         message = pikaText("Pikachu curls up for a tiny recharge. It will keep watch quietly.")
         if let needNote = awardCareNeed(.rest) {
             message += " \(needNote)"
+        }
+        if let vitalNote = refillVital(.rest, by: 2) {
+            message += " \(vitalNote)"
         }
         lastRequest = "Mood"
         appendEmotionScene(trigger: "nap")
@@ -414,12 +444,16 @@ final class DragonOverlayModel: ObservableObject {
 
     func hyper() {
         let priorStage = growthStage
+        applyVitalDecay()
         message = pikaText("Pikachu is buzzing with energy. Great moment to ask for a hint or practice a phrase.")
         lastRequest = "Mood"
         earnSparkDust(1)
         markCombo(.hyper)
         if let needNote = awardCareNeed(.play) {
             message += " \(needNote)"
+        }
+        if let vitalNote = refillVital(.play, by: 2) {
+            message += " \(vitalNote)"
         }
         appendEmotionScene(trigger: "hyper")
         appendEvolutionNote(from: priorStage)
@@ -449,6 +483,7 @@ final class DragonOverlayModel: ObservableObject {
     func openLearning() {
         guard learningMode != .lesson else { return }
         let priorStage = growthStage
+        applyVitalDecay()
         learningMode = .lesson
         lastRequest = "Learn"
         message = pikaText("Lesson mode opened. Pick a pack, listen once, slow it down, then quiz for Joy.")
@@ -456,6 +491,9 @@ final class DragonOverlayModel: ObservableObject {
         recordDailyQuest(.learn)
         if let needNote = awardCareNeed(.study) {
             message += " \(needNote)"
+        }
+        if let vitalNote = refillVital(.focus, by: 2) {
+            message += " \(vitalNote)"
         }
         if let memoryNote = unlockMemory(.firstLesson) {
             message += " \(memoryNote)"
@@ -481,6 +519,7 @@ final class DragonOverlayModel: ObservableObject {
 
     func applyLanguageReward(_ reward: LanguagePracticeReward) {
         let priorStage = growthStage
+        applyVitalDecay()
         lastRequest = "Language"
         message = pikaText(reward.message)
         if reward.correct {
@@ -493,6 +532,9 @@ final class DragonOverlayModel: ObservableObject {
             recordDailyQuest(.learn)
             if let needNote = awardCareNeed(.study) {
                 message += " \(needNote)"
+            }
+            if let vitalNote = refillVital(.focus, by: reward.dailyBond ? 2 : 1) {
+                message += " \(vitalNote)"
             }
             if let memoryNote = unlockMemory(.firstLesson) {
                 message += " \(memoryNote)"
@@ -513,6 +555,7 @@ final class DragonOverlayModel: ObservableObject {
 
     func petDaily(requestLabel: String = "Daily pet") {
         let priorStage = growthStage
+        applyVitalDecay()
         lastRequest = requestLabel
         clearCheerBubble()
         syncDailyCombo()
@@ -541,6 +584,9 @@ final class DragonOverlayModel: ObservableObject {
         if let needNote = awardCareNeed(.affection) {
             message += " \(needNote)"
         }
+        if let vitalNote = refillVital(.snack, by: 2) {
+            message += " \(vitalNote)"
+        }
         if let memoryNote = unlockMemory(.firstCare) {
             message += " \(memoryNote)"
         }
@@ -554,6 +600,8 @@ final class DragonOverlayModel: ObservableObject {
 
     func ask(_ prompt: String) async {
         let priorStage = growthStage
+        let asksForHint = isHintPrompt(prompt)
+        applyVitalDecay()
         lastRequest = prompt
         if handlesCare(prompt) {
             petDaily(requestLabel: prompt)
@@ -568,7 +616,10 @@ final class DragonOverlayModel: ObservableObject {
             message = pikaText(try await client.assistantReply(for: prompt))
             serverLine = "PocketDM companion online"
             earnSparkDust(1)
-            if isHintPrompt(prompt) {
+            if let vitalNote = refillVital(asksForHint ? .focus : .play, by: 1) {
+                message += " \(vitalNote)"
+            }
+            if asksForHint {
                 markCombo(.hint)
                 recordDailyQuest(.hint)
                 if let needNote = awardCareNeed(.adventure) {
@@ -578,7 +629,7 @@ final class DragonOverlayModel: ObservableObject {
                     message += " \(memoryNote)"
                 }
             }
-            appendEmotionScene(trigger: isHintPrompt(prompt) ? "hint" : "chat")
+            appendEmotionScene(trigger: asksForHint ? "hint" : "chat")
             appendEvolutionNote(from: priorStage)
             play(.reply)
             speakPika(force: true)
@@ -595,6 +646,7 @@ final class DragonOverlayModel: ObservableObject {
 
     func acceptCheerBubble() {
         let priorStage = growthStage
+        applyVitalDecay()
         let prompt = cheerTitle.isEmpty ? "Check in" : cheerTitle
         let rewardLine = cheerRewardLine.isEmpty ? "Check-in answered" : cheerRewardLine
         let daypartNote = recordCheerAnswer()
@@ -609,6 +661,9 @@ final class DragonOverlayModel: ObservableObject {
         recordDailyQuest(.cheer)
         if let needNote = awardCareNeed(.focus) {
             message += " \(needNote)"
+        }
+        if let vitalNote = refillVital(.focus, by: 2) {
+            message += " \(vitalNote)"
         }
         appendEmotionScene(trigger: "cheer")
         appendEvolutionNote(from: priorStage)
@@ -628,6 +683,7 @@ final class DragonOverlayModel: ObservableObject {
     }
 
     func buyNextUpgrade() {
+        applyVitalDecay()
         syncDailyCombo()
         let candidate = nextUpgradeCandidate
         guard sparkDust >= candidate.cost else {
@@ -665,6 +721,9 @@ final class DragonOverlayModel: ObservableObject {
         message = pikaText("\(candidate.name) upgraded. \(candidate.kind.unlockLine) Passive Sparks now +\(passiveSparkRate) every 15 minutes.")
         markCombo(.upgrade)
         recordDailyQuest(.upgrade)
+        if let vitalNote = refillVital(vitalForUpgrade(candidate.kind), by: 2) {
+            message += " \(vitalNote)"
+        }
         if let memoryNote = unlockMemory(.firstUpgrade) {
             message += " \(memoryNote)"
         }
@@ -677,6 +736,7 @@ final class DragonOverlayModel: ObservableObject {
     }
 
     func activateDailyBoost() {
+        applyVitalDecay()
         syncDailyCombo()
         guard !dailyBoosterUsed else {
             lastRequest = "Boost"
@@ -702,6 +762,9 @@ final class DragonOverlayModel: ObservableObject {
         if let needNote = awardCareNeed(.focus) {
             message += " \(needNote)"
         }
+        if let vitalNote = refillVital(.focus, by: 2) {
+            message += " \(vitalNote)"
+        }
         if let memoryNote = unlockMemory(.firstBoost) {
             message += " \(memoryNote)"
         }
@@ -714,6 +777,7 @@ final class DragonOverlayModel: ObservableObject {
     }
 
     func solveDailyCipher() {
+        applyVitalDecay()
         syncDailyCombo()
         let cipher = dailyCipher
         guard !dailyCipherSolved else {
@@ -738,6 +802,9 @@ final class DragonOverlayModel: ObservableObject {
         if let needNote = awardCareNeed(.puzzle) {
             message += " \(needNote)"
         }
+        if let vitalNote = refillVital(.focus, by: 2) {
+            message += " \(vitalNote)"
+        }
         if let memoryNote = unlockMemory(.firstCipher) {
             message += " \(memoryNote)"
         }
@@ -750,6 +817,7 @@ final class DragonOverlayModel: ObservableObject {
     }
 
     func playDailyEvent() {
+        applyVitalDecay()
         syncDailyCombo()
         let event = dailyEvent
         let priorStage = growthStage
@@ -770,6 +838,9 @@ final class DragonOverlayModel: ObservableObject {
         sparkDust = min(999, sparkDust + stepReward)
         happiness = min(5, happiness + 1)
         message = pikaText("\(event.stepLine) Event \(dailyEventProgress)/\(event.requiredSteps): Joy +1, Sparks +\(stepReward).")
+        if let vitalNote = refillVital(.play, by: 1) {
+            message += " \(vitalNote)"
+        }
 
         if dailyEventProgress >= event.requiredSteps {
             let badgeWasNew = seasonBadgeMask & event.rawValue == 0
@@ -819,6 +890,19 @@ final class DragonOverlayModel: ObservableObject {
 
     var economyLine: String {
         "Sparks \(sparkDust) · Energy \(energy)/\(Self.maxEnergy) · +\(passiveSparkRate)/15m"
+    }
+
+    var vitalLine: String {
+        PetCareVital.summary(
+            snack: snackVital,
+            rest: restVital,
+            play: playVital,
+            focus: focusVital
+        )
+    }
+
+    var maxVitalLevel: Int {
+        Self.maxVital
     }
 
     var needLine: String {
@@ -990,6 +1074,18 @@ final class DragonOverlayModel: ObservableObject {
         return total == 0 ? 0 : Double(done) / Double(total)
     }
 
+    var journalVitalProgress: Double {
+        Double(snackVital + restVital + playVital + focusVital) / Double(Self.maxVital * PetCareVital.allCases.count)
+    }
+
+    var journalVitalCaption: String {
+        "\(vitalLine) · \(lowestVital.lowLine)"
+    }
+
+    var journalVitalSpriteLine: String {
+        "Vitals sprite: \(lowestVital.spriteRequestName.replacingOccurrences(of: "{stage}", with: growthStage.assetSlug))"
+    }
+
     var journalStreakCaption: String {
         "This week \(min(7, weeklyCareCount))/7 care days · total streak \(petStreak)"
     }
@@ -1045,8 +1141,8 @@ final class DragonOverlayModel: ObservableObject {
     }
 
     private func pikaText(_ text: String) -> String {
-        let normalized = text.lowercased().replacingOccurrences(of: "-", with: " ")
-        if normalized.contains("pika pika") {
+        let normalized = text.lowercased().filter(\.isLetter)
+        if normalized.contains("pikapika") {
             return text
         }
         return "Pika pika! \(text)"
@@ -1113,6 +1209,11 @@ final class DragonOverlayModel: ObservableObject {
         UserDefaults.standard.set(dailyNudgeOfferedMask, forKey: Self.dailyNudgeOfferedMaskKey)
         UserDefaults.standard.set(dailyNudgeAnsweredMask, forKey: Self.dailyNudgeAnsweredMaskKey)
         UserDefaults.standard.set(dailyNudgeDismissedMask, forKey: Self.dailyNudgeDismissedMaskKey)
+        UserDefaults.standard.set(snackVital, forKey: Self.snackVitalKey)
+        UserDefaults.standard.set(restVital, forKey: Self.restVitalKey)
+        UserDefaults.standard.set(playVital, forKey: Self.playVitalKey)
+        UserDefaults.standard.set(focusVital, forKey: Self.focusVitalKey)
+        UserDefaults.standard.set(lastVitalAt, forKey: Self.lastVitalAtKey)
     }
 
     private func handlesCare(_ prompt: String) -> Bool {
@@ -1170,8 +1271,91 @@ final class DragonOverlayModel: ObservableObject {
         )
     }
 
+    private var lowestVital: PetCareVital {
+        PetCareVital.lowest(
+            snack: snackVital,
+            rest: restVital,
+            play: playVital,
+            focus: focusVital
+        )
+    }
+
     private var dailyEvent: PetSeasonEvent {
         PetSeasonEvent.daily(for: dailyEventDate.isEmpty ? Self.dayFormatter.string(from: Date()) : dailyEventDate)
+    }
+
+    func vitalLevel(for vital: PetCareVital) -> Int {
+        switch vital {
+        case .snack:
+            return snackVital
+        case .rest:
+            return restVital
+        case .play:
+            return playVital
+        case .focus:
+            return focusVital
+        }
+    }
+
+    private func setVital(_ vital: PetCareVital, value: Int) {
+        let clamped = min(Self.maxVital, max(0, value))
+        switch vital {
+        case .snack:
+            snackVital = clamped
+        case .rest:
+            restVital = clamped
+        case .play:
+            playVital = clamped
+        case .focus:
+            focusVital = clamped
+        }
+    }
+
+    private func refillVital(_ vital: PetCareVital, by amount: Int = 2) -> String? {
+        let previous = vitalLevel(for: vital)
+        let next = min(Self.maxVital, previous + max(0, amount))
+        guard next > previous else { return nil }
+
+        setVital(vital, value: next)
+        persistCare()
+        return "Vitals: \(vital.title) \(next)/\(Self.maxVital). \(vital.refillLine)"
+    }
+
+    private func vitalForUpgrade(_ kind: PetUpgradeKind) -> PetCareVital {
+        switch kind {
+        case .snack:
+            return .snack
+        case .nest:
+            return .rest
+        case .quest, .cheer, .spark:
+            return .play
+        case .lesson, .focus, .cipher:
+            return .focus
+        }
+    }
+
+    private func applyVitalDecay() {
+        let now = Date().timeIntervalSince1970
+        if lastVitalAt == 0 {
+            lastVitalAt = now
+            persistCare()
+            return
+        }
+
+        let elapsed = now - lastVitalAt
+        guard elapsed >= Self.vitalDecaySeconds else { return }
+
+        let ticks = min(3, Int(elapsed / Self.vitalDecaySeconds))
+        guard ticks > 0 else { return }
+
+        for vital in PetCareVital.allCases {
+            setVital(vital, value: vitalLevel(for: vital) - ticks)
+        }
+        lastVitalAt += Double(ticks) * Self.vitalDecaySeconds
+        if PetCareVital.allCases.contains(where: { vitalLevel(for: $0) <= 1 }) {
+            happiness = max(1, happiness - 1)
+        }
+        persistCare()
     }
 
     private func awardCareNeed(_ completed: PetCareNeed) -> String? {
@@ -1551,6 +1735,7 @@ final class DragonOverlayModel: ObservableObject {
                 await MainActor.run {
                     self?.syncDailyCombo()
                     self?.rechargeEnergy()
+                    self?.applyVitalDecay()
                     self?.applyLifecycleCatchup(reason: "timer")
                     _ = self?.collectPassiveSparks()
                 }
@@ -2004,6 +2189,11 @@ struct DragonOverlayView: View {
                 .foregroundStyle(Color.ivory.opacity(0.76))
                 .lineLimit(1)
                 .minimumScaleFactor(0.76)
+            Text(model.vitalLine)
+                .font(.system(size: 8.2, weight: .black, design: .rounded))
+                .foregroundStyle(Color.ivory.opacity(0.7))
+                .lineLimit(1)
+                .minimumScaleFactor(0.48)
             Text(model.needLine)
                 .font(.system(size: 8.8, weight: .black, design: .rounded))
                 .foregroundStyle(Color.gold.opacity(0.82))
@@ -2328,6 +2518,9 @@ struct PetJournalPanel: View {
             detailLine(model.needLine)
             detailLine(model.comboLine)
             detailLine(model.taskLine)
+            journalHero("Care Vitals", value: model.journalVitalProgress, caption: model.journalVitalCaption)
+            vitalGrid
+            artLine(model.journalVitalSpriteLine)
             journalHero("Cheer Rhythm", value: model.journalCheerProgress, caption: model.journalCheerCaption)
             detailLine(model.cheerRhythmLine)
             artLine(model.journalCheerSpriteLine)
@@ -2416,6 +2609,28 @@ struct PetJournalPanel: View {
                 journalChip("\(milestone.shortLabel) \(milestone.title)", isUnlocked: model.weeklyRewardMask & milestone.rawValue != 0)
             }
         }
+    }
+
+    private var vitalGrid: some View {
+        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 4), count: 4), spacing: 3) {
+            ForEach(PetCareVital.allCases, id: \.self) { vital in
+                vitalChip(vital)
+            }
+        }
+    }
+
+    private func vitalChip(_ vital: PetCareVital) -> some View {
+        let level = model.vitalLevel(for: vital)
+        let healthy = level >= 3
+        return Text("\(vital.shortLabel) \(level)/\(model.maxVitalLevel)")
+            .font(.system(size: 7.5, weight: .black, design: .rounded))
+            .foregroundStyle(healthy ? Color.black : Color.ivory.opacity(0.72))
+            .lineLimit(1)
+            .minimumScaleFactor(0.62)
+            .frame(height: 18)
+            .frame(maxWidth: .infinity)
+            .background(healthy ? Color.gold.opacity(0.9) : Color.black.opacity(0.34), in: RoundedRectangle(cornerRadius: 5))
+            .overlay(RoundedRectangle(cornerRadius: 5).stroke(Color.ivory.opacity(healthy ? 0 : 0.14), lineWidth: 1))
     }
 
     private var upgradeDeckGrid: some View {

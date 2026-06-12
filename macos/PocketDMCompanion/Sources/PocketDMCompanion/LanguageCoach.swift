@@ -119,8 +119,8 @@ final class LanguageCoachStore: ObservableObject {
     }()
 
     private static func pikaFeedback(_ message: String) -> String {
-        let normalized = message.lowercased().replacingOccurrences(of: "-", with: " ")
-        if normalized.contains("pika pika") {
+        let normalized = message.lowercased().filter(\.isLetter)
+        if normalized.contains("pikapika") {
             return message
         }
         return "Pika pika! \(message)"

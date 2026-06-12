@@ -209,6 +209,8 @@ The new layer should add:
 - Upgrade cards that change behavior: faster check-ins, better comeback
   rewards, stronger learning rewards, richer ciphers, daily boosts, and more
   generous passive Sparks.
+- Care vitals that drift over time: Snack, Rest, Play, and Focus, each
+  refilled by the action that naturally satisfies it.
 - A visible and spoken pet catchphrase: "Pika pika!" for high-signal reactions.
 - A richer sprite request queue for the user to generate.
 
@@ -229,6 +231,8 @@ The native macOS companion now has the first version of the loop:
   stage.
 - Upgrade cards now have a visible journal deck with levels, next costs,
   behavior effects, and matching sprite requests for all eight cards.
+- Snack, Rest, Play, and Focus vitals now persist, gently decay after time
+  away, refill from matching pet actions, and surface in the native journal.
 - Sparks earned from petting, asking, language practice, and combo completion.
 - Energy that recharges over time.
 - Passive Sparks collected after time away.
@@ -267,6 +271,8 @@ The native macOS companion now has the first version of the loop:
 - A short lore line inside the care panel.
 - Native text and voice "Pika pika!" reactions for pet care, cheer, boosts,
   ciphers, learning rewards, and assistant replies.
+- Pika text wrapping now treats punctuated or hyphenated variants as the same
+  catchphrase, so model replies stay characterful without duplicate prefixes.
 
 This is not the full final pet fantasy yet. It is the backbone that lets the
 next sprite sheets matter: new art can now map to real emotions, upgrades,
