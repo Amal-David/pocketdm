@@ -94,3 +94,10 @@ used only a few cards.
 **Rule:** language-learning packs should ship as explicit word and sentence
 sections with at least 100 entries each per language, and the native lesson
 store should count the whole pack rather than hard-code the first three cards.
+
+## 2026-06-12 — Native overlay controls cannot share the drag surface
+User reported that the native companion minimize button still did not work
+reliably.
+**Rule:** keep draggable title/handle regions separate from close, minimize,
+mute, send, and other controls. A `DragGesture` on the same SwiftUI row as
+buttons can swallow tiny pointer movements and make the buttons feel dead.

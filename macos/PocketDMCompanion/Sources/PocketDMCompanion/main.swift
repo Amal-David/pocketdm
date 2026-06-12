@@ -188,7 +188,7 @@ final class DragonOverlayModel: ObservableObject {
     @Published var message = "Your electric partner keeps a tiny bond spark. Pet once each day to earn +1 HP and refill joy."
     @Published var lastRequest = ""
     @Published var serverLine = "Checking PocketDM..."
-    @Published var minimized = true
+    @Published var minimized = UserDefaults.standard.object(forKey: DragonOverlayModel.petOnlyKey) as? Bool ?? true
     @Published var soundEnabled = UserDefaults.standard.object(forKey: DragonOverlayModel.soundEnabledKey) as? Bool ?? true
     @Published var busy = false
     @Published var mood: PetMood = .idle
@@ -545,6 +545,9 @@ struct DragonOverlayView: View {
             }
         }
         .animation(.spring(response: 0.26, dampingFraction: 0.78), value: model.minimized)
+        .onChange(of: model.minimized) { _, minimized in
+            onSizeChange(minimized)
+        }
     }
 
     private var petOnlyBody: some View {
@@ -552,7 +555,6 @@ struct DragonOverlayView: View {
             Button {
                 withAnimation(.spring(response: 0.26, dampingFraction: 0.76)) {
                     model.setMinimized(false)
-                    onSizeChange(false)
                 }
             } label: {
                 AnimatedPetSprite(mood: model.mood, size: petHovering ? 166 : 158)
@@ -653,40 +655,40 @@ struct DragonOverlayView: View {
 
     private func headerBar(isCompact: Bool) -> some View {
         HStack(spacing: 8) {
-            Image(systemName: "circle.grid.2x2.fill")
-                .font(.system(size: isCompact ? 13 : 15, weight: .bold))
-                .foregroundStyle(Color.ivory.opacity(0.68))
-            Text("Pikachu")
-                .font(.system(size: 12, weight: .black, design: .rounded))
-                .foregroundStyle(Color.ivory)
-            Spacer()
+            HStack(spacing: 8) {
+                Image(systemName: "circle.grid.2x2.fill")
+                    .font(.system(size: isCompact ? 13 : 15, weight: .bold))
+                    .foregroundStyle(Color.ivory.opacity(0.68))
+                Text("Pikachu")
+                    .font(.system(size: 12, weight: .black, design: .rounded))
+                    .foregroundStyle(Color.ivory)
+                Spacer(minLength: 0)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+            .contentShape(Rectangle())
+            .gesture(dragGesture)
+            .accessibilityLabel("Drag Pikachu panel")
             soundButton
             Button {
                 withAnimation(.spring(response: 0.25, dampingFraction: 0.76)) {
                     model.setMinimized(true)
-                    onSizeChange(true)
                 }
             } label: {
                 Image(systemName: "minus")
             }
-            .buttonStyle(.plain)
-            .foregroundStyle(Color.ivory)
-            .frame(width: 26, height: 24)
+            .buttonStyle(DragonIconButtonStyle(kind: .secondary))
             .accessibilityLabel("Minimize Pikachu to pet")
             Button {
                 closeCompanion()
             } label: {
                 Image(systemName: "xmark")
             }
-            .buttonStyle(.plain)
-            .foregroundStyle(Color.ivory)
-            .frame(width: 26, height: 24)
+            .buttonStyle(DragonIconButtonStyle(kind: .secondary))
             .accessibilityLabel("Close Pikachu")
         }
         .padding(.horizontal, 10)
         .frame(height: isCompact ? 30 : 34)
         .background(.black.opacity(0.82), in: RoundedRectangle(cornerRadius: 7))
-        .gesture(dragGesture)
     }
 
     private func chatTranscript(isCompact: Bool) -> some View {
@@ -757,9 +759,8 @@ struct DragonOverlayView: View {
         } label: {
             Image(systemName: model.soundEnabled ? "speaker.wave.2.fill" : "speaker.slash.fill")
         }
-        .buttonStyle(.plain)
-        .foregroundStyle(model.soundEnabled ? Color.ivory : Color.ivory.opacity(0.58))
-        .frame(width: 26, height: 24)
+        .buttonStyle(DragonIconButtonStyle(kind: .secondary))
+        .opacity(model.soundEnabled ? 1 : 0.62)
         .accessibilityLabel(model.soundEnabled ? "Mute Pikachu sounds" : "Unmute Pikachu sounds")
     }
 
