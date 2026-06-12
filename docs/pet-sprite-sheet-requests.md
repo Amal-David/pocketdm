@@ -173,6 +173,32 @@ Generate these first. They unlock the most visible upgrade with the least code:
    - Generic care refill glow for Snack, Rest, Play, or Focus without text.
 76. `pet-buddy-journal-vitals-page.png`
    - Opens the journal to four care charms for Snack, Rest, Play, and Focus.
+77. `pet-buddy-charm-album-open.png`
+   - Opens a collectible charm album and looks proud without text.
+78. `pet-buddy-charm-hello-spark.png`
+   - First hello charm, notices user, small cheek glow.
+79. `pet-buddy-charm-snack-heart.png`
+   - Snack/care charm, leans into daily care and stores a tiny heart spark.
+80. `pet-buddy-charm-study-bell.png`
+   - Study charm, listens, repeats, and rings a small bell.
+81. `pet-buddy-charm-trail-map.png`
+   - Hint/adventure charm, unfolds a tiny map and points forward.
+82. `pet-buddy-charm-rest-nest.png`
+   - Rest charm, curls in a cozy nest and wakes softly.
+83. `pet-buddy-charm-play-bolt.png`
+   - Play charm, happy hop with a tiny bolt.
+84. `pet-buddy-charm-focus-charm.png`
+   - Focus charm, sits beside the user's work and nods.
+85. `pet-buddy-charm-cipher-stone.png`
+   - Puzzle charm, solves a small glowing stone clue.
+86. `pet-buddy-charm-event-ribbon.png`
+   - Daily event charm, receives a small ribbon and celebrates.
+87. `pet-buddy-charm-upgrade-card.png`
+   - Upgrade charm, card glows and the pet reacts proudly.
+88. `pet-buddy-charm-weekly-trail.png`
+   - Weekly trail charm, several path lights turn on under the pet.
+89. `pet-buddy-charm-vital-glow.png`
+   - All-vitals charm, Snack/Rest/Play/Focus glow together.
 
 ## Generate In Separate Batches
 
@@ -246,7 +272,23 @@ consistent:
 - `pet-buddy-vital-refill.png`
 - `pet-buddy-journal-vitals-page.png`
 
-### Batch 8: Full Stage Matrix
+### Batch 8: Care Charm Album
+
+- `pet-buddy-charm-album-open.png`
+- `pet-buddy-charm-hello-spark.png`
+- `pet-buddy-charm-snack-heart.png`
+- `pet-buddy-charm-study-bell.png`
+- `pet-buddy-charm-trail-map.png`
+- `pet-buddy-charm-rest-nest.png`
+- `pet-buddy-charm-play-bolt.png`
+- `pet-buddy-charm-focus-charm.png`
+- `pet-buddy-charm-cipher-stone.png`
+- `pet-buddy-charm-event-ribbon.png`
+- `pet-buddy-charm-upgrade-card.png`
+- `pet-buddy-charm-weekly-trail.png`
+- `pet-buddy-charm-vital-glow.png`
+
+### Batch 9: Full Stage Matrix
 
 After the buddy form works, repeat the stage matrix for:
 
@@ -503,6 +545,35 @@ Journal / album view:
 - `pet-{stage}-journal-art-request.png`
   - Shows the exact next sprite need as a blank transparent-sheet card.
 
+Care charm album:
+
+- `pet-{stage}-charm-album-open.png`
+  - Opens a collectible charm album and points at locked/unlocked charms.
+- `pet-{stage}-charm-hello-spark.png`
+  - First daily hello charm, warm recognition, cheek glow.
+- `pet-{stage}-charm-snack-heart.png`
+  - Daily care/snack charm, leans in and stores a heart-shaped spark.
+- `pet-{stage}-charm-study-bell.png`
+  - Language/study charm, listens, repeats, rings a tiny bell.
+- `pet-{stage}-charm-trail-map.png`
+  - Hint/adventure charm, unfolds a map and points at the next trail.
+- `pet-{stage}-charm-rest-nest.png`
+  - Nap/rest charm, curls up in a nest and wakes with calm eyes.
+- `pet-{stage}-charm-play-bolt.png`
+  - Hyper/play charm, hop and tiny bolt flourish.
+- `pet-{stage}-charm-focus-charm.png`
+  - Focus/check-in charm, sits beside a task and nods gently.
+- `pet-{stage}-charm-cipher-stone.png`
+  - Cipher/puzzle charm, solves a glowing stone clue.
+- `pet-{stage}-charm-event-ribbon.png`
+  - Daily event charm, receives a ribbon and celebrates softly.
+- `pet-{stage}-charm-upgrade-card.png`
+  - Upgrade charm, card glows, pet reacts proudly.
+- `pet-{stage}-charm-weekly-trail.png`
+  - Weekly trail charm, path lights under the pet and a proud look back.
+- `pet-{stage}-charm-vital-glow.png`
+  - All-vitals charm, four care glows orbit briefly and settle.
+
 Proactive check-ins:
 
 - `pet-{stage}-proactive-checkin.png`
@@ -685,6 +756,8 @@ These are for the progression layer:
 - Journal mood page viewed.
 - Journal memory page viewed.
 - Journal badge page viewed.
+- Charm album opened.
+- Care charm unlocked.
 - Journal ritual page viewed.
 - Journal next-sprite request.
 - Proactive check-in appeared.

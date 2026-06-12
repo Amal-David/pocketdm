@@ -1137,6 +1137,143 @@ enum PetStoryCodex {
     }
 }
 
+enum PetCareCharm: Int, CaseIterable {
+    case helloSpark = 1
+    case snackHeart = 2
+    case studyBell = 4
+    case trailMap = 8
+    case restNest = 16
+    case playBolt = 32
+    case focusCharm = 64
+    case cipherStone = 128
+    case eventRibbon = 256
+    case upgradeCard = 512
+    case weeklyTrail = 1024
+    case vitalGlow = 2048
+
+    var title: String {
+        switch self {
+        case .helloSpark:
+            return "Hello Spark"
+        case .snackHeart:
+            return "Snack Heart"
+        case .studyBell:
+            return "Study Bell"
+        case .trailMap:
+            return "Trail Map"
+        case .restNest:
+            return "Rest Nest"
+        case .playBolt:
+            return "Play Bolt"
+        case .focusCharm:
+            return "Focus Charm"
+        case .cipherStone:
+            return "Cipher Stone"
+        case .eventRibbon:
+            return "Event Ribbon"
+        case .upgradeCard:
+            return "Upgrade Card"
+        case .weeklyTrail:
+            return "Weekly Trail"
+        case .vitalGlow:
+            return "Vital Glow"
+        }
+    }
+
+    var shortLabel: String {
+        switch self {
+        case .helloSpark:
+            return "Hi"
+        case .snackHeart:
+            return "Sn"
+        case .studyBell:
+            return "St"
+        case .trailMap:
+            return "Map"
+        case .restNest:
+            return "Nap"
+        case .playBolt:
+            return "Run"
+        case .focusCharm:
+            return "Do"
+        case .cipherStone:
+            return "Cy"
+        case .eventRibbon:
+            return "Ev"
+        case .upgradeCard:
+            return "Up"
+        case .weeklyTrail:
+            return "Wk"
+        case .vitalGlow:
+            return "All"
+        }
+    }
+
+    var unlockLine: String {
+        switch self {
+        case .helloSpark:
+            return "It recognizes your daily hello."
+        case .snackHeart:
+            return "It trusts care as a snack ritual."
+        case .studyBell:
+            return "It keeps your study voice in the album."
+        case .trailMap:
+            return "It knows where adventure starts."
+        case .restNest:
+            return "It learned that rest is allowed."
+        case .playBolt:
+            return "It saved a happy movement loop."
+        case .focusCharm:
+            return "It can sit beside a task without rushing."
+        case .cipherStone:
+            return "It stores one tiny solved secret."
+        case .eventRibbon:
+            return "It remembers today's special activity."
+        case .upgradeCard:
+            return "It knows its kit can grow."
+        case .weeklyTrail:
+            return "It can see the week becoming a path."
+        case .vitalGlow:
+            return "All four care vitals glowed at once."
+        }
+    }
+
+    var spriteRequestName: String {
+        switch self {
+        case .helloSpark:
+            return "pet-{stage}-charm-hello-spark.png"
+        case .snackHeart:
+            return "pet-{stage}-charm-snack-heart.png"
+        case .studyBell:
+            return "pet-{stage}-charm-study-bell.png"
+        case .trailMap:
+            return "pet-{stage}-charm-trail-map.png"
+        case .restNest:
+            return "pet-{stage}-charm-rest-nest.png"
+        case .playBolt:
+            return "pet-{stage}-charm-play-bolt.png"
+        case .focusCharm:
+            return "pet-{stage}-charm-focus-charm.png"
+        case .cipherStone:
+            return "pet-{stage}-charm-cipher-stone.png"
+        case .eventRibbon:
+            return "pet-{stage}-charm-event-ribbon.png"
+        case .upgradeCard:
+            return "pet-{stage}-charm-upgrade-card.png"
+        case .weeklyTrail:
+            return "pet-{stage}-charm-weekly-trail.png"
+        case .vitalGlow:
+            return "pet-{stage}-charm-vital-glow.png"
+        }
+    }
+
+    static func summary(mask: Int) -> String {
+        let count = allCases.filter { mask & $0.rawValue != 0 }.count
+        let next = allCases.first { mask & $0.rawValue == 0 }
+        return "Charms \(count)/\(allCases.count) · next \(next?.title ?? "album complete")"
+    }
+}
+
 enum PetSeasonEvent: Int, CaseIterable {
     case sparkPicnic = 1
     case studyParade = 2

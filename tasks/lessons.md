@@ -223,3 +223,11 @@ User clarified that the model itself should say "pika pika" in text and voice.
 **Rule:** assistant replies, lesson feedback, and pet actions should use a
 single guarded catchphrase wrapper and trigger the native pika-like voice cue
 when sound is enabled.
+
+## 2026-06-13 — Pet loops need keepsakes, not only payouts
+The broader pet fantasy needs visible proof of shared moments, similar to how
+viral daily games make collections and albums feel worth returning to.
+**Rule:** important actions should unlock collectible care charms with journal
+receipts and sprite requests, so petting, studying, adventuring, resting,
+playing, focusing, solving, events, upgrades, and weekly care become album
+progress rather than transient text.

@@ -211,6 +211,8 @@ The new layer should add:
   generous passive Sparks.
 - Care vitals that drift over time: Snack, Rest, Play, and Focus, each
   refilled by the action that naturally satisfies it.
+- A collectible care-charm album so core actions leave visible keepsakes, not
+  only temporary reward text.
 - A visible and spoken pet catchphrase: "Pika pika!" for high-signal reactions.
 - A richer sprite request queue for the user to generate.
 
@@ -233,6 +235,9 @@ The native macOS companion now has the first version of the loop:
   behavior effects, and matching sprite requests for all eight cards.
 - Snack, Rest, Play, and Focus vitals now persist, gently decay after time
   away, refill from matching pet actions, and surface in the native journal.
+- A Care Charms album now unlocks collectible keepsakes for hello, snack care,
+  study, adventure, rest, play, focus, cipher, event, upgrade, weekly trail,
+  and all-vitals-glowing moments.
 - Sparks earned from petting, asking, language practice, and combo completion.
 - Energy that recharges over time.
 - Passive Sparks collected after time away.
