@@ -12,17 +12,20 @@ the work cleanly: the model writes vivid prose and choices, while a deterministi
 engine owns state, HP, inventory, validation, retries, and endings. The demo also
 ships a native macOS companion that floats above the desktop. Pikachu starts as
 a pet-only overlay, opens into chat and care controls on click, gives contextual
-hints, plays original chirps, tracks Bond HP/Joy, and teaches beginner Spanish
-and Mandarin with 100 words plus 100 sentences per language using local macOS
-TTS.
+hints, plays original chirps, tracks Bond HP/Joy, runs a Sparks/Energy/daily
+combo loop, collects passive Sparks while you are away, upgrades simple care
+items, and teaches beginner Spanish and Mandarin with 100 words plus 100
+sentences per language using local macOS TTS.
 
 ## Consumer Explanation
 
 Imagine a tiny adventure game that comes with a pet on your desktop. You play a
 short quest, and the pet watches along, reacts to what happens, gives you hints,
-and gets happier when you check in each day. It can also teach a few Spanish or
-Mandarin phrases, say them out loud slowly, and quiz you. The technical trick is
-that the AI only writes the magical parts; the game engine keeps the rules fair.
+and gets happier when you check in each day. It earns Sparks, spends energy,
+keeps a daily combo, and grows from a tiny spark into a stronger buddy as you
+return. It can also teach Spanish or Mandarin phrases, say them out loud slowly,
+and quiz you. The technical trick is that the AI only writes the magical parts;
+the game engine keeps the rules fair.
 
 ## Judge Framing
 
@@ -58,7 +61,9 @@ Target length: 90-120 seconds.
 >
 > I can ask for a hint, and the companion answers using the current adventure
 > state. I can pet it once per day to earn Bond HP. It chirps, reacts, and goes
-> back to pet-only mode when I minimize it.
+> back to pet-only mode when I minimize it. The pet also has a lightweight game
+> loop: Sparks, energy, a daily combo, passive Sparks while I am away, and small
+> upgrades that make it feel more like a real companion than a static mascot.
 >
 > I also added a language coach. Spanish and Mandarin each ship with 100 words
 > and 100 sentences. The companion speaks phrases with local macOS voices, slows

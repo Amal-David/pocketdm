@@ -177,6 +177,21 @@ final class DragonOverlayModel: ObservableObject {
     private static let happinessKey = "PocketDMCompanion.happiness"
     private static let petStreakKey = "PocketDMCompanion.petStreak"
     private static let lastPetDayKey = "PocketDMCompanion.lastPetDay"
+    private static let sparkDustKey = "PocketDMCompanion.sparkDust"
+    private static let energyKey = "PocketDMCompanion.energy"
+    private static let lastEnergyAtKey = "PocketDMCompanion.lastEnergyAt"
+    private static let lastCheerAtKey = "PocketDMCompanion.lastCheerAt"
+    private static let cheerIndexKey = "PocketDMCompanion.cheerIndex"
+    private static let dailyComboDateKey = "PocketDMCompanion.dailyComboDate"
+    private static let dailyComboMaskKey = "PocketDMCompanion.dailyComboMask"
+    private static let passiveSparkAtKey = "PocketDMCompanion.passiveSparkAt"
+    private static let snackLevelKey = "PocketDMCompanion.snackLevel"
+    private static let lessonLevelKey = "PocketDMCompanion.lessonLevel"
+    private static let questLevelKey = "PocketDMCompanion.questLevel"
+    private static let maxEnergy = 5
+    private static let energyRechargeSeconds: TimeInterval = 30 * 60
+    private static let passiveSparkSeconds: TimeInterval = 15 * 60
+    private static let cheerCooldownSeconds: TimeInterval = 2 * 60 * 60
     private static let dayFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.calendar = Calendar(identifier: .gregorian)
@@ -197,6 +212,14 @@ final class DragonOverlayModel: ObservableObject {
     @Published var happiness = UserDefaults.standard.object(forKey: DragonOverlayModel.happinessKey) as? Int ?? 3
     @Published var petStreak = UserDefaults.standard.object(forKey: DragonOverlayModel.petStreakKey) as? Int ?? 0
     @Published var lastPetDay = UserDefaults.standard.string(forKey: DragonOverlayModel.lastPetDayKey) ?? ""
+    @Published var sparkDust = UserDefaults.standard.object(forKey: DragonOverlayModel.sparkDustKey) as? Int ?? 12
+    @Published var energy = UserDefaults.standard.object(forKey: DragonOverlayModel.energyKey) as? Int ?? DragonOverlayModel.maxEnergy
+    @Published var dailyComboDate = UserDefaults.standard.string(forKey: DragonOverlayModel.dailyComboDateKey) ?? ""
+    @Published var dailyComboMask = UserDefaults.standard.object(forKey: DragonOverlayModel.dailyComboMaskKey) as? Int ?? 0
+    @Published var snackLevel = UserDefaults.standard.object(forKey: DragonOverlayModel.snackLevelKey) as? Int ?? 0
+    @Published var lessonLevel = UserDefaults.standard.object(forKey: DragonOverlayModel.lessonLevelKey) as? Int ?? 0
+    @Published var questLevel = UserDefaults.standard.object(forKey: DragonOverlayModel.questLevelKey) as? Int ?? 0
+    @Published var cheerBubble: String?
 
     let languageCoach = LanguageCoachStore()
 
@@ -204,10 +227,37 @@ final class DragonOverlayModel: ObservableObject {
     private let launcher: GameLauncher
     private let soundPlayer = PetSoundPlayer()
     private var moodTask: Task<Void, Never>?
+    private var energyTask: Task<Void, Never>?
+    private var cheerTask: Task<Void, Never>?
+    private var lastEnergyAt = UserDefaults.standard.double(forKey: DragonOverlayModel.lastEnergyAtKey)
+    private var passiveSparkAt = UserDefaults.standard.double(forKey: DragonOverlayModel.passiveSparkAtKey)
+    private let cheerLines = [
+        "Tiny spark ready. Want one brave click?",
+        "How are you doing? I saved you a 60-second quest.",
+        "Quick check-in: breathe, stretch, then ask for a hint?",
+        "A little practice spark is waiting.",
+        "Your buddy is awake. Pet once to keep the streak alive."
+    ]
 
     init(client: PocketDMClient, launcher: GameLauncher) {
         self.client = client
         self.launcher = launcher
+        if lastEnergyAt == 0 {
+            lastEnergyAt = Date().timeIntervalSince1970
+            UserDefaults.standard.set(lastEnergyAt, forKey: Self.lastEnergyAtKey)
+        }
+        if passiveSparkAt == 0 {
+            passiveSparkAt = Date().timeIntervalSince1970
+            UserDefaults.standard.set(passiveSparkAt, forKey: Self.passiveSparkAtKey)
+        }
+        syncDailyCombo()
+        rechargeEnergy()
+        let collected = collectPassiveSparks()
+        if collected > 0 {
+            message = "Welcome back. Pikachu gathered \(collected) Sparks while you were away."
+        }
+        startEnergyLoop()
+        startCheerLoop()
     }
 
     func refreshHealth() async {
@@ -230,6 +280,12 @@ final class DragonOverlayModel: ObservableObject {
     func setMinimized(_ value: Bool) {
         guard minimized != value else { return }
         minimized = value
+        if !value {
+            let collected = collectPassiveSparks()
+            if collected > 0 {
+                message = "Welcome back. Pikachu gathered \(collected) passive Sparks."
+            }
+        }
         UserDefaults.standard.set(value, forKey: Self.petOnlyKey)
         play(value ? .minimize : .open)
     }
@@ -263,6 +319,7 @@ final class DragonOverlayModel: ObservableObject {
     func hyper() {
         message = "Pikachu is buzzing with energy. Great moment to ask for a hint or practice a phrase."
         lastRequest = "Mood"
+        earnSparkDust(1)
         play(.hyper)
         setMood(.hyper, duration: 1.5)
     }
@@ -272,6 +329,7 @@ final class DragonOverlayModel: ObservableObject {
         if learningMode == .lesson {
             lastRequest = "Learn"
             message = "Lesson mode opened. Pick a pack, listen once, slow it down, then quiz for Joy."
+            markCombo(.learn)
             play(.open)
             languageCoach.speakCurrent()
             setMood(.happy, duration: 1.2)
@@ -287,9 +345,11 @@ final class DragonOverlayModel: ObservableObject {
         message = reward.message
         if reward.correct {
             happiness = min(5, happiness + 1)
+            earnSparkDust(reward.dailyBond ? 8 : 3)
             if reward.dailyBond {
                 companionHP = min(10, companionHP + 1)
             }
+            markCombo(.learn)
             persistCare()
             play(reward.dailyBond ? .pet : .happy)
             setMood(.happy, duration: 1.4)
@@ -301,17 +361,24 @@ final class DragonOverlayModel: ObservableObject {
 
     func petDaily(requestLabel: String = "Daily pet") {
         lastRequest = requestLabel
+        cheerBubble = nil
+        rechargeEnergy()
         let today = Self.dayFormatter.string(from: Date())
         if lastPetDay == today {
             happiness = min(5, happiness + 1)
-            message = "Already cared for today. Pikachu still leans in. Joy +1."
+            let energyBonus = spendEnergy() ? " Energy -1." : " Energy is recharging."
+            earnSparkDust(2)
+            message = "Already cared for today. Pikachu still leans in. Joy +1, Sparks +2.\(energyBonus)"
         } else {
             companionHP = min(10, companionHP + 1)
             happiness = 5
             petStreak += 1
             lastPetDay = today
-            message = "Daily care complete. Pikachu brightened up: +1 Bond HP and Joy refilled."
+            _ = spendEnergy()
+            earnSparkDust(15)
+            message = "Daily care complete. Bond HP +1, Joy refilled, Sparks +15. \(growthStage.rewardLine)"
         }
+        markCombo(.pet)
         persistCare()
         play(.pet)
         setMood(.happy, duration: 2.2)
@@ -331,6 +398,10 @@ final class DragonOverlayModel: ObservableObject {
         do {
             message = try await client.assistantReply(for: prompt)
             serverLine = "PocketDM companion online"
+            earnSparkDust(1)
+            if isHintPrompt(prompt) {
+                markCombo(.hint)
+            }
             play(.reply)
             setMood(.happy, duration: 1.5)
         } catch {
@@ -339,6 +410,54 @@ final class DragonOverlayModel: ObservableObject {
             play(.nap)
             setMood(.nap, duration: 2.4)
         }
+    }
+
+    func acceptCheerBubble() {
+        let prompt = cheerBubble ?? "Check in"
+        cheerBubble = nil
+        lastRequest = "Cheer"
+        happiness = min(5, happiness + 1)
+        earnSparkDust(3)
+        message = "\(prompt) Pikachu turns it into Joy +1 and Sparks +3. Open the game for one tiny quest."
+        UserDefaults.standard.set(Date().timeIntervalSince1970, forKey: Self.lastCheerAtKey)
+        persistCare()
+        play(.reply)
+        setMood(.hyper, duration: 1.6)
+        setMinimized(false)
+    }
+
+    func dismissCheerBubble() {
+        cheerBubble = nil
+        UserDefaults.standard.set(Date().timeIntervalSince1970, forKey: Self.lastCheerAtKey)
+        play(.minimize)
+    }
+
+    func buyNextUpgrade() {
+        syncDailyCombo()
+        let candidate = nextUpgradeCandidate
+        guard sparkDust >= candidate.cost else {
+            lastRequest = "Upgrade"
+            message = "\(candidate.name) needs \(candidate.cost) Sparks. You have \(sparkDust). Finish today's combo or pet again."
+            play(.alert)
+            setMood(.alert, duration: 1.1)
+            return
+        }
+
+        sparkDust -= candidate.cost
+        switch candidate.kind {
+        case .snack:
+            snackLevel += 1
+        case .lesson:
+            lessonLevel += 1
+        case .quest:
+            questLevel += 1
+        }
+
+        lastRequest = "Upgrade"
+        message = "\(candidate.name) upgraded. Passive Sparks now +\(passiveSparkRate) every 15 minutes."
+        persistCare()
+        play(.happy)
+        setMood(.happy, duration: 1.4)
     }
 
     func setMood(_ next: PetMood, duration: TimeInterval? = nil) {
@@ -362,7 +481,27 @@ final class DragonOverlayModel: ObservableObject {
     }
 
     var careLine: String {
-        "Bond HP \(companionHP)/10 · Joy \(happiness)/5 · Day \(petStreak)"
+        "\(growthStage.title) · HP \(companionHP)/10 · Joy \(happiness)/5"
+    }
+
+    var economyLine: String {
+        "Sparks \(sparkDust) · Energy \(energy)/\(Self.maxEnergy) · Streak \(petStreak)d"
+    }
+
+    var comboLine: String {
+        let pieces = PetComboAction.dailyCombo.map { action in
+            "\(action.label) \(dailyComboMask & action.rawValue == 0 ? "○" : "✓")"
+        }
+        return "Combo " + pieces.joined(separator: " · ")
+    }
+
+    var upgradeLine: String {
+        let next = nextUpgradeCandidate
+        return "Next \(next.shortName) \(next.level + 1): \(next.cost) Sparks"
+    }
+
+    var petScale: CGFloat {
+        growthStage.spriteScale
     }
 
     private func play(_ sound: PetSound) {
@@ -374,11 +513,283 @@ final class DragonOverlayModel: ObservableObject {
         UserDefaults.standard.set(happiness, forKey: Self.happinessKey)
         UserDefaults.standard.set(petStreak, forKey: Self.petStreakKey)
         UserDefaults.standard.set(lastPetDay, forKey: Self.lastPetDayKey)
+        UserDefaults.standard.set(sparkDust, forKey: Self.sparkDustKey)
+        UserDefaults.standard.set(energy, forKey: Self.energyKey)
+        UserDefaults.standard.set(lastEnergyAt, forKey: Self.lastEnergyAtKey)
+        UserDefaults.standard.set(dailyComboDate, forKey: Self.dailyComboDateKey)
+        UserDefaults.standard.set(dailyComboMask, forKey: Self.dailyComboMaskKey)
+        UserDefaults.standard.set(passiveSparkAt, forKey: Self.passiveSparkAtKey)
+        UserDefaults.standard.set(snackLevel, forKey: Self.snackLevelKey)
+        UserDefaults.standard.set(lessonLevel, forKey: Self.lessonLevelKey)
+        UserDefaults.standard.set(questLevel, forKey: Self.questLevelKey)
     }
 
     private func handlesCare(_ prompt: String) -> Bool {
         let lowered = prompt.lowercased()
-        return lowered.contains("pet") || lowered.contains("happy") || lowered.contains("care")
+        return lowered.contains("pet")
+            || lowered.contains("happy")
+            || lowered.contains("care")
+            || lowered.contains("check in")
+            || lowered.contains("check-in")
+    }
+
+    private func isHintPrompt(_ prompt: String) -> Bool {
+        let lowered = prompt.lowercased()
+        return lowered.contains("hint")
+            || lowered.contains("help")
+            || lowered.contains("status")
+            || lowered.contains("what next")
+    }
+
+    private var growthStage: PetGrowthStage {
+        PetGrowthStage(companionHP: companionHP, sparkDust: sparkDust)
+    }
+
+    private func spendEnergy() -> Bool {
+        rechargeEnergy()
+        guard energy > 0 else { return false }
+        energy -= 1
+        persistCare()
+        return true
+    }
+
+    private func earnSparkDust(_ amount: Int) {
+        sparkDust = min(999, sparkDust + amount)
+        persistCare()
+    }
+
+    private var passiveSparkRate: Int {
+        max(1, 1 + snackLevel + lessonLevel + questLevel)
+    }
+
+    private func collectPassiveSparks() -> Int {
+        let now = Date().timeIntervalSince1970
+        let elapsed = now - passiveSparkAt
+        guard elapsed >= Self.passiveSparkSeconds else { return 0 }
+        let ticks = Int(elapsed / Self.passiveSparkSeconds)
+        let earned = min(80, ticks * passiveSparkRate)
+        guard earned > 0 else { return 0 }
+        sparkDust = min(999, sparkDust + earned)
+        passiveSparkAt += Double(ticks) * Self.passiveSparkSeconds
+        if sparkDust >= 999 {
+            passiveSparkAt = now
+        }
+        persistCare()
+        return earned
+    }
+
+    private func syncDailyCombo() {
+        let today = Self.dayFormatter.string(from: Date())
+        guard dailyComboDate != today else { return }
+        dailyComboDate = today
+        dailyComboMask = 0
+        persistCare()
+    }
+
+    private func markCombo(_ action: PetComboAction) {
+        syncDailyCombo()
+        let wasComplete = isDailyComboComplete
+        dailyComboMask |= action.rawValue
+        if !wasComplete, isDailyComboComplete {
+            sparkDust = min(999, sparkDust + 25)
+            happiness = min(5, happiness + 1)
+            message += " Daily combo complete: Joy +1 and Sparks +25."
+            play(.happy)
+            setMood(.hyper, duration: 1.8)
+        }
+        persistCare()
+    }
+
+    private var isDailyComboComplete: Bool {
+        PetComboAction.dailyCombo.allSatisfy { dailyComboMask & $0.rawValue != 0 }
+    }
+
+    private var nextUpgradeCandidate: PetUpgradeCandidate {
+        [
+            PetUpgradeCandidate(kind: .snack, level: snackLevel),
+            PetUpgradeCandidate(kind: .lesson, level: lessonLevel),
+            PetUpgradeCandidate(kind: .quest, level: questLevel)
+        ].min { $0.cost < $1.cost } ?? PetUpgradeCandidate(kind: .snack, level: snackLevel)
+    }
+
+    private func rechargeEnergy() {
+        let now = Date().timeIntervalSince1970
+        let elapsed = now - lastEnergyAt
+        guard elapsed >= Self.energyRechargeSeconds else { return }
+        let restored = Int(elapsed / Self.energyRechargeSeconds)
+        guard restored > 0 else { return }
+        energy = min(Self.maxEnergy, energy + restored)
+        lastEnergyAt += Double(restored) * Self.energyRechargeSeconds
+        if energy == Self.maxEnergy {
+            lastEnergyAt = now
+        }
+        persistCare()
+    }
+
+    private func startEnergyLoop() {
+        energyTask?.cancel()
+        energyTask = Task { [weak self] in
+            while !Task.isCancelled {
+                try? await Task.sleep(nanoseconds: 60_000_000_000)
+                if Task.isCancelled { return }
+                await MainActor.run {
+                    self?.rechargeEnergy()
+                    _ = self?.collectPassiveSparks()
+                }
+            }
+        }
+    }
+
+    private func startCheerLoop() {
+        cheerTask?.cancel()
+        cheerTask = Task { [weak self] in
+            try? await Task.sleep(nanoseconds: 6_000_000_000)
+            while !Task.isCancelled {
+                await MainActor.run {
+                    self?.showCheerIfReady()
+                }
+                try? await Task.sleep(nanoseconds: 15 * 60_000_000_000)
+            }
+        }
+    }
+
+    private func showCheerIfReady() {
+        guard minimized, cheerBubble == nil else { return }
+        let defaults = UserDefaults.standard
+        let now = Date().timeIntervalSince1970
+        let lastCheerAt = defaults.double(forKey: Self.lastCheerAtKey)
+        guard lastCheerAt == 0 || now - lastCheerAt >= Self.cheerCooldownSeconds else { return }
+
+        let index = defaults.integer(forKey: Self.cheerIndexKey) % cheerLines.count
+        cheerBubble = cheerLines[index]
+        defaults.set(index + 1, forKey: Self.cheerIndexKey)
+        defaults.set(now, forKey: Self.lastCheerAtKey)
+        play(.happy)
+        setMood(.hyper, duration: 1.2)
+    }
+}
+
+enum PetGrowthStage {
+    case tiny
+    case buddy
+    case guardian
+
+    init(companionHP: Int, sparkDust: Int) {
+        if companionHP >= 8 || sparkDust >= 180 {
+            self = .guardian
+        } else if companionHP >= 5 || sparkDust >= 70 {
+            self = .buddy
+        } else {
+            self = .tiny
+        }
+    }
+
+    var title: String {
+        switch self {
+        case .tiny:
+            return "Tiny Spark"
+        case .buddy:
+            return "Trail Buddy"
+        case .guardian:
+            return "Storm Buddy"
+        }
+    }
+
+    var spriteScale: CGFloat {
+        switch self {
+        case .tiny:
+            return 0.9
+        case .buddy:
+            return 1.0
+        case .guardian:
+            return 1.08
+        }
+    }
+
+    var rewardLine: String {
+        switch self {
+        case .tiny:
+            return "It is still tiny, but the bond is growing."
+        case .buddy:
+            return "It trusts you enough to travel beside you."
+        case .guardian:
+            return "It is starting to feel like a true guardian."
+        }
+    }
+}
+
+enum PetComboAction: Int, CaseIterable {
+    case pet = 1
+    case hint = 2
+    case learn = 4
+
+    static let dailyCombo: [PetComboAction] = [.pet, .hint, .learn]
+
+    var label: String {
+        switch self {
+        case .pet:
+            return "Pet"
+        case .hint:
+            return "Hint"
+        case .learn:
+            return "Learn"
+        }
+    }
+}
+
+enum PetUpgradeKind {
+    case snack
+    case lesson
+    case quest
+
+    var baseCost: Int {
+        switch self {
+        case .snack:
+            return 20
+        case .lesson:
+            return 28
+        case .quest:
+            return 34
+        }
+    }
+
+    var name: String {
+        switch self {
+        case .snack:
+            return "Snack Bowl"
+        case .lesson:
+            return "Study Bell"
+        case .quest:
+            return "Quest Map"
+        }
+    }
+
+    var shortName: String {
+        switch self {
+        case .snack:
+            return "Snack"
+        case .lesson:
+            return "Study"
+        case .quest:
+            return "Quest"
+        }
+    }
+}
+
+struct PetUpgradeCandidate {
+    let kind: PetUpgradeKind
+    let level: Int
+
+    var cost: Int {
+        kind.baseCost * (level + 1)
+    }
+
+    var name: String {
+        kind.name
+    }
+
+    var shortName: String {
+        kind.shortName
     }
 }
 
@@ -554,15 +965,55 @@ struct DragonOverlayView: View {
         ZStack(alignment: .topTrailing) {
             Button {
                 withAnimation(.spring(response: 0.26, dampingFraction: 0.76)) {
-                    model.setMinimized(false)
+                    if model.cheerBubble == nil {
+                        model.setMinimized(false)
+                    } else {
+                        model.acceptCheerBubble()
+                    }
                 }
             } label: {
-                AnimatedPetSprite(mood: model.mood, size: petHovering ? 166 : 158)
+                AnimatedPetSprite(mood: model.mood, size: CGFloat(petHovering ? 166 : 158) * model.petScale)
                     .shadow(color: .black.opacity(petHovering ? 0.22 : 0.14), radius: petHovering ? 16 : 10, y: 7)
             }
             .buttonStyle(.plain)
             .simultaneousGesture(dragGesture)
             .accessibilityLabel("Open Pikachu chat")
+
+            if let cheerBubble = model.cheerBubble {
+                HStack(alignment: .top, spacing: 5) {
+                    Button {
+                        model.acceptCheerBubble()
+                    } label: {
+                        Text(cheerBubble)
+                            .font(.system(size: 11, weight: .black, design: .rounded))
+                            .foregroundStyle(Color.black)
+                            .lineLimit(2)
+                            .multilineTextAlignment(.leading)
+                            .padding(.horizontal, 9)
+                            .padding(.vertical, 7)
+                            .frame(width: 139, alignment: .leading)
+                            .background(Color.ivory, in: RoundedRectangle(cornerRadius: 8))
+                            .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.gold.opacity(0.9), lineWidth: 1))
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Open Pikachu check-in")
+
+                    Button {
+                        model.dismissCheerBubble()
+                    } label: {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 10, weight: .black))
+                            .foregroundStyle(Color.black.opacity(0.78))
+                            .frame(width: 22, height: 22)
+                            .background(Color.ivory.opacity(0.92), in: Circle())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Dismiss Pikachu check-in")
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .offset(x: 2, y: 0)
+                .transition(.move(edge: .top).combined(with: .opacity))
+            }
 
             if petHovering {
                 Button {
@@ -591,7 +1042,7 @@ struct DragonOverlayView: View {
 
             HStack(alignment: .top, spacing: 12) {
                 VStack(spacing: 8) {
-                    AnimatedPetSprite(mood: model.mood, size: 176)
+                    AnimatedPetSprite(mood: model.mood, size: 176 * model.petScale)
                     careStatusPanel
                 }
 
@@ -615,10 +1066,16 @@ struct DragonOverlayView: View {
                             Button("Hint") { Task { await model.ask("hint") } }
                                 .buttonStyle(DragonButtonStyle(kind: .secondary))
                                 .disabled(model.busy)
-                            Button("Open PocketDM") {
+                            Button("Upgrade") {
+                                model.buyNextUpgrade()
+                            }
+                            .buttonStyle(DragonButtonStyle(kind: .secondary))
+                            .disabled(model.busy)
+                            Button("Open") {
                                 model.openGame()
                             }
                             .buttonStyle(DragonButtonStyle(kind: .secondary))
+                            .accessibilityLabel("Open PocketDM")
                         }
                     }
                 }
@@ -643,10 +1100,25 @@ struct DragonOverlayView: View {
                 .font(.system(size: 11, weight: .black, design: .rounded))
                 .foregroundStyle(Color.gold)
                 .lineLimit(2)
+            Text(model.economyLine)
+                .font(.system(size: 10, weight: .black, design: .rounded))
+                .foregroundStyle(Color.ivory.opacity(0.76))
+                .lineLimit(1)
+                .minimumScaleFactor(0.76)
+            Text(model.comboLine)
+                .font(.system(size: 9, weight: .black, design: .rounded))
+                .foregroundStyle(Color.ivory.opacity(0.74))
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+            Text(model.upgradeLine)
+                .font(.system(size: 9, weight: .black, design: .rounded))
+                .foregroundStyle(Color.ivory.opacity(0.68))
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
         }
         .multilineTextAlignment(.center)
         .frame(width: 170)
-        .frame(minHeight: 50)
+        .frame(minHeight: 82)
         .padding(.vertical, 7)
         .padding(.horizontal, 8)
         .background(.black.opacity(0.58), in: RoundedRectangle(cornerRadius: 7))

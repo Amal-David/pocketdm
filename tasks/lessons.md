@@ -108,3 +108,10 @@ remaining line was baked into the generated source-sheet contour, not SwiftUI.
 **Rule:** keep a repeatable source-sheet rebuild script, segment from the
 high-resolution generated sheets, and verify on a white background. Do not keep
 patching already-extracted strips when the contour is part of the pixels.
+
+## 2026-06-12 — Desktop pets need loops, not just moods
+User asked for a real pet system with lore, daily care, growth, proactive cheer,
+and hamster-style engagement mechanics.
+**Rule:** treat the native companion as the product surface: pet-only default,
+click-to-expand utility, gentle check-ins, visible rewards, energy/progression,
+and explicit sprite requests for every new behavior before polishing copy.
