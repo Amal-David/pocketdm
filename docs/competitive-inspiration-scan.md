@@ -21,7 +21,42 @@ Sources sampled:
 - Dempster Court: https://huggingface.co/blog/build-small-hackathon/dempster-court
 - Lolaby: https://huggingface.co/blog/build-small-hackathon/lolaby-blog
 - PawMap: https://huggingface.co/blog/build-small-hackathon/pawmap
+- Naija Solar AI: https://huggingface.co/blog/build-small-hackathon/naija-solar-ai
+- CraftPilot: https://huggingface.co/blog/build-small-hackathon/craftpilot
+- Case Zero: https://huggingface.co/blog/build-small-hackathon/case-zero
+- Instant Inventory: https://huggingface.co/blog/build-small-hackathon/instant-inventory
 - Hamster-style loop references: https://www.withtap.com/blog/how-to-tap-into-hamster-kombat-daily-combo-cards, https://www.binance.com/en/square/post/13528182500593, https://web3.gate.com/en/crypto-wiki/article/daily-hamster-kombat-combo-card-guide-note-i-noticed-you-provided-russian-text-to-be-translated-while-the-initial-instructions-mentioned-chinese-economic-commentary-i-provided-the-direct-translation-as-requested-please-let-me-know-if-you-need-any-adjustme
+
+## Fresh Article Feed Sweep
+
+The useful competitive lesson from the Hugging Face article feed is that the
+best entries sell one repeatable feeling, not a feature list.
+
+- Compliment Forest, Kintsugi Garden, and Mind of Tashi use ritual language:
+  clearing, repair, field notes, and emotional recovery. PocketDM should make
+  every pet action feel like a little care ritual rather than a utility click.
+- Tutori and Sema make tutoring concrete through feedback loops. PocketDM's
+  language mode should stay toy-like: hear, repeat, quiz, reward, and return to
+  the pet.
+- Dempster Court, DOD, and the wood-sim style submissions prove that tiny
+  models feel richer when state is visible. PocketDM should surface HP, Sparks,
+  Growth Stage, mood, and daily combo receipts in the native overlay.
+- Naija Solar, CraftPilot, and Instant Inventory show the value of narrow,
+  real-world scenarios. PocketDM should not pitch "AI chat"; it should pitch a
+  desktop adventure buddy that nudges, teaches, and helps with the current
+  quest.
+- Lolaby and other audio-forward ideas reinforce that sound has to be part of
+  the interaction design. Every meaningful pet moment should have a short
+  original chirp, but mute must remain one click away.
+
+Immediate product translation:
+
+- Add rotating daily combo decks instead of one static combo.
+- Add visible pet feelings and one short lore line.
+- Add more upgrade types so the economy can affect behavior, not just score.
+- Ask for sprite sheets by state matrix: growth stage plus feeling plus action.
+- Keep the default view pet-only, then reveal utility after the user clicks the
+  character.
 
 ## What Other Submissions Teach Us
 
@@ -145,12 +180,11 @@ The current native companion already has:
 
 The new layer should add:
 
-- Sparks and energy.
-- Proactive cheer bubbles.
-- Growth stages.
-- Daily combo tracking.
-- Passive sparks while away.
-- Upgrade cards or unlocks once more sprites exist.
+- Rotating daily combo tracking.
+- Pet feelings that are visible enough to drive sprite selection.
+- Lore receipts that make each stage feel like a relationship, not a number.
+- Upgrade cards that change behavior: faster check-ins, better comeback
+  rewards, stronger learning rewards, and more generous passive Sparks.
 - A richer sprite request queue for the user to generate.
 
 ## Current Native Checkpoint
@@ -162,10 +196,13 @@ The native macOS companion now has the first version of the loop:
 - Sparks earned from petting, asking, language practice, and combo completion.
 - Energy that recharges over time.
 - Passive Sparks collected after time away.
-- A daily combo: Pet + Hint + Learn.
-- A rotating Upgrade button that spends Sparks on Snack Bowl, Study Bell, and
-  Quest Map levels.
+- Rotating daily combos such as Pet + Hint + Learn, Pet + Hyper + Open, and
+  Learn + Hint + Upgrade.
+- A rotating Upgrade button that spends Sparks on Snack Bowl, Study Bell, Quest
+  Map, Cozy Nest, and Cheer Signal levels.
 - Growth stages computed from Bond HP and Sparks.
+- Visible feelings such as Eager, Proud, Snacky, Sleepy, Curious, and Lonely.
+- A short lore line inside the care panel.
 
 This is not the full final pet fantasy yet. It is the backbone that lets the
 next sprite sheets matter: new art can now map to real emotions, upgrades,

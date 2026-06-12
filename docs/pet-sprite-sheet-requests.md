@@ -35,6 +35,14 @@ Generate these first. They unlock the most visible upgrade with the least code:
    - Glow, jump, celebratory flourish.
 8. `pet-buddy-nap.png`
    - Soft sleep loop, breathing, tiny dream mark.
+9. `pet-buddy-combo-complete.png`
+   - Proud bounce, cheek glow, tiny reward sparkle.
+10. `pet-buddy-comeback.png`
+   - Notices the user after being away, looks relieved, waves gently.
+11. `pet-buddy-upgrade-success.png`
+   - Finds a little charm/card, celebrates, then returns to idle.
+12. `pet-buddy-upgrade-denied.png`
+   - Checks empty paws, encouraging shrug, no shame.
 
 ## Growth Stages
 
@@ -42,11 +50,13 @@ Each stage should share the same personality but visibly grow:
 
 - Baby / Tiny Spark
   - Smaller body, rounder, extra curious, bigger eyes.
-- Buddy / Trail Buddy
+- Pocket Pal
+  - Still small, but clearly recognizes the user and reacts faster.
+- Trail Buddy
   - Current readable mascot size, energetic and expressive.
-- Teen / Storm Scout
+- Storm Scout
   - Taller, quicker movements, more confident poses.
-- Evolved / Storm Buddy
+- Storm Guardian
   - Heroic but still cute, stronger electric effects, protective stance.
 
 For each stage, request these sheets:
@@ -63,6 +73,51 @@ For each stage, request these sheets:
 - Hungry.
 - Tired.
 - Affection/petting.
+
+## Stage And Feeling Matrix
+
+This is the comprehensive next-generation request set. Generate it over time,
+not all at once. Each row should be one 12-frame horizontal strip per stage.
+
+Stages:
+
+- `tiny-spark`
+- `pocket-pal`
+- `trail-buddy`
+- `storm-scout`
+- `storm-guardian`
+
+Feelings:
+
+- `bright`
+  - Fresh idle, curious blink, gentle smile.
+- `eager`
+  - Hyperactive default: looking down, looking up, noticing user, smiling.
+- `proud`
+  - Combo complete, tiny chest-out victory, cheek glow.
+- `snacky`
+  - Low energy, hungry, hopeful look toward snack bowl.
+- `sleepy`
+  - Nap, slow breathing, soft wake-up.
+- `curious`
+  - Head tilt, listening, question mark energy without literal text.
+- `lonely`
+  - Soft sad posture, then warms up when user pets it.
+
+Minimum matrix:
+
+- `pet-{stage}-eager-idle-look-smile.png`
+- `pet-{stage}-proud-combo-complete.png`
+- `pet-{stage}-snacky-low-energy.png`
+- `pet-{stage}-sleepy-nap.png`
+- `pet-{stage}-curious-listen.png`
+- `pet-{stage}-lonely-comeback.png`
+
+Full matrix:
+
+- one strip for every stage x feeling pair above.
+- keep every strip transparent, same camera, same scale anchor, same foot
+  baseline, and no sticker outline.
 
 ## Core Actions
 
@@ -106,6 +161,27 @@ These are for the progression layer:
 - Rare reward.
 - Bond HP increase.
 - Joy refill.
+- Cheer Signal activated.
+- Cozy Nest comeback reward.
+- Quest Map points to adventure.
+- Study Bell lesson reward.
+- Snack Bowl energy refill.
+
+## Submission-Inspired Experience Sheets
+
+These come from the Build Small competitive scan and make PocketDM feel more
+like a living ritual:
+
+- Field-note idle.
+  - Pet studies the user's current quest like a tiny notebook companion.
+- Repair/comfort moment.
+  - Gentle reaction after a wrong answer or failed quest.
+- Tiny tutor moment.
+  - Pet listens, repeats, and nods through a language phrase.
+- Local-helper moment.
+  - Pet points to the next practical action, not a generic chat answer.
+- Audio reaction pose.
+  - Pet leans in before a chirp, TTS phrase, or message reply sound.
 
 ## Language Coach Sheets
 

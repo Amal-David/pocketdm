@@ -115,3 +115,16 @@ and hamster-style engagement mechanics.
 **Rule:** treat the native companion as the product surface: pet-only default,
 click-to-expand utility, gentle check-ins, visible rewards, energy/progression,
 and explicit sprite requests for every new behavior before polishing copy.
+
+## 2026-06-12 — Competitive scans should become systems, not moodboards
+User asked to read the Build Small submissions and derive inspiration from them.
+**Rule:** translate inspiration into product mechanics immediately: ritual copy,
+visible state receipts, short feedback loops, sound hooks, and a sprite matrix
+that maps growth stage plus feeling plus action into concrete assets.
+
+## 2026-06-12 — Transparent pet art cannot use black shadows on light desktops
+Visual verification showed the minimized pet still had a dark contour even after
+sprite cleanup because the SwiftUI image had a black shadow.
+**Rule:** for transparent desktop-pet sprites, avoid black silhouette shadows in
+pet-only mode; use no shadow or a non-dark glow only after checking on a white
+desktop.
