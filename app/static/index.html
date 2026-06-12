@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>PocketDM</title>
-    <link rel="stylesheet" href="/static/styles.css?v=20260612-audio1" />
+    <link rel="stylesheet" href="/static/styles.css?v=20260612-overlay1" />
   </head>
   <body>
     <main class="shell">
@@ -84,21 +84,41 @@
       </section>
     </main>
 
-    <section class="dragon-assistant" aria-label="Dragon assistant">
-      <div class="dragon-speech" id="dragon-speech">
-        I am Ember. Start a tale and I will read HP, inventory, and choices.
+    <section class="dragon-assistant" id="dragon-assistant" aria-label="Dragon assistant overlay">
+      <div class="dragon-shell">
+        <div class="dragon-handle" id="dragon-handle" role="toolbar" aria-label="Move dragon overlay">
+          <span class="dragon-handle-grip" aria-hidden="true"></span>
+          <span class="dragon-name">Ember</span>
+          <button
+            id="dragon-minimize"
+            class="dragon-minimize"
+            type="button"
+            aria-label="Minimize dragon overlay"
+            aria-expanded="true"
+            title="Minimize dragon overlay"
+          >
+            -
+          </button>
+        </div>
+        <div class="dragon-speech" id="dragon-speech">
+          I am Ember. Drag me anywhere, minimize me, and ask for hints while the tale unfolds.
+        </div>
+        <div class="dragon-row">
+          <button class="dragon-avatar" id="dragon-avatar" type="button" aria-label="Ask Ember for a hint">
+            <span class="dragon-sprite" aria-hidden="true"></span>
+          </button>
+          <form class="dragon-chat" id="dragon-form">
+            <input id="dragon-input" type="text" placeholder="Ask for hint or status" />
+            <button type="submit">Ask</button>
+          </form>
+        </div>
       </div>
-      <div class="dragon-row">
-        <button class="dragon-avatar" id="dragon-avatar" type="button" aria-label="Ask Ember for a hint">
-          <span class="dragon-sprite" aria-hidden="true"></span>
-        </button>
-        <form class="dragon-chat" id="dragon-form">
-          <input id="dragon-input" type="text" placeholder="Ask for hint or status" />
-          <button type="submit">Ask</button>
-        </form>
-      </div>
+      <button class="dragon-tab" id="dragon-tab" type="button" aria-label="Open dragon overlay">
+        <span class="dragon-sprite" aria-hidden="true"></span>
+        <span class="dragon-tab-label">Ember</span>
+      </button>
     </section>
 
-    <script src="/static/app.js?v=20260612-audio1" type="module"></script>
+    <script src="/static/app.js?v=20260612-overlay1" type="module"></script>
   </body>
 </html>

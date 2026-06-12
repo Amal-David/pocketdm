@@ -11,7 +11,11 @@ const state = {
   isTyping: false,
   audioUnlocked: false,
   currentVoice: "auto",
+  dragonMinimized: false,
+  dragonDrag: null,
 };
+
+const DRAGON_POSITION_KEY = "pocketdm.dragonOverlayPosition";
 
 const els = {
   genre: document.querySelector("#genre"),
@@ -39,6 +43,10 @@ const els = {
   dragonInput: document.querySelector("#dragon-input"),
   dragonSpeech: document.querySelector("#dragon-speech"),
   dragonAvatar: document.querySelector("#dragon-avatar"),
+  dragonAssistant: document.querySelector("#dragon-assistant"),
+  dragonHandle: document.querySelector("#dragon-handle"),
+  dragonMinimize: document.querySelector("#dragon-minimize"),
+  dragonTab: document.querySelector("#dragon-tab"),
   voiceToggle: document.querySelector("#voice-toggle"),
 };
 
@@ -56,6 +64,12 @@ els.dragonForm.addEventListener("submit", async (event) => {
   els.dragonInput.value = "";
 });
 els.dragonAvatar.addEventListener("click", () => askDragon("hint"));
+els.dragonTab.addEventListener("click", () => setDragonMinimized(false));
+els.dragonMinimize.addEventListener("click", () => setDragonMinimized(!state.dragonMinimized));
+els.dragonHandle.addEventListener("pointerdown", startDragonDrag);
+window.addEventListener("pointermove", dragDragon);
+window.addEventListener("pointerup", stopDragonDrag);
+window.addEventListener("resize", clampDragonPosition);
 els.location.addEventListener("click", () => askDragon("status"));
 els.voiceToggle.addEventListener("click", () => {
   state.voiceEnabled = !state.voiceEnabled;
@@ -71,6 +85,7 @@ async function startAdventure() {
   state.audioUnlocked = true;
   stopAllAudio();
   setBusy(true);
+  setDragonMood("thinking");
   try {
     const payload = await postJSON("/api/start", {
       genre: els.genre.value,
@@ -85,6 +100,7 @@ async function startAdventure() {
     dragonSay(`I lost the trail: ${error.message}`, { fire: true });
   } finally {
     setBusy(false);
+    setDragonMood("idle");
   }
 }
 
@@ -92,6 +108,7 @@ async function choose(action) {
   if (!state.sessionId || !state.lastTurn || state.lastTurn.is_ending) return;
   stopAllAudio();
   setBusy(true);
+  setDragonMood("thinking");
   try {
     const payload = await postJSON("/api/choose", {
       session_id: state.sessionId,
@@ -103,6 +120,7 @@ async function choose(action) {
     dragonSay(`That turn fizzled: ${error.message}`, { fire: true });
   } finally {
     setBusy(false);
+    setDragonMood("idle");
   }
 }
 
@@ -111,6 +129,8 @@ async function askDragon(message) {
     dragonSay("Start a tale first, then I can hover with useful opinions.", { fire: true });
     return;
   }
+  setDragonMinimized(false);
+  setDragonMood("listening");
   try {
     const payload = await postJSON("/api/assistant", {
       session_id: state.sessionId,
@@ -119,6 +139,8 @@ async function askDragon(message) {
     dragonSay(payload.reply, { fire: /fire|flame|scorch|victory/i.test(payload.reply) });
   } catch (error) {
     dragonSay(`My tiny scroll jammed: ${error.message}`, { fire: true });
+  } finally {
+    setDragonMood("idle");
   }
 }
 
@@ -244,6 +266,7 @@ function typeText(target, text) {
 function dragonSay(text, options = {}) {
   els.dragonSpeech.textContent = text;
   if (options.fire) {
+    setDragonMood("fire");
     els.dragonAvatar.classList.remove("is-fire");
     void els.dragonAvatar.offsetWidth;
     els.dragonAvatar.classList.add("is-fire");
@@ -354,6 +377,98 @@ function isCurrentNarration(requestId, sessionId) {
   return requestId === state.narrationRequestId && sessionId === state.sessionId;
 }
 
+function initDragonOverlay() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(DRAGON_POSITION_KEY) || "null");
+    if (saved && Number.isFinite(saved.left) && Number.isFinite(saved.top)) {
+      positionDragon(saved.left, saved.top, { persist: false });
+    }
+  } catch (_error) {
+    localStorage.removeItem(DRAGON_POSITION_KEY);
+  }
+  setDragonMinimized(false);
+  requestAnimationFrame(clampDragonPosition);
+}
+
+function setDragonMinimized(isMinimized) {
+  state.dragonMinimized = isMinimized;
+  els.dragonAssistant.classList.toggle("is-minimized", isMinimized);
+  els.dragonMinimize.textContent = isMinimized ? "+" : "-";
+  els.dragonMinimize.setAttribute("aria-expanded", String(!isMinimized));
+  els.dragonMinimize.setAttribute(
+    "aria-label",
+    isMinimized ? "Open dragon overlay" : "Minimize dragon overlay",
+  );
+  if (!isMinimized) requestAnimationFrame(clampDragonPosition);
+}
+
+function setDragonMood(mood) {
+  els.dragonAssistant.dataset.mood = mood;
+}
+
+function startDragonDrag(event) {
+  if (event.target.closest("button")) return;
+  const rect = els.dragonAssistant.getBoundingClientRect();
+  state.dragonDrag = {
+    pointerId: event.pointerId,
+    startX: event.clientX,
+    startY: event.clientY,
+    left: rect.left,
+    top: rect.top,
+  };
+  els.dragonAssistant.classList.add("is-dragging");
+  els.dragonHandle.setPointerCapture(event.pointerId);
+}
+
+function dragDragon(event) {
+  if (!state.dragonDrag || event.pointerId !== state.dragonDrag.pointerId) return;
+  event.preventDefault();
+  positionDragon(
+    state.dragonDrag.left + event.clientX - state.dragonDrag.startX,
+    state.dragonDrag.top + event.clientY - state.dragonDrag.startY,
+  );
+}
+
+function stopDragonDrag(event) {
+  if (!state.dragonDrag || event.pointerId !== state.dragonDrag.pointerId) return;
+  state.dragonDrag = null;
+  els.dragonAssistant.classList.remove("is-dragging");
+  try {
+    els.dragonHandle.releasePointerCapture(event.pointerId);
+  } catch (_error) {
+    // Pointer capture may already be released if the browser cancels the drag.
+  }
+  persistDragonPosition();
+}
+
+function clampDragonPosition() {
+  const rect = els.dragonAssistant.getBoundingClientRect();
+  if (!rect.width || !rect.height) return;
+  positionDragon(rect.left, rect.top, { persist: false });
+}
+
+function positionDragon(left, top, options = {}) {
+  const rect = els.dragonAssistant.getBoundingClientRect();
+  const margin = 8;
+  const maxLeft = window.innerWidth - rect.width - margin;
+  const maxTop = window.innerHeight - rect.height - margin;
+  const nextLeft = Math.max(margin, Math.min(left, maxLeft));
+  const nextTop = Math.max(margin, Math.min(top, maxTop));
+  els.dragonAssistant.style.left = `${nextLeft}px`;
+  els.dragonAssistant.style.top = `${nextTop}px`;
+  els.dragonAssistant.style.right = "auto";
+  els.dragonAssistant.style.bottom = "auto";
+  if (options.persist !== false) persistDragonPosition();
+}
+
+function persistDragonPosition() {
+  const rect = els.dragonAssistant.getBoundingClientRect();
+  localStorage.setItem(
+    DRAGON_POSITION_KEY,
+    JSON.stringify({ left: Math.round(rect.left), top: Math.round(rect.top) }),
+  );
+}
+
 async function postJSON(url, payload) {
   const response = await fetch(url, {
     method: "POST",
@@ -381,3 +496,5 @@ function updateControls() {
     button.disabled = turnLocked;
   });
 }
+
+initDragonOverlay();
