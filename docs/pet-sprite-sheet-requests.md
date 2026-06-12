@@ -56,6 +56,22 @@ Generate these first. They unlock the most visible upgrade with the least code:
    - Looks at a growing glow, then points at the next form.
 18. `pet-buddy-mood-repair.png`
    - Starts lonely/gentle, receives care, warms back into a smile.
+19. `pet-buddy-need-affection.png`
+   - Looks at the user, steps closer, asks for a pet without text.
+20. `pet-buddy-need-study.png`
+   - Listens, repeats, points proudly after a phrase.
+21. `pet-buddy-need-adventure.png`
+   - Looks toward the quest, points at a trail, ready stance.
+22. `pet-buddy-need-rest.png`
+   - Sleepy blink, curls up, soft wake loop.
+23. `pet-buddy-need-play.png`
+   - Hyper hop, cheek sparks, happy shake-off.
+24. `pet-buddy-need-focus.png`
+   - Sits beside an invisible task, attentive eyes, quiet nod.
+25. `pet-buddy-need-puzzle.png`
+   - Thinking tilt, clue discovery, solved sparkle.
+26. `pet-buddy-memory-unlock.png`
+   - Finds a tiny glowing memory charm, reacts emotionally, stores it.
 
 ## Growth Stages
 
@@ -197,6 +213,46 @@ Evolution and growth:
 - `pet-{stage}-new-stage-idle.png`
   - First calm idle loop after growth.
 
+Care needs:
+
+- `pet-{stage}-need-affection.png`
+  - Wants petting, leans in, receives care.
+- `pet-{stage}-need-study.png`
+  - Wants a language phrase, listens, repeats.
+- `pet-{stage}-need-adventure.png`
+  - Wants quest progress, points, marches in place.
+- `pet-{stage}-need-rest.png`
+  - Wants rest, yawns, curls up, soft breathing.
+- `pet-{stage}-need-play.png`
+  - Wants hyper play, wiggles, hops, cheek sparks.
+- `pet-{stage}-need-focus.png`
+  - Wants a focus check-in, sits still, watches the screen.
+- `pet-{stage}-need-puzzle.png`
+  - Wants a cipher, thinks, discovers a small clue.
+
+Bond memories:
+
+- `pet-{stage}-memory-first-care.png`
+  - Learns the user's hand is safe.
+- `pet-{stage}-memory-first-hint.png`
+  - Learns how to point at a trail.
+- `pet-{stage}-memory-first-lesson.png`
+  - Learns the user's study voice.
+- `pet-{stage}-memory-first-quest.png`
+  - Learns where adventures begin.
+- `pet-{stage}-memory-first-upgrade.png`
+  - Discovers its kit can grow.
+- `pet-{stage}-memory-first-comeback.png`
+  - Relieved return after absence.
+- `pet-{stage}-memory-first-cipher.png`
+  - Keeps a tiny secret note.
+- `pet-{stage}-memory-first-boost.png`
+  - Learns to burst into motion.
+- `pet-{stage}-memory-first-board.png`
+  - Celebrates a full daily board.
+- `pet-{stage}-memory-first-evolution.png`
+  - Realizes care changed its form.
+
 ## Core Actions
 
 These are the actual product loops:
@@ -264,6 +320,9 @@ These are for the progression layer:
 - Time-of-day nudge: afternoon.
 - Time-of-day nudge: evening.
 - Time-of-day nudge: night.
+- Daily care need satisfied.
+- Bond memory unlocked.
+- Story chapter advanced.
 
 ## Submission-Inspired Experience Sheets
 

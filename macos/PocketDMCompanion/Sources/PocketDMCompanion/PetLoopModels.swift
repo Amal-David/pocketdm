@@ -110,6 +110,9 @@ enum PetFeeling {
     case celebrating
     case protective
     case comfort
+    case playful
+    case grateful
+    case determined
     case restless
     case hungry
     case sleepy
@@ -140,6 +143,8 @@ enum PetFeeling {
             self = .overcharged
         } else if energy <= 1 {
             self = .hungry
+        } else if streak >= 3 && happiness >= 5 {
+            self = .grateful
         } else if comboComplete {
             self = .proud
         } else if minimized {
@@ -148,8 +153,12 @@ enum PetFeeling {
             self = .curious
         } else if happiness <= 2 {
             self = .comfort
+        } else if sparkDust >= 240 {
+            self = .determined
         } else if sparkDust >= 120 {
             self = .restless
+        } else if energy >= 4 && happiness >= 4 {
+            self = .playful
         } else {
             self = .eager
         }
@@ -173,6 +182,12 @@ enum PetFeeling {
             return "Protective"
         case .comfort:
             return "Gentle"
+        case .playful:
+            return "Playful"
+        case .grateful:
+            return "Grateful"
+        case .determined:
+            return "Determined"
         case .restless:
             return "Restless"
         case .hungry:
@@ -204,6 +219,12 @@ enum PetFeeling {
             return "Quietly guarding the late hours."
         case .comfort:
             return "Wants to make the next step smaller."
+        case .playful:
+            return "Wants a small burst of movement."
+        case .grateful:
+            return "Remembers the care streak."
+        case .determined:
+            return "Ready to grow into the next form."
         case .restless:
             return "Sparks are asking for an upgrade."
         case .hungry:
@@ -561,6 +582,211 @@ enum PetCareMoment {
     }
 }
 
+enum PetCareNeed: Int, CaseIterable {
+    case affection
+    case study
+    case adventure
+    case rest
+    case play
+    case focus
+    case puzzle
+
+    static func daily(for dateKey: String, hour: Int) -> PetCareNeed {
+        if hour >= 22 || hour < 6 {
+            return .rest
+        }
+
+        let seed = dateKey.unicodeScalars.reduce(hour / 3) { $0 + Int($1.value) }
+        return allCases[seed % allCases.count]
+    }
+
+    var title: String {
+        switch self {
+        case .affection:
+            return "Affection"
+        case .study:
+            return "Study"
+        case .adventure:
+            return "Adventure"
+        case .rest:
+            return "Rest"
+        case .play:
+            return "Play"
+        case .focus:
+            return "Focus"
+        case .puzzle:
+            return "Puzzle"
+        }
+    }
+
+    var actionLine: String {
+        switch self {
+        case .affection:
+            return "pet once"
+        case .study:
+            return "practice one phrase"
+        case .adventure:
+            return "open the quest or ask a hint"
+        case .rest:
+            return "take a tiny nap"
+        case .play:
+            return "tap Hyper"
+        case .focus:
+            return "claim Boost or answer a check-in"
+        case .puzzle:
+            return "solve the cipher"
+        }
+    }
+
+    var nudgeLine: String {
+        "Care need: \(title). Want to \(actionLine)?"
+    }
+
+    var rewardLine: String {
+        switch self {
+        case .affection:
+            return "Its cheeks warm because you noticed it."
+        case .study:
+            return "It repeats the sound proudly."
+        case .adventure:
+            return "It marks one more safe trail on the map."
+        case .rest:
+            return "Its breathing settles into a softer rhythm."
+        case .play:
+            return "It burns off extra sparks in a happy hop."
+        case .focus:
+            return "It sits beside the task and keeps watch."
+        case .puzzle:
+            return "It stores the answer in a tiny thunder note."
+        }
+    }
+
+    var spriteRequestName: String {
+        switch self {
+        case .affection:
+            return "pet-{stage}-need-affection.png"
+        case .study:
+            return "pet-{stage}-need-study.png"
+        case .adventure:
+            return "pet-{stage}-need-adventure.png"
+        case .rest:
+            return "pet-{stage}-need-rest.png"
+        case .play:
+            return "pet-{stage}-need-play.png"
+        case .focus:
+            return "pet-{stage}-need-focus.png"
+        case .puzzle:
+            return "pet-{stage}-need-puzzle.png"
+        }
+    }
+}
+
+enum PetBondMemory: Int, CaseIterable {
+    case firstCare = 1
+    case firstHint = 2
+    case firstLesson = 4
+    case firstQuest = 8
+    case firstUpgrade = 16
+    case firstComeback = 32
+    case firstCipher = 64
+    case firstBoost = 128
+    case firstBoard = 256
+    case firstEvolution = 512
+
+    var title: String {
+        switch self {
+        case .firstCare:
+            return "First Care"
+        case .firstHint:
+            return "First Hint"
+        case .firstLesson:
+            return "First Lesson"
+        case .firstQuest:
+            return "First Quest"
+        case .firstUpgrade:
+            return "First Upgrade"
+        case .firstComeback:
+            return "First Comeback"
+        case .firstCipher:
+            return "First Cipher"
+        case .firstBoost:
+            return "First Boost"
+        case .firstBoard:
+            return "First Full Board"
+        case .firstEvolution:
+            return "First Evolution"
+        }
+    }
+
+    var unlockLine: String {
+        switch self {
+        case .firstCare:
+            return "It learned your hand is safe."
+        case .firstHint:
+            return "It learned how to point at a trail."
+        case .firstLesson:
+            return "It learned your study voice."
+        case .firstQuest:
+            return "It learned where adventures begin."
+        case .firstUpgrade:
+            return "It learned the kit can grow."
+        case .firstComeback:
+            return "It learned you return after silence."
+        case .firstCipher:
+            return "It learned to keep tiny secrets."
+        case .firstBoost:
+            return "It learned how to burst into motion."
+        case .firstBoard:
+            return "It learned a full day can glow."
+        case .firstEvolution:
+            return "It learned care can change its shape."
+        }
+    }
+
+    var sparkReward: Int {
+        switch self {
+        case .firstEvolution:
+            return 24
+        case .firstBoard, .firstComeback:
+            return 16
+        default:
+            return 8
+        }
+    }
+
+    static func summary(mask: Int) -> String {
+        let unlocked = allCases.filter { mask & $0.rawValue != 0 }
+        guard let last = unlocked.last else {
+            return "Memories 0/\(allCases.count): First Care waiting"
+        }
+        return "Memories \(unlocked.count)/\(allCases.count): \(last.title)"
+    }
+}
+
+enum PetStoryCodex {
+    static func chapterLine(
+        stage: PetGrowthStage,
+        memoryMask: Int,
+        streak: Int,
+        need: PetCareNeed
+    ) -> String {
+        let memoryCount = PetBondMemory.allCases.filter { memoryMask & $0.rawValue != 0 }.count
+        if stage == .stormGuardian {
+            return "Story: Guardian chapter, \(memoryCount) memories kept."
+        }
+        if streak >= 7 {
+            return "Story: Week-streak trail, today it wants \(need.title.lowercased())."
+        }
+        if memoryCount >= 6 {
+            return "Story: Trust map growing, \(need.title.lowercased()) scene open."
+        }
+        if memoryCount >= 3 {
+            return "Story: Campfire chapter, bond rituals are working."
+        }
+        return "Story: First trail, help it learn \(need.title.lowercased())."
+    }
+}
+
 struct PetComebackReward {
     let sparks: Int
     let joy: Int
@@ -649,6 +875,7 @@ enum PetNudgeLibrary {
         cipherSolved: Bool,
         boosterReady: Bool,
         careMoment: PetCareMoment,
+        careNeed: PetCareNeed,
         comebackReady: Bool,
         energy: Int,
         sparkDust: Int,
@@ -659,6 +886,9 @@ enum PetNudgeLibrary {
         }
         if energy == 0 {
             return "I am sleepy, but I saved your quest. Come back after a recharge?"
+        }
+        if index % 3 == 1 {
+            return careNeed.nudgeLine
         }
         if index % 5 == 0 {
             return careMoment.nudgeLine

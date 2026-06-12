@@ -190,6 +190,10 @@ The new layer should add:
 - A visible evolution progress receipt so growth from small to big is always
   legible.
 - Pet feelings that are visible enough to drive sprite selection.
+- Rotating care needs so the pet wants affection, study, adventure, rest, play,
+  focus, or puzzle care rather than feeling like one static mood button.
+- Bond memories that unlock on first care, hint, lesson, quest, upgrade,
+  comeback, cipher, boost, full board, and first evolution.
 - Lore receipts that make each stage feel like a relationship, not a number.
 - Upgrade cards that change behavior: faster check-ins, better comeback
   rewards, stronger learning rewards, richer ciphers, daily boosts, and more
@@ -220,8 +224,15 @@ The native macOS companion now has the first version of the loop:
   comeback chest, refill some energy, and create a warmer welcome-back moment.
 - Time-of-day proactive nudge copy for Sunrise, Focus, Afternoon, Evening, and
   Night care moments.
+- A daily care-need system that pays one bonus when the user does what the pet
+  currently wants: affection, study, adventure, rest, play, focus, or puzzle.
+- A bond-memory album backed by persistent state so first-time relationship
+  moments become visible receipts, not just transient copy.
+- A story chapter line that changes with growth stage, memory count, streak,
+  and the current care need.
 - Visible feelings such as Eager, Proud, Overcharged, Focused, Celebrating,
-  Protective, Gentle, Restless, Snacky, Sleepy, Curious, and Lonely.
+  Protective, Gentle, Playful, Grateful, Determined, Restless, Snacky, Sleepy,
+  Curious, and Lonely.
 - A short lore line inside the care panel.
 - Native text and voice "Pika pika!" reactions for pet care, cheer, boosts,
   ciphers, learning rewards, and assistant replies.

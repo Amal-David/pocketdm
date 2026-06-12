@@ -114,7 +114,7 @@ final class DragonOverlayController {
     }
 
     private func setMinimized(_ minimized: Bool) {
-        let size = minimized ? NSSize(width: 184, height: 190) : NSSize(width: 500, height: 386)
+        let size = minimized ? NSSize(width: 184, height: 190) : NSSize(width: 500, height: 430)
         var frame = panel.frame
         let top = frame.maxY
         frame.size = size
@@ -128,10 +128,14 @@ final class DragonOverlayController {
         let savedX = defaults.double(forKey: "PocketDMCompanion.x")
         let savedY = defaults.double(forKey: "PocketDMCompanion.y")
         let screen = NSScreen.main?.visibleFrame ?? NSRect(x: 0, y: 0, width: 1200, height: 800)
-        let origin = savedX == 0 && savedY == 0
-            ? NSPoint(x: screen.maxX - 516, y: screen.minY + 72)
-            : NSPoint(x: savedX, y: savedY)
-        panel.setFrameOrigin(origin)
+        let defaultOrigin = NSPoint(x: screen.maxX - 516, y: screen.minY + 72)
+        let savedOrigin = NSPoint(x: savedX, y: savedY)
+        let savedFrame = NSRect(origin: savedOrigin, size: panel.frame.size)
+        let savedCenter = NSPoint(x: savedFrame.midX, y: savedFrame.midY)
+        let savedFrameIsVisible = screen.insetBy(dx: -24, dy: -24).contains(savedCenter)
+        let origin = (savedX == 0 && savedY == 0) || !savedFrameIsVisible ? defaultOrigin : savedOrigin
+        let restoredFrame = NSRect(origin: origin, size: panel.frame.size)
+        panel.setFrame(clamped(restoredFrame), display: false)
     }
 
     private func persistFrame() {
@@ -152,7 +156,7 @@ final class DragonOverlayController {
 final class FloatingDragonPanel: NSPanel {
     init() {
         super.init(
-            contentRect: NSRect(x: 0, y: 0, width: 500, height: 386),
+            contentRect: NSRect(x: 0, y: 0, width: 500, height: 430),
             styleMask: [.borderless, .nonactivatingPanel],
             backing: .buffered,
             defer: false
@@ -202,6 +206,8 @@ final class DragonOverlayModel: ObservableObject {
     private static let dailyCipherSolvedKey = "PocketDMCompanion.dailyCipherSolved"
     private static let lastLifecycleAtKey = "PocketDMCompanion.lastLifecycleAt"
     private static let lastComebackChestDayKey = "PocketDMCompanion.lastComebackChestDay"
+    private static let careMemoryMaskKey = "PocketDMCompanion.careMemoryMask"
+    private static let lastNeedBonusDayKey = "PocketDMCompanion.lastNeedBonusDay"
     private static let maxEnergy = 5
     private static let energyRechargeSeconds: TimeInterval = 30 * 60
     private static let passiveSparkSeconds: TimeInterval = 15 * 60
@@ -244,6 +250,7 @@ final class DragonOverlayModel: ObservableObject {
     @Published var dailyBoosterUsed = UserDefaults.standard.bool(forKey: DragonOverlayModel.dailyBoosterUsedKey)
     @Published var dailyCipherDate = UserDefaults.standard.string(forKey: DragonOverlayModel.dailyCipherDateKey) ?? ""
     @Published var dailyCipherSolved = UserDefaults.standard.bool(forKey: DragonOverlayModel.dailyCipherSolvedKey)
+    @Published var careMemoryMask = UserDefaults.standard.object(forKey: DragonOverlayModel.careMemoryMaskKey) as? Int ?? 0
     @Published var cheerBubble: String?
 
     let languageCoach = LanguageCoachStore()
@@ -258,6 +265,7 @@ final class DragonOverlayModel: ObservableObject {
     private var passiveSparkAt = UserDefaults.standard.double(forKey: DragonOverlayModel.passiveSparkAtKey)
     private var lastLifecycleAt = UserDefaults.standard.double(forKey: DragonOverlayModel.lastLifecycleAtKey)
     private var lastComebackChestDay = UserDefaults.standard.string(forKey: DragonOverlayModel.lastComebackChestDayKey) ?? ""
+    private var lastNeedBonusDay = UserDefaults.standard.string(forKey: DragonOverlayModel.lastNeedBonusDayKey) ?? ""
     init(client: PocketDMClient, launcher: GameLauncher) {
         self.client = client
         self.launcher = launcher
@@ -299,10 +307,18 @@ final class DragonOverlayModel: ObservableObject {
     }
 
     func openGame() {
+        let priorStage = growthStage
         lastRequest = "Open"
         message = pikaText("Quest opened. Your buddy marks the map and saves a Spark trail back here.")
         markCombo(.open)
         recordDailyQuest(.adventure)
+        if let needNote = awardCareNeed(.adventure) {
+            message += " \(needNote)"
+        }
+        if let memoryNote = unlockMemory(.firstQuest) {
+            message += " \(memoryNote)"
+        }
+        appendEvolutionNote(from: priorStage)
         speakPika()
         launcher.openGame()
     }
@@ -343,17 +359,26 @@ final class DragonOverlayModel: ObservableObject {
     }
 
     func nap() {
-        message = "Pikachu curls up for a tiny recharge. It will keep watch quietly."
+        message = pikaText("Pikachu curls up for a tiny recharge. It will keep watch quietly.")
+        if let needNote = awardCareNeed(.rest) {
+            message += " \(needNote)"
+        }
         lastRequest = "Mood"
         play(.nap)
+        speakPika()
         setMood(.nap, duration: 2.4)
     }
 
     func hyper() {
+        let priorStage = growthStage
         message = pikaText("Pikachu is buzzing with energy. Great moment to ask for a hint or practice a phrase.")
         lastRequest = "Mood"
         earnSparkDust(1)
         markCombo(.hyper)
+        if let needNote = awardCareNeed(.play) {
+            message += " \(needNote)"
+        }
+        appendEvolutionNote(from: priorStage)
         play(.hyper)
         speakPika()
         setMood(.hyper, duration: 1.5)
@@ -362,10 +387,18 @@ final class DragonOverlayModel: ObservableObject {
     func toggleLearning() {
         learningMode = learningMode == .lesson ? .chat : .lesson
         if learningMode == .lesson {
+            let priorStage = growthStage
             lastRequest = "Learn"
             message = pikaText("Lesson mode opened. Pick a pack, listen once, slow it down, then quiz for Joy.")
             markCombo(.learn)
             recordDailyQuest(.learn)
+            if let needNote = awardCareNeed(.study) {
+                message += " \(needNote)"
+            }
+            if let memoryNote = unlockMemory(.firstLesson) {
+                message += " \(memoryNote)"
+            }
+            appendEvolutionNote(from: priorStage)
             play(.open)
             speakPika()
             languageCoach.speakCurrent()
@@ -378,6 +411,7 @@ final class DragonOverlayModel: ObservableObject {
     }
 
     func applyLanguageReward(_ reward: LanguagePracticeReward) {
+        let priorStage = growthStage
         lastRequest = "Language"
         message = pikaText(reward.message)
         if reward.correct {
@@ -388,6 +422,13 @@ final class DragonOverlayModel: ObservableObject {
             }
             markCombo(.learn)
             recordDailyQuest(.learn)
+            if let needNote = awardCareNeed(.study) {
+                message += " \(needNote)"
+            }
+            if let memoryNote = unlockMemory(.firstLesson) {
+                message += " \(memoryNote)"
+            }
+            appendEvolutionNote(from: priorStage)
             persistCare()
             play(reward.dailyBond ? .pet : .happy)
             speakPika()
@@ -399,6 +440,7 @@ final class DragonOverlayModel: ObservableObject {
     }
 
     func petDaily(requestLabel: String = "Daily pet") {
+        let priorStage = growthStage
         lastRequest = requestLabel
         cheerBubble = nil
         rechargeEnergy()
@@ -419,6 +461,13 @@ final class DragonOverlayModel: ObservableObject {
         }
         markCombo(.pet)
         recordDailyQuest(.care)
+        if let needNote = awardCareNeed(.affection) {
+            message += " \(needNote)"
+        }
+        if let memoryNote = unlockMemory(.firstCare) {
+            message += " \(memoryNote)"
+        }
+        appendEvolutionNote(from: priorStage)
         persistCare()
         play(.pet)
         speakPika()
@@ -426,6 +475,7 @@ final class DragonOverlayModel: ObservableObject {
     }
 
     func ask(_ prompt: String) async {
+        let priorStage = growthStage
         lastRequest = prompt
         if handlesCare(prompt) {
             petDaily(requestLabel: prompt)
@@ -443,7 +493,14 @@ final class DragonOverlayModel: ObservableObject {
             if isHintPrompt(prompt) {
                 markCombo(.hint)
                 recordDailyQuest(.hint)
+                if let needNote = awardCareNeed(.adventure) {
+                    message += " \(needNote)"
+                }
+                if let memoryNote = unlockMemory(.firstHint) {
+                    message += " \(memoryNote)"
+                }
             }
+            appendEvolutionNote(from: priorStage)
             play(.reply)
             speakPika()
             setMood(.happy, duration: 1.5)
@@ -456,6 +513,7 @@ final class DragonOverlayModel: ObservableObject {
     }
 
     func acceptCheerBubble() {
+        let priorStage = growthStage
         let prompt = cheerBubble ?? "Check in"
         cheerBubble = nil
         lastRequest = "Cheer"
@@ -463,6 +521,10 @@ final class DragonOverlayModel: ObservableObject {
         earnSparkDust(3)
         message = pikaText("\(prompt) Pikachu turns it into Joy +1 and Sparks +3. Open the game for one tiny quest.")
         recordDailyQuest(.cheer)
+        if let needNote = awardCareNeed(.focus) {
+            message += " \(needNote)"
+        }
+        appendEvolutionNote(from: priorStage)
         UserDefaults.standard.set(Date().timeIntervalSince1970, forKey: Self.lastCheerAtKey)
         persistCare()
         play(.reply)
@@ -488,6 +550,7 @@ final class DragonOverlayModel: ObservableObject {
             return
         }
 
+        let priorStage = growthStage
         sparkDust -= candidate.cost
         switch candidate.kind {
         case .snack:
@@ -512,6 +575,10 @@ final class DragonOverlayModel: ObservableObject {
         message = pikaText("\(candidate.name) upgraded. \(candidate.kind.unlockLine) Passive Sparks now +\(passiveSparkRate) every 15 minutes.")
         markCombo(.upgrade)
         recordDailyQuest(.upgrade)
+        if let memoryNote = unlockMemory(.firstUpgrade) {
+            message += " \(memoryNote)"
+        }
+        appendEvolutionNote(from: priorStage)
         persistCare()
         play(.happy)
         speakPika()
@@ -528,6 +595,7 @@ final class DragonOverlayModel: ObservableObject {
             return
         }
 
+        let priorStage = growthStage
         dailyBoosterUsed = true
         dailyBoosterDate = Self.dayFormatter.string(from: Date())
         let sparkGain = 10 + focusLevel * 5
@@ -538,6 +606,13 @@ final class DragonOverlayModel: ObservableObject {
         message = pikaText("Spark Boost claimed. Energy refilled, Joy +1, Sparks +\(sparkGain).")
         markCombo(.boost)
         recordDailyQuest(.boost)
+        if let needNote = awardCareNeed(.focus) {
+            message += " \(needNote)"
+        }
+        if let memoryNote = unlockMemory(.firstBoost) {
+            message += " \(memoryNote)"
+        }
+        appendEvolutionNote(from: priorStage)
         persistCare()
         play(.hyper)
         speakPika()
@@ -555,6 +630,7 @@ final class DragonOverlayModel: ObservableObject {
             return
         }
 
+        let priorStage = growthStage
         dailyCipherSolved = true
         dailyCipherDate = Self.dayFormatter.string(from: Date())
         sparkDust = min(999, sparkDust + cipher.reward)
@@ -563,6 +639,13 @@ final class DragonOverlayModel: ObservableObject {
         message = pikaText("Daily cipher solved: \(cipher.answer). Joy +1 and Sparks +\(cipher.reward).")
         markCombo(.cipher)
         recordDailyQuest(.cipher)
+        if let needNote = awardCareNeed(.puzzle) {
+            message += " \(needNote)"
+        }
+        if let memoryNote = unlockMemory(.firstCipher) {
+            message += " \(memoryNote)"
+        }
+        appendEvolutionNote(from: priorStage)
         persistCare()
         play(.happy)
         speakPika()
@@ -595,6 +678,23 @@ final class DragonOverlayModel: ObservableObject {
 
     var economyLine: String {
         "Sparks \(sparkDust) · Energy \(energy)/\(Self.maxEnergy) · +\(passiveSparkRate)/15m"
+    }
+
+    var needLine: String {
+        "Need \(careNeed.title): \(careNeed.actionLine)"
+    }
+
+    var storyLine: String {
+        PetStoryCodex.chapterLine(
+            stage: growthStage,
+            memoryMask: careMemoryMask,
+            streak: petStreak,
+            need: careNeed
+        )
+    }
+
+    var memoryLine: String {
+        PetBondMemory.summary(mask: careMemoryMask)
     }
 
     var comboLine: String {
@@ -700,6 +800,8 @@ final class DragonOverlayModel: ObservableObject {
         UserDefaults.standard.set(dailyCipherSolved, forKey: Self.dailyCipherSolvedKey)
         UserDefaults.standard.set(lastLifecycleAt, forKey: Self.lastLifecycleAtKey)
         UserDefaults.standard.set(lastComebackChestDay, forKey: Self.lastComebackChestDayKey)
+        UserDefaults.standard.set(careMemoryMask, forKey: Self.careMemoryMaskKey)
+        UserDefaults.standard.set(lastNeedBonusDay, forKey: Self.lastNeedBonusDayKey)
     }
 
     private func handlesCare(_ prompt: String) -> Bool {
@@ -744,6 +846,44 @@ final class DragonOverlayModel: ObservableObject {
 
     private var careMoment: PetCareMoment {
         PetCareMoment(hour: currentHour)
+    }
+
+    private var careNeed: PetCareNeed {
+        PetCareNeed.daily(
+            for: dailyQuestDate.isEmpty ? Self.dayFormatter.string(from: Date()) : dailyQuestDate,
+            hour: currentHour
+        )
+    }
+
+    private func awardCareNeed(_ completed: PetCareNeed) -> String? {
+        let today = Self.dayFormatter.string(from: Date())
+        guard careNeed.rawValue == completed.rawValue, lastNeedBonusDay != today else { return nil }
+
+        lastNeedBonusDay = today
+        let reward = 10 + sparkLevel * 2
+        happiness = min(5, happiness + 1)
+        sparkDust = min(999, sparkDust + reward)
+        persistCare()
+        return "\(careNeed.title) need met: Joy +1, Sparks +\(reward). \(careNeed.rewardLine)"
+    }
+
+    private func unlockMemory(_ memory: PetBondMemory) -> String? {
+        guard careMemoryMask & memory.rawValue == 0 else { return nil }
+
+        careMemoryMask |= memory.rawValue
+        sparkDust = min(999, sparkDust + memory.sparkReward)
+        persistCare()
+        return "Memory unlocked: \(memory.title). \(memory.unlockLine) Sparks +\(memory.sparkReward)."
+    }
+
+    private func appendEvolutionNote(from priorStage: PetGrowthStage) {
+        let nextStage = growthStage
+        guard priorStage.title != nextStage.title else { return }
+
+        message += " Evolution glow: \(nextStage.title). \(nextStage.rewardLine)"
+        if let memoryNote = unlockMemory(.firstEvolution) {
+            message += " \(memoryNote)"
+        }
     }
 
     private func spendEnergy() -> Bool {
@@ -799,6 +939,9 @@ final class DragonOverlayModel: ObservableObject {
             happiness = min(5, happiness + reward.joy)
             energy = min(Self.maxEnergy, energy + reward.energy)
             notes.append(reward.line)
+            if let memoryNote = unlockMemory(.firstComeback) {
+                notes.append(memoryNote)
+            }
         }
 
         lastLifecycleAt = now
@@ -868,6 +1011,9 @@ final class DragonOverlayModel: ObservableObject {
             companionHP = min(10, companionHP + 1)
             sparkDust = min(999, sparkDust + 30)
             message += " Daily board complete: Bond HP +1 and Sparks +30."
+            if let memoryNote = unlockMemory(.firstBoard) {
+                message += " \(memoryNote)"
+            }
             play(.happy)
             setMood(.hyper, duration: 1.8)
         }
@@ -979,6 +1125,7 @@ final class DragonOverlayModel: ObservableObject {
             cipherSolved: dailyCipherSolved,
             boosterReady: !dailyBoosterUsed,
             careMoment: careMoment,
+            careNeed: careNeed,
             comebackReady: canShowComebackNudge,
             energy: energy,
             sparkDust: sparkDust,
@@ -1320,7 +1467,7 @@ struct DragonOverlayView: View {
             }
         }
         .padding(8)
-        .frame(width: 500, height: 386)
+        .frame(width: 500, height: 430)
         .background(.clear)
     }
 
@@ -1344,6 +1491,16 @@ struct DragonOverlayView: View {
                 .foregroundStyle(Color.ivory.opacity(0.76))
                 .lineLimit(1)
                 .minimumScaleFactor(0.76)
+            Text(model.needLine)
+                .font(.system(size: 8.8, weight: .black, design: .rounded))
+                .foregroundStyle(Color.gold.opacity(0.82))
+                .lineLimit(1)
+                .minimumScaleFactor(0.56)
+            Text(model.storyLine)
+                .font(.system(size: 8.4, weight: .bold, design: .rounded))
+                .foregroundStyle(Color.ivory.opacity(0.72))
+                .lineLimit(2)
+                .minimumScaleFactor(0.58)
             Text(model.comboLine)
                 .font(.system(size: 9, weight: .black, design: .rounded))
                 .foregroundStyle(Color.ivory.opacity(0.74))
@@ -1369,10 +1526,15 @@ struct DragonOverlayView: View {
                 .foregroundStyle(Color.ivory.opacity(0.68))
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
+            Text(model.memoryLine)
+                .font(.system(size: 8.3, weight: .bold, design: .rounded))
+                .foregroundStyle(Color.ivory.opacity(0.64))
+                .lineLimit(1)
+                .minimumScaleFactor(0.56)
         }
         .multilineTextAlignment(.center)
         .frame(width: 170)
-        .frame(minHeight: 134)
+        .frame(minHeight: 174)
         .padding(.vertical, 7)
         .padding(.horizontal, 8)
         .background(.black.opacity(0.58), in: RoundedRectangle(cornerRadius: 7))

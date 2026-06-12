@@ -141,3 +141,10 @@ User wants a proper pet with growth, emotions, nudges, and long-running loops.
 **Rule:** when modeling time away, use gentle mood softening plus comeback
 rewards, time-of-day greetings, and visible evolution progress; do not make the
 pet feel needy, punitive, or like a generic streak counter.
+
+## 2026-06-12 — A pet needs wants and memories, not only counters
+The broader goal is a proper desktop pet, and counters alone still feel like a
+gamified dashboard.
+**Rule:** give the companion rotating care needs and persistent bond memories so
+the user can understand what the pet wants today, what it remembers, and why new
+sprites represent relationship moments rather than decoration.

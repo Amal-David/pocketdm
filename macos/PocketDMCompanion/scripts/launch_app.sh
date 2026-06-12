@@ -60,4 +60,9 @@ if [[ "$dry_run" -eq 1 ]]; then
 fi
 
 export POCKETDM_REPO="$repo_root"
+binary_name="PocketDMCompanion"
+if pgrep -x "$binary_name" >/dev/null 2>&1; then
+  pkill -9 -x "$binary_name" >/dev/null 2>&1 || true
+  sleep 0.2
+fi
 /usr/bin/open "$app_path" --args "${args[@]}"
