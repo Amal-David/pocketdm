@@ -1024,6 +1024,126 @@ enum PetSeasonEvent: Int, CaseIterable {
     }
 }
 
+enum PetStreakMilestone: Int, CaseIterable {
+    case dayOne = 1
+    case dayThree = 2
+    case dayFive = 4
+    case daySeven = 8
+
+    var requiredDays: Int {
+        switch self {
+        case .dayOne:
+            return 1
+        case .dayThree:
+            return 3
+        case .dayFive:
+            return 5
+        case .daySeven:
+            return 7
+        }
+    }
+
+    var title: String {
+        switch self {
+        case .dayOne:
+            return "First Spark"
+        case .dayThree:
+            return "Warm Trail"
+        case .dayFive:
+            return "Trust Charm"
+        case .daySeven:
+            return "Week Guardian"
+        }
+    }
+
+    var shortLabel: String {
+        switch self {
+        case .dayOne:
+            return "D1"
+        case .dayThree:
+            return "D3"
+        case .dayFive:
+            return "D5"
+        case .daySeven:
+            return "D7"
+        }
+    }
+
+    var sparkReward: Int {
+        switch self {
+        case .dayOne:
+            return 8
+        case .dayThree:
+            return 18
+        case .dayFive:
+            return 28
+        case .daySeven:
+            return 45
+        }
+    }
+
+    var joyReward: Int {
+        switch self {
+        case .dayOne, .dayThree:
+            return 1
+        case .dayFive, .daySeven:
+            return 2
+        }
+    }
+
+    var bondHPReward: Int {
+        switch self {
+        case .dayOne, .dayThree:
+            return 0
+        case .dayFive, .daySeven:
+            return 1
+        }
+    }
+
+    var rewardLine: String {
+        switch self {
+        case .dayOne:
+            return "The week trail lights its first spark."
+        case .dayThree:
+            return "It remembers you kept returning."
+        case .dayFive:
+            return "A trust charm joins the journal."
+        case .daySeven:
+            return "The full week glows like a tiny storm."
+        }
+    }
+
+    var spriteRequestName: String {
+        switch self {
+        case .dayOne:
+            return "pet-{stage}-week-day-1-first-spark.png"
+        case .dayThree:
+            return "pet-{stage}-week-day-3-warm-trail.png"
+        case .dayFive:
+            return "pet-{stage}-week-day-5-trust-charm.png"
+        case .daySeven:
+            return "pet-{stage}-week-day-7-guardian-glow.png"
+        }
+    }
+
+    static func newlyUnlocked(careCount: Int, rewardMask: Int) -> [PetStreakMilestone] {
+        allCases.filter { milestone in
+            careCount >= milestone.requiredDays && rewardMask & milestone.rawValue == 0
+        }
+    }
+
+    static func summary(careCount: Int, rewardMask: Int) -> String {
+        let unlocked = allCases.filter { rewardMask & $0.rawValue != 0 }.count
+        let cappedCount = min(7, max(0, careCount))
+        if cappedCount >= 7 {
+            return "Week Trail \(cappedCount)/7 · Rewards \(unlocked)/\(allCases.count) · Guardian glow ready"
+        }
+        let next = allCases.first { careCount < $0.requiredDays }
+        let nextLabel = next.map { "Next \($0.shortLabel) \($0.title)" } ?? "All rewards ready"
+        return "Week Trail \(cappedCount)/7 · Rewards \(unlocked)/\(allCases.count) · \(nextLabel)"
+    }
+}
+
 struct PetComebackReward {
     let sparks: Int
     let joy: Int

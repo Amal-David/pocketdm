@@ -118,6 +118,69 @@ Generate these first. They unlock the most visible upgrade with the least code:
    - Points toward today's event charm without text.
 49. `pet-buddy-proactive-comeback-checkin.png`
    - Welcomes the user back with a saved tiny chest.
+50. `pet-buddy-week-day-1-first-spark.png`
+   - First weekly care stamp: notices the week trail lighting up.
+51. `pet-buddy-week-day-3-warm-trail.png`
+   - Three-day return: follows a glowing trail and looks proud.
+52. `pet-buddy-week-day-5-trust-charm.png`
+   - Five-day return: receives a tiny trust charm and holds it carefully.
+53. `pet-buddy-week-day-7-guardian-glow.png`
+   - Full-week return: guardian glow, happy bounce, then calm pride.
+54. `pet-buddy-journal-week-page.png`
+   - Opens the week trail page and points at day 1/3/5/7 milestones.
+55. `pet-buddy-week-reward-claim.png`
+   - Claims a weekly reward chest/charm with no text, labels, or UI chrome.
+
+## Generate In Separate Batches
+
+Use these as independent image-generation jobs so each set stays visually
+consistent:
+
+### Batch 1: Default Desktop Life
+
+- `pet-buddy-idle-look-smile.png`
+- `pet-buddy-say-pika-pika.png`
+- `pet-buddy-pet-reaction.png`
+- `pet-buddy-hyper.png`
+- `pet-buddy-nap.png`
+- `pet-buddy-proactive-checkin.png`
+
+### Batch 2: Hamster-Style Daily Loop
+
+- `pet-buddy-combo-complete.png`
+- `pet-buddy-spark-boost.png`
+- `pet-buddy-daily-cipher.png`
+- `pet-buddy-upgrade-success.png`
+- `pet-buddy-upgrade-denied.png`
+- `pet-buddy-comeback-chest.png`
+
+### Batch 3: Weekly Trail
+
+- `pet-buddy-week-day-1-first-spark.png`
+- `pet-buddy-week-day-3-warm-trail.png`
+- `pet-buddy-week-day-5-trust-charm.png`
+- `pet-buddy-week-day-7-guardian-glow.png`
+- `pet-buddy-week-reward-claim.png`
+- `pet-buddy-journal-week-page.png`
+
+### Batch 4: Relationship Arc
+
+- `pet-buddy-mood-repair.png`
+- `pet-buddy-memory-unlock.png`
+- `pet-buddy-mood-discovery.png`
+- `pet-buddy-mood-album-proud.png`
+- `pet-buddy-evolve-preview.png`
+- `pet-buddy-level-up.png`
+
+### Batch 5: Full Stage Matrix
+
+After the buddy form works, repeat the stage matrix for:
+
+- `tiny-spark`
+- `pocket-pal`
+- `trail-buddy`
+- `storm-scout`
+- `storm-guardian`
 
 ## Growth Stages
 
@@ -336,7 +399,7 @@ Journal / album view:
 - `pet-{stage}-journal-next-sprite.png`
   - Presents the next needed sprite sheet as a blank art card.
 - `pet-{stage}-journal-page-tabs.png`
-  - Moves through journal tabs: growth, mood, memory, badge, ritual, art.
+  - Moves through journal tabs: growth, mood, memory, badge, ritual, week, art.
 - `pet-{stage}-journal-mood-grid.png`
   - Shows locked and unlocked mood charms with a proud pointing pose.
 - `pet-{stage}-journal-ritual-checklist.png`
@@ -362,6 +425,23 @@ Proactive check-ins:
   - Welcomes the user back and presents a saved chest.
 - `pet-{stage}-proactive-dismiss.png`
   - Calmly accepts dismissal and returns to idle, no sad guilt.
+
+Weekly streak trail:
+
+- `pet-{stage}-week-day-1-first-spark.png`
+  - Day 1 care milestone, first weekly spark lights under the pet's feet.
+- `pet-{stage}-week-day-3-warm-trail.png`
+  - Day 3 care milestone, pet follows three warm trail lights and smiles back.
+- `pet-{stage}-week-day-5-trust-charm.png`
+  - Day 5 care milestone, pet discovers a small trust charm and stores it.
+- `pet-{stage}-week-day-7-guardian-glow.png`
+  - Day 7 care milestone, full week trail glows and pet becomes protective.
+- `pet-{stage}-week-reward-claim.png`
+  - Generic weekly reward claim, chest or charm opens, pet celebrates softly.
+- `pet-{stage}-week-missed-gentle-restart.png`
+  - Gentle restart pose, no shame; pet points to the first spark again.
+- `pet-{stage}-journal-week-page.png`
+  - Pet opens the weekly trail page with four visual milestone charms.
 
 Daily events and badges:
 

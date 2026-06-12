@@ -183,6 +183,8 @@ The new layer should add:
 - Daily task-board tracking inspired by Telegram mini-game loops.
 - A daily cipher that gives a small puzzle reward.
 - A daily boost that refills energy and creates a quick return hook.
+- A weekly care trail with day 1, 3, 5, and 7 milestone rewards, giving the
+  daily pet ritual a larger arc without turning it into grind.
 - Time-of-day check-ins that feel different in morning, focus hours,
   afternoon, evening, and night.
 - Comeback chests after meaningful time away, with gentle mood repair rather
@@ -218,6 +220,9 @@ The native macOS companion now has the first version of the loop:
 - Proactive check-ins now carry structured title, body, action, and reward copy,
   so the pet can ask "how are you doing?" in different care, focus, event,
   cipher, boost, comeback, and mood contexts.
+- Weekly care trail rewards now track separate day 1, 3, 5, and 7 milestones,
+  surface in the journal, and request matching sprite sheets for each growth
+  stage.
 - Sparks earned from petting, asking, language practice, and combo completion.
 - Energy that recharges over time.
 - Passive Sparks collected after time away.

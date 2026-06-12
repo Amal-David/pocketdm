@@ -215,6 +215,9 @@ final class DragonOverlayModel: ObservableObject {
     private static let dailyFeelingMaskKey = "PocketDMCompanion.dailyFeelingMask"
     private static let emotionAlbumMaskKey = "PocketDMCompanion.emotionAlbumMask"
     private static let latestFeelingRawKey = "PocketDMCompanion.latestFeelingRaw"
+    private static let weeklyCareWeekKey = "PocketDMCompanion.weeklyCareWeek"
+    private static let weeklyCareCountKey = "PocketDMCompanion.weeklyCareCount"
+    private static let weeklyRewardMaskKey = "PocketDMCompanion.weeklyRewardMask"
     private static let maxEnergy = 5
     private static let energyRechargeSeconds: TimeInterval = 30 * 60
     private static let passiveSparkSeconds: TimeInterval = 15 * 60
@@ -226,6 +229,14 @@ final class DragonOverlayModel: ObservableObject {
         formatter.dateFormat = "yyyy-MM-dd"
         return formatter
     }()
+
+    private static func weekKey(for date: Date) -> String {
+        var calendar = Calendar(identifier: .iso8601)
+        calendar.timeZone = .current
+        let year = calendar.component(.yearForWeekOfYear, from: date)
+        let week = calendar.component(.weekOfYear, from: date)
+        return "\(year)-W\(String(format: "%02d", week))"
+    }
 
     @Published var message = "Pika pika! Your electric partner keeps a tiny bond spark. Pet once each day to earn +1 HP and refill joy."
     @Published var lastRequest = ""
@@ -265,6 +276,9 @@ final class DragonOverlayModel: ObservableObject {
     @Published var dailyFeelingMask = UserDefaults.standard.object(forKey: DragonOverlayModel.dailyFeelingMaskKey) as? Int ?? 0
     @Published var emotionAlbumMask = UserDefaults.standard.object(forKey: DragonOverlayModel.emotionAlbumMaskKey) as? Int ?? 0
     @Published var latestFeelingRaw = UserDefaults.standard.object(forKey: DragonOverlayModel.latestFeelingRawKey) as? Int ?? 0
+    @Published var weeklyCareWeek = UserDefaults.standard.string(forKey: DragonOverlayModel.weeklyCareWeekKey) ?? ""
+    @Published var weeklyCareCount = UserDefaults.standard.object(forKey: DragonOverlayModel.weeklyCareCountKey) as? Int ?? 0
+    @Published var weeklyRewardMask = UserDefaults.standard.object(forKey: DragonOverlayModel.weeklyRewardMaskKey) as? Int ?? 0
     @Published var cheerBubble: String?
     @Published var cheerTitle = ""
     @Published var cheerAction = ""
@@ -492,6 +506,7 @@ final class DragonOverlayModel: ObservableObject {
         let priorStage = growthStage
         lastRequest = requestLabel
         clearCheerBubble()
+        syncDailyCombo()
         rechargeEnergy()
         let today = Self.dayFormatter.string(from: Date())
         if lastPetDay == today {
@@ -503,10 +518,14 @@ final class DragonOverlayModel: ObservableObject {
             companionHP = min(10, companionHP + 1)
             happiness = 5
             petStreak += 1
+            weeklyCareCount = min(7, weeklyCareCount + 1)
             lastPetDay = today
             _ = spendEnergy()
             earnSparkDust(15)
             message = pikaText("Daily care complete. Bond HP +1, Joy refilled, Sparks +15. \(growthStage.rewardLine)")
+            if let streakNote = awardWeeklyCareMilestones() {
+                message += " \(streakNote)"
+            }
         }
         markCombo(.pet)
         recordDailyQuest(.care)
@@ -837,6 +856,10 @@ final class DragonOverlayModel: ObservableObject {
         return "Tasks \(done)/\(quests.count) " + labels.joined(separator: " ")
     }
 
+    var weeklyLine: String {
+        PetStreakMilestone.summary(careCount: weeklyCareCount, rewardMask: weeklyRewardMask)
+    }
+
     var cipherLine: String {
         if dailyCipherSolved {
             return "\(careMoment.title) · Cipher \(dailyCipher.answer) ✓ · Boost \(dailyBoosterUsed ? "used" : "ready")"
@@ -910,6 +933,20 @@ final class DragonOverlayModel: ObservableObject {
         let total = dailyComboActions.count + dailyQuests.count + dailyEvent.requiredSteps
         let done = comboDone + questDone + min(dailyEventProgress, dailyEvent.requiredSteps)
         return total == 0 ? 0 : Double(done) / Double(total)
+    }
+
+    var journalStreakCaption: String {
+        "This week \(min(7, weeklyCareCount))/7 care days · total streak \(petStreak)"
+    }
+
+    var journalStreakProgress: Double {
+        min(1, Double(max(0, weeklyCareCount)) / 7.0)
+    }
+
+    var journalStreakSpriteLine: String {
+        let next = PetStreakMilestone.allCases.first { weeklyCareCount < $0.requiredDays }
+            ?? PetStreakMilestone.daySeven
+        return "Week sprite: \(next.spriteRequestName.replacingOccurrences(of: "{stage}", with: growthStage.assetSlug))"
     }
 
     var journalSpriteLine: String {
@@ -999,6 +1036,9 @@ final class DragonOverlayModel: ObservableObject {
         UserDefaults.standard.set(dailyFeelingMask, forKey: Self.dailyFeelingMaskKey)
         UserDefaults.standard.set(emotionAlbumMask, forKey: Self.emotionAlbumMaskKey)
         UserDefaults.standard.set(latestFeelingRaw, forKey: Self.latestFeelingRawKey)
+        UserDefaults.standard.set(weeklyCareWeek, forKey: Self.weeklyCareWeekKey)
+        UserDefaults.standard.set(weeklyCareCount, forKey: Self.weeklyCareCountKey)
+        UserDefaults.standard.set(weeklyRewardMask, forKey: Self.weeklyRewardMaskKey)
     }
 
     private func handlesCare(_ prompt: String) -> Bool {
@@ -1222,7 +1262,14 @@ final class DragonOverlayModel: ObservableObject {
 
     private func syncDailyCombo() {
         let today = Self.dayFormatter.string(from: Date())
+        let week = Self.weekKey(for: Date())
         var changed = false
+        if weeklyCareWeek != week {
+            weeklyCareWeek = week
+            weeklyCareCount = 0
+            weeklyRewardMask = 0
+            changed = true
+        }
         if dailyComboDate != today {
             dailyComboDate = today
             dailyComboMask = 0
@@ -1255,6 +1302,34 @@ final class DragonOverlayModel: ObservableObject {
         }
         guard changed else { return }
         persistCare()
+    }
+
+    private func awardWeeklyCareMilestones() -> String? {
+        let milestones = PetStreakMilestone.newlyUnlocked(
+            careCount: weeklyCareCount,
+            rewardMask: weeklyRewardMask
+        )
+        guard !milestones.isEmpty else { return nil }
+
+        let priorMask = weeklyRewardMask
+        var notes: [String] = []
+        for milestone in milestones {
+            weeklyRewardMask |= milestone.rawValue
+            sparkDust = min(999, sparkDust + milestone.sparkReward)
+            happiness = min(5, happiness + milestone.joyReward)
+            if milestone.bondHPReward > 0 {
+                companionHP = min(10, companionHP + milestone.bondHPReward)
+            }
+            notes.append(
+                "\(milestone.title): \(milestone.rewardLine) Joy +\(milestone.joyReward), Sparks +\(milestone.sparkReward)\(milestone.bondHPReward > 0 ? ", Bond HP +\(milestone.bondHPReward)" : "")."
+            )
+        }
+        if priorMask != weeklyRewardMask {
+            setMood(.hyper, duration: 1.8)
+            play(.happy)
+        }
+        persistCare()
+        return notes.joined(separator: " ")
     }
 
     private func markCombo(_ action: PetComboAction) {
@@ -1831,6 +1906,11 @@ struct DragonOverlayView: View {
                 .foregroundStyle(Color.ivory.opacity(0.72))
                 .lineLimit(1)
                 .minimumScaleFactor(0.58)
+            Text(model.weeklyLine)
+                .font(.system(size: 8.4, weight: .black, design: .rounded))
+                .foregroundStyle(Color.gold.opacity(0.72))
+                .lineLimit(1)
+                .minimumScaleFactor(0.52)
             Text(model.cipherLine)
                 .font(.system(size: 8.5, weight: .bold, design: .rounded))
                 .foregroundStyle(Color.ivory.opacity(0.7))
@@ -2027,6 +2107,7 @@ enum PetJournalPage: String, CaseIterable {
     case memories
     case badges
     case rituals
+    case streak
     case art
 
     var label: String {
@@ -2041,6 +2122,8 @@ enum PetJournalPage: String, CaseIterable {
             return "Badge"
         case .rituals:
             return "Today"
+        case .streak:
+            return "Week"
         case .art:
             return "Art"
         }
@@ -2105,6 +2188,11 @@ struct PetJournalPanel: View {
             detailLine(model.comboLine)
             detailLine(model.taskLine)
             detailLine(model.cipherLine)
+        case .streak:
+            journalHero("Week Trail", value: model.journalStreakProgress, caption: model.journalStreakCaption)
+            streakGrid
+            detailLine(model.weeklyLine)
+            artLine(model.journalStreakSpriteLine)
         case .art:
             journalTitleBlock("Sprite Brief", caption: model.journalArtContextLine)
             artLine(model.journalSpriteLine)
@@ -2169,6 +2257,14 @@ struct PetJournalPanel: View {
         LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 4), count: 2), spacing: 3) {
             ForEach(PetSeasonEvent.allCases, id: \.rawValue) { event in
                 journalChip(event.badgeTitle, isUnlocked: model.seasonBadgeMask & event.rawValue != 0)
+            }
+        }
+    }
+
+    private var streakGrid: some View {
+        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 4), count: 2), spacing: 3) {
+            ForEach(PetStreakMilestone.allCases, id: \.rawValue) { milestone in
+                journalChip("\(milestone.shortLabel) \(milestone.title)", isUnlocked: model.weeklyRewardMask & milestone.rawValue != 0)
             }
         }
     }

@@ -190,3 +190,10 @@ and the spoken cue.
 **Rule:** every assistant-facing reply path should keep the "Pika pika!" text
 prefix and trigger an audible original pika-like cue, with duplicate-prefix
 guards for both spaced and hyphenated variants.
+
+## 2026-06-13 — Daily care needs a weekly arc
+User wants a proper pet loop inspired by viral Telegram retention mechanics,
+not isolated one-off buttons.
+**Rule:** daily care should feed a visible weekly trail with milestone rewards,
+journal receipts, and matching sprite requests so returning over several days
+feels like relationship progress.
