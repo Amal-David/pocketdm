@@ -1102,6 +1102,128 @@ enum PetLoreCodex {
 }
 
 enum PetNudgeLibrary {
+    struct PetCheerPrompt {
+        let title: String
+        let body: String
+        let action: String
+        let rewardLine: String
+
+        var bubbleText: String {
+            "\(title): \(body)"
+        }
+    }
+
+    static func cheerPrompt(
+        feeling: PetFeeling,
+        stage: PetGrowthStage,
+        combo: [PetComboAction],
+        comboMask: Int,
+        nextQuest: PetDailyQuest?,
+        cipher: PetDailyCipher,
+        cipherSolved: Bool,
+        boosterReady: Bool,
+        careMoment: PetCareMoment,
+        careNeed: PetCareNeed,
+        seasonEvent: PetSeasonEvent,
+        eventProgress: Int,
+        comebackReady: Bool,
+        energy: Int,
+        sparkDust: Int,
+        index: Int
+    ) -> PetCheerPrompt {
+        if comebackReady {
+            return PetCheerPrompt(
+                title: "Welcome back",
+                body: "I saved a small chest while you were away.",
+                action: "Open the comeback check-in",
+                rewardLine: "Comeback answered"
+            )
+        }
+        if energy == 0 {
+            return PetCheerPrompt(
+                title: "Soft recharge",
+                body: "I am sleepy, but I saved your quest.",
+                action: "Open a gentle check-in",
+                rewardLine: "Quiet check-in answered"
+            )
+        }
+        if index % 3 == 1 {
+            return PetCheerPrompt(
+                title: "\(careNeed.title) check",
+                body: "How are you doing? Want to \(careNeed.actionLine)?",
+                action: "Open the care ritual",
+                rewardLine: "\(careNeed.title) check-in answered"
+            )
+        }
+        if eventProgress < seasonEvent.requiredSteps {
+            return PetCheerPrompt(
+                title: seasonEvent.title,
+                body: "Want to \(seasonEvent.actionLine)?",
+                action: "Open today's event",
+                rewardLine: "\(seasonEvent.title) check-in answered"
+            )
+        }
+        if index % 5 == 0 {
+            return PetCheerPrompt(
+                title: careMoment.title,
+                body: careMoment.nudgeLine,
+                action: "Open the time-of-day check-in",
+                rewardLine: "\(careMoment.title) check-in answered"
+            )
+        }
+        if boosterReady {
+            return PetCheerPrompt(
+                title: "Boost ready",
+                body: "Want a quick burst before the next quest?",
+                action: "Open Spark Boost",
+                rewardLine: "Boost check-in answered"
+            )
+        }
+        if !cipherSolved {
+            return PetCheerPrompt(
+                title: "Tiny cipher",
+                body: "\(cipher.clue). I can solve it with you.",
+                action: "Open today's cipher",
+                rewardLine: "Cipher check-in answered"
+            )
+        }
+        if sparkDust >= 80 {
+            return PetCheerPrompt(
+                title: "Kit upgrade",
+                body: "\(sparkDust) Sparks are glowing. Want an upgrade?",
+                action: "Open upgrade",
+                rewardLine: "Upgrade check-in answered"
+            )
+        }
+        if let nextQuest {
+            return PetCheerPrompt(
+                title: "Daily board",
+                body: "How are you doing? Want to \(nextQuest.nudgeText)?",
+                action: "Open today's board",
+                rewardLine: "\(nextQuest.title) check-in answered"
+            )
+        }
+        if let nextAction = combo.first(where: { comboMask & $0.rawValue == 0 }) {
+            return PetCheerPrompt(
+                title: "Tiny combo",
+                body: "How are you doing? Want to \(nextAction.nudgeText)?",
+                action: "Open the combo step",
+                rewardLine: "\(nextAction.label) combo check-in answered"
+            )
+        }
+
+        let fallback = [
+            PetCheerPrompt(title: stage.title, body: "Want one brave click?", action: "Open a tiny quest", rewardLine: "Tiny quest check-in answered"),
+            PetCheerPrompt(title: "I kept watch", body: "Want a 60-second quest?", action: "Open a short quest", rewardLine: "Watch check-in answered"),
+            PetCheerPrompt(title: "\(feeling.title) mood", body: "Need a hint or a phrase?", action: "Open a mood check-in", rewardLine: "\(feeling.title) check-in answered"),
+            PetCheerPrompt(title: "Tiny reset", body: "Breathe, stretch, then one spark?", action: "Open a reset", rewardLine: "Reset check-in answered"),
+            PetCheerPrompt(title: "Pika check", body: "What is happening over there?", action: "Open chat", rewardLine: "Chat check-in answered"),
+            PetCheerPrompt(title: "I found a task", body: "Want me to sit with you while you start?", action: "Open focus mode", rewardLine: "Focus check-in answered"),
+            PetCheerPrompt(title: "Warm bond", body: "No big quest needed. One tap is enough.", action: "Open a gentle check-in", rewardLine: "Bond check-in answered")
+        ]
+        return fallback[index % fallback.count]
+    }
+
     static func cheerLine(
         feeling: PetFeeling,
         stage: PetGrowthStage,
@@ -1120,46 +1242,23 @@ enum PetNudgeLibrary {
         sparkDust: Int,
         index: Int
     ) -> String {
-        if comebackReady {
-            return "Welcome back. I saved a little chest for you."
-        }
-        if energy == 0 {
-            return "I am sleepy, but I saved your quest. Come back after a recharge?"
-        }
-        if index % 3 == 1 {
-            return careNeed.nudgeLine
-        }
-        if eventProgress < seasonEvent.requiredSteps {
-            return seasonEvent.nudgeLine
-        }
-        if index % 5 == 0 {
-            return careMoment.nudgeLine
-        }
-        if boosterReady {
-            return "Your Spark Boost is ready. Want a quick burst before the next quest?"
-        }
-        if !cipherSolved {
-            return "Tiny cipher today: \(cipher.clue). I can solve it with you for Sparks."
-        }
-        if sparkDust >= 80 {
-            return "You have \(sparkDust) Sparks. Want to upgrade my little kit?"
-        }
-        if let nextQuest {
-            return "How are you doing? Today's board wants you to \(nextQuest.nudgeText)."
-        }
-        if let nextAction = combo.first(where: { comboMask & $0.rawValue == 0 }) {
-            return "How are you doing? Today's tiny combo wants you to \(nextAction.nudgeText)."
-        }
-
-        let fallback = [
-            "\(stage.title) check-in: want one brave click?",
-            "I kept watch. Want a 60-second quest?",
-            "\(feeling.title) mood today. Need a hint or a phrase?",
-            "Tiny check-in: breathe, stretch, then one spark?",
-            "Your pocket buddy is awake. What is happening?",
-            "I found a tiny task. Want me to sit with you while you start?",
-            "No big quest needed. One tap is enough to keep the bond warm."
-        ]
-        return fallback[index % fallback.count]
+        cheerPrompt(
+            feeling: feeling,
+            stage: stage,
+            combo: combo,
+            comboMask: comboMask,
+            nextQuest: nextQuest,
+            cipher: cipher,
+            cipherSolved: cipherSolved,
+            boosterReady: boosterReady,
+            careMoment: careMoment,
+            careNeed: careNeed,
+            seasonEvent: seasonEvent,
+            eventProgress: eventProgress,
+            comebackReady: comebackReady,
+            energy: energy,
+            sparkDust: sparkDust,
+            index: index
+        ).bubbleText
     }
 }

@@ -321,7 +321,7 @@ function dragonSay(text, options = {}) {
 
 function pikaText(text) {
   const line = String(text || "");
-  return /pika pika/i.test(line) ? line : `Pika pika! ${line}`;
+  return /pika[-\s]+pika/i.test(line) ? line : `Pika pika! ${line}`;
 }
 
 function speak(text) {

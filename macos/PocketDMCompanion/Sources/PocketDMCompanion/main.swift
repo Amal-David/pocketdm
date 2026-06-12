@@ -266,6 +266,9 @@ final class DragonOverlayModel: ObservableObject {
     @Published var emotionAlbumMask = UserDefaults.standard.object(forKey: DragonOverlayModel.emotionAlbumMaskKey) as? Int ?? 0
     @Published var latestFeelingRaw = UserDefaults.standard.object(forKey: DragonOverlayModel.latestFeelingRawKey) as? Int ?? 0
     @Published var cheerBubble: String?
+    @Published var cheerTitle = ""
+    @Published var cheerAction = ""
+    @Published var cheerRewardLine = ""
 
     let languageCoach = LanguageCoachStore()
 
@@ -488,7 +491,7 @@ final class DragonOverlayModel: ObservableObject {
     func petDaily(requestLabel: String = "Daily pet") {
         let priorStage = growthStage
         lastRequest = requestLabel
-        cheerBubble = nil
+        clearCheerBubble()
         rechargeEnergy()
         let today = Self.dayFormatter.string(from: Date())
         if lastPetDay == today {
@@ -550,26 +553,27 @@ final class DragonOverlayModel: ObservableObject {
             appendEmotionScene(trigger: isHintPrompt(prompt) ? "hint" : "chat")
             appendEvolutionNote(from: priorStage)
             play(.reply)
-            speakPika()
+            speakPika(force: true)
             setMood(.happy, duration: 1.5)
         } catch {
             message = pikaText("I cannot reach the tale yet. Open PocketDM, start a run, then ask me again.")
             serverLine = "Waiting for local server"
             appendEmotionScene(trigger: "server wait")
             play(.nap)
-            speakPika()
+            speakPika(force: true)
             setMood(.nap, duration: 2.4)
         }
     }
 
     func acceptCheerBubble() {
         let priorStage = growthStage
-        let prompt = cheerBubble ?? "Check in"
-        cheerBubble = nil
+        let prompt = cheerTitle.isEmpty ? "Check in" : cheerTitle
+        let rewardLine = cheerRewardLine.isEmpty ? "Check-in answered" : cheerRewardLine
+        clearCheerBubble()
         lastRequest = "Cheer"
         happiness = min(5, happiness + 1)
         earnSparkDust(3)
-        message = pikaText("\(prompt) Pikachu turns it into Joy +1 and Sparks +3. Open the game for one tiny quest.")
+        message = pikaText("\(rewardLine). Pikachu turns \(prompt.lowercased()) into Joy +1 and Sparks +3.")
         recordDailyQuest(.cheer)
         if let needNote = awardCareNeed(.focus) {
             message += " \(needNote)"
@@ -585,7 +589,7 @@ final class DragonOverlayModel: ObservableObject {
     }
 
     func dismissCheerBubble() {
-        cheerBubble = nil
+        clearCheerBubble()
         UserDefaults.standard.set(Date().timeIntervalSince1970, forKey: Self.lastCheerAtKey)
         play(.minimize)
     }
@@ -930,12 +934,13 @@ final class DragonOverlayModel: ObservableObject {
         soundPlayer.play(sound, enabled: soundEnabled)
     }
 
-    private func speakPika() {
-        soundPlayer.speakPika(enabled: soundEnabled)
+    private func speakPika(force: Bool = false) {
+        soundPlayer.speakPika(enabled: soundEnabled, force: force)
     }
 
     private func pikaText(_ text: String) -> String {
-        if text.localizedCaseInsensitiveContains("pika pika") {
+        let normalized = text.lowercased().replacingOccurrences(of: "-", with: " ")
+        if normalized.contains("pika pika") {
             return text
         }
         return "Pika pika! \(text)"
@@ -949,6 +954,13 @@ final class DragonOverlayModel: ObservableObject {
         } else {
             message += " \(note)"
         }
+    }
+
+    private func clearCheerBubble() {
+        cheerBubble = nil
+        cheerTitle = ""
+        cheerAction = ""
+        cheerRewardLine = ""
     }
 
     private func persistCare() {
@@ -1380,7 +1392,7 @@ final class DragonOverlayModel: ObservableObject {
         guard lastCheerAt == 0 || now - lastCheerAt >= effectiveCheerCooldown else { return }
 
         let index = defaults.integer(forKey: Self.cheerIndexKey)
-        cheerBubble = pikaText(PetNudgeLibrary.cheerLine(
+        let prompt = PetNudgeLibrary.cheerPrompt(
             feeling: petFeeling,
             stage: growthStage,
             combo: dailyComboActions,
@@ -1397,7 +1409,11 @@ final class DragonOverlayModel: ObservableObject {
             energy: energy,
             sparkDust: sparkDust,
             index: index
-        ))
+        )
+        cheerTitle = prompt.title
+        cheerAction = prompt.action
+        cheerRewardLine = prompt.rewardLine
+        cheerBubble = pikaText(prompt.body)
         defaults.set(index + 1, forKey: Self.cheerIndexKey)
         defaults.set(now, forKey: Self.lastCheerAtKey)
         play(.happy)
@@ -1537,13 +1553,13 @@ final class PetSoundPlayer {
         player.play()
     }
 
-    func speakPika(enabled: Bool) {
+    func speakPika(enabled: Bool, force: Bool = false) {
         guard enabled else { return }
         let now = Date()
-        guard now.timeIntervalSince(lastPikaAt) >= 1.4 else { return }
+        guard force || now.timeIntervalSince(lastPikaAt) >= 1.4 else { return }
         lastPikaAt = now
         speech.stopSpeaking(at: .immediate)
-        let utterance = AVSpeechUtterance(string: "pika pika")
+        let utterance = AVSpeechUtterance(string: "Pika pika!")
         utterance.rate = 0.48
         utterance.volume = 0.42
         utterance.pitchMultiplier = 1.18
@@ -1620,16 +1636,28 @@ struct DragonOverlayView: View {
                     Button {
                         model.acceptCheerBubble()
                     } label: {
-                        Text(cheerBubble)
-                            .font(.system(size: 11, weight: .black, design: .rounded))
-                            .foregroundStyle(Color.black)
-                            .lineLimit(2)
-                            .multilineTextAlignment(.leading)
-                            .padding(.horizontal, 9)
-                            .padding(.vertical, 7)
-                            .frame(width: 139, alignment: .leading)
-                            .background(Color.ivory, in: RoundedRectangle(cornerRadius: 8))
-                            .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.gold.opacity(0.9), lineWidth: 1))
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(model.cheerTitle.isEmpty ? "Pika check" : model.cheerTitle)
+                                .font(.system(size: 9.5, weight: .black, design: .rounded))
+                                .foregroundStyle(Color.black.opacity(0.82))
+                                .lineLimit(1)
+                            Text(cheerBubble)
+                                .font(.system(size: 10.5, weight: .black, design: .rounded))
+                                .foregroundStyle(Color.black)
+                                .lineLimit(2)
+                                .minimumScaleFactor(0.72)
+                            Text(model.cheerAction.isEmpty ? "Open check-in" : model.cheerAction)
+                                .font(.system(size: 8.5, weight: .black, design: .rounded))
+                                .foregroundStyle(Color.black.opacity(0.58))
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.72)
+                        }
+                        .multilineTextAlignment(.leading)
+                        .padding(.horizontal, 9)
+                        .padding(.vertical, 7)
+                        .frame(width: 146, alignment: .leading)
+                        .background(Color.ivory, in: RoundedRectangle(cornerRadius: 8))
+                        .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.gold.opacity(0.9), lineWidth: 1))
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel("Open Pikachu check-in")

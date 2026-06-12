@@ -176,3 +176,17 @@ layer inspectable on its own.
 **Rule:** split dense pet progress into small pages for growth, moods, memories,
 badges, daily rituals, and art requests so users can understand one loop at a
 time.
+
+## 2026-06-13 — Proactive pet bubbles need intent and reward
+User wants the pet to proactively ask how the user is doing throughout the day,
+not just sit as a chat widget.
+**Rule:** check-in bubbles should carry a clear context, question, action, and
+reward receipt so accepting the bubble feels like answering a companion rather
+than clicking a notification.
+
+## 2026-06-13 — Character voice must be text and sound
+User expects the pet/model personality to show up both in the written response
+and the spoken cue.
+**Rule:** every assistant-facing reply path should keep the "Pika pika!" text
+prefix and trigger an audible original pika-like cue, with duplicate-prefix
+guards for both spaced and hyphenated variants.

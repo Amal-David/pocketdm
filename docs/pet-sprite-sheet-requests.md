@@ -110,6 +110,14 @@ Generate these first. They unlock the most visible upgrade with the least code:
    - Points at locked and unlocked mood charms in a tiny album grid.
 45. `pet-buddy-journal-ritual-checklist.png`
    - Reviews today's combo, tasks, event, boost, and care need as charms.
+46. `pet-buddy-proactive-checkin.png`
+   - Pops up beside the desktop pet with a warm "how are you?" pose.
+47. `pet-buddy-proactive-focus-checkin.png`
+   - Quietly sits and invites the user to start one small task.
+48. `pet-buddy-proactive-event-checkin.png`
+   - Points toward today's event charm without text.
+49. `pet-buddy-proactive-comeback-checkin.png`
+   - Welcomes the user back with a saved tiny chest.
 
 ## Growth Stages
 
@@ -336,6 +344,25 @@ Journal / album view:
 - `pet-{stage}-journal-art-request.png`
   - Shows the exact next sprite need as a blank transparent-sheet card.
 
+Proactive check-ins:
+
+- `pet-{stage}-proactive-checkin.png`
+  - General "how are you doing?" bubble stance, warm and curious.
+- `pet-{stage}-proactive-focus-checkin.png`
+  - Quiet focus-support pose, sits beside the user's work.
+- `pet-{stage}-proactive-care-checkin.png`
+  - Gently asks for the current care need without looking needy.
+- `pet-{stage}-proactive-event-checkin.png`
+  - Points toward the daily event charm.
+- `pet-{stage}-proactive-cipher-checkin.png`
+  - Holds a tiny clue note.
+- `pet-{stage}-proactive-boost-checkin.png`
+  - Cheek sparks ready, invites a short burst.
+- `pet-{stage}-proactive-comeback-checkin.png`
+  - Welcomes the user back and presents a saved chest.
+- `pet-{stage}-proactive-dismiss.png`
+  - Calmly accepts dismissal and returns to idle, no sad guilt.
+
 Daily events and badges:
 
 - `pet-{stage}-event-spark-picnic.png`
@@ -439,6 +466,10 @@ These are for the progression layer:
 - Journal badge page viewed.
 - Journal ritual page viewed.
 - Journal next-sprite request.
+- Proactive check-in appeared.
+- Proactive check-in accepted.
+- Proactive check-in dismissed.
+- Proactive focus/care/event/cipher/boost/comeback check-in variants.
 - Daily event step.
 - Daily event complete.
 - Event badge unlocked.

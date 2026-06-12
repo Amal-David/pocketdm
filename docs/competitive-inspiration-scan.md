@@ -215,6 +215,9 @@ The native macOS companion now has the first version of the loop:
 
 - Pet-only default with click-to-expand.
 - Proactive check-in bubbles while minimized.
+- Proactive check-ins now carry structured title, body, action, and reward copy,
+  so the pet can ask "how are you doing?" in different care, focus, event,
+  cipher, boost, comeback, and mood contexts.
 - Sparks earned from petting, asking, language practice, and combo completion.
 - Energy that recharges over time.
 - Passive Sparks collected after time away.

@@ -324,7 +324,7 @@ def _dragon_reply(session: PlaySession, message: str) -> str:
 
 
 def _pika(text: str) -> str:
-    if "pika pika" in text.casefold():
+    if "pika pika" in text.casefold().replace("-", " "):
         return text
     return f"Pika pika! {text}"
 
