@@ -2,6 +2,7 @@
 set -euo pipefail
 
 script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd -P)"
+repo_root="$(cd -- "$script_dir/../../.." >/dev/null 2>&1 && pwd -P)"
 attach_url="${POCKETDM_COMPANION_ATTACH_URL:-http://127.0.0.1:7860}"
 launch_server=0
 dry_run=0
@@ -58,4 +59,5 @@ if [[ "$dry_run" -eq 1 ]]; then
   exit 0
 fi
 
+export POCKETDM_REPO="$repo_root"
 /usr/bin/open "$app_path" --args "${args[@]}"
