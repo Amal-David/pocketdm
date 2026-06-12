@@ -104,6 +104,12 @@ Generate these first. They unlock the most visible upgrade with the least code:
    - Shows a badge page with pride and a small sparkle.
 42. `pet-buddy-next-sprite-request.png`
    - Holds up a small blank art card, asking for the next animation sheet.
+43. `pet-buddy-journal-page-tabs.png`
+   - Flips between growth, mood, memory, badge, ritual, and art pages.
+44. `pet-buddy-journal-mood-grid.png`
+   - Points at locked and unlocked mood charms in a tiny album grid.
+45. `pet-buddy-journal-ritual-checklist.png`
+   - Reviews today's combo, tasks, event, boost, and care need as charms.
 
 ## Growth Stages
 
@@ -321,6 +327,14 @@ Journal / album view:
   - Shows today's combo, task board, event, and care need as visual charms.
 - `pet-{stage}-journal-next-sprite.png`
   - Presents the next needed sprite sheet as a blank art card.
+- `pet-{stage}-journal-page-tabs.png`
+  - Moves through journal tabs: growth, mood, memory, badge, ritual, art.
+- `pet-{stage}-journal-mood-grid.png`
+  - Shows locked and unlocked mood charms with a proud pointing pose.
+- `pet-{stage}-journal-ritual-checklist.png`
+  - Reviews the day's combo/task/event progress as visual charms.
+- `pet-{stage}-journal-art-request.png`
+  - Shows the exact next sprite need as a blank transparent-sheet card.
 
 Daily events and badges:
 
@@ -420,8 +434,10 @@ These are for the progression layer:
 - Daily mood set advanced.
 - Journal opened.
 - Journal growth page viewed.
+- Journal mood page viewed.
 - Journal memory page viewed.
 - Journal badge page viewed.
+- Journal ritual page viewed.
 - Journal next-sprite request.
 - Daily event step.
 - Daily event complete.

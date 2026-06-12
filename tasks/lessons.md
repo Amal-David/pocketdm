@@ -169,3 +169,10 @@ pet fantasy.
 **Rule:** move relationship progress into inspectable album/journal surfaces
 with clear progress groups and next asset requests, while keeping the default
 desktop state pet-only.
+
+## 2026-06-13 — Journal pages beat one giant journal summary
+After the first journal view existed, the next step was making each relationship
+layer inspectable on its own.
+**Rule:** split dense pet progress into small pages for growth, moods, memories,
+badges, daily rituals, and art requests so users can understand one loop at a
+time.

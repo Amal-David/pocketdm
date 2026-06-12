@@ -245,6 +245,8 @@ The native macOS companion now has the first version of the loop:
 - A native Journal tab alongside Chat and Learn. It shows progress bars for
   growth, mood album, memories, badges, and today's ritual, plus the next sprite
   filename the user should generate.
+- The Journal is now paged: Growth, Mood, Memory, Badge, Today, and Art tabs
+  let the user inspect one part of the pet relationship at a time.
 - Visible feelings such as Eager, Proud, Overcharged, Focused, Celebrating,
   Protective, Gentle, Playful, Grateful, Determined, Restless, Snacky, Sleepy,
   Curious, and Lonely.

@@ -913,6 +913,15 @@ final class DragonOverlayModel: ObservableObject {
         return "Next sprite: \(latest.spriteRequestName(stage: growthStage))"
     }
 
+    var journalArtContextLine: String {
+        let latest = PetFeeling(rawValue: latestFeelingRaw) ?? petFeeling
+        return "Stage \(growthStage.assetSlug) · Feeling \(latest.assetSlug)"
+    }
+
+    var journalArtPromptLine: String {
+        "12-frame transparent strip · no text · no border · no shadow"
+    }
+
     var journalPromptLine: String {
         "\(careNeed.title) ritual: \(careNeed.actionLine). \(storyLine)"
     }
@@ -1571,6 +1580,7 @@ struct DragonOverlayView: View {
     @State private var dragOffset: CGSize = .zero
     @State private var customPrompt = ""
     @State private var petHovering = false
+    @State private var journalPage: PetJournalPage = .growth
 
     var body: some View {
         ZStack {
@@ -1683,7 +1693,7 @@ struct DragonOverlayView: View {
                             }
                         )
                     } else if model.learningMode == .journal {
-                        PetJournalPanel(model: model)
+                        PetJournalPanel(model: model, page: $journalPage)
                     } else {
                         chatTranscript(isCompact: false)
                     }
@@ -1983,11 +1993,38 @@ struct DragonOverlayView: View {
 
 }
 
+enum PetJournalPage: String, CaseIterable {
+    case growth
+    case moods
+    case memories
+    case badges
+    case rituals
+    case art
+
+    var label: String {
+        switch self {
+        case .growth:
+            return "Grow"
+        case .moods:
+            return "Mood"
+        case .memories:
+            return "Memory"
+        case .badges:
+            return "Badge"
+        case .rituals:
+            return "Today"
+        case .art:
+            return "Art"
+        }
+    }
+}
+
 struct PetJournalPanel: View {
     @ObservedObject var model: DragonOverlayModel
+    @Binding var page: PetJournalPage
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: 5) {
             HStack(spacing: 6) {
                 Text("Pet Journal")
                     .font(.system(size: 12, weight: .black, design: .rounded))
@@ -2000,23 +2037,16 @@ struct PetJournalPanel: View {
                     .minimumScaleFactor(0.62)
             }
 
-            journalRow("Growth", value: model.journalGrowthProgress, caption: model.journalGrowthCaption)
-            journalRow("Mood Album", value: model.journalMoodProgress, caption: model.journalMoodCaption)
-            journalRow("Memories", value: model.journalMemoryProgress, caption: model.memoryLine)
-            journalRow("Badges", value: model.journalBadgeProgress, caption: model.journalBadgeCaption)
-            journalRow("Today", value: model.journalRitualProgress, caption: model.journalRitualCaption)
+            HStack(spacing: 4) {
+                ForEach(PetJournalPage.allCases, id: \.self) { item in
+                    Button(item.label) {
+                        page = item
+                    }
+                    .buttonStyle(JournalTabButtonStyle(selected: page == item))
+                }
+            }
 
-            Text(model.journalPromptLine)
-                .font(.system(size: 9.5, weight: .semibold, design: .rounded))
-                .foregroundStyle(Color.ivory.opacity(0.74))
-                .lineLimit(2)
-                .minimumScaleFactor(0.64)
-
-            Text(model.journalSpriteLine)
-                .font(.system(size: 9, weight: .black, design: .monospaced))
-                .foregroundStyle(Color.gold.opacity(0.9))
-                .lineLimit(1)
-                .minimumScaleFactor(0.52)
+            pageContent
         }
         .padding(10)
         .frame(maxWidth: .infinity, minHeight: 216, alignment: .topLeading)
@@ -2024,11 +2054,42 @@ struct PetJournalPanel: View {
         .overlay(RoundedRectangle(cornerRadius: 7).stroke(Color.gold.opacity(0.26), lineWidth: 1))
     }
 
-    private func journalRow(_ title: String, value: Double, caption: String) -> some View {
+    @ViewBuilder
+    private var pageContent: some View {
+        switch page {
+        case .growth:
+            journalHero("Growth", value: model.journalGrowthProgress, caption: model.journalGrowthCaption)
+            detailLine(model.evolutionLine)
+            detailLine(model.loreLine)
+            detailLine(model.journalArtContextLine)
+        case .moods:
+            journalHero("Mood Album", value: model.journalMoodProgress, caption: model.journalMoodCaption)
+            moodGrid
+        case .memories:
+            journalHero("Memories", value: model.journalMemoryProgress, caption: model.memoryLine)
+            memoryList
+        case .badges:
+            journalHero("Badges", value: model.journalBadgeProgress, caption: model.journalBadgeCaption)
+            badgeGrid
+        case .rituals:
+            journalHero("Today's Ritual", value: model.journalRitualProgress, caption: model.journalRitualCaption)
+            detailLine(model.needLine)
+            detailLine(model.comboLine)
+            detailLine(model.taskLine)
+            detailLine(model.cipherLine)
+        case .art:
+            journalTitleBlock("Sprite Brief", caption: model.journalArtContextLine)
+            artLine(model.journalSpriteLine)
+            detailLine(model.journalArtPromptLine)
+            detailLine(model.journalPromptLine)
+        }
+    }
+
+    private func journalHero(_ title: String, value: Double, caption: String) -> some View {
         VStack(alignment: .leading, spacing: 2) {
             HStack(alignment: .firstTextBaseline, spacing: 6) {
                 Text(title)
-                    .font(.system(size: 9.5, weight: .black, design: .rounded))
+                    .font(.system(size: 10.5, weight: .black, design: .rounded))
                     .foregroundStyle(Color.ivory.opacity(0.92))
                 Spacer(minLength: 0)
                 Text("\(Int((min(max(value, 0), 1) * 100).rounded()))%")
@@ -2045,6 +2106,79 @@ struct PetJournalPanel: View {
                 .tint(Color.gold)
                 .frame(height: 4)
         }
+    }
+
+    private func journalTitleBlock(_ title: String, caption: String) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(title)
+                .font(.system(size: 10.5, weight: .black, design: .rounded))
+                .foregroundStyle(Color.ivory.opacity(0.92))
+            Text(caption)
+                .font(.system(size: 8.6, weight: .semibold, design: .rounded))
+                .foregroundStyle(Color.ivory.opacity(0.68))
+                .lineLimit(1)
+                .minimumScaleFactor(0.6)
+        }
+    }
+
+    private var moodGrid: some View {
+        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 3), count: 4), spacing: 3) {
+            ForEach(PetFeeling.allCases, id: \.rawValue) { feeling in
+                journalChip(feeling.title, isUnlocked: model.emotionAlbumMask & feeling.rawValue != 0)
+            }
+        }
+    }
+
+    private var memoryList: some View {
+        VStack(alignment: .leading, spacing: 3) {
+            ForEach(PetBondMemory.allCases, id: \.rawValue) { memory in
+                compactStatusLine(memory.title, isUnlocked: model.careMemoryMask & memory.rawValue != 0)
+            }
+        }
+    }
+
+    private var badgeGrid: some View {
+        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 4), count: 2), spacing: 3) {
+            ForEach(PetSeasonEvent.allCases, id: \.rawValue) { event in
+                journalChip(event.badgeTitle, isUnlocked: model.seasonBadgeMask & event.rawValue != 0)
+            }
+        }
+    }
+
+    private func journalChip(_ text: String, isUnlocked: Bool) -> some View {
+        Text("\(text) \(isUnlocked ? "✓" : "○")")
+            .font(.system(size: 7.5, weight: .black, design: .rounded))
+            .foregroundStyle(isUnlocked ? Color.black : Color.ivory.opacity(0.66))
+            .lineLimit(1)
+            .minimumScaleFactor(0.58)
+            .frame(height: 18)
+            .frame(maxWidth: .infinity)
+            .background(isUnlocked ? Color.gold.opacity(0.92) : Color.black.opacity(0.32), in: RoundedRectangle(cornerRadius: 5))
+            .overlay(RoundedRectangle(cornerRadius: 5).stroke(Color.ivory.opacity(isUnlocked ? 0 : 0.12), lineWidth: 1))
+    }
+
+    private func compactStatusLine(_ text: String, isUnlocked: Bool) -> some View {
+        Text("\(isUnlocked ? "✓" : "○") \(text)")
+            .font(.system(size: 8.6, weight: .black, design: .rounded))
+            .foregroundStyle(isUnlocked ? Color.gold : Color.ivory.opacity(0.62))
+            .lineLimit(1)
+            .minimumScaleFactor(0.66)
+    }
+
+    private func detailLine(_ text: String) -> some View {
+        Text(text)
+            .font(.system(size: 8.8, weight: .semibold, design: .rounded))
+            .foregroundStyle(Color.ivory.opacity(0.7))
+            .lineLimit(2)
+            .minimumScaleFactor(0.58)
+    }
+
+    private func artLine(_ text: String) -> some View {
+        Text(text)
+            .font(.system(size: 8.8, weight: .black, design: .monospaced))
+            .foregroundStyle(Color.gold.opacity(0.92))
+            .lineLimit(1)
+            .minimumScaleFactor(0.46)
     }
 }
 
@@ -2328,6 +2462,24 @@ struct LanguageChoiceButtonStyle: ButtonStyle {
             .frame(maxWidth: .infinity)
             .background(Color.black.opacity(0.34), in: RoundedRectangle(cornerRadius: 6))
             .overlay(RoundedRectangle(cornerRadius: 6).stroke(Color.ivory.opacity(0.18), lineWidth: 1))
+            .opacity(isEnabled ? (configuration.isPressed ? 0.72 : 1) : 0.48)
+    }
+}
+
+struct JournalTabButtonStyle: ButtonStyle {
+    @Environment(\.isEnabled) private var isEnabled
+    let selected: Bool
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(.system(size: 8.7, weight: .black, design: .rounded))
+            .foregroundStyle(selected ? Color.black : Color.ivory)
+            .lineLimit(1)
+            .minimumScaleFactor(0.68)
+            .frame(height: 24)
+            .frame(maxWidth: .infinity)
+            .background(selected ? Color.gold : Color.black.opacity(0.34), in: RoundedRectangle(cornerRadius: 5))
+            .overlay(RoundedRectangle(cornerRadius: 5).stroke(Color.ivory.opacity(selected ? 0 : 0.16), lineWidth: 1))
             .opacity(isEnabled ? (configuration.isPressed ? 0.72 : 1) : 0.48)
     }
 }
