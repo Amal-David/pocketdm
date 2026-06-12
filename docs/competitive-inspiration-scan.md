@@ -192,6 +192,8 @@ The new layer should add:
 - Pet feelings that are visible enough to drive sprite selection.
 - A mood album that turns those feelings into collectible emotional states,
   giving the pet a visible arc across each day rather than one static idle.
+- A journal/album view that pulls progress out of the cramped status stack and
+  makes growth, moods, memories, badges, rituals, and next sprite needs readable.
 - Rotating care needs so the pet wants affection, study, adventure, rest, play,
   focus, or puzzle care rather than feeling like one static mood button.
 - Bond memories that unlock on first care, hint, lesson, quest, upgrade,
@@ -240,6 +242,9 @@ The native macOS companion now has the first version of the loop:
   rewards per step, and unlocks/polishes a badge on completion.
 - A mood album line: meaningful actions can discover or revisit feelings,
   rewarding the user for seeing the pet in different daily states.
+- A native Journal tab alongside Chat and Learn. It shows progress bars for
+  growth, mood album, memories, badges, and today's ritual, plus the next sprite
+  filename the user should generate.
 - Visible feelings such as Eager, Proud, Overcharged, Focused, Celebrating,
   Protective, Gentle, Playful, Grateful, Determined, Restless, Snacky, Sleepy,
   Curious, and Lonely.

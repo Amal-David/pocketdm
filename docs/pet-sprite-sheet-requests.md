@@ -94,6 +94,16 @@ Generate these first. They unlock the most visible upgrade with the least code:
    - Smoothly changes from neutral into happy, focused, sleepy, or playful.
 37. `pet-buddy-daily-mood-complete.png`
    - Celebrates several emotions discovered in one day without confetti text.
+38. `pet-buddy-journal-open.png`
+   - Opens a tiny field journal/charm album and looks proud.
+39. `pet-buddy-journal-growth-map.png`
+   - Points at a growth path from tiny to guardian form.
+40. `pet-buddy-journal-memory-page.png`
+   - Carefully turns to a remembered care moment.
+41. `pet-buddy-journal-badge-page.png`
+   - Shows a badge page with pride and a small sparkle.
+42. `pet-buddy-next-sprite-request.png`
+   - Holds up a small blank art card, asking for the next animation sheet.
 
 ## Growth Stages
 
@@ -297,6 +307,21 @@ Mood album:
 - `pet-{stage}-mood-revisit.png`
   - Recognizes a familiar feeling and gives a small "I remember this" reaction.
 
+Journal / album view:
+
+- `pet-{stage}-journal-open.png`
+  - Opens the pet journal and invites the user to inspect progress.
+- `pet-{stage}-journal-growth-map.png`
+  - Points from current stage toward next growth form.
+- `pet-{stage}-journal-memory-page.png`
+  - Shows one unlocked memory charm with a tender reaction.
+- `pet-{stage}-journal-badge-page.png`
+  - Shows event badge progress without text or UI labels.
+- `pet-{stage}-journal-ritual-page.png`
+  - Shows today's combo, task board, event, and care need as visual charms.
+- `pet-{stage}-journal-next-sprite.png`
+  - Presents the next needed sprite sheet as a blank art card.
+
 Daily events and badges:
 
 - `pet-{stage}-event-spark-picnic.png`
@@ -393,6 +418,11 @@ These are for the progression layer:
 - Mood discovered.
 - Mood album updated.
 - Daily mood set advanced.
+- Journal opened.
+- Journal growth page viewed.
+- Journal memory page viewed.
+- Journal badge page viewed.
+- Journal next-sprite request.
 - Daily event step.
 - Daily event complete.
 - Event badge unlocked.

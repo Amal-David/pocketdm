@@ -403,32 +403,54 @@ final class DragonOverlayModel: ObservableObject {
     }
 
     func toggleLearning() {
-        learningMode = learningMode == .lesson ? .chat : .lesson
         if learningMode == .lesson {
-            let priorStage = growthStage
-            lastRequest = "Learn"
-            message = pikaText("Lesson mode opened. Pick a pack, listen once, slow it down, then quiz for Joy.")
-            markCombo(.learn)
-            recordDailyQuest(.learn)
-            if let needNote = awardCareNeed(.study) {
-                message += " \(needNote)"
-            }
-            if let memoryNote = unlockMemory(.firstLesson) {
-                message += " \(memoryNote)"
-            }
-            appendEmotionScene(trigger: "lesson open")
-            appendEvolutionNote(from: priorStage)
-            play(.open)
-            speakPika()
-            languageCoach.speakCurrent()
-            setMood(.happy, duration: 1.2)
+            openChat()
         } else {
-            lastRequest = ""
-            message = pikaText("Back to chat. Ask for a hint, check status, or pet for today's bond spark.")
-            appendEmotionScene(trigger: "chat return")
-            play(.minimize)
-            speakPika()
+            openLearning()
         }
+    }
+
+    func openChat() {
+        guard learningMode != .chat else { return }
+        learningMode = .chat
+        lastRequest = ""
+        message = pikaText("Back to chat. Ask for a hint, check status, or pet for today's bond spark.")
+        appendEmotionScene(trigger: "chat return")
+        play(.minimize)
+        speakPika()
+    }
+
+    func openLearning() {
+        guard learningMode != .lesson else { return }
+        let priorStage = growthStage
+        learningMode = .lesson
+        lastRequest = "Learn"
+        message = pikaText("Lesson mode opened. Pick a pack, listen once, slow it down, then quiz for Joy.")
+        markCombo(.learn)
+        recordDailyQuest(.learn)
+        if let needNote = awardCareNeed(.study) {
+            message += " \(needNote)"
+        }
+        if let memoryNote = unlockMemory(.firstLesson) {
+            message += " \(memoryNote)"
+        }
+        appendEmotionScene(trigger: "lesson open")
+        appendEvolutionNote(from: priorStage)
+        play(.open)
+        speakPika()
+        languageCoach.speakCurrent()
+        setMood(.happy, duration: 1.2)
+    }
+
+    func openJournal() {
+        guard learningMode != .journal else { return }
+        learningMode = .journal
+        lastRequest = "Journal"
+        message = pikaText("Journal opened. Growth, moods, memories, badges, and today's ritual are all in one place.")
+        appendEmotionScene(trigger: "journal")
+        play(.open)
+        speakPika()
+        setMood(.happy, duration: 1.2)
     }
 
     func applyLanguageReward(_ reward: LanguagePracticeReward) {
@@ -842,6 +864,59 @@ final class DragonOverlayModel: ObservableObject {
         )
     }
 
+    var journalGrowthCaption: String {
+        "\(growthStage.title) · HP \(companionHP)/10 · Sparks \(sparkDust)/420"
+    }
+
+    var journalGrowthProgress: Double {
+        min(1, max(Double(companionHP) / 10.0, Double(sparkDust) / 420.0))
+    }
+
+    var journalMoodCaption: String {
+        let latest = PetFeeling(rawValue: latestFeelingRaw) ?? petFeeling
+        return "\(latest.title) · \(latest.helperLine)"
+    }
+
+    var journalMoodProgress: Double {
+        Double(PetFeeling.count(mask: emotionAlbumMask)) / Double(PetFeeling.allCases.count)
+    }
+
+    var journalMemoryProgress: Double {
+        Double(PetBondMemory.allCases.filter { careMemoryMask & $0.rawValue != 0 }.count) / Double(PetBondMemory.allCases.count)
+    }
+
+    var journalBadgeCaption: String {
+        "\(dailyEvent.title) · \(dailyEventProgress)/\(dailyEvent.requiredSteps) today · \(PetSeasonEvent.badgeSummary(mask: seasonBadgeMask))"
+    }
+
+    var journalBadgeProgress: Double {
+        Double(PetSeasonEvent.allCases.filter { seasonBadgeMask & $0.rawValue != 0 }.count) / Double(PetSeasonEvent.allCases.count)
+    }
+
+    var journalRitualCaption: String {
+        let comboDone = dailyComboActions.filter { dailyComboMask & $0.rawValue != 0 }.count
+        let questDone = dailyQuests.filter { dailyQuestMask & $0.rawValue != 0 }.count
+        let next = nextDailyQuest?.title ?? "Board clear"
+        return "Combo \(comboDone)/\(dailyComboActions.count) · Tasks \(questDone)/\(dailyQuests.count) · Next \(next)"
+    }
+
+    var journalRitualProgress: Double {
+        let comboDone = dailyComboActions.filter { dailyComboMask & $0.rawValue != 0 }.count
+        let questDone = dailyQuests.filter { dailyQuestMask & $0.rawValue != 0 }.count
+        let total = dailyComboActions.count + dailyQuests.count + dailyEvent.requiredSteps
+        let done = comboDone + questDone + min(dailyEventProgress, dailyEvent.requiredSteps)
+        return total == 0 ? 0 : Double(done) / Double(total)
+    }
+
+    var journalSpriteLine: String {
+        let latest = PetFeeling(rawValue: latestFeelingRaw) ?? petFeeling
+        return "Next sprite: \(latest.spriteRequestName(stage: growthStage))"
+    }
+
+    var journalPromptLine: String {
+        "\(careNeed.title) ritual: \(careNeed.actionLine). \(storyLine)"
+    }
+
     private func play(_ sound: PetSound) {
         soundPlayer.play(sound, enabled: soundEnabled)
     }
@@ -1040,6 +1115,8 @@ final class DragonOverlayModel: ObservableObject {
             return .restless
         case "event review":
             return .celebrating
+        case "journal":
+            return .proud
         default:
             return petFeeling
         }
@@ -1596,6 +1673,8 @@ struct DragonOverlayView: View {
                 }
 
                 VStack(alignment: .leading, spacing: 9) {
+                    modeControls
+
                     if model.learningMode == .lesson {
                         LanguageCoachPanel(
                             coach: model.languageCoach,
@@ -1603,6 +1682,8 @@ struct DragonOverlayView: View {
                                 model.applyLanguageReward(reward)
                             }
                         )
+                    } else if model.learningMode == .journal {
+                        PetJournalPanel(model: model)
                     } else {
                         chatTranscript(isCompact: false)
                     }
@@ -1783,7 +1864,7 @@ struct DragonOverlayView: View {
             chatLine(label: "Pikachu", text: model.message, isCompact: isCompact)
         }
         .padding(isCompact ? 8 : 10)
-        .frame(maxWidth: .infinity, minHeight: isCompact ? 56 : 142, alignment: .topLeading)
+        .frame(maxWidth: .infinity, minHeight: isCompact ? 56 : 118, alignment: .topLeading)
         .background(.black.opacity(0.72), in: RoundedRectangle(cornerRadius: 7))
         .overlay(RoundedRectangle(cornerRadius: 7).stroke(Color.gold.opacity(0.26), lineWidth: 1))
     }
@@ -1803,17 +1884,35 @@ struct DragonOverlayView: View {
     }
 
     private var emotionControls: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: 7) {
             Button("Pet") { model.petDaily() }
                 .buttonStyle(DragonButtonStyle(kind: model.mood == .happy ? .primary : .secondary))
-            Button("Learn") { model.toggleLearning() }
-                .buttonStyle(DragonButtonStyle(kind: model.learningMode == .lesson ? .primary : .secondary))
             Button("Nap") { model.nap() }
                 .buttonStyle(DragonButtonStyle(kind: model.mood == .nap ? .primary : .secondary))
             Button("Hyper") { model.hyper() }
                 .buttonStyle(DragonButtonStyle(kind: model.mood == .hyper ? .primary : .secondary))
         }
         .disabled(model.busy)
+    }
+
+    private var modeControls: some View {
+        HStack(spacing: 6) {
+            modeButton("Chat", mode: .chat) {
+                model.openChat()
+            }
+            modeButton("Learn", mode: .lesson) {
+                model.openLearning()
+            }
+            modeButton("Journal", mode: .journal) {
+                model.openJournal()
+            }
+        }
+        .disabled(model.busy)
+    }
+
+    private func modeButton(_ label: String, mode: LearningMode, action: @escaping () -> Void) -> some View {
+        Button(label, action: action)
+            .buttonStyle(DragonButtonStyle(kind: model.learningMode == mode ? .primary : .secondary))
     }
 
     private func inputRow(isCompact: Bool) -> some View {
@@ -1882,6 +1981,71 @@ struct DragonOverlayView: View {
             }
     }
 
+}
+
+struct PetJournalPanel: View {
+    @ObservedObject var model: DragonOverlayModel
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 6) {
+                Text("Pet Journal")
+                    .font(.system(size: 12, weight: .black, design: .rounded))
+                    .foregroundStyle(Color.ivory)
+                Spacer(minLength: 0)
+                Text(model.careLine)
+                    .font(.system(size: 9, weight: .black, design: .rounded))
+                    .foregroundStyle(Color.gold)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.62)
+            }
+
+            journalRow("Growth", value: model.journalGrowthProgress, caption: model.journalGrowthCaption)
+            journalRow("Mood Album", value: model.journalMoodProgress, caption: model.journalMoodCaption)
+            journalRow("Memories", value: model.journalMemoryProgress, caption: model.memoryLine)
+            journalRow("Badges", value: model.journalBadgeProgress, caption: model.journalBadgeCaption)
+            journalRow("Today", value: model.journalRitualProgress, caption: model.journalRitualCaption)
+
+            Text(model.journalPromptLine)
+                .font(.system(size: 9.5, weight: .semibold, design: .rounded))
+                .foregroundStyle(Color.ivory.opacity(0.74))
+                .lineLimit(2)
+                .minimumScaleFactor(0.64)
+
+            Text(model.journalSpriteLine)
+                .font(.system(size: 9, weight: .black, design: .monospaced))
+                .foregroundStyle(Color.gold.opacity(0.9))
+                .lineLimit(1)
+                .minimumScaleFactor(0.52)
+        }
+        .padding(10)
+        .frame(maxWidth: .infinity, minHeight: 216, alignment: .topLeading)
+        .background(.black.opacity(0.72), in: RoundedRectangle(cornerRadius: 7))
+        .overlay(RoundedRectangle(cornerRadius: 7).stroke(Color.gold.opacity(0.26), lineWidth: 1))
+    }
+
+    private func journalRow(_ title: String, value: Double, caption: String) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            HStack(alignment: .firstTextBaseline, spacing: 6) {
+                Text(title)
+                    .font(.system(size: 9.5, weight: .black, design: .rounded))
+                    .foregroundStyle(Color.ivory.opacity(0.92))
+                Spacer(minLength: 0)
+                Text("\(Int((min(max(value, 0), 1) * 100).rounded()))%")
+                    .font(.system(size: 8.8, weight: .black, design: .rounded))
+                    .foregroundStyle(Color.gold)
+            }
+            Text(caption)
+                .font(.system(size: 8.6, weight: .semibold, design: .rounded))
+                .foregroundStyle(Color.ivory.opacity(0.68))
+                .lineLimit(1)
+                .minimumScaleFactor(0.6)
+            ProgressView(value: min(max(value, 0), 1))
+                .progressViewStyle(.linear)
+                .tint(Color.gold)
+                .frame(height: 4)
+        }
+    }
 }
 
 struct LanguageCoachPanel: View {

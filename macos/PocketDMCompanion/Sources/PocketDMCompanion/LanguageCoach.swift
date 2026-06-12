@@ -94,6 +94,7 @@ enum LessonStep: String, Codable {
 enum LearningMode: String, Codable {
     case chat
     case lesson
+    case journal
 }
 
 struct LanguagePracticeReward {

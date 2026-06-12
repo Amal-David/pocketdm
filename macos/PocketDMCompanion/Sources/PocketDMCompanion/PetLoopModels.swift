@@ -37,6 +37,21 @@ enum PetGrowthStage: CaseIterable {
         }
     }
 
+    var assetSlug: String {
+        switch self {
+        case .tinySpark:
+            return "tiny-spark"
+        case .pocketPal:
+            return "pocket-pal"
+        case .trailBuddy:
+            return "trail-buddy"
+        case .stormScout:
+            return "storm-scout"
+        case .stormGuardian:
+            return "storm-guardian"
+        }
+    }
+
     var spriteScale: CGFloat {
         switch self {
         case .tinySpark:
@@ -273,6 +288,47 @@ enum PetFeeling: Int, CaseIterable {
         case .lonely:
             return "It learned to ask for care without shame."
         }
+    }
+
+    var assetSlug: String {
+        switch self {
+        case .bright:
+            return "bright-idle"
+        case .eager:
+            return "eager-idle-look-smile"
+        case .proud:
+            return "proud-combo-complete"
+        case .overcharged:
+            return "overcharged-spark-boost-ready"
+        case .focused:
+            return "focused-watch-mode"
+        case .celebrating:
+            return "celebrating-board-complete"
+        case .protective:
+            return "protective-night-watch"
+        case .comfort:
+            return "gentle-comfort"
+        case .playful:
+            return "playful-wiggle"
+        case .grateful:
+            return "grateful-care-streak"
+        case .determined:
+            return "determined-grow-ready"
+        case .restless:
+            return "restless-upgrade-ready"
+        case .hungry:
+            return "snacky-low-energy"
+        case .sleepy:
+            return "sleepy-nap"
+        case .curious:
+            return "curious-listen"
+        case .lonely:
+            return "lonely-comeback"
+        }
+    }
+
+    func spriteRequestName(stage: PetGrowthStage) -> String {
+        "pet-\(stage.assetSlug)-\(assetSlug).png"
     }
 
     static func count(mask: Int) -> Int {

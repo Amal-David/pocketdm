@@ -162,3 +162,10 @@ User wants a proper pet that changes across the day and grows from small to big.
 **Rule:** every visible emotion should eventually be backed by persistent state,
 rewards, sprite requests, and daily discovery/revisit loops, not just a word in
 the status panel.
+
+## 2026-06-13 — Pet progress needs an album surface
+As care loops accumulate, the tiny status stack becomes too dense to explain the
+pet fantasy.
+**Rule:** move relationship progress into inspectable album/journal surfaces
+with clear progress groups and next asset requests, while keeping the default
+desktop state pet-only.
