@@ -72,6 +72,20 @@ Generate these first. They unlock the most visible upgrade with the least code:
    - Thinking tilt, clue discovery, solved sparkle.
 26. `pet-buddy-memory-unlock.png`
    - Finds a tiny glowing memory charm, reacts emotionally, stores it.
+27. `pet-buddy-event-spark-picnic.png`
+   - Gathers snack sparks, sets a tiny picnic blanket, celebrates.
+28. `pet-buddy-event-study-parade.png`
+   - Marches proudly with phrase cards, listens, repeats.
+29. `pet-buddy-event-sky-sprint.png`
+   - Fast happy sprint loop with electric afterglow.
+30. `pet-buddy-event-riddle-trail.png`
+   - Follows clue crumbs, thinks, solves, stores note.
+31. `pet-buddy-event-cozy-campfire.png`
+   - Adds embers, warms hands/cheeks, settles peacefully.
+32. `pet-buddy-event-rescue-walk.png`
+   - Searches, finds lost sparks, guides them home.
+33. `pet-buddy-badge-unlock.png`
+   - Receives a tiny badge charm and reacts with visible pride.
 
 ## Growth Stages
 
@@ -134,6 +148,12 @@ Feelings:
   - Late-night guardian stance, calm and reassuring.
 - `gentle`
   - Comfort mode after low joy or missed care.
+- `playful`
+  - Wants movement, quick wiggle, cheek spark hop.
+- `grateful`
+  - Warm care-streak reaction, soft proud smile.
+- `determined`
+  - Ready-to-grow stance, focused eyes, gathered sparks.
 - `restless`
   - Too many Sparks saved, asks for an upgrade.
 - `snacky`
@@ -154,6 +174,9 @@ Minimum matrix:
 - `pet-{stage}-celebrating-board-complete.png`
 - `pet-{stage}-protective-night-watch.png`
 - `pet-{stage}-gentle-comfort.png`
+- `pet-{stage}-playful-wiggle.png`
+- `pet-{stage}-grateful-care-streak.png`
+- `pet-{stage}-determined-grow-ready.png`
 - `pet-{stage}-restless-upgrade-ready.png`
 - `pet-{stage}-snacky-low-energy.png`
 - `pet-{stage}-sleepy-nap.png`
@@ -253,6 +276,29 @@ Bond memories:
 - `pet-{stage}-memory-first-evolution.png`
   - Realizes care changed its form.
 
+Daily events and badges:
+
+- `pet-{stage}-event-spark-picnic.png`
+  - Short collecting loop for snack sparks.
+- `pet-{stage}-event-study-parade.png`
+  - Phrase-card parade, proud learning rhythm.
+- `pet-{stage}-event-sky-sprint.png`
+  - Energy-burn sprint and happy cooldown.
+- `pet-{stage}-event-riddle-trail.png`
+  - Clue trail, tiny solve, saved note.
+- `pet-{stage}-event-cozy-campfire.png`
+  - Gentle evening close-loop with warm ember.
+- `pet-{stage}-event-rescue-walk.png`
+  - Searches for lost sparks, finds them, escorts them home.
+- `pet-{stage}-badge-picnic.png`
+- `pet-{stage}-badge-study.png`
+- `pet-{stage}-badge-sprint.png`
+- `pet-{stage}-badge-riddle.png`
+- `pet-{stage}-badge-campfire.png`
+- `pet-{stage}-badge-rescue.png`
+- `pet-{stage}-badge-album-complete.png`
+  - Reaction after all six event badges are collected.
+
 ## Core Actions
 
 These are the actual product loops:
@@ -323,6 +369,11 @@ These are for the progression layer:
 - Daily care need satisfied.
 - Bond memory unlocked.
 - Story chapter advanced.
+- Daily event step.
+- Daily event complete.
+- Event badge unlocked.
+- Event badge polished/repeated.
+- Badge album complete.
 
 ## Submission-Inspired Experience Sheets
 

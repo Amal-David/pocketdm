@@ -208,6 +208,9 @@ final class DragonOverlayModel: ObservableObject {
     private static let lastComebackChestDayKey = "PocketDMCompanion.lastComebackChestDay"
     private static let careMemoryMaskKey = "PocketDMCompanion.careMemoryMask"
     private static let lastNeedBonusDayKey = "PocketDMCompanion.lastNeedBonusDay"
+    private static let dailyEventDateKey = "PocketDMCompanion.dailyEventDate"
+    private static let dailyEventProgressKey = "PocketDMCompanion.dailyEventProgress"
+    private static let seasonBadgeMaskKey = "PocketDMCompanion.seasonBadgeMask"
     private static let maxEnergy = 5
     private static let energyRechargeSeconds: TimeInterval = 30 * 60
     private static let passiveSparkSeconds: TimeInterval = 15 * 60
@@ -251,6 +254,9 @@ final class DragonOverlayModel: ObservableObject {
     @Published var dailyCipherDate = UserDefaults.standard.string(forKey: DragonOverlayModel.dailyCipherDateKey) ?? ""
     @Published var dailyCipherSolved = UserDefaults.standard.bool(forKey: DragonOverlayModel.dailyCipherSolvedKey)
     @Published var careMemoryMask = UserDefaults.standard.object(forKey: DragonOverlayModel.careMemoryMaskKey) as? Int ?? 0
+    @Published var dailyEventDate = UserDefaults.standard.string(forKey: DragonOverlayModel.dailyEventDateKey) ?? ""
+    @Published var dailyEventProgress = UserDefaults.standard.object(forKey: DragonOverlayModel.dailyEventProgressKey) as? Int ?? 0
+    @Published var seasonBadgeMask = UserDefaults.standard.object(forKey: DragonOverlayModel.seasonBadgeMaskKey) as? Int ?? 0
     @Published var cheerBubble: String?
 
     let languageCoach = LanguageCoachStore()
@@ -407,6 +413,7 @@ final class DragonOverlayModel: ObservableObject {
             lastRequest = ""
             message = pikaText("Back to chat. Ask for a hint, check status, or pet for today's bond spark.")
             play(.minimize)
+            speakPika()
         }
     }
 
@@ -435,6 +442,7 @@ final class DragonOverlayModel: ObservableObject {
             setMood(.happy, duration: 1.4)
         } else {
             play(.alert)
+            speakPika()
             setMood(.alert, duration: 1.2)
         }
     }
@@ -481,7 +489,7 @@ final class DragonOverlayModel: ObservableObject {
             petDaily(requestLabel: prompt)
             return
         }
-        message = "Thinking..."
+        message = pikaText("Thinking...")
         busy = true
         play(.send)
         setMood(.thinking)
@@ -508,6 +516,7 @@ final class DragonOverlayModel: ObservableObject {
             message = pikaText("I cannot reach the tale yet. Open PocketDM, start a run, then ask me again.")
             serverLine = "Waiting for local server"
             play(.nap)
+            speakPika()
             setMood(.nap, duration: 2.4)
         }
     }
@@ -546,6 +555,7 @@ final class DragonOverlayModel: ObservableObject {
             lastRequest = "Upgrade"
             message = pikaText("\(candidate.name) needs \(candidate.cost) Sparks. You have \(sparkDust). Finish today's combo or pet again.")
             play(.alert)
+            speakPika()
             setMood(.alert, duration: 1.1)
             return
         }
@@ -591,6 +601,7 @@ final class DragonOverlayModel: ObservableObject {
             lastRequest = "Boost"
             message = pikaText("Today's Spark Boost is already spent. It will refill tomorrow.")
             play(.alert)
+            speakPika()
             setMood(.alert, duration: 1.0)
             return
         }
@@ -626,6 +637,7 @@ final class DragonOverlayModel: ObservableObject {
             lastRequest = "Cipher"
             message = pikaText("Today's cipher is already solved: \(cipher.answer). New clue tomorrow.")
             play(.happy)
+            speakPika()
             setMood(.happy, duration: 1.0)
             return
         }
@@ -652,6 +664,47 @@ final class DragonOverlayModel: ObservableObject {
         setMood(.hyper, duration: 1.5)
     }
 
+    func playDailyEvent() {
+        syncDailyCombo()
+        let event = dailyEvent
+        let priorStage = growthStage
+        guard dailyEventProgress < event.requiredSteps else {
+            lastRequest = "Event"
+            message = pikaText("\(event.title) is complete. \(event.badgeTitle) is tucked into the album.")
+            play(.happy)
+            speakPika()
+            setMood(.happy, duration: 1.0)
+            return
+        }
+
+        lastRequest = "Event"
+        _ = spendEnergy()
+        dailyEventProgress += 1
+        let stepReward = 5 + sparkLevel + questLevel
+        sparkDust = min(999, sparkDust + stepReward)
+        happiness = min(5, happiness + 1)
+        message = pikaText("\(event.stepLine) Event \(dailyEventProgress)/\(event.requiredSteps): Joy +1, Sparks +\(stepReward).")
+
+        if dailyEventProgress >= event.requiredSteps {
+            let badgeWasNew = seasonBadgeMask & event.rawValue == 0
+            seasonBadgeMask |= event.rawValue
+            let completionReward = badgeWasNew ? 24 : 12
+            sparkDust = min(999, sparkDust + completionReward)
+            if badgeWasNew {
+                companionHP = min(10, companionHP + 1)
+            }
+            message += " \(event.completeLine) \(event.badgeTitle) \(badgeWasNew ? "unlocked" : "polished"): Sparks +\(completionReward)\(badgeWasNew ? ", Bond HP +1" : "")."
+            setMood(.hyper, duration: 1.8)
+        } else {
+            setMood(.happy, duration: 1.3)
+        }
+
+        appendEvolutionNote(from: priorStage)
+        persistCare()
+        play(.happy)
+        speakPika()
+    }
+
     func setMood(_ next: PetMood, duration: TimeInterval? = nil) {
         moodTask?.cancel()
         mood = next
@@ -667,8 +720,9 @@ final class DragonOverlayModel: ObservableObject {
 
     func prepareClose() {
         lastRequest = "Close"
-        message = "Curling up. See you next check-in."
+        message = pikaText("Curling up. See you next check-in.")
         play(.close)
+        speakPika()
         setMood(.nap)
     }
 
@@ -695,6 +749,10 @@ final class DragonOverlayModel: ObservableObject {
 
     var memoryLine: String {
         PetBondMemory.summary(mask: careMemoryMask)
+    }
+
+    var eventLine: String {
+        "\(dailyEvent.title) \(dailyEventProgress)/\(dailyEvent.requiredSteps) · \(PetSeasonEvent.badgeSummary(mask: seasonBadgeMask))"
     }
 
     var comboLine: String {
@@ -764,7 +822,7 @@ final class DragonOverlayModel: ObservableObject {
     }
 
     private func appendPetNote(_ note: String) {
-        if message.isEmpty || message == "Thinking..." {
+        if message.isEmpty || message.localizedCaseInsensitiveContains("thinking") {
             message = pikaText(note)
         } else if message.localizedCaseInsensitiveContains(note) {
             return
@@ -802,6 +860,9 @@ final class DragonOverlayModel: ObservableObject {
         UserDefaults.standard.set(lastComebackChestDay, forKey: Self.lastComebackChestDayKey)
         UserDefaults.standard.set(careMemoryMask, forKey: Self.careMemoryMaskKey)
         UserDefaults.standard.set(lastNeedBonusDay, forKey: Self.lastNeedBonusDayKey)
+        UserDefaults.standard.set(dailyEventDate, forKey: Self.dailyEventDateKey)
+        UserDefaults.standard.set(dailyEventProgress, forKey: Self.dailyEventProgressKey)
+        UserDefaults.standard.set(seasonBadgeMask, forKey: Self.seasonBadgeMaskKey)
     }
 
     private func handlesCare(_ prompt: String) -> Bool {
@@ -853,6 +914,10 @@ final class DragonOverlayModel: ObservableObject {
             for: dailyQuestDate.isEmpty ? Self.dayFormatter.string(from: Date()) : dailyQuestDate,
             hour: currentHour
         )
+    }
+
+    private var dailyEvent: PetSeasonEvent {
+        PetSeasonEvent.daily(for: dailyEventDate.isEmpty ? Self.dayFormatter.string(from: Date()) : dailyEventDate)
     }
 
     private func awardCareNeed(_ completed: PetCareNeed) -> String? {
@@ -974,6 +1039,11 @@ final class DragonOverlayModel: ObservableObject {
         if dailyCipherDate != today {
             dailyCipherDate = today
             dailyCipherSolved = false
+            changed = true
+        }
+        if dailyEventDate != today {
+            dailyEventDate = today
+            dailyEventProgress = 0
             changed = true
         }
         guard changed else { return }
@@ -1126,6 +1196,8 @@ final class DragonOverlayModel: ObservableObject {
             boosterReady: !dailyBoosterUsed,
             careMoment: careMoment,
             careNeed: careNeed,
+            seasonEvent: dailyEvent,
+            eventProgress: dailyEventProgress,
             comebackReady: canShowComebackNudge,
             energy: energy,
             sparkDust: sparkDust,
@@ -1457,6 +1529,11 @@ struct DragonOverlayView: View {
                             }
                             .buttonStyle(DragonButtonStyle(kind: .secondary))
                             .disabled(model.busy)
+                            Button("Event") {
+                                model.playDailyEvent()
+                            }
+                            .buttonStyle(DragonButtonStyle(kind: .secondary))
+                            .disabled(model.busy)
                         }
                     }
                 }
@@ -1501,6 +1578,11 @@ struct DragonOverlayView: View {
                 .foregroundStyle(Color.ivory.opacity(0.72))
                 .lineLimit(2)
                 .minimumScaleFactor(0.58)
+            Text(model.eventLine)
+                .font(.system(size: 8.5, weight: .black, design: .rounded))
+                .foregroundStyle(Color.gold.opacity(0.76))
+                .lineLimit(1)
+                .minimumScaleFactor(0.56)
             Text(model.comboLine)
                 .font(.system(size: 9, weight: .black, design: .rounded))
                 .foregroundStyle(Color.ivory.opacity(0.74))
@@ -1534,7 +1616,7 @@ struct DragonOverlayView: View {
         }
         .multilineTextAlignment(.center)
         .frame(width: 170)
-        .frame(minHeight: 174)
+        .frame(minHeight: 184)
         .padding(.vertical, 7)
         .padding(.horizontal, 8)
         .background(.black.opacity(0.58), in: RoundedRectangle(cornerRadius: 7))

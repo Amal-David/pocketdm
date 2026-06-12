@@ -134,7 +134,8 @@ User explicitly wanted the companion/model to say "pika pika" in text and in
 voice.
 **Rule:** mascot catchphrases should appear in the visible response text and
 trigger a native voice or sound reaction on meaningful pet events, with mute
-still respected.
+still respected. Apply the same wrapper to fallback UI text so demo paths do
+not drift from the native companion.
 
 ## 2026-06-12 — Absence should create a comeback, not punishment
 User wants a proper pet with growth, emotions, nudges, and long-running loops.
@@ -148,3 +149,10 @@ gamified dashboard.
 **Rule:** give the companion rotating care needs and persistent bond memories so
 the user can understand what the pet wants today, what it remembers, and why new
 sprites represent relationship moments rather than decoration.
+
+## 2026-06-12 — Viral loops need a pet-safe translation
+The hamster-style loop is useful because of daily events, upgrade cards,
+collection goals, and short returns, not because of crypto framing.
+**Rule:** convert retention mechanics into pet care: short daily events,
+seasonal badges, gentle rewards, and visible state receipts that explain why the
+pet is growing or changing.

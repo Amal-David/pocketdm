@@ -117,6 +117,13 @@ final class LanguageCoachStore: ObservableObject {
         return formatter
     }()
 
+    private static func pikaFeedback(_ message: String) -> String {
+        if message.localizedCaseInsensitiveContains("pika pika") {
+            return message
+        }
+        return "Pika pika! \(message)"
+    }
+
     let packs: [LanguagePack]
 
     @Published var selectedPackID: String {
@@ -130,7 +137,7 @@ final class LanguageCoachStore: ObservableObject {
     @Published private(set) var lastPracticeDay: String
     @Published private(set) var completedCardIDs: Set<String>
     @Published private(set) var reviewLevels: [String: Int]
-    @Published private(set) var feedback = "Pick a pack, listen, then quiz."
+    @Published private(set) var feedback = "Pika pika! Pick a pack, listen, then quiz."
 
     private let defaults: UserDefaults
     private let speaker = LanguageSpeechSynthesizer()
@@ -144,7 +151,7 @@ final class LanguageCoachStore: ObservableObject {
         lastPracticeDay = defaults.string(forKey: Self.lastPracticeDayKey) ?? ""
         completedCardIDs = Set(defaults.array(forKey: Self.completedCardsKey) as? [String] ?? [])
         reviewLevels = defaults.dictionary(forKey: Self.reviewLevelsKey) as? [String: Int] ?? [:]
-        feedback = "Learn \(selectedPack.title) with Pikachu."
+        feedback = Self.pikaFeedback("Learn \(selectedPack.title) with Pikachu.")
     }
 
     var selectedPack: LanguagePack {
@@ -199,17 +206,17 @@ final class LanguageCoachStore: ObservableObject {
         selectedPackID = pack.id
         currentCardIndex = 0
         step = .teach
-        feedback = "\(pack.title) pack ready. Listen first, then slow it down before the quiz."
+        feedback = Self.pikaFeedback("\(pack.title) pack ready. Listen first, then slow it down before the quiz.")
         persistSelectedPack()
     }
 
     func startQuiz() {
         step = .meaningQuiz
-        feedback = "Quiz time. What does \(currentCard.target) mean?"
+        feedback = Self.pikaFeedback("Quiz time. What does \(currentCard.target) mean?")
     }
 
     func speakCurrent(slow: Bool = false) {
-        feedback = slow ? "Slow listen: \(currentCard.romanization)" : "Listen: \(currentCard.romanization)"
+        feedback = Self.pikaFeedback(slow ? "Slow listen: \(currentCard.romanization)" : "Listen: \(currentCard.romanization)")
         speaker.speak(currentCard.target, languageCode: selectedPack.languageCode, slow: slow)
     }
 
@@ -220,7 +227,7 @@ final class LanguageCoachStore: ObservableObject {
         }
         markCorrect()
         step = .phraseQuiz
-        feedback = "Correct. Meaning locked. Now pick the phrase you heard."
+        feedback = Self.pikaFeedback("Correct. Meaning locked. Now pick the phrase you heard.")
         return LanguagePracticeReward(correct: true, dailyBond: false, message: feedback)
     }
 
@@ -231,7 +238,7 @@ final class LanguageCoachStore: ObservableObject {
         }
         markCorrect()
         step = .repeatPrompt
-        feedback = "Nice. Phrase matched. Say it out loud: \(currentCard.romanization)."
+        feedback = Self.pikaFeedback("Nice. Phrase matched. Say it out loud: \(currentCard.romanization).")
         speakCurrent(slow: true)
         return LanguagePracticeReward(correct: true, dailyBond: false, message: feedback)
     }
@@ -246,24 +253,24 @@ final class LanguageCoachStore: ObservableObject {
 
         if currentCardIndex + 1 >= lessonCards.count {
             step = .complete
-            feedback = "\(selectedPack.title) spark complete. Come back tomorrow to keep the streak warm."
+            feedback = Self.pikaFeedback("\(selectedPack.title) spark complete. Come back tomorrow to keep the streak warm.")
         } else {
             currentCardIndex += 1
             step = .teach
-            feedback = "Next card unlocked. Listen first, then quiz again."
+            feedback = Self.pikaFeedback("Next card unlocked. Listen first, then quiz again.")
         }
 
         return LanguagePracticeReward(
             correct: true,
             dailyBond: earnedDailyBond,
-            message: earnedDailyBond ? "Daily language spark earned: +1 Bond HP and Joy +1." : "Practice logged. Joy +1."
+            message: Self.pikaFeedback(earnedDailyBond ? "Daily language spark earned: +1 Bond HP and Joy +1." : "Practice logged. Joy +1.")
         )
     }
 
     func restartLesson() {
         currentCardIndex = 0
         step = .teach
-        feedback = "Fresh run started. Listen first, slow it down, then quiz."
+        feedback = Self.pikaFeedback("Fresh run started. Listen first, slow it down, then quiz.")
     }
 
     private func markCorrect() {
@@ -274,7 +281,7 @@ final class LanguageCoachStore: ObservableObject {
 
     private func markMiss(_ message: String) {
         currentStreak = 0
-        feedback = message
+        feedback = Self.pikaFeedback(message)
         persistProgress()
     }
 

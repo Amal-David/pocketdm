@@ -302,7 +302,8 @@ function typeText(target, text) {
 }
 
 function dragonSay(text, options = {}) {
-  els.dragonSpeech.textContent = text;
+  const line = pikaText(text);
+  els.dragonSpeech.textContent = line;
   const mood = options.mood || (options.fire ? "hyper" : "idle");
   if (options.fire) {
     setTemporaryDragonMood("hyper", 1100);
@@ -315,7 +316,12 @@ function dragonSay(text, options = {}) {
     setDragonMood("idle");
   }
   if (options.speak === false) return;
-  speak(text);
+  speak(line);
+}
+
+function pikaText(text) {
+  const line = String(text || "");
+  return /pika pika/i.test(line) ? line : `Pika pika! ${line}`;
 }
 
 function speak(text) {

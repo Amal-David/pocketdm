@@ -787,6 +787,142 @@ enum PetStoryCodex {
     }
 }
 
+enum PetSeasonEvent: Int, CaseIterable {
+    case sparkPicnic = 1
+    case studyParade = 2
+    case skySprint = 4
+    case riddleTrail = 8
+    case cozyCampfire = 16
+    case rescueWalk = 32
+
+    static func daily(for dateKey: String) -> PetSeasonEvent {
+        let seed = dateKey.unicodeScalars.reduce(0) { $0 + Int($1.value) }
+        return allCases[seed % allCases.count]
+    }
+
+    var title: String {
+        switch self {
+        case .sparkPicnic:
+            return "Spark Picnic"
+        case .studyParade:
+            return "Study Parade"
+        case .skySprint:
+            return "Sky Sprint"
+        case .riddleTrail:
+            return "Riddle Trail"
+        case .cozyCampfire:
+            return "Cozy Campfire"
+        case .rescueWalk:
+            return "Rescue Walk"
+        }
+    }
+
+    var badgeTitle: String {
+        switch self {
+        case .sparkPicnic:
+            return "Picnic Badge"
+        case .studyParade:
+            return "Study Badge"
+        case .skySprint:
+            return "Sprint Badge"
+        case .riddleTrail:
+            return "Riddle Badge"
+        case .cozyCampfire:
+            return "Campfire Badge"
+        case .rescueWalk:
+            return "Rescue Badge"
+        }
+    }
+
+    var requiredSteps: Int {
+        switch self {
+        case .sparkPicnic, .cozyCampfire:
+            return 2
+        case .studyParade, .riddleTrail:
+            return 3
+        case .skySprint, .rescueWalk:
+            return 4
+        }
+    }
+
+    var actionLine: String {
+        switch self {
+        case .sparkPicnic:
+            return "gather snack sparks"
+        case .studyParade:
+            return "repeat tiny phrases"
+        case .skySprint:
+            return "burn energy in happy bursts"
+        case .riddleTrail:
+            return "follow clue crumbs"
+        case .cozyCampfire:
+            return "close the day gently"
+        case .rescueWalk:
+            return "check the trail for lost sparks"
+        }
+    }
+
+    var nudgeLine: String {
+        "\(title) is open. Want to \(actionLine)?"
+    }
+
+    var stepLine: String {
+        switch self {
+        case .sparkPicnic:
+            return "It packs one tiny snack spark."
+        case .studyParade:
+            return "It marches one phrase forward."
+        case .skySprint:
+            return "It sprints a tiny loop around the desk."
+        case .riddleTrail:
+            return "It uncovers one clue crumb."
+        case .cozyCampfire:
+            return "It adds one warm ember to the campfire."
+        case .rescueWalk:
+            return "It checks one bend in the trail."
+        }
+    }
+
+    var completeLine: String {
+        switch self {
+        case .sparkPicnic:
+            return "Picnic blanket full of Sparks."
+        case .studyParade:
+            return "Study parade finished with a proud bow."
+        case .skySprint:
+            return "Sprint trail crackles with clean energy."
+        case .riddleTrail:
+            return "Riddle trail solved and tucked away."
+        case .cozyCampfire:
+            return "Campfire closed the day softly."
+        case .rescueWalk:
+            return "Lost Sparks found and guided home."
+        }
+    }
+
+    var spriteRequestName: String {
+        switch self {
+        case .sparkPicnic:
+            return "pet-{stage}-event-spark-picnic.png"
+        case .studyParade:
+            return "pet-{stage}-event-study-parade.png"
+        case .skySprint:
+            return "pet-{stage}-event-sky-sprint.png"
+        case .riddleTrail:
+            return "pet-{stage}-event-riddle-trail.png"
+        case .cozyCampfire:
+            return "pet-{stage}-event-cozy-campfire.png"
+        case .rescueWalk:
+            return "pet-{stage}-event-rescue-walk.png"
+        }
+    }
+
+    static func badgeSummary(mask: Int) -> String {
+        let count = allCases.filter { mask & $0.rawValue != 0 }.count
+        return "Badges \(count)/\(allCases.count)"
+    }
+}
+
 struct PetComebackReward {
     let sparks: Int
     let joy: Int
@@ -876,6 +1012,8 @@ enum PetNudgeLibrary {
         boosterReady: Bool,
         careMoment: PetCareMoment,
         careNeed: PetCareNeed,
+        seasonEvent: PetSeasonEvent,
+        eventProgress: Int,
         comebackReady: Bool,
         energy: Int,
         sparkDust: Int,
@@ -889,6 +1027,9 @@ enum PetNudgeLibrary {
         }
         if index % 3 == 1 {
             return careNeed.nudgeLine
+        }
+        if eventProgress < seasonEvent.requiredSteps {
+            return seasonEvent.nudgeLine
         }
         if index % 5 == 0 {
             return careMoment.nudgeLine

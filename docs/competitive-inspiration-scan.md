@@ -194,6 +194,10 @@ The new layer should add:
   focus, or puzzle care rather than feeling like one static mood button.
 - Bond memories that unlock on first care, hint, lesson, quest, upgrade,
   comeback, cipher, boost, full board, and first evolution.
+- A daily event rail with short multi-step activities such as Spark Picnic,
+  Study Parade, Sky Sprint, Riddle Trail, Cozy Campfire, and Rescue Walk.
+- Seasonal badges that are earned by completing daily events, giving the
+  Telegram-style collection loop a pet-care purpose instead of a finance hook.
 - Lore receipts that make each stage feel like a relationship, not a number.
 - Upgrade cards that change behavior: faster check-ins, better comeback
   rewards, stronger learning rewards, richer ciphers, daily boosts, and more
@@ -230,6 +234,8 @@ The native macOS companion now has the first version of the loop:
   moments become visible receipts, not just transient copy.
 - A story chapter line that changes with growth stage, memory count, streak,
   and the current care need.
+- A daily event line and Event button: each event has 2-4 steps, pays small
+  rewards per step, and unlocks/polishes a badge on completion.
 - Visible feelings such as Eager, Proud, Overcharged, Focused, Celebrating,
   Protective, Gentle, Playful, Grateful, Determined, Restless, Snacky, Sleepy,
   Curious, and Lonely.
