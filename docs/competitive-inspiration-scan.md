@@ -190,6 +190,8 @@ The new layer should add:
 - A visible evolution progress receipt so growth from small to big is always
   legible.
 - Pet feelings that are visible enough to drive sprite selection.
+- A mood album that turns those feelings into collectible emotional states,
+  giving the pet a visible arc across each day rather than one static idle.
 - Rotating care needs so the pet wants affection, study, adventure, rest, play,
   focus, or puzzle care rather than feeling like one static mood button.
 - Bond memories that unlock on first care, hint, lesson, quest, upgrade,
@@ -236,6 +238,8 @@ The native macOS companion now has the first version of the loop:
   and the current care need.
 - A daily event line and Event button: each event has 2-4 steps, pays small
   rewards per step, and unlocks/polishes a badge on completion.
+- A mood album line: meaningful actions can discover or revisit feelings,
+  rewarding the user for seeing the pet in different daily states.
 - Visible feelings such as Eager, Proud, Overcharged, Focused, Celebrating,
   Protective, Gentle, Playful, Grateful, Determined, Restless, Snacky, Sleepy,
   Curious, and Lonely.

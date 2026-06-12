@@ -156,3 +156,9 @@ collection goals, and short returns, not because of crypto framing.
 **Rule:** convert retention mechanics into pet care: short daily events,
 seasonal badges, gentle rewards, and visible state receipts that explain why the
 pet is growing or changing.
+
+## 2026-06-12 — Emotions need state, not only labels
+User wants a proper pet that changes across the day and grows from small to big.
+**Rule:** every visible emotion should eventually be backed by persistent state,
+rewards, sprite requests, and daily discovery/revisit loops, not just a word in
+the status panel.

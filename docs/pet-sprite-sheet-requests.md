@@ -86,6 +86,14 @@ Generate these first. They unlock the most visible upgrade with the least code:
    - Searches, finds lost sparks, guides them home.
 33. `pet-buddy-badge-unlock.png`
    - Receives a tiny badge charm and reacts with visible pride.
+34. `pet-buddy-mood-discovery.png`
+   - Notices a new feeling, looks surprised, then proudly stores it.
+35. `pet-buddy-mood-album-proud.png`
+   - Opens a tiny charm album and points at a newly discovered mood.
+36. `pet-buddy-emotion-shift.png`
+   - Smoothly changes from neutral into happy, focused, sleepy, or playful.
+37. `pet-buddy-daily-mood-complete.png`
+   - Celebrates several emotions discovered in one day without confetti text.
 
 ## Growth Stages
 
@@ -276,6 +284,19 @@ Bond memories:
 - `pet-{stage}-memory-first-evolution.png`
   - Realizes care changed its form.
 
+Mood album:
+
+- `pet-{stage}-mood-discovery.png`
+  - First time a feeling appears; surprise, recognition, proud little storage.
+- `pet-{stage}-mood-album-open.png`
+  - Opens a tiny charm/field-note album and points at discovered moods.
+- `pet-{stage}-emotion-shift.png`
+  - Transitions between neutral, eager, focused, sleepy, playful, and proud.
+- `pet-{stage}-daily-mood-complete.png`
+  - Celebrates discovering several moods in one day.
+- `pet-{stage}-mood-revisit.png`
+  - Recognizes a familiar feeling and gives a small "I remember this" reaction.
+
 Daily events and badges:
 
 - `pet-{stage}-event-spark-picnic.png`
@@ -369,6 +390,9 @@ These are for the progression layer:
 - Daily care need satisfied.
 - Bond memory unlocked.
 - Story chapter advanced.
+- Mood discovered.
+- Mood album updated.
+- Daily mood set advanced.
 - Daily event step.
 - Daily event complete.
 - Event badge unlocked.

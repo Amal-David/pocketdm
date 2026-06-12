@@ -101,23 +101,23 @@ enum PetGrowthStage: CaseIterable {
     }
 }
 
-enum PetFeeling {
-    case bright
-    case eager
-    case proud
-    case overcharged
-    case focused
-    case celebrating
-    case protective
-    case comfort
-    case playful
-    case grateful
-    case determined
-    case restless
-    case hungry
-    case sleepy
-    case curious
-    case lonely
+enum PetFeeling: Int, CaseIterable {
+    case bright = 1
+    case eager = 2
+    case proud = 4
+    case overcharged = 8
+    case focused = 16
+    case celebrating = 32
+    case protective = 64
+    case comfort = 128
+    case playful = 256
+    case grateful = 512
+    case determined = 1024
+    case restless = 2048
+    case hungry = 4096
+    case sleepy = 8192
+    case curious = 16384
+    case lonely = 32768
 
     init(
         happiness: Int,
@@ -236,6 +236,51 @@ enum PetFeeling {
         case .lonely:
             return "A quick pet would help."
         }
+    }
+
+    var discoveryLine: String {
+        switch self {
+        case .bright:
+            return "It learned a fresh-start face."
+        case .eager:
+            return "It learned the look-up-and-smile greeting."
+        case .proud:
+            return "It learned to show off a finished combo."
+        case .overcharged:
+            return "It learned to carry extra sparks safely."
+        case .focused:
+            return "It learned quiet watch mode."
+        case .celebrating:
+            return "It learned a full-board victory dance."
+        case .protective:
+            return "It learned a late-night guardian stance."
+        case .comfort:
+            return "It learned gentle recovery."
+        case .playful:
+            return "It learned a happy wiggle."
+        case .grateful:
+            return "It learned a care-streak thank you."
+        case .determined:
+            return "It learned the ready-to-grow pose."
+        case .restless:
+            return "It learned to ask for an upgrade."
+        case .hungry:
+            return "It learned the snacky wobble."
+        case .sleepy:
+            return "It learned the soft recharge loop."
+        case .curious:
+            return "It learned the first-spark head tilt."
+        case .lonely:
+            return "It learned to ask for care without shame."
+        }
+    }
+
+    static func count(mask: Int) -> Int {
+        allCases.filter { mask & $0.rawValue != 0 }.count
+    }
+
+    static func summary(dailyMask: Int, albumMask: Int, latest: PetFeeling) -> String {
+        "Moods \(count(mask: dailyMask))/\(allCases.count) today · Album \(count(mask: albumMask))/\(allCases.count): \(latest.title)"
     }
 }
 

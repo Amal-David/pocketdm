@@ -211,6 +211,10 @@ final class DragonOverlayModel: ObservableObject {
     private static let dailyEventDateKey = "PocketDMCompanion.dailyEventDate"
     private static let dailyEventProgressKey = "PocketDMCompanion.dailyEventProgress"
     private static let seasonBadgeMaskKey = "PocketDMCompanion.seasonBadgeMask"
+    private static let dailyFeelingDateKey = "PocketDMCompanion.dailyFeelingDate"
+    private static let dailyFeelingMaskKey = "PocketDMCompanion.dailyFeelingMask"
+    private static let emotionAlbumMaskKey = "PocketDMCompanion.emotionAlbumMask"
+    private static let latestFeelingRawKey = "PocketDMCompanion.latestFeelingRaw"
     private static let maxEnergy = 5
     private static let energyRechargeSeconds: TimeInterval = 30 * 60
     private static let passiveSparkSeconds: TimeInterval = 15 * 60
@@ -257,6 +261,10 @@ final class DragonOverlayModel: ObservableObject {
     @Published var dailyEventDate = UserDefaults.standard.string(forKey: DragonOverlayModel.dailyEventDateKey) ?? ""
     @Published var dailyEventProgress = UserDefaults.standard.object(forKey: DragonOverlayModel.dailyEventProgressKey) as? Int ?? 0
     @Published var seasonBadgeMask = UserDefaults.standard.object(forKey: DragonOverlayModel.seasonBadgeMaskKey) as? Int ?? 0
+    @Published var dailyFeelingDate = UserDefaults.standard.string(forKey: DragonOverlayModel.dailyFeelingDateKey) ?? ""
+    @Published var dailyFeelingMask = UserDefaults.standard.object(forKey: DragonOverlayModel.dailyFeelingMaskKey) as? Int ?? 0
+    @Published var emotionAlbumMask = UserDefaults.standard.object(forKey: DragonOverlayModel.emotionAlbumMaskKey) as? Int ?? 0
+    @Published var latestFeelingRaw = UserDefaults.standard.object(forKey: DragonOverlayModel.latestFeelingRawKey) as? Int ?? 0
     @Published var cheerBubble: String?
 
     let languageCoach = LanguageCoachStore()
@@ -324,6 +332,7 @@ final class DragonOverlayModel: ObservableObject {
         if let memoryNote = unlockMemory(.firstQuest) {
             message += " \(memoryNote)"
         }
+        appendEmotionScene(trigger: "quest open")
         appendEvolutionNote(from: priorStage)
         speakPika()
         launcher.openGame()
@@ -359,6 +368,7 @@ final class DragonOverlayModel: ObservableObject {
     func happy() {
         message = pikaText("Pikachu perks up. Joy is high and it is ready for a quest or a quick lesson.")
         lastRequest = "Mood"
+        appendEmotionScene(trigger: "happy")
         play(.happy)
         speakPika()
         setMood(.happy, duration: 1.6)
@@ -370,6 +380,7 @@ final class DragonOverlayModel: ObservableObject {
             message += " \(needNote)"
         }
         lastRequest = "Mood"
+        appendEmotionScene(trigger: "nap")
         play(.nap)
         speakPika()
         setMood(.nap, duration: 2.4)
@@ -384,6 +395,7 @@ final class DragonOverlayModel: ObservableObject {
         if let needNote = awardCareNeed(.play) {
             message += " \(needNote)"
         }
+        appendEmotionScene(trigger: "hyper")
         appendEvolutionNote(from: priorStage)
         play(.hyper)
         speakPika()
@@ -404,6 +416,7 @@ final class DragonOverlayModel: ObservableObject {
             if let memoryNote = unlockMemory(.firstLesson) {
                 message += " \(memoryNote)"
             }
+            appendEmotionScene(trigger: "lesson open")
             appendEvolutionNote(from: priorStage)
             play(.open)
             speakPika()
@@ -412,6 +425,7 @@ final class DragonOverlayModel: ObservableObject {
         } else {
             lastRequest = ""
             message = pikaText("Back to chat. Ask for a hint, check status, or pet for today's bond spark.")
+            appendEmotionScene(trigger: "chat return")
             play(.minimize)
             speakPika()
         }
@@ -435,12 +449,14 @@ final class DragonOverlayModel: ObservableObject {
             if let memoryNote = unlockMemory(.firstLesson) {
                 message += " \(memoryNote)"
             }
+            appendEmotionScene(trigger: "language reward")
             appendEvolutionNote(from: priorStage)
             persistCare()
             play(reward.dailyBond ? .pet : .happy)
             speakPika()
             setMood(.happy, duration: 1.4)
         } else {
+            appendEmotionScene(trigger: "lesson retry")
             play(.alert)
             speakPika()
             setMood(.alert, duration: 1.2)
@@ -475,6 +491,7 @@ final class DragonOverlayModel: ObservableObject {
         if let memoryNote = unlockMemory(.firstCare) {
             message += " \(memoryNote)"
         }
+        appendEmotionScene(trigger: "daily care")
         appendEvolutionNote(from: priorStage)
         persistCare()
         play(.pet)
@@ -508,6 +525,7 @@ final class DragonOverlayModel: ObservableObject {
                     message += " \(memoryNote)"
                 }
             }
+            appendEmotionScene(trigger: isHintPrompt(prompt) ? "hint" : "chat")
             appendEvolutionNote(from: priorStage)
             play(.reply)
             speakPika()
@@ -515,6 +533,7 @@ final class DragonOverlayModel: ObservableObject {
         } catch {
             message = pikaText("I cannot reach the tale yet. Open PocketDM, start a run, then ask me again.")
             serverLine = "Waiting for local server"
+            appendEmotionScene(trigger: "server wait")
             play(.nap)
             speakPika()
             setMood(.nap, duration: 2.4)
@@ -533,6 +552,7 @@ final class DragonOverlayModel: ObservableObject {
         if let needNote = awardCareNeed(.focus) {
             message += " \(needNote)"
         }
+        appendEmotionScene(trigger: "cheer")
         appendEvolutionNote(from: priorStage)
         UserDefaults.standard.set(Date().timeIntervalSince1970, forKey: Self.lastCheerAtKey)
         persistCare()
@@ -554,6 +574,7 @@ final class DragonOverlayModel: ObservableObject {
         guard sparkDust >= candidate.cost else {
             lastRequest = "Upgrade"
             message = pikaText("\(candidate.name) needs \(candidate.cost) Sparks. You have \(sparkDust). Finish today's combo or pet again.")
+            appendEmotionScene(trigger: "upgrade wait")
             play(.alert)
             speakPika()
             setMood(.alert, duration: 1.1)
@@ -588,6 +609,7 @@ final class DragonOverlayModel: ObservableObject {
         if let memoryNote = unlockMemory(.firstUpgrade) {
             message += " \(memoryNote)"
         }
+        appendEmotionScene(trigger: "upgrade")
         appendEvolutionNote(from: priorStage)
         persistCare()
         play(.happy)
@@ -600,6 +622,7 @@ final class DragonOverlayModel: ObservableObject {
         guard !dailyBoosterUsed else {
             lastRequest = "Boost"
             message = pikaText("Today's Spark Boost is already spent. It will refill tomorrow.")
+            appendEmotionScene(trigger: "spent boost")
             play(.alert)
             speakPika()
             setMood(.alert, duration: 1.0)
@@ -623,6 +646,7 @@ final class DragonOverlayModel: ObservableObject {
         if let memoryNote = unlockMemory(.firstBoost) {
             message += " \(memoryNote)"
         }
+        appendEmotionScene(trigger: "boost")
         appendEvolutionNote(from: priorStage)
         persistCare()
         play(.hyper)
@@ -636,6 +660,7 @@ final class DragonOverlayModel: ObservableObject {
         guard !dailyCipherSolved else {
             lastRequest = "Cipher"
             message = pikaText("Today's cipher is already solved: \(cipher.answer). New clue tomorrow.")
+            appendEmotionScene(trigger: "cipher review")
             play(.happy)
             speakPika()
             setMood(.happy, duration: 1.0)
@@ -657,6 +682,7 @@ final class DragonOverlayModel: ObservableObject {
         if let memoryNote = unlockMemory(.firstCipher) {
             message += " \(memoryNote)"
         }
+        appendEmotionScene(trigger: "cipher")
         appendEvolutionNote(from: priorStage)
         persistCare()
         play(.happy)
@@ -671,6 +697,7 @@ final class DragonOverlayModel: ObservableObject {
         guard dailyEventProgress < event.requiredSteps else {
             lastRequest = "Event"
             message = pikaText("\(event.title) is complete. \(event.badgeTitle) is tucked into the album.")
+            appendEmotionScene(trigger: "event review")
             play(.happy)
             speakPika()
             setMood(.happy, duration: 1.0)
@@ -699,6 +726,7 @@ final class DragonOverlayModel: ObservableObject {
             setMood(.happy, duration: 1.3)
         }
 
+        appendEmotionScene(trigger: "daily event")
         appendEvolutionNote(from: priorStage)
         persistCare()
         play(.happy)
@@ -753,6 +781,14 @@ final class DragonOverlayModel: ObservableObject {
 
     var eventLine: String {
         "\(dailyEvent.title) \(dailyEventProgress)/\(dailyEvent.requiredSteps) · \(PetSeasonEvent.badgeSummary(mask: seasonBadgeMask))"
+    }
+
+    var emotionLine: String {
+        PetFeeling.summary(
+            dailyMask: dailyFeelingMask,
+            albumMask: emotionAlbumMask,
+            latest: PetFeeling(rawValue: latestFeelingRaw) ?? petFeeling
+        )
     }
 
     var comboLine: String {
@@ -863,6 +899,10 @@ final class DragonOverlayModel: ObservableObject {
         UserDefaults.standard.set(dailyEventDate, forKey: Self.dailyEventDateKey)
         UserDefaults.standard.set(dailyEventProgress, forKey: Self.dailyEventProgressKey)
         UserDefaults.standard.set(seasonBadgeMask, forKey: Self.seasonBadgeMaskKey)
+        UserDefaults.standard.set(dailyFeelingDate, forKey: Self.dailyFeelingDateKey)
+        UserDefaults.standard.set(dailyFeelingMask, forKey: Self.dailyFeelingMaskKey)
+        UserDefaults.standard.set(emotionAlbumMask, forKey: Self.emotionAlbumMaskKey)
+        UserDefaults.standard.set(latestFeelingRaw, forKey: Self.latestFeelingRawKey)
     }
 
     private func handlesCare(_ prompt: String) -> Bool {
@@ -939,6 +979,70 @@ final class DragonOverlayModel: ObservableObject {
         sparkDust = min(999, sparkDust + memory.sparkReward)
         persistCare()
         return "Memory unlocked: \(memory.title). \(memory.unlockLine) Sparks +\(memory.sparkReward)."
+    }
+
+    private func appendEmotionScene(trigger: String) {
+        if let emotionNote = recordEmotionScene(trigger: trigger) {
+            message += " \(emotionNote)"
+        }
+    }
+
+    private func recordEmotionScene(trigger: String) -> String? {
+        syncDailyCombo()
+        let feeling = emotionFeeling(for: trigger)
+        let bit = feeling.rawValue
+        let seenToday = dailyFeelingMask & bit != 0
+        let seenEver = emotionAlbumMask & bit != 0
+        latestFeelingRaw = bit
+        guard !seenToday || !seenEver else {
+            persistCare()
+            return nil
+        }
+
+        dailyFeelingMask |= bit
+        if !seenEver {
+            emotionAlbumMask |= bit
+            let reward = 10 + sparkLevel * 2
+            sparkDust = min(999, sparkDust + reward)
+            persistCare()
+            return "Mood discovered after \(trigger): \(feeling.title). \(feeling.discoveryLine) Sparks +\(reward)."
+        }
+
+        let reward = 3
+        sparkDust = min(999, sparkDust + reward)
+        persistCare()
+        return "Mood logged after \(trigger): \(feeling.title), Sparks +\(reward)."
+    }
+
+    private func emotionFeeling(for trigger: String) -> PetFeeling {
+        switch trigger {
+        case "happy", "chat return":
+            return .bright
+        case "daily care":
+            return .grateful
+        case "nap":
+            return .sleepy
+        case "hyper", "daily event":
+            return .playful
+        case "boost", "spent boost":
+            return .overcharged
+        case "lesson open", "language reward":
+            return .focused
+        case "lesson retry", "server wait":
+            return .comfort
+        case "hint", "chat", "cipher", "cipher review":
+            return .curious
+        case "quest open", "cheer":
+            return .eager
+        case "upgrade":
+            return .proud
+        case "upgrade wait":
+            return .restless
+        case "event review":
+            return .celebrating
+        default:
+            return petFeeling
+        }
     }
 
     private func appendEvolutionNote(from priorStage: PetGrowthStage) {
@@ -1044,6 +1148,11 @@ final class DragonOverlayModel: ObservableObject {
         if dailyEventDate != today {
             dailyEventDate = today
             dailyEventProgress = 0
+            changed = true
+        }
+        if dailyFeelingDate != today {
+            dailyFeelingDate = today
+            dailyFeelingMask = 0
             changed = true
         }
         guard changed else { return }
@@ -1558,6 +1667,11 @@ struct DragonOverlayView: View {
                 .font(.system(size: 11, weight: .black, design: .rounded))
                 .foregroundStyle(Color.gold)
                 .lineLimit(2)
+            Text(model.emotionLine)
+                .font(.system(size: 8.4, weight: .black, design: .rounded))
+                .foregroundStyle(Color.ivory.opacity(0.72))
+                .lineLimit(1)
+                .minimumScaleFactor(0.54)
             Text(model.loreLine)
                 .font(.system(size: 9, weight: .bold, design: .rounded))
                 .foregroundStyle(Color.ivory.opacity(0.76))
@@ -1616,7 +1730,7 @@ struct DragonOverlayView: View {
         }
         .multilineTextAlignment(.center)
         .frame(width: 170)
-        .frame(minHeight: 184)
+        .frame(minHeight: 194)
         .padding(.vertical, 7)
         .padding(.horizontal, 8)
         .background(.black.opacity(0.58), in: RoundedRectangle(cornerRadius: 7))
