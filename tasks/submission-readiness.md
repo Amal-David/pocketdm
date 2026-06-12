@@ -33,3 +33,5 @@
 - Show the app first, not the training pipeline.
 - Be explicit that the engine owns state and validates every model turn.
 - Use the cost log and smoke reports as receipts for the Modal/OpenAI/Codex story.
+- Use `/Users/amal/listenowl/experiments/build-small/tasks/hackathon-submission-plan.md`
+  as the current demo, asset, and final-gate checklist.

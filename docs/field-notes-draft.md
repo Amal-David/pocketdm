@@ -2,7 +2,7 @@
 
 ## Working Title
 
-PocketDM: a tiny Dungeon Master, a stricter engine, and one hovering dragon
+PocketDM: a tiny Dungeon Master, a stricter engine, and one hovering companion
 
 ## Thesis
 
@@ -13,9 +13,11 @@ ending pressure, grammar, retries, and validation.
 
 ## What Exists Now
 
-- A custom `gr.Server` app with a parchment UI and a persistent Ember assistant.
-- A local dragon spritesheet at `app/static/dragon-sprites.png` with CSS wing
-  flapping and fire-puff states.
+- A custom `gr.Server` app with a parchment UI and a native macOS companion
+  layered above the desktop.
+- A pet-only Pikachu overlay with cleaned 3D sprite strips, chat expansion,
+  Bond HP care, original chirps, and a beginner Spanish/Mandarin language coach
+  with 100 words plus 100 sentences per language.
 - A scripted checkpoint backend that proves the game loop, state display,
   assistant, voice selector, and ending behavior.
 - An optional llama.cpp backend path enabled by `POCKETDM_GGUF`.
@@ -44,14 +46,15 @@ ending pressure, grammar, retries, and validation.
 3. The engine became the adult in the room. It applied state deltas, forced the
    final turn, repaired harmless missing inventory removals, and bridged unsafe
    failures.
-4. Ember made the small-model constraint legible. It is not decoration; it is a
-   persistent guide that explains state, risk, and why a choice is clean.
+4. The companion made the small-model constraint legible. It is not decoration;
+   it is a persistent guide that explains state, rewards daily care, and teaches
+   small language lessons without leaving the desktop.
 5. The final product is meant to be playable with the Wi-Fi off: a tiny DM, a
-   local voice, a local dragon, and receipts instead of vibes.
+   local voice, a local companion, and receipts instead of vibes.
 
 ## Demo Close
 
 The video should end on the same claim the repo can prove:
 
-> The model writes the magic. The engine keeps the rules. The dragon keeps you
-> company.
+> The model writes the magic. The engine keeps the rules. The companion keeps
+> you coming back.
