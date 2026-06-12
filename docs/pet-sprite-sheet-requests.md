@@ -130,6 +130,16 @@ Generate these first. They unlock the most visible upgrade with the least code:
    - Opens the week trail page and points at day 1/3/5/7 milestones.
 55. `pet-buddy-week-reward-claim.png`
    - Claims a weekly reward chest/charm with no text, labels, or UI chrome.
+56. `pet-buddy-daypart-sunrise-check.png`
+   - Morning check-in: looks up warmly and invites one tiny quest.
+57. `pet-buddy-daypart-focus-buddy.png`
+   - Focus check-in: sits beside the user quietly, attentive and steady.
+58. `pet-buddy-daypart-afternoon-reset.png`
+   - Afternoon reset: low-energy wobble, stretch, then encouraging smile.
+59. `pet-buddy-daypart-evening-loop.png`
+   - Evening loop: points to one closing task and settles by a warm glow.
+60. `pet-buddy-daypart-night-watch.png`
+   - Night watch: protective soft breathing, calm eyes, no urgency.
 
 ## Generate In Separate Batches
 
@@ -172,7 +182,16 @@ consistent:
 - `pet-buddy-evolve-preview.png`
 - `pet-buddy-level-up.png`
 
-### Batch 5: Full Stage Matrix
+### Batch 5: Cheer Rhythm Dayparts
+
+- `pet-buddy-daypart-sunrise-check.png`
+- `pet-buddy-daypart-focus-buddy.png`
+- `pet-buddy-daypart-afternoon-reset.png`
+- `pet-buddy-daypart-evening-loop.png`
+- `pet-buddy-daypart-night-watch.png`
+- `pet-buddy-proactive-dismiss.png`
+
+### Batch 6: Full Stage Matrix
 
 After the buddy form works, repeat the stage matrix for:
 
@@ -425,6 +444,23 @@ Proactive check-ins:
   - Welcomes the user back and presents a saved chest.
 - `pet-{stage}-proactive-dismiss.png`
   - Calmly accepts dismissal and returns to idle, no sad guilt.
+
+Cheer Rhythm dayparts:
+
+- `pet-{stage}-daypart-sunrise-check.png`
+  - Morning "how are you doing?" pose, curious, warm, ready for one tiny quest.
+- `pet-{stage}-daypart-focus-buddy.png`
+  - Midday/focus pose, quiet companion sits beside the user's work.
+- `pet-{stage}-daypart-afternoon-reset.png`
+  - Afternoon reset pose, starts tired, stretches, then smiles.
+- `pet-{stage}-daypart-evening-loop.png`
+  - Evening close-loop pose, points gently toward one unfinished task.
+- `pet-{stage}-daypart-night-watch.png`
+  - Night watch pose, protective, slow breathing, calm and low brightness.
+- `pet-{stage}-daypart-answer-reward.png`
+  - Check-in answered reward, tiny Joy/Spark glow without UI text.
+- `pet-{stage}-daypart-skip-soft.png`
+  - Dismissed check-in, accepts it kindly and returns to idle with no guilt.
 
 Weekly streak trail:
 

@@ -683,6 +683,117 @@ enum PetCareMoment {
     }
 }
 
+enum PetDaypartNudge: Int, CaseIterable {
+    case sunrise = 1
+    case focus = 2
+    case afternoon = 4
+    case evening = 8
+    case night = 16
+
+    init(moment: PetCareMoment) {
+        switch moment {
+        case .sunrise:
+            self = .sunrise
+        case .focus:
+            self = .focus
+        case .afternoon:
+            self = .afternoon
+        case .evening:
+            self = .evening
+        case .night:
+            self = .night
+        }
+    }
+
+    var title: String {
+        switch self {
+        case .sunrise:
+            return "Sunrise Check"
+        case .focus:
+            return "Focus Buddy"
+        case .afternoon:
+            return "Afternoon Reset"
+        case .evening:
+            return "Evening Loop"
+        case .night:
+            return "Night Watch"
+        }
+    }
+
+    var body: String {
+        switch self {
+        case .sunrise:
+            return "How are you doing this morning? Want one tiny quest?"
+        case .focus:
+            return "What is happening over there? I can sit with one task."
+        case .afternoon:
+            return "Energy check. Need a boost, stretch, or softer step?"
+        case .evening:
+            return "Want to close one loop before the campfire goes quiet?"
+        case .night:
+            return "I can keep this gentle. Want a soft check-in?"
+        }
+    }
+
+    var action: String {
+        switch self {
+        case .sunrise:
+            return "Open morning quest"
+        case .focus:
+            return "Start focus check"
+        case .afternoon:
+            return "Open reset"
+        case .evening:
+            return "Close one loop"
+        case .night:
+            return "Open night watch"
+        }
+    }
+
+    var rewardLine: String {
+        switch self {
+        case .sunrise:
+            return "Sunrise check-in answered"
+        case .focus:
+            return "Focus check-in answered"
+        case .afternoon:
+            return "Afternoon reset answered"
+        case .evening:
+            return "Evening loop answered"
+        case .night:
+            return "Night watch answered"
+        }
+    }
+
+    var spriteRequestName: String {
+        switch self {
+        case .sunrise:
+            return "pet-{stage}-daypart-sunrise-check.png"
+        case .focus:
+            return "pet-{stage}-daypart-focus-buddy.png"
+        case .afternoon:
+            return "pet-{stage}-daypart-afternoon-reset.png"
+        case .evening:
+            return "pet-{stage}-daypart-evening-loop.png"
+        case .night:
+            return "pet-{stage}-daypart-night-watch.png"
+        }
+    }
+
+    static func count(mask: Int) -> Int {
+        allCases.filter { mask & $0.rawValue != 0 }.count
+    }
+
+    static func summary(offeredMask: Int, answeredMask: Int, dismissedMask: Int) -> String {
+        let offered = count(mask: offeredMask)
+        let answered = count(mask: answeredMask)
+        let dismissed = count(mask: dismissedMask)
+        let next = allCases.first { offeredMask & $0.rawValue == 0 }
+        let nextText = next.map { "Next \($0.title)" } ?? "All five check-ins seen"
+        return "Cheer Rhythm \(answered)/\(allCases.count) answered · \(offered) seen · \(dismissed) skipped · \(nextText)"
+    }
+}
+
 enum PetCareNeed: Int, CaseIterable {
     case affection
     case study

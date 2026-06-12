@@ -220,6 +220,9 @@ The native macOS companion now has the first version of the loop:
 - Proactive check-ins now carry structured title, body, action, and reward copy,
   so the pet can ask "how are you doing?" in different care, focus, event,
   cipher, boost, comeback, and mood contexts.
+- Cheer Rhythm now tracks five daypart nudges per day: sunrise, focus,
+  afternoon, evening, and night, with answered/skipped receipts and matching
+  sprite requests.
 - Weekly care trail rewards now track separate day 1, 3, 5, and 7 milestones,
   surface in the journal, and request matching sprite sheets for each growth
   stage.

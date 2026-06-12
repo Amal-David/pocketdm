@@ -197,3 +197,10 @@ not isolated one-off buttons.
 **Rule:** daily care should feed a visible weekly trail with milestone rewards,
 journal receipts, and matching sprite requests so returning over several days
 feels like relationship progress.
+
+## 2026-06-13 — Proactive cheer needs a daily rhythm
+User wants the pet to check in throughout the day, not just fire a generic
+chat bubble on a timer.
+**Rule:** proactive nudges should be tracked by daypart with answered and
+dismissed state, rewards, journal receipts, and separate sprite requests for
+morning, focus, afternoon, evening, and night.

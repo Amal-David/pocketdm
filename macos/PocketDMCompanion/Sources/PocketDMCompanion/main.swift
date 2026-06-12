@@ -218,6 +218,10 @@ final class DragonOverlayModel: ObservableObject {
     private static let weeklyCareWeekKey = "PocketDMCompanion.weeklyCareWeek"
     private static let weeklyCareCountKey = "PocketDMCompanion.weeklyCareCount"
     private static let weeklyRewardMaskKey = "PocketDMCompanion.weeklyRewardMask"
+    private static let dailyNudgeDateKey = "PocketDMCompanion.dailyNudgeDate"
+    private static let dailyNudgeOfferedMaskKey = "PocketDMCompanion.dailyNudgeOfferedMask"
+    private static let dailyNudgeAnsweredMaskKey = "PocketDMCompanion.dailyNudgeAnsweredMask"
+    private static let dailyNudgeDismissedMaskKey = "PocketDMCompanion.dailyNudgeDismissedMask"
     private static let maxEnergy = 5
     private static let energyRechargeSeconds: TimeInterval = 30 * 60
     private static let passiveSparkSeconds: TimeInterval = 15 * 60
@@ -279,10 +283,15 @@ final class DragonOverlayModel: ObservableObject {
     @Published var weeklyCareWeek = UserDefaults.standard.string(forKey: DragonOverlayModel.weeklyCareWeekKey) ?? ""
     @Published var weeklyCareCount = UserDefaults.standard.object(forKey: DragonOverlayModel.weeklyCareCountKey) as? Int ?? 0
     @Published var weeklyRewardMask = UserDefaults.standard.object(forKey: DragonOverlayModel.weeklyRewardMaskKey) as? Int ?? 0
+    @Published var dailyNudgeDate = UserDefaults.standard.string(forKey: DragonOverlayModel.dailyNudgeDateKey) ?? ""
+    @Published var dailyNudgeOfferedMask = UserDefaults.standard.object(forKey: DragonOverlayModel.dailyNudgeOfferedMaskKey) as? Int ?? 0
+    @Published var dailyNudgeAnsweredMask = UserDefaults.standard.object(forKey: DragonOverlayModel.dailyNudgeAnsweredMaskKey) as? Int ?? 0
+    @Published var dailyNudgeDismissedMask = UserDefaults.standard.object(forKey: DragonOverlayModel.dailyNudgeDismissedMaskKey) as? Int ?? 0
     @Published var cheerBubble: String?
     @Published var cheerTitle = ""
     @Published var cheerAction = ""
     @Published var cheerRewardLine = ""
+    @Published var cheerDaypartRaw = 0
 
     let languageCoach = LanguageCoachStore()
 
@@ -588,11 +597,15 @@ final class DragonOverlayModel: ObservableObject {
         let priorStage = growthStage
         let prompt = cheerTitle.isEmpty ? "Check in" : cheerTitle
         let rewardLine = cheerRewardLine.isEmpty ? "Check-in answered" : cheerRewardLine
+        let daypartNote = recordCheerAnswer()
         clearCheerBubble()
         lastRequest = "Cheer"
         happiness = min(5, happiness + 1)
         earnSparkDust(3)
         message = pikaText("\(rewardLine). Pikachu turns \(prompt.lowercased()) into Joy +1 and Sparks +3.")
+        if let daypartNote {
+            message += " \(daypartNote)"
+        }
         recordDailyQuest(.cheer)
         if let needNote = awardCareNeed(.focus) {
             message += " \(needNote)"
@@ -608,6 +621,7 @@ final class DragonOverlayModel: ObservableObject {
     }
 
     func dismissCheerBubble() {
+        recordCheerDismissal()
         clearCheerBubble()
         UserDefaults.standard.set(Date().timeIntervalSince1970, forKey: Self.lastCheerAtKey)
         play(.minimize)
@@ -860,6 +874,14 @@ final class DragonOverlayModel: ObservableObject {
         PetStreakMilestone.summary(careCount: weeklyCareCount, rewardMask: weeklyRewardMask)
     }
 
+    var cheerRhythmLine: String {
+        PetDaypartNudge.summary(
+            offeredMask: dailyNudgeOfferedMask,
+            answeredMask: dailyNudgeAnsweredMask,
+            dismissedMask: dailyNudgeDismissedMask
+        )
+    }
+
     var cipherLine: String {
         if dailyCipherSolved {
             return "\(careMoment.title) · Cipher \(dailyCipher.answer) ✓ · Boost \(dailyBoosterUsed ? "used" : "ready")"
@@ -949,6 +971,20 @@ final class DragonOverlayModel: ObservableObject {
         return "Week sprite: \(next.spriteRequestName.replacingOccurrences(of: "{stage}", with: growthStage.assetSlug))"
     }
 
+    var journalCheerProgress: Double {
+        Double(PetDaypartNudge.count(mask: dailyNudgeAnsweredMask)) / Double(PetDaypartNudge.allCases.count)
+    }
+
+    var journalCheerCaption: String {
+        "\(PetDaypartNudge.count(mask: dailyNudgeAnsweredMask))/\(PetDaypartNudge.allCases.count) answered today · \(PetDaypartNudge.count(mask: dailyNudgeOfferedMask)) seen"
+    }
+
+    var journalCheerSpriteLine: String {
+        let next = PetDaypartNudge.allCases.first { dailyNudgeOfferedMask & $0.rawValue == 0 }
+            ?? daypartNudge
+        return "Cheer sprite: \(next.spriteRequestName.replacingOccurrences(of: "{stage}", with: growthStage.assetSlug))"
+    }
+
     var journalSpriteLine: String {
         let latest = PetFeeling(rawValue: latestFeelingRaw) ?? petFeeling
         return "Next sprite: \(latest.spriteRequestName(stage: growthStage))"
@@ -998,6 +1034,7 @@ final class DragonOverlayModel: ObservableObject {
         cheerTitle = ""
         cheerAction = ""
         cheerRewardLine = ""
+        cheerDaypartRaw = 0
     }
 
     private func persistCare() {
@@ -1039,6 +1076,10 @@ final class DragonOverlayModel: ObservableObject {
         UserDefaults.standard.set(weeklyCareWeek, forKey: Self.weeklyCareWeekKey)
         UserDefaults.standard.set(weeklyCareCount, forKey: Self.weeklyCareCountKey)
         UserDefaults.standard.set(weeklyRewardMask, forKey: Self.weeklyRewardMaskKey)
+        UserDefaults.standard.set(dailyNudgeDate, forKey: Self.dailyNudgeDateKey)
+        UserDefaults.standard.set(dailyNudgeOfferedMask, forKey: Self.dailyNudgeOfferedMaskKey)
+        UserDefaults.standard.set(dailyNudgeAnsweredMask, forKey: Self.dailyNudgeAnsweredMaskKey)
+        UserDefaults.standard.set(dailyNudgeDismissedMask, forKey: Self.dailyNudgeDismissedMaskKey)
     }
 
     private func handlesCare(_ prompt: String) -> Bool {
@@ -1083,6 +1124,10 @@ final class DragonOverlayModel: ObservableObject {
 
     private var careMoment: PetCareMoment {
         PetCareMoment(hour: currentHour)
+    }
+
+    private var daypartNudge: PetDaypartNudge {
+        PetDaypartNudge(moment: careMoment)
     }
 
     private var careNeed: PetCareNeed {
@@ -1270,6 +1315,13 @@ final class DragonOverlayModel: ObservableObject {
             weeklyRewardMask = 0
             changed = true
         }
+        if dailyNudgeDate != today {
+            dailyNudgeDate = today
+            dailyNudgeOfferedMask = 0
+            dailyNudgeAnsweredMask = 0
+            dailyNudgeDismissedMask = 0
+            changed = true
+        }
         if dailyComboDate != today {
             dailyComboDate = today
             dailyComboMask = 0
@@ -1330,6 +1382,33 @@ final class DragonOverlayModel: ObservableObject {
         }
         persistCare()
         return notes.joined(separator: " ")
+    }
+
+    private func recordCheerAnswer() -> String? {
+        syncDailyCombo()
+        guard let daypart = PetDaypartNudge(rawValue: cheerDaypartRaw) else { return nil }
+        let wasAnswered = dailyNudgeAnsweredMask & daypart.rawValue != 0
+        dailyNudgeOfferedMask |= daypart.rawValue
+        dailyNudgeAnsweredMask |= daypart.rawValue
+        dailyNudgeDismissedMask &= ~daypart.rawValue
+        guard !wasAnswered else {
+            persistCare()
+            return nil
+        }
+
+        let reward = 4 + cheerLevel + sparkLevel
+        sparkDust = min(999, sparkDust + reward)
+        happiness = min(5, happiness + 1)
+        persistCare()
+        return "\(daypart.title) logged in Cheer Rhythm: Joy +1, Sparks +\(reward)."
+    }
+
+    private func recordCheerDismissal() {
+        syncDailyCombo()
+        guard let daypart = PetDaypartNudge(rawValue: cheerDaypartRaw) else { return }
+        dailyNudgeOfferedMask |= daypart.rawValue
+        dailyNudgeDismissedMask |= daypart.rawValue
+        persistCare()
     }
 
     private func markCombo(_ action: PetComboAction) {
@@ -1460,6 +1539,7 @@ final class DragonOverlayModel: ObservableObject {
     }
 
     private func showCheerIfReady() {
+        syncDailyCombo()
         guard minimized, cheerBubble == nil else { return }
         let defaults = UserDefaults.standard
         let now = Date().timeIntervalSince1970
@@ -1467,28 +1547,43 @@ final class DragonOverlayModel: ObservableObject {
         guard lastCheerAt == 0 || now - lastCheerAt >= effectiveCheerCooldown else { return }
 
         let index = defaults.integer(forKey: Self.cheerIndexKey)
-        let prompt = PetNudgeLibrary.cheerPrompt(
-            feeling: petFeeling,
-            stage: growthStage,
-            combo: dailyComboActions,
-            comboMask: dailyComboMask,
-            nextQuest: nextDailyQuest,
-            cipher: dailyCipher,
-            cipherSolved: dailyCipherSolved,
-            boosterReady: !dailyBoosterUsed,
-            careMoment: careMoment,
-            careNeed: careNeed,
-            seasonEvent: dailyEvent,
-            eventProgress: dailyEventProgress,
-            comebackReady: canShowComebackNudge,
-            energy: energy,
-            sparkDust: sparkDust,
-            index: index
-        )
+        let daypart = daypartNudge
+        let shouldUseDaypart = dailyNudgeOfferedMask & daypart.rawValue == 0
+        let prompt = shouldUseDaypart
+            ? PetNudgeLibrary.PetCheerPrompt(
+                title: daypart.title,
+                body: daypart.body,
+                action: daypart.action,
+                rewardLine: daypart.rewardLine
+            )
+            : PetNudgeLibrary.cheerPrompt(
+                feeling: petFeeling,
+                stage: growthStage,
+                combo: dailyComboActions,
+                comboMask: dailyComboMask,
+                nextQuest: nextDailyQuest,
+                cipher: dailyCipher,
+                cipherSolved: dailyCipherSolved,
+                boosterReady: !dailyBoosterUsed,
+                careMoment: careMoment,
+                careNeed: careNeed,
+                seasonEvent: dailyEvent,
+                eventProgress: dailyEventProgress,
+                comebackReady: canShowComebackNudge,
+                energy: energy,
+                sparkDust: sparkDust,
+                index: index
+            )
         cheerTitle = prompt.title
         cheerAction = prompt.action
         cheerRewardLine = prompt.rewardLine
+        cheerDaypartRaw = shouldUseDaypart ? daypart.rawValue : 0
         cheerBubble = pikaText(prompt.body)
+        if shouldUseDaypart {
+            dailyNudgeOfferedMask |= daypart.rawValue
+            dailyNudgeDismissedMask &= ~daypart.rawValue
+            persistCare()
+        }
         defaults.set(index + 1, forKey: Self.cheerIndexKey)
         defaults.set(now, forKey: Self.lastCheerAtKey)
         play(.happy)
@@ -1911,6 +2006,11 @@ struct DragonOverlayView: View {
                 .foregroundStyle(Color.gold.opacity(0.72))
                 .lineLimit(1)
                 .minimumScaleFactor(0.52)
+            Text(model.cheerRhythmLine)
+                .font(.system(size: 8.2, weight: .black, design: .rounded))
+                .foregroundStyle(Color.ivory.opacity(0.66))
+                .lineLimit(1)
+                .minimumScaleFactor(0.48)
             Text(model.cipherLine)
                 .font(.system(size: 8.5, weight: .bold, design: .rounded))
                 .foregroundStyle(Color.ivory.opacity(0.7))
@@ -2187,6 +2287,9 @@ struct PetJournalPanel: View {
             detailLine(model.needLine)
             detailLine(model.comboLine)
             detailLine(model.taskLine)
+            journalHero("Cheer Rhythm", value: model.journalCheerProgress, caption: model.journalCheerCaption)
+            detailLine(model.cheerRhythmLine)
+            artLine(model.journalCheerSpriteLine)
             detailLine(model.cipherLine)
         case .streak:
             journalHero("Week Trail", value: model.journalStreakProgress, caption: model.journalStreakCaption)
