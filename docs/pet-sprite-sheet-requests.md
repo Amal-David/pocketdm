@@ -687,6 +687,45 @@ Generate these as route/progression sheets for each growth stage:
 - `pet-{stage}-journal-spark-route.png`
   - Journal view showing today's route, completed beats, and next step.
 
+### Batch 21: Mood Story Check-ins
+
+Generate these as proactive emotional check-in sheets for each growth stage:
+
+- `pet-{stage}-mood-story-bright-hello.png`
+  - Finds the user, lights up, and offers one tiny hello.
+- `pet-{stage}-mood-story-eager-step.png`
+  - Bouncy eager stance asking for the smallest next step.
+- `pet-{stage}-mood-story-proud-receipt.png`
+  - Saves a completed action as visible proof before it disappears.
+- `pet-{stage}-mood-story-overcharge-ground.png`
+  - Grounds cheek sparks into a controlled calm move.
+- `pet-{stage}-mood-story-focused-perch.png`
+  - Quiet desk-perch focus companion for one minute.
+- `pet-{stage}-mood-story-celebration-save.png`
+  - Tucks a glowing win into the album with a happy hop.
+- `pet-{stage}-mood-story-guardian-check.png`
+  - Late-night protective check-in, calm and non-demanding.
+- `pet-{stage}-mood-story-gentle-repair.png`
+  - Soft repair after a rough moment or failed attempt.
+- `pet-{stage}-mood-story-playful-spark.png`
+  - Tiny play burst that releases energy safely.
+- `pet-{stage}-mood-story-grateful-thanks.png`
+  - Thank-you sparkle after the user comes back.
+- `pet-{stage}-mood-story-determined-bridge.png`
+  - Builds a bridge toward the next growth form.
+- `pet-{stage}-mood-story-restless-polish.png`
+  - Turns restless energy into upgrade-card polishing.
+- `pet-{stage}-mood-story-snack-ask.png`
+  - Names snack need gently before it becomes a wobble.
+- `pet-{stage}-mood-story-sleepy-permission.png`
+  - Asks for permission to let rest count as care.
+- `pet-{stage}-mood-story-curious-question.png`
+  - Asks "what is happening?" and carries one small answer.
+- `pet-{stage}-mood-story-lonely-reach.png`
+  - Reaches back softly after waiting, without guilt.
+- `pet-{stage}-journal-mood-stories.png`
+  - Journal view of answered, skipped, and album-saved mood stories.
+
 ## Growth Stages
 
 Each stage should share the same personality but visibly grow:

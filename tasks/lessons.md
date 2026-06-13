@@ -356,3 +356,18 @@ with care, lore, growth, and proactive cheer.
 step receipts, album progress, care-vital effects, mood-care effects, and exact
 sprite filenames; avoid leaving combo, cipher, boost, upgrade, and check-in
 actions as disconnected buttons.
+
+## 2026-06-13 — Cheer must speak from the pet's mood
+The user wants proactive "how are you doing?" bubbles to feel like a real pet,
+not generic scheduled text.
+**Rule:** proactive check-ins should include mood-specific story prompts tied to
+the current feeling and growth stage, and those prompts need answered/skipped
+state, permanent album proof, care-vital effects, mood-care effects, and exact
+sprite filenames.
+
+## 2026-06-13 — Lesson audio needs the catchphrase too
+The user clarified again that the model should say "pika pika" in text and in
+voice, not only in static labels.
+**Rule:** native assistant replies and language-coach playback should both speak
+the catchphrase before their content while preserving the target-language voice
+for Spanish and Mandarin phrases.

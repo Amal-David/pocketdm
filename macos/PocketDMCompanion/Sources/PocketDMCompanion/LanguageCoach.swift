@@ -313,6 +313,13 @@ final class LanguageSpeechSynthesizer {
         if synthesizer.isSpeaking {
             synthesizer.stopSpeaking(at: .immediate)
         }
+        let catchphrase = AVSpeechUtterance(string: "Pika pika!")
+        catchphrase.voice = AVSpeechSynthesisVoice(language: "en-US")
+        catchphrase.rate = slow ? 0.36 : 0.5
+        catchphrase.pitchMultiplier = 1.18
+        catchphrase.volume = 0.72
+        synthesizer.speak(catchphrase)
+
         let utterance = AVSpeechUtterance(string: text)
         utterance.voice = AVSpeechSynthesisVoice(language: languageCode)
             ?? AVSpeechSynthesisVoice(language: "en-US")

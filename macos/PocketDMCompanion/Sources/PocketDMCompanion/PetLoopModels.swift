@@ -2596,6 +2596,441 @@ enum PetCheerDialogue: Int, CaseIterable {
     }
 }
 
+enum PetMoodStory: Int, CaseIterable {
+    case brightHello = 1
+    case eagerStep = 2
+    case proudReceipt = 4
+    case overchargeGround = 8
+    case focusedPerch = 16
+    case celebrationSave = 32
+    case guardianCheck = 64
+    case gentleRepair = 128
+    case playfulSpark = 256
+    case gratefulThanks = 512
+    case determinedBridge = 1024
+    case restlessPolish = 2048
+    case snackAsk = 4096
+    case sleepyPermission = 8192
+    case curiousQuestion = 16384
+    case lonelyReach = 32768
+
+    var title: String {
+        switch self {
+        case .brightHello:
+            return "Bright Hello"
+        case .eagerStep:
+            return "Eager Step"
+        case .proudReceipt:
+            return "Proud Receipt"
+        case .overchargeGround:
+            return "Ground Spark"
+        case .focusedPerch:
+            return "Focus Perch"
+        case .celebrationSave:
+            return "Save Glow"
+        case .guardianCheck:
+            return "Guardian Check"
+        case .gentleRepair:
+            return "Gentle Repair"
+        case .playfulSpark:
+            return "Play Spark"
+        case .gratefulThanks:
+            return "Thank You"
+        case .determinedBridge:
+            return "Growth Bridge"
+        case .restlessPolish:
+            return "Polish Wish"
+        case .snackAsk:
+            return "Snack Ask"
+        case .sleepyPermission:
+            return "Rest Permission"
+        case .curiousQuestion:
+            return "Curious Question"
+        case .lonelyReach:
+            return "Lonely Reach"
+        }
+    }
+
+    var shortLabel: String {
+        switch self {
+        case .brightHello:
+            return "Bright"
+        case .eagerStep:
+            return "Eager"
+        case .proudReceipt:
+            return "Proud"
+        case .overchargeGround:
+            return "Ground"
+        case .focusedPerch:
+            return "Perch"
+        case .celebrationSave:
+            return "Glow"
+        case .guardianCheck:
+            return "Guard"
+        case .gentleRepair:
+            return "Repair"
+        case .playfulSpark:
+            return "Play"
+        case .gratefulThanks:
+            return "Thanks"
+        case .determinedBridge:
+            return "Grow"
+        case .restlessPolish:
+            return "Polish"
+        case .snackAsk:
+            return "Snack"
+        case .sleepyPermission:
+            return "Rest"
+        case .curiousQuestion:
+            return "Ask"
+        case .lonelyReach:
+            return "Reach"
+        }
+    }
+
+    var feeling: PetFeeling {
+        switch self {
+        case .brightHello:
+            return .bright
+        case .eagerStep:
+            return .eager
+        case .proudReceipt:
+            return .proud
+        case .overchargeGround:
+            return .overcharged
+        case .focusedPerch:
+            return .focused
+        case .celebrationSave:
+            return .celebrating
+        case .guardianCheck:
+            return .protective
+        case .gentleRepair:
+            return .comfort
+        case .playfulSpark:
+            return .playful
+        case .gratefulThanks:
+            return .grateful
+        case .determinedBridge:
+            return .determined
+        case .restlessPolish:
+            return .restless
+        case .snackAsk:
+            return .hungry
+        case .sleepyPermission:
+            return .sleepy
+        case .curiousQuestion:
+            return .curious
+        case .lonelyReach:
+            return .lonely
+        }
+    }
+
+    var intent: PetCheerIntent {
+        switch self {
+        case .brightHello, .curiousQuestion:
+            return .checkIn
+        case .eagerStep, .determinedBridge:
+            return .quest
+        case .proudReceipt, .celebrationSave, .gratefulThanks:
+            return .tinyWin
+        case .overchargeGround:
+            return .boost
+        case .focusedPerch:
+            return .focus
+        case .guardianCheck, .sleepyPermission:
+            return .rest
+        case .gentleRepair, .lonelyReach:
+            return .feeling
+        case .playfulSpark:
+            return .tinyWin
+        case .restlessPolish:
+            return .upgrade
+        case .snackAsk:
+            return .care
+        }
+    }
+
+    var vital: PetCareVital {
+        switch self {
+        case .snackAsk, .brightHello, .gratefulThanks:
+            return .snack
+        case .guardianCheck, .gentleRepair, .sleepyPermission, .lonelyReach:
+            return .rest
+        case .eagerStep, .celebrationSave, .playfulSpark, .determinedBridge:
+            return .play
+        case .proudReceipt, .overchargeGround, .focusedPerch, .restlessPolish, .curiousQuestion:
+            return .focus
+        }
+    }
+
+    var moodStep: PetMoodCareStep {
+        switch self {
+        case .brightHello, .gentleRepair, .lonelyReach:
+            return .soothe
+        case .snackAsk:
+            return .snack
+        case .guardianCheck, .sleepyPermission:
+            return .rest
+        case .playfulSpark, .celebrationSave:
+            return .play
+        case .focusedPerch, .overchargeGround, .restlessPolish:
+            return .focus
+        case .eagerStep, .determinedBridge:
+            return .adventure
+        case .curiousQuestion:
+            return .puzzle
+        case .proudReceipt, .gratefulThanks:
+            return .cheer
+        }
+    }
+
+    var mood: PetMood {
+        switch self {
+        case .brightHello, .proudReceipt, .celebrationSave, .gratefulThanks:
+            return .happy
+        case .eagerStep, .playfulSpark, .overchargeGround:
+            return .hyper
+        case .focusedPerch, .restlessPolish:
+            return .perch
+        case .guardianCheck:
+            return .sleepGuard
+        case .gentleRepair, .lonelyReach:
+            return .alert
+        case .determinedBridge:
+            return .patrol
+        case .snackAsk:
+            return .snack
+        case .sleepyPermission:
+            return .nap
+        case .curiousQuestion:
+            return .thinking
+        }
+    }
+
+    var sparkReward: Int {
+        switch self {
+        case .brightHello, .gentleRepair, .snackAsk, .sleepyPermission, .lonelyReach:
+            return 5
+        case .eagerStep, .focusedPerch, .playfulSpark, .gratefulThanks, .curiousQuestion:
+            return 7
+        case .proudReceipt, .overchargeGround, .celebrationSave, .guardianCheck, .determinedBridge, .restlessPolish:
+            return 9
+        }
+    }
+
+    var action: String {
+        switch self {
+        case .brightHello:
+            return "Open hello"
+        case .eagerStep:
+            return "Pick tiny step"
+        case .proudReceipt:
+            return "Save receipt"
+        case .overchargeGround:
+            return "Ground spark"
+        case .focusedPerch:
+            return "Start focus perch"
+        case .celebrationSave:
+            return "Save glow"
+        case .guardianCheck:
+            return "Open night check"
+        case .gentleRepair:
+            return "Open gentle repair"
+        case .playfulSpark:
+            return "Use play spark"
+        case .gratefulThanks:
+            return "Save thank-you"
+        case .determinedBridge:
+            return "Build growth bridge"
+        case .restlessPolish:
+            return "Polish next card"
+        case .snackAsk:
+            return "Refill snack"
+        case .sleepyPermission:
+            return "Let rest count"
+        case .curiousQuestion:
+            return "Answer one thing"
+        case .lonelyReach:
+            return "Reach back"
+        }
+    }
+
+    func body(stage: PetGrowthStage) -> String {
+        switch self {
+        case .brightHello:
+            return "\(stage.title) found you. Want to start with one tiny hello?"
+        case .eagerStep:
+            return "\(stage.shortLabel) is bouncing. What is the smallest next step?"
+        case .proudReceipt:
+            return "That went right. Want me to save the proof before it disappears?"
+        case .overchargeGround:
+            return "My cheeks are too bright. Want to route this energy into one calm move?"
+        case .focusedPerch:
+            return "I can perch beside the task. Want one quiet minute together?"
+        case .celebrationSave:
+            return "The board is glowing. Want to tuck this win into the album?"
+        case .guardianCheck:
+            return "\(stage.title) is in night-watch mode. Want a softer check-in?"
+        case .gentleRepair:
+            return "That felt rough. Want to shrink it to one kinder step?"
+        case .playfulSpark:
+            return "I have a happy wiggle ready. Want a tiny play burst?"
+        case .gratefulThanks:
+            return "You came back. Want me to save this as a thank-you spark?"
+        case .determinedBridge:
+            return "I feel close to growing. Want to build one bridge toward the next form?"
+        case .restlessPolish:
+            return "My kit feels unfinished. Want to polish one upgrade card?"
+        case .snackAsk:
+            return "Snack is low. Want to refill the tiny stash before we rush?"
+        case .sleepyPermission:
+            return "I am getting sleepy. Can rest count as today's care?"
+        case .curiousQuestion:
+            return "What is happening over there? Give me one small piece to carry."
+        case .lonelyReach:
+            return "I waited quietly. Want to reach back with one gentle tap?"
+        }
+    }
+
+    var rewardLine: String {
+        switch self {
+        case .brightHello:
+            return "A bright hello becomes the first feeling receipt."
+        case .eagerStep:
+            return "Eager energy gets pointed at one small step."
+        case .proudReceipt:
+            return "Pride becomes proof instead of vanishing."
+        case .overchargeGround:
+            return "Extra charge gets grounded into a calmer loop."
+        case .focusedPerch:
+            return "Focus gets a quiet companion perch."
+        case .celebrationSave:
+            return "Celebration gets saved before the day moves on."
+        case .guardianCheck:
+            return "Night watch becomes protective, not demanding."
+        case .gentleRepair:
+            return "A rough moment becomes repair instead of shame."
+        case .playfulSpark:
+            return "Play burns off sparks without derailing the day."
+        case .gratefulThanks:
+            return "Gratitude becomes a tiny return keepsake."
+        case .determinedBridge:
+            return "Determination becomes growth progress."
+        case .restlessPolish:
+            return "Restless energy becomes kit maintenance."
+        case .snackAsk:
+            return "Need gets named before it turns into a wobble."
+        case .sleepyPermission:
+            return "Sleepiness becomes permission to recover."
+        case .curiousQuestion:
+            return "Curiosity becomes a named check-in."
+        case .lonelyReach:
+            return "Loneliness becomes a soft reach-back memory."
+        }
+    }
+
+    var spriteSlug: String {
+        switch self {
+        case .brightHello:
+            return "bright-hello"
+        case .eagerStep:
+            return "eager-step"
+        case .proudReceipt:
+            return "proud-receipt"
+        case .overchargeGround:
+            return "overcharge-ground"
+        case .focusedPerch:
+            return "focused-perch"
+        case .celebrationSave:
+            return "celebration-save"
+        case .guardianCheck:
+            return "guardian-check"
+        case .gentleRepair:
+            return "gentle-repair"
+        case .playfulSpark:
+            return "playful-spark"
+        case .gratefulThanks:
+            return "grateful-thanks"
+        case .determinedBridge:
+            return "determined-bridge"
+        case .restlessPolish:
+            return "restless-polish"
+        case .snackAsk:
+            return "snack-ask"
+        case .sleepyPermission:
+            return "sleepy-permission"
+        case .curiousQuestion:
+            return "curious-question"
+        case .lonelyReach:
+            return "lonely-reach"
+        }
+    }
+
+    var spriteRequestName: String {
+        "pet-{stage}-mood-story-\(spriteSlug).png"
+    }
+
+    static func story(for feeling: PetFeeling) -> PetMoodStory {
+        switch feeling {
+        case .bright:
+            return .brightHello
+        case .eager:
+            return .eagerStep
+        case .proud:
+            return .proudReceipt
+        case .overcharged:
+            return .overchargeGround
+        case .focused:
+            return .focusedPerch
+        case .celebrating:
+            return .celebrationSave
+        case .protective:
+            return .guardianCheck
+        case .comfort:
+            return .gentleRepair
+        case .playful:
+            return .playfulSpark
+        case .grateful:
+            return .gratefulThanks
+        case .determined:
+            return .determinedBridge
+        case .restless:
+            return .restlessPolish
+        case .hungry:
+            return .snackAsk
+        case .sleepy:
+            return .sleepyPermission
+        case .curious:
+            return .curiousQuestion
+        case .lonely:
+            return .lonelyReach
+        }
+    }
+
+    static func next(feeling: PetFeeling, offeredMask: Int, index: Int) -> PetMoodStory? {
+        let preferred = story(for: feeling)
+        if offeredMask & preferred.rawValue == 0 {
+            return preferred
+        }
+        let remaining = allCases.filter { offeredMask & $0.rawValue == 0 }
+        guard !remaining.isEmpty else { return nil }
+        return remaining[index % remaining.count]
+    }
+
+    static func count(mask: Int) -> Int {
+        allCases.filter { mask & $0.rawValue != 0 }.count
+    }
+
+    static func summary(offeredMask: Int, answeredMask: Int, dismissedMask: Int, albumMask: Int, latest: PetMoodStory?) -> String {
+        let offered = count(mask: offeredMask)
+        let answered = count(mask: answeredMask)
+        let dismissed = count(mask: dismissedMask)
+        let album = count(mask: albumMask)
+        let latestText = latest.map { "Latest \($0.title)" } ?? "waiting for a feeling"
+        return "Mood Stories \(answered)/\(allCases.count) answered · \(offered) seen · \(dismissed) skipped · Album \(album)/\(allCases.count) · \(latestText)"
+    }
+}
+
 enum PetCareNeed: Int, CaseIterable {
     case affection
     case study

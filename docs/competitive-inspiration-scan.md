@@ -270,6 +270,9 @@ The native macOS companion now has the first version of the loop:
 - Spark Route now adds a six-step daily path drawn from twelve possible route
   beats, feeds combo/tasks/vitals/mood care, pays a completion reward, unlocks a
   route charm, and surfaces exact sprite filenames in the Ritual journal.
+- Mood Stories now add sixteen proactive check-in prompts tied to the current
+  pet feeling and growth stage, with answered/skipped state, permanent album
+  proof, care-vital effects, mood-care effects, and matching sprite filenames.
 - A Life button now unlocks stage-specific life scenes for the current growth
   form, rewards Joy/Sparks, refills the matching vital, advances Mood Care, and
   surfaces the next life-scene sprite request in the Growth journal.
