@@ -364,6 +364,10 @@ The native macOS companion now has the first version of the loop:
   is not clicking: first look, desk perch, snack sniff, soft stretch, spark
   patrol, cheek spark, sleepy guard, and journal peek, with daily and permanent
   album receipts.
+- Scout Trips now add a two-step send/return loop: the user sends Pikachu on a
+  short desktop expedition, waits for a return timer, collects a report, earns
+  Sparks/Joy/vital progress, and fills a Scout Trips album with exact sprite
+  requests.
 
 This is not the full final pet fantasy yet. It is the backbone that lets the
 next sprite sheets matter: new art can now map to real emotions, upgrades,

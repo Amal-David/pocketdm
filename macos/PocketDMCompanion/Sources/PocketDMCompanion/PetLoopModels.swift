@@ -4575,6 +4575,285 @@ enum PetFieldNote: Int, CaseIterable {
     }
 }
 
+enum PetScoutTrip: Int, CaseIterable {
+    case deskEdge = 1
+    case sparkTrail = 2
+    case phraseGrove = 4
+    case questMarker = 8
+    case snackNook = 16
+    case restCove = 32
+    case upgradeForge = 64
+    case moodMeadow = 128
+    case comebackPath = 256
+    case nightWatch = 512
+
+    var title: String {
+        switch self {
+        case .deskEdge:
+            return "Desk Edge"
+        case .sparkTrail:
+            return "Spark Trail"
+        case .phraseGrove:
+            return "Phrase Grove"
+        case .questMarker:
+            return "Quest Marker"
+        case .snackNook:
+            return "Snack Nook"
+        case .restCove:
+            return "Rest Cove"
+        case .upgradeForge:
+            return "Upgrade Forge"
+        case .moodMeadow:
+            return "Mood Meadow"
+        case .comebackPath:
+            return "Comeback Path"
+        case .nightWatch:
+            return "Night Watch"
+        }
+    }
+
+    var shortLabel: String {
+        switch self {
+        case .deskEdge:
+            return "Desk"
+        case .sparkTrail:
+            return "Trail"
+        case .phraseGrove:
+            return "Phrase"
+        case .questMarker:
+            return "Quest"
+        case .snackNook:
+            return "Snack"
+        case .restCove:
+            return "Rest"
+        case .upgradeForge:
+            return "Forge"
+        case .moodMeadow:
+            return "Mood"
+        case .comebackPath:
+            return "Back"
+        case .nightWatch:
+            return "Night"
+        }
+    }
+
+    var startLine: String {
+        switch self {
+        case .deskEdge:
+            return "It pads to the edge of the desktop to find one safe starting point."
+        case .sparkTrail:
+            return "It follows stored Sparks to see which loop wants attention next."
+        case .phraseGrove:
+            return "It carries one language spark into a quiet practice grove."
+        case .questMarker:
+            return "It scouts ahead and looks for the next adventure marker."
+        case .snackNook:
+            return "It checks the tiny snack cache and promises not to nag."
+        case .restCove:
+            return "It walks to a soft cove where rest can become progress."
+        case .upgradeForge:
+            return "It takes a card sketch to the forge and studies the next upgrade."
+        case .moodMeadow:
+            return "It explores a mood meadow to name what the day feels like."
+        case .comebackPath:
+            return "It follows the path back so returning feels warm next time."
+        case .nightWatch:
+            return "It circles the night edge and keeps the signal gentle."
+        }
+    }
+
+    func returnLine(stage: PetGrowthStage, feeling: PetFeeling) -> String {
+        switch self {
+        case .deskEdge:
+            return "\(stage.shortLabel) found a small start point and marked it with \(feeling.title.lowercased()) sparks."
+        case .sparkTrail:
+            return "\(stage.shortLabel) came back with a bright trail and one stored Spark receipt."
+        case .phraseGrove:
+            return "\(stage.shortLabel) brought a phrase echo back for the next lesson."
+        case .questMarker:
+            return "\(stage.shortLabel) placed a tiny marker near the next quest choice."
+        case .snackNook:
+            return "\(stage.shortLabel) found a snack nook and refilled the care map."
+        case .restCove:
+            return "\(stage.shortLabel) brought back proof that rest can count."
+        case .upgradeForge:
+            return "\(stage.shortLabel) returned with a warmer sketch of the next card."
+        case .moodMeadow:
+            return "\(stage.shortLabel) brought back a mood petal labelled \(feeling.title.lowercased())."
+        case .comebackPath:
+            return "\(stage.shortLabel) traced a no-guilt route back to the desk."
+        case .nightWatch:
+            return "\(stage.shortLabel) completed a quiet watch and lowered the urgency."
+        }
+    }
+
+    var vital: PetCareVital {
+        switch self {
+        case .snackNook:
+            return .snack
+        case .restCove, .comebackPath, .nightWatch:
+            return .rest
+        case .sparkTrail, .questMarker, .moodMeadow:
+            return .play
+        case .deskEdge, .phraseGrove, .upgradeForge:
+            return .focus
+        }
+    }
+
+    var moodStep: PetMoodCareStep {
+        switch self {
+        case .deskEdge, .sparkTrail:
+            return .focus
+        case .phraseGrove:
+            return .study
+        case .questMarker:
+            return .adventure
+        case .snackNook:
+            return .snack
+        case .restCove, .nightWatch:
+            return .rest
+        case .upgradeForge:
+            return .focus
+        case .moodMeadow:
+            return .cheer
+        case .comebackPath:
+            return .soothe
+        }
+    }
+
+    var mood: PetMood {
+        switch self {
+        case .deskEdge, .phraseGrove, .upgradeForge:
+            return .perch
+        case .sparkTrail, .questMarker:
+            return .patrol
+        case .snackNook:
+            return .snack
+        case .restCove:
+            return .stretch
+        case .moodMeadow:
+            return .look
+        case .comebackPath:
+            return .happy
+        case .nightWatch:
+            return .sleepGuard
+        }
+    }
+
+    var sparkReward: Int {
+        switch self {
+        case .deskEdge, .snackNook, .restCove:
+            return 8
+        case .sparkTrail, .phraseGrove, .questMarker, .moodMeadow:
+            return 10
+        case .upgradeForge, .comebackPath, .nightWatch:
+            return 12
+        }
+    }
+
+    var spriteSlug: String {
+        switch self {
+        case .deskEdge:
+            return "desk-edge"
+        case .sparkTrail:
+            return "spark-trail"
+        case .phraseGrove:
+            return "phrase-grove"
+        case .questMarker:
+            return "quest-marker"
+        case .snackNook:
+            return "snack-nook"
+        case .restCove:
+            return "rest-cove"
+        case .upgradeForge:
+            return "upgrade-forge"
+        case .moodMeadow:
+            return "mood-meadow"
+        case .comebackPath:
+            return "comeback-path"
+        case .nightWatch:
+            return "night-watch"
+        }
+    }
+
+    var spriteRequestName: String {
+        "pet-{stage}-scout-trip-\(spriteSlug).png"
+    }
+
+    static func count(mask: Int) -> Int {
+        allCases.filter { mask & $0.rawValue != 0 }.count
+    }
+
+    static func next(
+        daypart: PetDaypartNudge,
+        feeling: PetFeeling,
+        stage: PetGrowthStage,
+        startedMask: Int,
+        index: Int
+    ) -> PetScoutTrip? {
+        let remaining = allCases.filter { startedMask & $0.rawValue == 0 }
+        guard !remaining.isEmpty else { return nil }
+
+        let preferred: PetScoutTrip
+        if daypart == .night {
+            preferred = .nightWatch
+        } else {
+            switch feeling {
+            case .hungry:
+                preferred = .snackNook
+            case .sleepy, .protective:
+                preferred = .restCove
+            case .focused:
+                preferred = .deskEdge
+            case .overcharged, .playful:
+                preferred = .sparkTrail
+            case .proud, .celebrating:
+                preferred = .questMarker
+            case .restless, .determined:
+                preferred = .upgradeForge
+            case .lonely, .comfort, .grateful:
+                preferred = .comebackPath
+            case .curious:
+                preferred = .moodMeadow
+            case .bright, .eager:
+                switch stage {
+                case .tinySpark, .pocketPal:
+                    preferred = .deskEdge
+                case .trailBuddy:
+                    preferred = .questMarker
+                case .stormScout, .stormGuardian:
+                    preferred = .phraseGrove
+                }
+            }
+        }
+
+        if remaining.contains(preferred) {
+            return preferred
+        }
+        return remaining[index % remaining.count]
+    }
+
+    static func summary(
+        startedMask: Int,
+        returnedMask: Int,
+        albumMask: Int,
+        active: PetScoutTrip?,
+        remainingSeconds: Int?,
+        latest: PetScoutTrip?
+    ) -> String {
+        let started = count(mask: startedMask)
+        let returned = count(mask: returnedMask)
+        let album = count(mask: albumMask)
+        if let active {
+            let remaining = remainingSeconds ?? 0
+            let status = remaining > 0 ? "\(remaining)s left" : "ready to collect"
+            return "Scout Trips \(returned)/\(allCases.count) returned · \(started) started · \(active.title) \(status) · Album \(album)/\(allCases.count)"
+        }
+        let latestText = latest.map { "Latest \($0.title)" } ?? "ready to scout"
+        return "Scout Trips \(returned)/\(allCases.count) returned · \(started) started · Album \(album)/\(allCases.count) · \(latestText)"
+    }
+}
+
 struct PetComebackReward {
     let sparks: Int
     let joy: Int

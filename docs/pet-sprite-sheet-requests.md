@@ -1577,6 +1577,34 @@ like a living ritual:
 - Audio reaction pose.
   - Pet leans in before a chirp, TTS phrase, or message reply sound.
 
+## Scout Trip Sheets
+
+These support the two-step send/return desktop expedition loop. Each action
+needs a 12-frame transparent strip for every growth stage:
+
+- `pet-{stage}-scout-trip-desk-edge.png`
+  - Pet pads to the edge of the desktop and looks for a safe starting point.
+- `pet-{stage}-scout-trip-spark-trail.png`
+  - Pet follows tiny electric spark receipts across the desk.
+- `pet-{stage}-scout-trip-phrase-grove.png`
+  - Pet carries a language spark and listens for a phrase echo.
+- `pet-{stage}-scout-trip-quest-marker.png`
+  - Pet places a tiny marker beside the next adventure route.
+- `pet-{stage}-scout-trip-snack-nook.png`
+  - Pet discovers a small snack cache and checks it proudly.
+- `pet-{stage}-scout-trip-rest-cove.png`
+  - Pet finds a soft resting cove and curls there briefly.
+- `pet-{stage}-scout-trip-upgrade-forge.png`
+  - Pet studies a small upgrade-card sketch with bright focus.
+- `pet-{stage}-scout-trip-mood-meadow.png`
+  - Pet brings back a floating mood petal or glow.
+- `pet-{stage}-scout-trip-comeback-path.png`
+  - Pet traces a warm return path back to the user.
+- `pet-{stage}-scout-trip-night-watch.png`
+  - Pet does a gentle night patrol with soft cheek sparks.
+- `pet-{stage}-journal-scout-trips.png`
+  - Pet presents a tiny scout album with found-object badges.
+
 ## Language Coach Sheets
 
 Spanish and Mandarin lessons need teaching-specific reactions:

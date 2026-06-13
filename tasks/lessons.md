@@ -378,3 +378,11 @@ hamster-style return loops.
 **Rule:** add collectible "the pet found this for you" moments, such as field
 notes, that are selected from mood/daypart/growth state, reward care progress,
 and request exact sprite sheets so daily return loops feel like shared story.
+
+## 2026-06-13 — Return loops need a wait state
+The user wants viral pet loops that feel alive, not just another instant reward
+button.
+**Rule:** expedition mechanics should have a start state, visible return timer,
+collect action, proactive return bubble, rewards, album progress, and exact
+sprite requests so the user feels Pikachu actually went somewhere and came
+back.
