@@ -267,6 +267,12 @@ final class DragonOverlayModel: ObservableObject {
     private static let dailyMoodStoryDismissedMaskKey = "PocketDMCompanion.dailyMoodStoryDismissedMask"
     private static let moodStoryAlbumMaskKey = "PocketDMCompanion.moodStoryAlbumMask"
     private static let latestMoodStoryRawKey = "PocketDMCompanion.latestMoodStoryRaw"
+    private static let dailyFieldNoteDateKey = "PocketDMCompanion.dailyFieldNoteDate"
+    private static let dailyFieldNoteOfferedMaskKey = "PocketDMCompanion.dailyFieldNoteOfferedMask"
+    private static let dailyFieldNoteSavedMaskKey = "PocketDMCompanion.dailyFieldNoteSavedMask"
+    private static let dailyFieldNoteDismissedMaskKey = "PocketDMCompanion.dailyFieldNoteDismissedMask"
+    private static let fieldNoteAlbumMaskKey = "PocketDMCompanion.fieldNoteAlbumMask"
+    private static let latestFieldNoteRawKey = "PocketDMCompanion.latestFieldNoteRaw"
     private static let dailyAmbientDateKey = "PocketDMCompanion.dailyAmbientDate"
     private static let dailyAmbientMaskKey = "PocketDMCompanion.dailyAmbientMask"
     private static let ambientAlbumMaskKey = "PocketDMCompanion.ambientAlbumMask"
@@ -402,6 +408,12 @@ final class DragonOverlayModel: ObservableObject {
     @Published var dailyMoodStoryDismissedMask = UserDefaults.standard.object(forKey: DragonOverlayModel.dailyMoodStoryDismissedMaskKey) as? Int ?? 0
     @Published var moodStoryAlbumMask = UserDefaults.standard.object(forKey: DragonOverlayModel.moodStoryAlbumMaskKey) as? Int ?? 0
     @Published var latestMoodStoryRaw = UserDefaults.standard.object(forKey: DragonOverlayModel.latestMoodStoryRawKey) as? Int ?? 0
+    @Published var dailyFieldNoteDate = UserDefaults.standard.string(forKey: DragonOverlayModel.dailyFieldNoteDateKey) ?? ""
+    @Published var dailyFieldNoteOfferedMask = UserDefaults.standard.object(forKey: DragonOverlayModel.dailyFieldNoteOfferedMaskKey) as? Int ?? 0
+    @Published var dailyFieldNoteSavedMask = UserDefaults.standard.object(forKey: DragonOverlayModel.dailyFieldNoteSavedMaskKey) as? Int ?? 0
+    @Published var dailyFieldNoteDismissedMask = UserDefaults.standard.object(forKey: DragonOverlayModel.dailyFieldNoteDismissedMaskKey) as? Int ?? 0
+    @Published var fieldNoteAlbumMask = UserDefaults.standard.object(forKey: DragonOverlayModel.fieldNoteAlbumMaskKey) as? Int ?? 0
+    @Published var latestFieldNoteRaw = UserDefaults.standard.object(forKey: DragonOverlayModel.latestFieldNoteRawKey) as? Int ?? 0
     @Published var dailyAmbientDate = UserDefaults.standard.string(forKey: DragonOverlayModel.dailyAmbientDateKey) ?? ""
     @Published var dailyAmbientMask = UserDefaults.standard.object(forKey: DragonOverlayModel.dailyAmbientMaskKey) as? Int ?? 0
     @Published var ambientAlbumMask = UserDefaults.standard.object(forKey: DragonOverlayModel.ambientAlbumMaskKey) as? Int ?? 0
@@ -425,6 +437,7 @@ final class DragonOverlayModel: ObservableObject {
     @Published var cheerIntentRaw = 0
     @Published var cheerScriptRaw = 0
     @Published var cheerMoodStoryRaw = 0
+    @Published var cheerFieldNoteRaw = 0
 
     let languageCoach = LanguageCoachStore()
 
@@ -884,6 +897,7 @@ final class DragonOverlayModel: ObservableObject {
         let dialogueNote = recordCheerDialogueAnswer()
         let scriptNote = recordCheerScriptAnswer()
         let moodStoryNote = recordMoodStoryAnswer()
+        let fieldNoteNote = recordFieldNoteAnswer()
         let intentNote = recordCheerIntentAnswer()
         let memoryNote = recordCheerMemory(dialogue: cheerDialogue, intent: cheerIntent, daypart: cheerDaypart)
         clearCheerBubble()
@@ -902,6 +916,9 @@ final class DragonOverlayModel: ObservableObject {
         }
         if let moodStoryNote {
             message += " \(moodStoryNote)"
+        }
+        if let fieldNoteNote {
+            message += " \(fieldNoteNote)"
         }
         if let intentNote {
             message += " \(intentNote)"
@@ -961,6 +978,7 @@ final class DragonOverlayModel: ObservableObject {
         recordCheerIntentDismissal()
         recordCheerScriptDismissal()
         recordMoodStoryDismissal()
+        recordFieldNoteDismissal()
         clearCheerBubble()
         UserDefaults.standard.set(Date().timeIntervalSince1970, forKey: Self.lastCheerAtKey)
         play(.minimize)
@@ -1272,6 +1290,22 @@ final class DragonOverlayModel: ObservableObject {
         setMood(.happy, duration: 1.5)
     }
 
+    func playFieldNote() {
+        let priorStage = growthStage
+        applyVitalDecay()
+        syncDailyCombo()
+        let note = nextFieldNote ?? PetFieldNote(rawValue: latestFieldNoteRaw) ?? .deskScout
+        lastRequest = "Field"
+        message = pikaText(recordFieldNote(note))
+        recordDailyQuest(.cheer)
+        appendEmotionScene(trigger: "field note")
+        appendEvolutionNote(from: priorStage)
+        persistCare()
+        play(.reply)
+        speakPikaLine(message, force: true)
+        setMood(note.mood, duration: 1.7)
+    }
+
     func setMood(_ next: PetMood, duration: TimeInterval? = nil) {
         moodTask?.cancel()
         mood = next
@@ -1518,6 +1552,20 @@ final class DragonOverlayModel: ObservableObject {
         PetMoodStory.allCases
     }
 
+    var fieldNoteLine: String {
+        PetFieldNote.summary(
+            offeredMask: dailyFieldNoteOfferedMask,
+            savedMask: dailyFieldNoteSavedMask,
+            dismissedMask: dailyFieldNoteDismissedMask,
+            albumMask: fieldNoteAlbumMask,
+            latest: PetFieldNote(rawValue: latestFieldNoteRaw)
+        )
+    }
+
+    var fieldNotes: [PetFieldNote] {
+        PetFieldNote.allCases
+    }
+
     var cheerIntentTitle: String {
         (PetCheerIntent(rawValue: cheerIntentRaw) ?? .checkIn).title
     }
@@ -1690,6 +1738,26 @@ final class DragonOverlayModel: ObservableObject {
                 + PetMoodStory.count(mask: dailyMoodStoryAnsweredMask)
         ) ?? PetMoodStory(rawValue: latestMoodStoryRaw) ?? .brightHello
         return "Mood story sprite: \(next.spriteRequestName.replacingOccurrences(of: "{stage}", with: growthStage.assetSlug))"
+    }
+
+    var journalFieldNoteProgress: Double {
+        Double(PetFieldNote.count(mask: dailyFieldNoteSavedMask)) / Double(PetFieldNote.allCases.count)
+    }
+
+    var journalFieldNoteCaption: String {
+        fieldNoteLine
+    }
+
+    var journalFieldNoteSpriteLine: String {
+        let next = PetFieldNote.next(
+            daypart: daypartNudge,
+            feeling: petFeeling,
+            stage: growthStage,
+            offeredMask: dailyFieldNoteOfferedMask,
+            index: PetFieldNote.count(mask: dailyFieldNoteOfferedMask)
+                + PetFieldNote.count(mask: dailyFieldNoteSavedMask)
+        ) ?? PetFieldNote(rawValue: latestFieldNoteRaw) ?? .deskScout
+        return "Field note sprite: \(next.spriteRequestName.replacingOccurrences(of: "{stage}", with: growthStage.assetSlug))"
     }
 
     var journalMoodCareProgress: Double {
@@ -1866,7 +1934,8 @@ final class DragonOverlayModel: ObservableObject {
             + PetCheerIntent.count(mask: dailyCheerIntentAnsweredMask)
             + PetCheerScript.count(mask: dailyCheerScriptAnsweredMask)
             + PetMoodStory.count(mask: dailyMoodStoryAnsweredMask)
-        let total = PetDaypartNudge.allCases.count + PetCheerDialogue.allCases.count + PetCheerIntent.allCases.count + PetCheerScript.allCases.count + PetMoodStory.allCases.count
+            + PetFieldNote.count(mask: dailyFieldNoteSavedMask)
+        let total = PetDaypartNudge.allCases.count + PetCheerDialogue.allCases.count + PetCheerIntent.allCases.count + PetCheerScript.allCases.count + PetMoodStory.allCases.count + PetFieldNote.allCases.count
         return Double(answered) / Double(max(1, total))
     }
 
@@ -1876,16 +1945,19 @@ final class DragonOverlayModel: ObservableObject {
             + PetCheerIntent.count(mask: dailyCheerIntentAnsweredMask)
             + PetCheerScript.count(mask: dailyCheerScriptAnsweredMask)
             + PetMoodStory.count(mask: dailyMoodStoryAnsweredMask)
+            + PetFieldNote.count(mask: dailyFieldNoteSavedMask)
         let offered = PetDaypartNudge.count(mask: dailyNudgeOfferedMask)
             + PetCheerDialogue.count(mask: dailyCheerDialogueOfferedMask)
             + PetCheerIntent.count(mask: dailyCheerIntentOfferedMask)
             + PetCheerScript.count(mask: dailyCheerScriptOfferedMask)
             + PetMoodStory.count(mask: dailyMoodStoryOfferedMask)
+            + PetFieldNote.count(mask: dailyFieldNoteOfferedMask)
         let albumDone = PetCheerDialogue.count(mask: cheerDialogueAlbumMask)
         let intentAlbumDone = PetCheerIntent.count(mask: cheerIntentAlbumMask)
         let scriptAlbumDone = PetCheerScript.count(mask: cheerScriptAlbumMask)
         let moodStoryAlbumDone = PetMoodStory.count(mask: moodStoryAlbumMask)
-        return "\(answered)/\(PetDaypartNudge.allCases.count + PetCheerDialogue.allCases.count + PetCheerIntent.allCases.count + PetCheerScript.allCases.count + PetMoodStory.allCases.count) answered today · \(offered) seen · Dialogues \(albumDone)/\(PetCheerDialogue.allCases.count) · Types \(intentAlbumDone)/\(PetCheerIntent.allCases.count) · Scripts \(scriptAlbumDone)/\(PetCheerScript.allCases.count) · Mood \(moodStoryAlbumDone)/\(PetMoodStory.allCases.count)"
+        let fieldAlbumDone = PetFieldNote.count(mask: fieldNoteAlbumMask)
+        return "\(answered)/\(PetDaypartNudge.allCases.count + PetCheerDialogue.allCases.count + PetCheerIntent.allCases.count + PetCheerScript.allCases.count + PetMoodStory.allCases.count + PetFieldNote.allCases.count) answered today · \(offered) seen · Dialogues \(albumDone)/\(PetCheerDialogue.allCases.count) · Types \(intentAlbumDone)/\(PetCheerIntent.allCases.count) · Scripts \(scriptAlbumDone)/\(PetCheerScript.allCases.count) · Mood \(moodStoryAlbumDone)/\(PetMoodStory.allCases.count) · Field \(fieldAlbumDone)/\(PetFieldNote.allCases.count)"
     }
 
     var journalCheerSpriteLine: String {
@@ -2024,6 +2096,7 @@ final class DragonOverlayModel: ObservableObject {
         cheerIntentRaw = 0
         cheerScriptRaw = 0
         cheerMoodStoryRaw = 0
+        cheerFieldNoteRaw = 0
     }
 
     private func persistCare() {
@@ -2114,6 +2187,12 @@ final class DragonOverlayModel: ObservableObject {
         UserDefaults.standard.set(dailyMoodStoryDismissedMask, forKey: Self.dailyMoodStoryDismissedMaskKey)
         UserDefaults.standard.set(moodStoryAlbumMask, forKey: Self.moodStoryAlbumMaskKey)
         UserDefaults.standard.set(latestMoodStoryRaw, forKey: Self.latestMoodStoryRawKey)
+        UserDefaults.standard.set(dailyFieldNoteDate, forKey: Self.dailyFieldNoteDateKey)
+        UserDefaults.standard.set(dailyFieldNoteOfferedMask, forKey: Self.dailyFieldNoteOfferedMaskKey)
+        UserDefaults.standard.set(dailyFieldNoteSavedMask, forKey: Self.dailyFieldNoteSavedMaskKey)
+        UserDefaults.standard.set(dailyFieldNoteDismissedMask, forKey: Self.dailyFieldNoteDismissedMaskKey)
+        UserDefaults.standard.set(fieldNoteAlbumMask, forKey: Self.fieldNoteAlbumMaskKey)
+        UserDefaults.standard.set(latestFieldNoteRaw, forKey: Self.latestFieldNoteRawKey)
         UserDefaults.standard.set(dailyAmbientDate, forKey: Self.dailyAmbientDateKey)
         UserDefaults.standard.set(dailyAmbientMask, forKey: Self.dailyAmbientMaskKey)
         UserDefaults.standard.set(ambientAlbumMask, forKey: Self.ambientAlbumMaskKey)
@@ -2304,6 +2383,14 @@ final class DragonOverlayModel: ObservableObject {
 
     func isMoodStoryUnlocked(_ story: PetMoodStory) -> Bool {
         moodStoryAlbumMask & story.rawValue != 0
+    }
+
+    func isFieldNoteSavedToday(_ note: PetFieldNote) -> Bool {
+        dailyFieldNoteSavedMask & note.rawValue != 0
+    }
+
+    func isFieldNoteUnlocked(_ note: PetFieldNote) -> Bool {
+        fieldNoteAlbumMask & note.rawValue != 0
     }
 
     func isLifeSceneUnlocked(_ scene: PetLifeScene) -> Bool {
@@ -2761,6 +2848,13 @@ final class DragonOverlayModel: ObservableObject {
             dailyMoodStoryDismissedMask = 0
             changed = true
         }
+        if dailyFieldNoteDate != today {
+            dailyFieldNoteDate = today
+            dailyFieldNoteOfferedMask = 0
+            dailyFieldNoteSavedMask = 0
+            dailyFieldNoteDismissedMask = 0
+            changed = true
+        }
         if dailyAmbientDate != today {
             dailyAmbientDate = today
             dailyAmbientMask = 0
@@ -3010,6 +3104,50 @@ final class DragonOverlayModel: ObservableObject {
         return notes.joined(separator: " ")
     }
 
+    private func recordFieldNoteAnswer() -> String? {
+        syncDailyCombo()
+        guard let note = PetFieldNote(rawValue: cheerFieldNoteRaw) else { return nil }
+        return recordFieldNote(note)
+    }
+
+    private func recordFieldNote(_ note: PetFieldNote) -> String {
+        syncDailyCombo()
+        let wasSavedToday = dailyFieldNoteSavedMask & note.rawValue != 0
+        let wasUnlocked = fieldNoteAlbumMask & note.rawValue != 0
+        dailyFieldNoteOfferedMask |= note.rawValue
+        dailyFieldNoteSavedMask |= note.rawValue
+        dailyFieldNoteDismissedMask &= ~note.rawValue
+        fieldNoteAlbumMask |= note.rawValue
+        latestFieldNoteRaw = note.rawValue
+
+        guard !wasSavedToday else {
+            persistCare()
+            return "\(note.title) is already in today's field journal. \(note.fieldLine)"
+        }
+
+        let reward = (wasUnlocked ? 2 : note.sparkReward) + min(4, questLevel + focusLevel)
+        sparkDust = min(999, sparkDust + reward)
+        if !wasUnlocked {
+            happiness = min(5, happiness + 1)
+        }
+
+        var notes = [
+            "Field note saved: \(note.title). \(note.body(stage: growthStage, feeling: petFeeling)) Sparks +\(reward)\(!wasUnlocked ? ", Joy +1" : "")."
+        ]
+        if let vitalNote = refillVital(note.vital, by: wasUnlocked ? 1 : 2) {
+            notes.append(vitalNote)
+        }
+        if let moodCareNote = markMoodCare(note.moodStep) {
+            notes.append(moodCareNote)
+        }
+        if !wasUnlocked {
+            notes.append("Field journal unlocked: \(note.shortLabel).")
+        }
+        persistCare()
+        setMood(note.mood, duration: 1.7)
+        return notes.joined(separator: " ")
+    }
+
     private func recordCheerIntentAnswer() -> String? {
         syncDailyCombo()
         guard let intent = PetCheerIntent(rawValue: cheerIntentRaw) else { return nil }
@@ -3112,6 +3250,15 @@ final class DragonOverlayModel: ObservableObject {
         dailyMoodStoryOfferedMask |= story.rawValue
         dailyMoodStoryDismissedMask |= story.rawValue
         latestMoodStoryRaw = story.rawValue
+        persistCare()
+    }
+
+    private func recordFieldNoteDismissal() {
+        syncDailyCombo()
+        guard let note = PetFieldNote(rawValue: cheerFieldNoteRaw) else { return }
+        dailyFieldNoteOfferedMask |= note.rawValue
+        dailyFieldNoteDismissedMask |= note.rawValue
+        latestFieldNoteRaw = note.rawValue
         persistCare()
     }
 
@@ -3343,6 +3490,17 @@ final class DragonOverlayModel: ObservableObject {
         dailyRouteSteps.first { dailyRouteMask & $0.rawValue == 0 }
     }
 
+    private var nextFieldNote: PetFieldNote? {
+        PetFieldNote.next(
+            daypart: daypartNudge,
+            feeling: petFeeling,
+            stage: growthStage,
+            offeredMask: dailyFieldNoteOfferedMask,
+            index: PetFieldNote.count(mask: dailyFieldNoteOfferedMask)
+                + PetFieldNote.count(mask: dailyFieldNoteSavedMask)
+        )
+    }
+
     private var nextLifeScene: PetLifeScene? {
         currentLifeScenes.first { lifeSceneMask & $0.rawValue == 0 }
     }
@@ -3453,20 +3611,28 @@ final class DragonOverlayModel: ObservableObject {
             offeredMask: dailyMoodStoryOfferedMask,
             index: index
         )
+        let nextFieldNote = PetFieldNote.next(
+            daypart: daypart,
+            feeling: petFeeling,
+            stage: growthStage,
+            offeredMask: dailyFieldNoteOfferedMask,
+            index: index
+        )
         let shouldUseMoodStory = !shouldUseDaypart && nextMoodStory != nil && index % 3 == 1
+        let shouldUseFieldNote = !shouldUseDaypart && !shouldUseMoodStory && nextFieldNote != nil && index % 4 == 3
         let nextMoodCareStep = moodCareRecipe.nextStep(mask: dailyMoodCareMask)
-        let shouldUseMoodCare = !shouldUseDaypart && !shouldUseMoodStory && nextMoodCareStep != nil && index % 2 == 0
+        let shouldUseMoodCare = !shouldUseDaypart && !shouldUseMoodStory && !shouldUseFieldNote && nextMoodCareStep != nil && index % 2 == 0
         let nextContract = nextBondContract
-        let shouldUseBondBoard = !shouldUseDaypart && !shouldUseMoodCare && nextContract != nil && index % 3 == 2
+        let shouldUseBondBoard = !shouldUseDaypart && !shouldUseMoodStory && !shouldUseFieldNote && !shouldUseMoodCare && nextContract != nil && index % 3 == 2
         let nextDialogue = PetCheerDialogue.next(offeredMask: dailyCheerDialogueOfferedMask, index: index)
         let nextScript = PetCheerScript.next(
             daypart: daypart,
-            intent: nextMoodStory?.intent ?? nextDialogue?.intent ?? .checkIn,
+            intent: shouldUseFieldNote ? .fieldNote : (nextMoodStory?.intent ?? nextDialogue?.intent ?? .checkIn),
             offeredMask: dailyCheerScriptOfferedMask,
             index: index
         )
-        let shouldUseScript = !shouldUseDaypart && !shouldUseMoodStory && !shouldUseMoodCare && !shouldUseBondBoard && nextScript != nil && (index % 2 == 1 || nextDialogue == nil)
-        let shouldUseDialogue = !shouldUseDaypart && !shouldUseMoodStory && !shouldUseMoodCare && !shouldUseBondBoard && !shouldUseScript && nextDialogue != nil
+        let shouldUseScript = !shouldUseDaypart && !shouldUseMoodStory && !shouldUseFieldNote && !shouldUseMoodCare && !shouldUseBondBoard && nextScript != nil && (index % 2 == 1 || nextDialogue == nil)
+        let shouldUseDialogue = !shouldUseDaypart && !shouldUseMoodStory && !shouldUseFieldNote && !shouldUseMoodCare && !shouldUseBondBoard && !shouldUseScript && nextDialogue != nil
         let prompt: PetNudgeLibrary.PetCheerPrompt
         if shouldUseDaypart {
             prompt = PetNudgeLibrary.PetCheerPrompt(
@@ -3482,6 +3648,14 @@ final class DragonOverlayModel: ObservableObject {
                 action: nextMoodStory.action,
                 rewardLine: nextMoodStory.rewardLine,
                 intent: nextMoodStory.intent
+            )
+        } else if shouldUseFieldNote, let nextFieldNote {
+            prompt = PetNudgeLibrary.PetCheerPrompt(
+                title: nextFieldNote.title,
+                body: nextFieldNote.body(stage: growthStage, feeling: petFeeling),
+                action: nextFieldNote.action,
+                rewardLine: "\(nextFieldNote.title) saved",
+                intent: .fieldNote
             )
         } else if shouldUseMoodCare, let nextMoodCareStep {
             prompt = PetNudgeLibrary.moodCarePrompt(
@@ -3543,6 +3717,7 @@ final class DragonOverlayModel: ObservableObject {
         cheerDialogueRaw = shouldUseDialogue ? (nextDialogue?.rawValue ?? 0) : 0
         cheerScriptRaw = shouldUseScript ? (nextScript?.rawValue ?? 0) : 0
         cheerMoodStoryRaw = shouldUseMoodStory ? (nextMoodStory?.rawValue ?? 0) : 0
+        cheerFieldNoteRaw = shouldUseFieldNote ? (nextFieldNote?.rawValue ?? 0) : 0
         cheerIntentRaw = prompt.intent.rawValue
         cheerBubble = pikaText(prompt.body)
         dailyCheerIntentOfferedMask |= prompt.intent.rawValue
@@ -3564,13 +3739,19 @@ final class DragonOverlayModel: ObservableObject {
             dailyMoodStoryDismissedMask &= ~nextMoodStory.rawValue
             latestMoodStoryRaw = nextMoodStory.rawValue
             persistCare()
+        } else if shouldUseFieldNote, let nextFieldNote {
+            dailyFieldNoteOfferedMask |= nextFieldNote.rawValue
+            dailyFieldNoteDismissedMask &= ~nextFieldNote.rawValue
+            latestFieldNoteRaw = nextFieldNote.rawValue
+            persistCare()
         }
         persistCare()
         defaults.set(index + 1, forKey: Self.cheerIndexKey)
         defaults.set(now, forKey: Self.lastCheerAtKey)
         play(.happy)
         speakPikaLine(cheerBubble ?? prompt.body, force: true)
-        setMood(shouldUseMoodStory ? (nextMoodStory?.mood ?? .hyper) : .hyper, duration: 1.2)
+        let promptMood = shouldUseMoodStory ? (nextMoodStory?.mood ?? .hyper) : (shouldUseFieldNote ? (nextFieldNote?.mood ?? .hyper) : .hyper)
+        setMood(promptMood, duration: 1.2)
     }
 
     private var canShowComebackNudge: Bool {
@@ -4180,6 +4361,11 @@ struct DragonOverlayView: View {
                 .foregroundStyle(Color.gold.opacity(0.62))
                 .lineLimit(1)
                 .minimumScaleFactor(0.44)
+            Text(model.fieldNoteLine)
+                .font(.system(size: 8.1, weight: .black, design: .rounded))
+                .foregroundStyle(Color.ivory.opacity(0.64))
+                .lineLimit(1)
+                .minimumScaleFactor(0.44)
             Text(model.cipherLine)
                 .font(.system(size: 8.5, weight: .bold, design: .rounded))
                 .foregroundStyle(Color.ivory.opacity(0.7))
@@ -4288,6 +4474,8 @@ struct DragonOverlayView: View {
                 .buttonStyle(DragonButtonStyle(kind: model.mood == .nap ? .primary : .secondary))
             Button("Hyper") { model.hyper() }
                 .buttonStyle(DragonButtonStyle(kind: model.mood == .hyper ? .primary : .secondary))
+            Button("Field") { model.playFieldNote() }
+                .buttonStyle(DragonButtonStyle(kind: model.mood == .peek ? .primary : .secondary))
         }
         .disabled(model.busy)
     }
@@ -4479,6 +4667,9 @@ struct PetJournalPanel: View {
         case .memories:
             journalHero("Memories", value: model.journalMemoryProgress, caption: model.memoryLine)
             memoryList
+            journalHero("Field Notes", value: model.journalFieldNoteProgress, caption: model.journalFieldNoteCaption)
+            fieldNoteGrid
+            artLine(model.journalFieldNoteSpriteLine)
             journalHero("Current Stage Life", value: model.journalLifeSceneProgress, caption: model.lifeSceneLine)
             lifeSceneGrid
         case .badges:
@@ -4504,6 +4695,9 @@ struct PetJournalPanel: View {
             journalHero("Ambient Life", value: model.journalAmbientProgress, caption: model.journalAmbientCaption)
             ambientGrid
             artLine(model.journalAmbientSpriteLine)
+            journalHero("Field Notes", value: model.journalFieldNoteProgress, caption: model.journalFieldNoteCaption)
+            fieldNoteGrid
+            artLine(model.journalFieldNoteSpriteLine)
             journalHero("Cheer Rhythm", value: model.journalCheerProgress, caption: model.journalCheerCaption)
             detailLine(model.cheerRhythmLine)
             artLine(model.journalCheerSpriteLine)
@@ -4606,6 +4800,16 @@ struct PetJournalPanel: View {
                 let answered = model.isMoodStoryAnswered(story)
                 let unlocked = model.isMoodStoryUnlocked(story)
                 journalChip("\(story.shortLabel)\(answered ? " ✓" : "")", isUnlocked: answered || unlocked)
+            }
+        }
+    }
+
+    private var fieldNoteGrid: some View {
+        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 4), count: 4), spacing: 3) {
+            ForEach(model.fieldNotes, id: \.rawValue) { note in
+                let saved = model.isFieldNoteSavedToday(note)
+                let unlocked = model.isFieldNoteUnlocked(note)
+                journalChip("\(note.shortLabel)\(saved ? " ✓" : "")", isUnlocked: saved || unlocked)
             }
         }
     }

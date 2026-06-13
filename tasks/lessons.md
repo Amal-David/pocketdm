@@ -371,3 +371,10 @@ voice, not only in static labels.
 **Rule:** native assistant replies and language-coach playback should both speak
 the catchphrase before their content while preserving the target-language voice
 for Spanish and Mandarin phrases.
+
+## 2026-06-13 — Pet lore needs found objects, not only tasks
+The user wants a proper pet with lots of lore, emotions, spritesheets, and
+hamster-style return loops.
+**Rule:** add collectible "the pet found this for you" moments, such as field
+notes, that are selected from mood/daypart/growth state, reward care progress,
+and request exact sprite sheets so daily return loops feel like shared story.

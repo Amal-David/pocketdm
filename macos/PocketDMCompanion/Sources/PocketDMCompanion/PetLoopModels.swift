@@ -4275,6 +4275,306 @@ enum PetAmbientMoment: Int, CaseIterable {
     }
 }
 
+enum PetFieldNote: Int, CaseIterable {
+    case deskScout = 1
+    case snackMap = 2
+    case focusWeather = 4
+    case lessonEcho = 8
+    case questTrace = 16
+    case sparkForecast = 32
+    case restSignal = 64
+    case upgradeSketch = 128
+    case comebackTrace = 256
+    case bondReceipt = 512
+    case guardianLog = 1024
+    case artRequest = 2048
+
+    var title: String {
+        switch self {
+        case .deskScout:
+            return "Desk Scout"
+        case .snackMap:
+            return "Snack Map"
+        case .focusWeather:
+            return "Focus Weather"
+        case .lessonEcho:
+            return "Lesson Echo"
+        case .questTrace:
+            return "Quest Trace"
+        case .sparkForecast:
+            return "Spark Forecast"
+        case .restSignal:
+            return "Rest Signal"
+        case .upgradeSketch:
+            return "Upgrade Sketch"
+        case .comebackTrace:
+            return "Comeback Trace"
+        case .bondReceipt:
+            return "Bond Receipt"
+        case .guardianLog:
+            return "Guardian Log"
+        case .artRequest:
+            return "Art Request"
+        }
+    }
+
+    var shortLabel: String {
+        switch self {
+        case .deskScout:
+            return "Desk"
+        case .snackMap:
+            return "Snack"
+        case .focusWeather:
+            return "Focus"
+        case .lessonEcho:
+            return "Echo"
+        case .questTrace:
+            return "Quest"
+        case .sparkForecast:
+            return "Spark"
+        case .restSignal:
+            return "Rest"
+        case .upgradeSketch:
+            return "Sketch"
+        case .comebackTrace:
+            return "Back"
+        case .bondReceipt:
+            return "Bond"
+        case .guardianLog:
+            return "Guard"
+        case .artRequest:
+            return "Art"
+        }
+    }
+
+    var action: String {
+        switch self {
+        case .deskScout:
+            return "Save desk note"
+        case .snackMap:
+            return "Save snack map"
+        case .focusWeather:
+            return "Save focus weather"
+        case .lessonEcho:
+            return "Save lesson echo"
+        case .questTrace:
+            return "Save quest trace"
+        case .sparkForecast:
+            return "Save forecast"
+        case .restSignal:
+            return "Save rest signal"
+        case .upgradeSketch:
+            return "Save sketch"
+        case .comebackTrace:
+            return "Save comeback"
+        case .bondReceipt:
+            return "Save receipt"
+        case .guardianLog:
+            return "Save night log"
+        case .artRequest:
+            return "Save art brief"
+        }
+    }
+
+    var fieldLine: String {
+        switch self {
+        case .deskScout:
+            return "It checked the edge of the screen and marked one safe place to begin."
+        case .snackMap:
+            return "It found the snack signal before Joy dipped too far."
+        case .focusWeather:
+            return "It noticed the desk is quiet enough for one clean minute."
+        case .lessonEcho:
+            return "It kept one phrase echo warm for the next practice."
+        case .questTrace:
+            return "It traced the quest path and left a tiny marker near the next choice."
+        case .sparkForecast:
+            return "It counted the stored Sparks and spotted a bright return window."
+        case .restSignal:
+            return "It saw the loop getting heavy and made rest count as progress."
+        case .upgradeSketch:
+            return "It sketched the next upgrade card before the Sparks scatter."
+        case .comebackTrace:
+            return "It saved the path back so returning feels like a story beat."
+        case .bondReceipt:
+            return "It turned a small care action into proof the bond is growing."
+        case .guardianLog:
+            return "It watched the late hours and kept the check-in calm."
+        case .artRequest:
+            return "It opened the sprite journal and circled the next missing animation."
+        }
+    }
+
+    func body(stage: PetGrowthStage, feeling: PetFeeling) -> String {
+        "\(stage.shortLabel) note: \(fieldLine) Current mood: \(feeling.title.lowercased())."
+    }
+
+    var vital: PetCareVital {
+        switch self {
+        case .snackMap, .bondReceipt:
+            return .snack
+        case .restSignal, .comebackTrace, .guardianLog:
+            return .rest
+        case .questTrace, .sparkForecast:
+            return .play
+        case .deskScout, .focusWeather, .lessonEcho, .upgradeSketch, .artRequest:
+            return .focus
+        }
+    }
+
+    var moodStep: PetMoodCareStep {
+        switch self {
+        case .deskScout, .focusWeather, .upgradeSketch, .artRequest:
+            return .focus
+        case .snackMap, .bondReceipt:
+            return .snack
+        case .lessonEcho:
+            return .study
+        case .questTrace:
+            return .adventure
+        case .sparkForecast:
+            return .play
+        case .restSignal, .guardianLog:
+            return .rest
+        case .comebackTrace:
+            return .soothe
+        }
+    }
+
+    var mood: PetMood {
+        switch self {
+        case .deskScout, .focusWeather:
+            return .perch
+        case .snackMap:
+            return .snack
+        case .lessonEcho, .artRequest:
+            return .peek
+        case .questTrace, .sparkForecast:
+            return .patrol
+        case .restSignal:
+            return .stretch
+        case .upgradeSketch:
+            return .thinking
+        case .comebackTrace, .bondReceipt:
+            return .happy
+        case .guardianLog:
+            return .sleepGuard
+        }
+    }
+
+    var sparkReward: Int {
+        switch self {
+        case .deskScout, .snackMap, .focusWeather, .restSignal:
+            return 5
+        case .lessonEcho, .questTrace, .sparkForecast, .comebackTrace:
+            return 7
+        case .upgradeSketch, .bondReceipt, .guardianLog, .artRequest:
+            return 9
+        }
+    }
+
+    var spriteSlug: String {
+        switch self {
+        case .deskScout:
+            return "desk-scout"
+        case .snackMap:
+            return "snack-map"
+        case .focusWeather:
+            return "focus-weather"
+        case .lessonEcho:
+            return "lesson-echo"
+        case .questTrace:
+            return "quest-trace"
+        case .sparkForecast:
+            return "spark-forecast"
+        case .restSignal:
+            return "rest-signal"
+        case .upgradeSketch:
+            return "upgrade-sketch"
+        case .comebackTrace:
+            return "comeback-trace"
+        case .bondReceipt:
+            return "bond-receipt"
+        case .guardianLog:
+            return "guardian-log"
+        case .artRequest:
+            return "art-request"
+        }
+    }
+
+    var spriteRequestName: String {
+        "pet-{stage}-field-note-\(spriteSlug).png"
+    }
+
+    static func count(mask: Int) -> Int {
+        allCases.filter { mask & $0.rawValue != 0 }.count
+    }
+
+    static func next(
+        daypart: PetDaypartNudge,
+        feeling: PetFeeling,
+        stage: PetGrowthStage,
+        offeredMask: Int,
+        index: Int
+    ) -> PetFieldNote? {
+        let remaining = allCases.filter { offeredMask & $0.rawValue == 0 }
+        guard !remaining.isEmpty else { return nil }
+
+        let preferred: PetFieldNote
+        if daypart == .night {
+            preferred = .guardianLog
+        } else {
+            switch feeling {
+            case .hungry:
+                preferred = .snackMap
+            case .sleepy, .protective:
+                preferred = .restSignal
+            case .focused:
+                preferred = .focusWeather
+            case .overcharged, .playful:
+                preferred = .sparkForecast
+            case .proud, .celebrating:
+                preferred = .bondReceipt
+            case .restless, .determined:
+                preferred = .upgradeSketch
+            case .lonely, .comfort, .grateful:
+                preferred = .comebackTrace
+            case .curious:
+                preferred = .artRequest
+            case .bright, .eager:
+                switch stage {
+                case .tinySpark, .pocketPal:
+                    preferred = .deskScout
+                case .trailBuddy:
+                    preferred = .questTrace
+                case .stormScout, .stormGuardian:
+                    preferred = .lessonEcho
+                }
+            }
+        }
+
+        if remaining.contains(preferred) {
+            return preferred
+        }
+        return remaining[index % remaining.count]
+    }
+
+    static func summary(
+        offeredMask: Int,
+        savedMask: Int,
+        dismissedMask: Int,
+        albumMask: Int,
+        latest: PetFieldNote?
+    ) -> String {
+        let offered = count(mask: offeredMask)
+        let saved = count(mask: savedMask)
+        let dismissed = count(mask: dismissedMask)
+        let album = count(mask: albumMask)
+        let latestText = latest.map { "Latest \($0.title)" } ?? "waiting for a field note"
+        return "Field Notes \(saved)/\(allCases.count) saved · \(offered) found · \(dismissed) skipped · Album \(album)/\(allCases.count) · \(latestText)"
+    }
+}
+
 struct PetComebackReward {
     let sparks: Int
     let joy: Int
@@ -4337,6 +4637,7 @@ enum PetCheerIntent: Int, CaseIterable {
     case upgrade = 4096
     case event = 8192
     case care = 16384
+    case fieldNote = 32768
 
     var title: String {
         switch self {
@@ -4370,6 +4671,8 @@ enum PetCheerIntent: Int, CaseIterable {
             return "Event Step"
         case .care:
             return "Care Ritual"
+        case .fieldNote:
+            return "Field Note"
         }
     }
 
@@ -4405,6 +4708,8 @@ enum PetCheerIntent: Int, CaseIterable {
             return "Event"
         case .care:
             return "Care"
+        case .fieldNote:
+            return "Field"
         }
     }
 
@@ -4440,6 +4745,8 @@ enum PetCheerIntent: Int, CaseIterable {
             return "Today's event gets one story beat."
         case .care:
             return "The current care ritual gets answered."
+        case .fieldNote:
+            return "A tiny report from the desktop gets saved."
         }
     }
 
@@ -4447,7 +4754,7 @@ enum PetCheerIntent: Int, CaseIterable {
         switch self {
         case .checkIn, .feeling, .reset, .rest, .comeback:
             return .rest
-        case .focus, .lesson, .board, .puzzle, .boost, .upgrade:
+        case .focus, .lesson, .board, .puzzle, .boost, .upgrade, .fieldNote:
             return .focus
         case .tinyWin, .quest, .event:
             return .play
@@ -4460,7 +4767,7 @@ enum PetCheerIntent: Int, CaseIterable {
         switch self {
         case .checkIn, .feeling, .comeback:
             return .soothe
-        case .focus, .boost, .upgrade:
+        case .focus, .boost, .upgrade, .fieldNote:
             return .focus
         case .tinyWin:
             return .cheer
@@ -4509,6 +4816,8 @@ enum PetCheerIntent: Int, CaseIterable {
             return "event-step"
         case .care:
             return "care-ritual"
+        case .fieldNote:
+            return "field-note"
         }
     }
 
@@ -4518,7 +4827,7 @@ enum PetCheerIntent: Int, CaseIterable {
             return 3
         case .focus, .tinyWin, .care:
             return 4
-        case .quest, .lesson, .board, .puzzle:
+        case .quest, .lesson, .board, .puzzle, .fieldNote:
             return 5
         case .comeback, .boost, .upgrade, .event:
             return 6
@@ -5157,6 +5466,8 @@ enum PetCheerMemory: Int, CaseIterable {
             return .eventBeat
         case .care:
             return .careRitual
+        case .fieldNote:
+            return .puzzleClue
         }
     }
 

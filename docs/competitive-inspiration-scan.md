@@ -273,6 +273,9 @@ The native macOS companion now has the first version of the loop:
 - Mood Stories now add sixteen proactive check-in prompts tied to the current
   pet feeling and growth stage, with answered/skipped state, permanent album
   proof, care-vital effects, mood-care effects, and matching sprite filenames.
+- Field Notes now add collectible desktop reports that the pet can surface from
+  mood/daypart/growth context, with found/saved/skipped state, rewards, journal
+  progress, and a fresh sprite batch for tiny "I found this for you" moments.
 - A Life button now unlocks stage-specific life scenes for the current growth
   form, rewards Joy/Sparks, refills the matching vital, advances Mood Care, and
   surfaces the next life-scene sprite request in the Growth journal.

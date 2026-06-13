@@ -726,6 +726,37 @@ Generate these as proactive emotional check-in sheets for each growth stage:
 - `pet-{stage}-journal-mood-stories.png`
   - Journal view of answered, skipped, and album-saved mood stories.
 
+### Batch 22: Field Note Reports
+
+Generate these as tiny desktop-report sheets for each growth stage:
+
+- `pet-{stage}-field-note-desk-scout.png`
+  - Scouts the screen edge, marks one safe start point, then looks back.
+- `pet-{stage}-field-note-snack-map.png`
+  - Finds a snack signal, points to it gently, and saves the map.
+- `pet-{stage}-field-note-focus-weather.png`
+  - Checks the desk "weather" and settles into one clean focus minute.
+- `pet-{stage}-field-note-lesson-echo.png`
+  - Holds a glowing phrase echo and offers it back for practice.
+- `pet-{stage}-field-note-quest-trace.png`
+  - Traces the adventure path and leaves a small next-choice marker.
+- `pet-{stage}-field-note-spark-forecast.png`
+  - Counts Sparks, forecasts a bright return window, and bounces once.
+- `pet-{stage}-field-note-rest-signal.png`
+  - Lowers the loop pressure and shows rest counting as progress.
+- `pet-{stage}-field-note-upgrade-sketch.png`
+  - Sketches the next upgrade card with a focused little pose.
+- `pet-{stage}-field-note-comeback-trace.png`
+  - Saves the path back after time away, warm rather than guilty.
+- `pet-{stage}-field-note-bond-receipt.png`
+  - Turns a tiny care action into visible bond proof.
+- `pet-{stage}-field-note-guardian-log.png`
+  - Quiet late-hour watch log, calm glow, no urgency.
+- `pet-{stage}-field-note-art-request.png`
+  - Opens the sprite journal and circles the next missing animation.
+- `pet-{stage}-journal-field-notes.png`
+  - Journal view showing found, saved, skipped, and album field notes.
+
 ## Growth Stages
 
 Each stage should share the same personality but visibly grow:
