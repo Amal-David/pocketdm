@@ -415,3 +415,11 @@ horizontal strip.
 skin's catchphrase and voice profile distinct, and make the sprite loader accept
 first-pass 2x6 sheets while still documenting horizontal strips as the final
 preferred format.
+
+## 2026-06-13 — Return loops need multiple daily moments
+The user wants the companion to feel like a real pet, not a one-button reward
+counter, and referenced hamster-style viral retention loops.
+**Rule:** daily return mechanics should include multiple time-based care
+windows, each with state, rewards, vitals, proactive-bubble completion, album
+proof, and exact sprite filenames, so returning later in the day feels like
+relationship care.

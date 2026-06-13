@@ -1120,7 +1120,7 @@ enum PetEmotionEpisode: Int, CaseIterable {
             return .curiousClue
         case "quest open", "cheer":
             return .braveQuest
-        case "bond board":
+        case "bond board", "care window":
             return .careContract
         case "upgrade", "journal", "life scene":
             return .proudUpgrade
@@ -2208,12 +2208,12 @@ struct PetDailyCipher {
     }
 }
 
-enum PetCareMoment {
-    case sunrise
-    case focus
-    case afternoon
-    case evening
-    case night
+enum PetCareMoment: Int, CaseIterable {
+    case sunrise = 1
+    case focus = 2
+    case afternoon = 4
+    case evening = 8
+    case night = 16
 
     init(hour: Int) {
         switch hour {
@@ -2245,6 +2245,21 @@ enum PetCareMoment {
         }
     }
 
+    var shortLabel: String {
+        switch self {
+        case .sunrise:
+            return "Rise"
+        case .focus:
+            return "Focus"
+        case .afternoon:
+            return "Reset"
+        case .evening:
+            return "Loop"
+        case .night:
+            return "Nest"
+        }
+    }
+
     var nudgeLine: String {
         switch self {
         case .sunrise:
@@ -2258,6 +2273,122 @@ enum PetCareMoment {
         case .night:
             return "Quiet night watch. I can keep this gentle."
         }
+    }
+
+    var actionLine: String {
+        switch self {
+        case .sunrise:
+            return "look down, look up, and greet the user"
+        case .focus:
+            return "perch beside one clean task"
+        case .afternoon:
+            return "shake off the wobble and refill a little spark"
+        case .evening:
+            return "close one open loop before the day softens"
+        case .night:
+            return "curl into the quiet nest and guard the streak"
+        }
+    }
+
+    var rewardLine: String {
+        switch self {
+        case .sunrise:
+            return "The day starts with a remembered hello."
+        case .focus:
+            return "The desk gets one protected focus perch."
+        case .afternoon:
+            return "The low-energy wobble becomes a reset."
+        case .evening:
+            return "One unfinished loop gets a campfire marker."
+        case .night:
+            return "Rest counts as care, not absence."
+        }
+    }
+
+    var dailyQuest: PetDailyQuest {
+        switch self {
+        case .sunrise, .night:
+            return .care
+        case .focus:
+            return .cheer
+        case .afternoon:
+            return .boost
+        case .evening:
+            return .adventure
+        }
+    }
+
+    var vital: PetCareVital {
+        switch self {
+        case .sunrise, .afternoon:
+            return .snack
+        case .focus:
+            return .focus
+        case .evening:
+            return .play
+        case .night:
+            return .rest
+        }
+    }
+
+    var moodStep: PetMoodCareStep {
+        switch self {
+        case .sunrise:
+            return .soothe
+        case .focus:
+            return .focus
+        case .afternoon:
+            return .snack
+        case .evening:
+            return .adventure
+        case .night:
+            return .rest
+        }
+    }
+
+    var mood: PetMood {
+        switch self {
+        case .sunrise:
+            return .look
+        case .focus:
+            return .perch
+        case .afternoon:
+            return .stretch
+        case .evening:
+            return .happy
+        case .night:
+            return .nap
+        }
+    }
+
+    var spriteSlug: String {
+        switch self {
+        case .sunrise:
+            return "sunrise-greeting"
+        case .focus:
+            return "focus-perch"
+        case .afternoon:
+            return "afternoon-reset"
+        case .evening:
+            return "evening-loop"
+        case .night:
+            return "night-nest"
+        }
+    }
+
+    func spriteRequestName(stage: PetGrowthStage) -> String {
+        "pet-\(stage.assetSlug)-care-window-\(spriteSlug).png"
+    }
+
+    static func count(mask: Int) -> Int {
+        allCases.filter { mask & $0.rawValue != 0 }.count
+    }
+
+    static func summary(dailyMask: Int, albumMask: Int, current: PetCareMoment) -> String {
+        let done = count(mask: dailyMask)
+        let albumDone = count(mask: albumMask)
+        let currentStatus = dailyMask & current.rawValue == 0 ? "ready" : "done"
+        return "Care Windows \(done)/\(allCases.count) today · \(current.title) \(currentStatus) · Album \(albumDone)/\(allCases.count)"
     }
 }
 

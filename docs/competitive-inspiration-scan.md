@@ -130,6 +130,9 @@ them wholesome:
 - Energy cap: active rewards spend energy, which recharges over time.
 - Passive progress: the pet keeps a tiny reserve while the user is away.
 - Daily combo: each day offers one tiny combo such as Pet + Hint + Phrase.
+- Return windows: the day is split into claimable care moments so returning at
+  different times feels like caring for a pet, not just pressing one reward
+  button.
 - Upgrade cards: unlock lore badges, pet tricks, and companion behaviors.
 - Streaks: daily care grows Bond HP and keeps Joy high.
 - Puzzle/cipher: adventure riddles or language mini-ciphers replace crypto
@@ -319,6 +322,10 @@ The native macOS companion now has the first version of the loop:
   Rekindled in the Week journal.
 - Time-of-day proactive nudge copy for Sunrise, Focus, Afternoon, Evening, and
   Night care moments.
+- Care Windows now turn those dayparts into five claimable daily return
+  moments: Sunrise, Focus, Afternoon, Evening, and Night. Each pays Joy/Sparks,
+  refills a matching vital, saves album proof, can be completed from the
+  proactive bubble, and grants a full-day Bond HP bonus when all five are done.
 - A daily care-need system that pays one bonus when the user does what the pet
   currently wants: affection, study, adventure, rest, play, focus, or puzzle.
 - A bond-memory album backed by persistent state so first-time relationship

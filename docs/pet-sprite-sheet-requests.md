@@ -1533,6 +1533,10 @@ These are for the progression layer:
 - Time-of-day nudge: afternoon.
 - Time-of-day nudge: evening.
 - Time-of-day nudge: night.
+- Care window opened.
+- Care window already claimed.
+- Care window album updated.
+- All five care windows completed.
 - Daily care need satisfied.
 - Care vital decayed.
 - Care vital refilled.
@@ -1563,6 +1567,19 @@ These are for the progression layer:
 - Event badge unlocked.
 - Event badge polished/repeated.
 - Badge album complete.
+
+Care Window sheets, one per growth stage:
+
+- `pet-{stage}-care-window-sunrise-greeting.png`
+  - The pet looks down, looks up, recognizes the user, and smiles.
+- `pet-{stage}-care-window-focus-perch.png`
+  - The pet perches beside the current task with attentive, calm eyes.
+- `pet-{stage}-care-window-afternoon-reset.png`
+  - The pet shakes off low-energy wobble and offers a tiny spark refill.
+- `pet-{stage}-care-window-evening-loop.png`
+  - The pet marks one unfinished loop with a warm campfire-like glow.
+- `pet-{stage}-care-window-night-nest.png`
+  - The pet curls into a sleepy nest and guards the streak quietly.
 
 ## Submission-Inspired Experience Sheets
 

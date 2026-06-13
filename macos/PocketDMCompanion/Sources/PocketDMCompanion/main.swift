@@ -481,6 +481,10 @@ final class DragonOverlayModel: ObservableObject {
     private static let dailyRouteMaskKey = "PocketDMCompanion.dailyRouteMask"
     private static let routeAlbumMaskKey = "PocketDMCompanion.routeAlbumMask"
     private static let latestRouteStepRawKey = "PocketDMCompanion.latestRouteStepRaw"
+    private static let dailyCareWindowDateKey = "PocketDMCompanion.dailyCareWindowDate"
+    private static let dailyCareWindowMaskKey = "PocketDMCompanion.dailyCareWindowMask"
+    private static let careWindowAlbumMaskKey = "PocketDMCompanion.careWindowAlbumMask"
+    private static let latestCareWindowRawKey = "PocketDMCompanion.latestCareWindowRaw"
     private static let snackVitalKey = "PocketDMCompanion.snackVital"
     private static let restVitalKey = "PocketDMCompanion.restVital"
     private static let playVitalKey = "PocketDMCompanion.playVital"
@@ -648,6 +652,10 @@ final class DragonOverlayModel: ObservableObject {
     @Published var dailyRouteMask = UserDefaults.standard.object(forKey: DragonOverlayModel.dailyRouteMaskKey) as? Int ?? 0
     @Published var routeAlbumMask = UserDefaults.standard.object(forKey: DragonOverlayModel.routeAlbumMaskKey) as? Int ?? 0
     @Published var latestRouteStepRaw = UserDefaults.standard.object(forKey: DragonOverlayModel.latestRouteStepRawKey) as? Int ?? 0
+    @Published var dailyCareWindowDate = UserDefaults.standard.string(forKey: DragonOverlayModel.dailyCareWindowDateKey) ?? ""
+    @Published var dailyCareWindowMask = UserDefaults.standard.object(forKey: DragonOverlayModel.dailyCareWindowMaskKey) as? Int ?? 0
+    @Published var careWindowAlbumMask = UserDefaults.standard.object(forKey: DragonOverlayModel.careWindowAlbumMaskKey) as? Int ?? 0
+    @Published var latestCareWindowRaw = UserDefaults.standard.object(forKey: DragonOverlayModel.latestCareWindowRawKey) as? Int ?? 0
     @Published var snackVital = UserDefaults.standard.object(forKey: DragonOverlayModel.snackVitalKey) as? Int ?? DragonOverlayModel.maxVital
     @Published var restVital = UserDefaults.standard.object(forKey: DragonOverlayModel.restVitalKey) as? Int ?? DragonOverlayModel.maxVital
     @Published var playVital = UserDefaults.standard.object(forKey: DragonOverlayModel.playVitalKey) as? Int ?? DragonOverlayModel.maxVital
@@ -1154,6 +1162,7 @@ final class DragonOverlayModel: ObservableObject {
         let cheerIntent = PetCheerIntent(rawValue: cheerIntentRaw) ?? .checkIn
         let cheerDaypart = PetDaypartNudge(rawValue: cheerDaypartRaw)
         let daypartNote = recordCheerAnswer()
+        let careWindowNote = cheerDaypart == nil ? nil : recordCareWindow(careMoment)
         let dialogueNote = recordCheerDialogueAnswer()
         let scriptNote = recordCheerScriptAnswer()
         let moodStoryNote = recordMoodStoryAnswer()
@@ -1171,6 +1180,9 @@ final class DragonOverlayModel: ObservableObject {
         message = pikaText("\(rewardLine). Pikachu turns \(prompt.lowercased()) into Joy +1 and Sparks +3.")
         if let daypartNote {
             message += " \(daypartNote)"
+        }
+        if let careWindowNote {
+            message += " \(careWindowNote)"
         }
         if let dialogueNote {
             message += " \(dialogueNote)"
@@ -1203,6 +1215,9 @@ final class DragonOverlayModel: ObservableObject {
             message += " \(memoryNote)"
         }
         recordDailyQuest(.cheer)
+        if cheerDaypart != nil {
+            recordDailyQuest(careMoment.dailyQuest)
+        }
         if let needNote = awardCareNeed(.focus) {
             message += " \(needNote)"
         }
@@ -1500,6 +1515,25 @@ final class DragonOverlayModel: ObservableObject {
         play(.happy)
         speakPika()
         setMood(step.mood, duration: 1.6)
+    }
+
+    func playCareWindow() {
+        let priorStage = growthStage
+        applyVitalDecay()
+        syncDailyCombo()
+        let moment = careMoment
+        lastRequest = "Now"
+        message = pikaText(recordCareWindow(moment))
+        recordDailyQuest(moment.dailyQuest)
+        if let moodCareNote = markMoodCare(moment.moodStep) {
+            message += " \(moodCareNote)"
+        }
+        appendEmotionScene(trigger: "care window")
+        appendEvolutionNote(from: priorStage)
+        persistCare()
+        play(.happy)
+        speakPika()
+        setMood(moment.mood, duration: 1.7)
     }
 
     func playBondBoard() {
@@ -1859,6 +1893,18 @@ final class DragonOverlayModel: ObservableObject {
 
     var routeSteps: [PetDailyRouteStep] {
         dailyRouteSteps
+    }
+
+    var careWindowLine: String {
+        PetCareMoment.summary(
+            dailyMask: dailyCareWindowMask,
+            albumMask: careWindowAlbumMask,
+            current: careMoment
+        )
+    }
+
+    var careWindowMoments: [PetCareMoment] {
+        PetCareMoment.allCases
     }
 
     var cheerRhythmLine: String {
@@ -2309,8 +2355,9 @@ final class DragonOverlayModel: ObservableObject {
         let questDone = dailyQuests.filter { dailyQuestMask & $0.rawValue != 0 }.count
         let bondDone = dailyBondContracts.filter { dailyBondBoardMask & $0.rawValue != 0 }.count
         let routeDone = dailyRouteSteps.filter { dailyRouteMask & $0.rawValue != 0 }.count
-        let next = nextBondContract?.title ?? nextDailyQuest?.title ?? "Board clear"
-        return "Route \(routeDone)/\(dailyRouteSteps.count) · Combo \(comboDone)/\(dailyComboActions.count) · Tasks \(questDone)/\(dailyQuests.count) · Bonds \(bondDone)/\(dailyBondContracts.count) · Next \(next)"
+        let windowDone = PetCareMoment.count(mask: dailyCareWindowMask)
+        let next = isCareWindowDone(careMoment) ? (nextBondContract?.title ?? nextDailyQuest?.title ?? "Board clear") : "\(careMoment.title) window"
+        return "Route \(routeDone)/\(dailyRouteSteps.count) · Windows \(windowDone)/\(PetCareMoment.allCases.count) · Combo \(comboDone)/\(dailyComboActions.count) · Tasks \(questDone)/\(dailyQuests.count) · Bonds \(bondDone)/\(dailyBondContracts.count) · Next \(next)"
     }
 
     var journalRitualProgress: Double {
@@ -2318,8 +2365,9 @@ final class DragonOverlayModel: ObservableObject {
         let questDone = dailyQuests.filter { dailyQuestMask & $0.rawValue != 0 }.count
         let bondDone = dailyBondContracts.filter { dailyBondBoardMask & $0.rawValue != 0 }.count
         let routeDone = dailyRouteSteps.filter { dailyRouteMask & $0.rawValue != 0 }.count
-        let total = dailyRouteSteps.count + dailyComboActions.count + dailyQuests.count + dailyBondContracts.count + dailyEvent.requiredSteps
-        let done = routeDone + comboDone + questDone + bondDone + min(dailyEventProgress, dailyEvent.requiredSteps)
+        let windowDone = PetCareMoment.count(mask: dailyCareWindowMask)
+        let total = dailyRouteSteps.count + PetCareMoment.allCases.count + dailyComboActions.count + dailyQuests.count + dailyBondContracts.count + dailyEvent.requiredSteps
+        let done = routeDone + windowDone + comboDone + questDone + bondDone + min(dailyEventProgress, dailyEvent.requiredSteps)
         return total == 0 ? 0 : Double(done) / Double(total)
     }
 
@@ -2339,6 +2387,22 @@ final class DragonOverlayModel: ObservableObject {
             ?? latest
             ?? .wakeSpark
         return "Route sprite: \(next.spriteRequestName.replacingOccurrences(of: "{stage}", with: growthStage.assetSlug))"
+    }
+
+    var journalCareWindowProgress: Double {
+        Double(PetCareMoment.count(mask: dailyCareWindowMask)) / Double(PetCareMoment.allCases.count)
+    }
+
+    var journalCareWindowCaption: String {
+        let done = PetCareMoment.count(mask: dailyCareWindowMask)
+        let albumDone = PetCareMoment.count(mask: careWindowAlbumMask)
+        let status = isCareWindowDone(careMoment) ? "done" : "ready"
+        return "Windows \(done)/\(PetCareMoment.allCases.count) today · \(careMoment.title) \(status) · Album \(albumDone)/\(PetCareMoment.allCases.count)"
+    }
+
+    var journalCareWindowSpriteLine: String {
+        let moment = PetCareMoment(rawValue: latestCareWindowRaw) ?? careMoment
+        return "Care window sprite: \(moment.spriteRequestName(stage: growthStage))"
     }
 
     var journalBondBoardProgress: Double {
@@ -2741,6 +2805,10 @@ final class DragonOverlayModel: ObservableObject {
         UserDefaults.standard.set(dailyRouteMask, forKey: Self.dailyRouteMaskKey)
         UserDefaults.standard.set(routeAlbumMask, forKey: Self.routeAlbumMaskKey)
         UserDefaults.standard.set(latestRouteStepRaw, forKey: Self.latestRouteStepRawKey)
+        UserDefaults.standard.set(dailyCareWindowDate, forKey: Self.dailyCareWindowDateKey)
+        UserDefaults.standard.set(dailyCareWindowMask, forKey: Self.dailyCareWindowMaskKey)
+        UserDefaults.standard.set(careWindowAlbumMask, forKey: Self.careWindowAlbumMaskKey)
+        UserDefaults.standard.set(latestCareWindowRaw, forKey: Self.latestCareWindowRawKey)
         UserDefaults.standard.set(snackVital, forKey: Self.snackVitalKey)
         UserDefaults.standard.set(restVital, forKey: Self.restVitalKey)
         UserDefaults.standard.set(playVital, forKey: Self.playVitalKey)
@@ -2998,6 +3066,14 @@ final class DragonOverlayModel: ObservableObject {
 
     func isRouteStepUnlocked(_ step: PetDailyRouteStep) -> Bool {
         routeAlbumMask & step.rawValue != 0
+    }
+
+    func isCareWindowDone(_ moment: PetCareMoment) -> Bool {
+        dailyCareWindowMask & moment.rawValue != 0
+    }
+
+    func isCareWindowUnlocked(_ moment: PetCareMoment) -> Bool {
+        careWindowAlbumMask & moment.rawValue != 0
     }
 
     private func setVital(_ vital: PetCareVital, value: Int) {
@@ -3465,6 +3541,11 @@ final class DragonOverlayModel: ObservableObject {
         if dailyRouteDate != today {
             dailyRouteDate = today
             dailyRouteMask = 0
+            changed = true
+        }
+        if dailyCareWindowDate != today {
+            dailyCareWindowDate = today
+            dailyCareWindowMask = 0
             changed = true
         }
         if dailyComboDate != today {
@@ -4142,6 +4223,56 @@ final class DragonOverlayModel: ObservableObject {
         return notes.joined(separator: " ")
     }
 
+    private func recordCareWindow(_ moment: PetCareMoment) -> String {
+        syncDailyCombo()
+        let wasComplete = isCareWindowSetComplete
+        let wasDoneToday = dailyCareWindowMask & moment.rawValue != 0
+        let wasAlbumUnlocked = careWindowAlbumMask & moment.rawValue != 0
+        dailyCareWindowMask |= moment.rawValue
+        careWindowAlbumMask |= moment.rawValue
+        latestCareWindowRaw = moment.rawValue
+
+        guard !wasDoneToday else {
+            let smallReward = 2 + cheerLevel
+            sparkDust = min(999, sparkDust + smallReward)
+            happiness = min(5, happiness + 1)
+            var notes = ["\(moment.title) window is already warm. \(moment.rewardLine) Joy +1, Sparks +\(smallReward)."]
+            if let vitalNote = refillVital(moment.vital, by: 1) {
+                notes.append(vitalNote)
+            }
+            persistCare()
+            return notes.joined(separator: " ")
+        }
+
+        let done = PetCareMoment.count(mask: dailyCareWindowMask)
+        let reward = 8 + cheerLevel + sparkLevel
+        sparkDust = min(999, sparkDust + reward)
+        happiness = min(5, happiness + 1)
+        var notes = [
+            "\(moment.title) window \(done)/\(PetCareMoment.allCases.count): \(moment.actionLine). \(moment.rewardLine) Joy +1, Sparks +\(reward)."
+        ]
+        if !wasAlbumUnlocked {
+            notes.append("Care window album unlocked: \(moment.shortLabel).")
+        }
+        if let vitalNote = refillVital(moment.vital, by: wasAlbumUnlocked ? 1 : 2) {
+            notes.append(vitalNote)
+        }
+        if !wasComplete, isCareWindowSetComplete {
+            companionHP = min(10, companionHP + 1)
+            let completeReward = 28 + sparkLevel * 2
+            sparkDust = min(999, sparkDust + completeReward)
+            notes.append("All five care windows complete: Bond HP +1 and Sparks +\(completeReward).")
+            if let charmNote = unlockCharm(.weeklyTrail) {
+                notes.append(charmNote)
+            }
+            play(.happy)
+            setMood(.hyper, duration: 1.9)
+        }
+
+        persistCare()
+        return notes.joined(separator: " ")
+    }
+
     private func markCombo(_ action: PetComboAction) {
         syncDailyCombo()
         let wasComplete = isDailyComboComplete
@@ -4251,6 +4382,10 @@ final class DragonOverlayModel: ObservableObject {
 
     private var isDailyRouteComplete: Bool {
         dailyRouteSteps.allSatisfy { dailyRouteMask & $0.rawValue != 0 }
+    }
+
+    private var isCareWindowSetComplete: Bool {
+        PetCareMoment.allCases.allSatisfy { dailyCareWindowMask & $0.rawValue != 0 }
     }
 
     private var isLifeSceneStageComplete: Bool {
@@ -5347,6 +5482,11 @@ struct DragonOverlayView: View {
                 .foregroundStyle(Color.gold.opacity(0.72))
                 .lineLimit(1)
                 .minimumScaleFactor(0.52)
+            Text(model.careWindowLine)
+                .font(.system(size: 8.2, weight: .black, design: .rounded))
+                .foregroundStyle(Color.ivory.opacity(0.68))
+                .lineLimit(1)
+                .minimumScaleFactor(0.46)
             Text(model.cheerRhythmLine)
                 .font(.system(size: 8.2, weight: .black, design: .rounded))
                 .foregroundStyle(Color.ivory.opacity(0.66))
@@ -5523,6 +5663,8 @@ struct DragonOverlayView: View {
             HStack(spacing: 5) {
                 Button("Field") { model.playFieldNote() }
                     .buttonStyle(DragonButtonStyle(kind: model.mood == .peek ? .primary : .secondary))
+                Button("Now") { model.playCareWindow() }
+                    .buttonStyle(DragonButtonStyle(kind: model.mood == .look || model.mood == .perch || model.mood == .stretch ? .primary : .secondary))
                 Button("Wish") { model.playWish() }
                     .buttonStyle(DragonButtonStyle(kind: model.mood == .look ? .primary : .secondary))
                 Button("Toy") { model.playToy() }
@@ -5749,6 +5891,9 @@ struct PetJournalPanel: View {
             journalHero("Spark Route", value: model.journalRouteProgress, caption: model.journalRouteCaption)
             sparkRouteGrid
             artLine(model.journalRouteSpriteLine)
+            journalHero("Care Windows", value: model.journalCareWindowProgress, caption: model.journalCareWindowCaption)
+            careWindowGrid
+            artLine(model.journalCareWindowSpriteLine)
             detailLine(model.needLine)
             detailLine(model.comboLine)
             detailLine(model.taskLine)
@@ -6056,6 +6201,16 @@ struct PetJournalPanel: View {
                 let done = model.isRouteStepDone(step)
                 let unlocked = model.isRouteStepUnlocked(step)
                 journalChip("\(step.shortLabel)\(done ? " ✓" : "")", isUnlocked: done || unlocked)
+            }
+        }
+    }
+
+    private var careWindowGrid: some View {
+        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 4), count: 5), spacing: 3) {
+            ForEach(model.careWindowMoments, id: \.rawValue) { moment in
+                let done = model.isCareWindowDone(moment)
+                let unlocked = model.isCareWindowUnlocked(moment)
+                journalChip("\(moment.shortLabel)\(done ? " ✓" : "")", isUnlocked: done || unlocked)
             }
         }
     }
