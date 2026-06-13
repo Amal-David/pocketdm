@@ -2217,6 +2217,8 @@ final class DragonOverlayModel: ObservableObject {
     var journalMoodStorySpriteLine: String {
         let next = PetMoodStory.next(
             feeling: petFeeling,
+            careMoment: careMoment,
+            stage: growthStage,
             offeredMask: dailyMoodStoryOfferedMask,
             index: PetMoodStory.count(mask: dailyMoodStoryOfferedMask)
                 + PetMoodStory.count(mask: dailyMoodStoryAnsweredMask)
@@ -4610,6 +4612,8 @@ final class DragonOverlayModel: ObservableObject {
         let shouldUseDaypart = !shouldUseScoutReturn && dailyNudgeOfferedMask & daypart.rawValue == 0
         let nextMoodStory = PetMoodStory.next(
             feeling: petFeeling,
+            careMoment: careMoment,
+            stage: growthStage,
             offeredMask: dailyMoodStoryOfferedMask,
             index: index
         )

@@ -2744,6 +2744,14 @@ enum PetMoodStory: Int, CaseIterable {
     case sleepyPermission = 8192
     case curiousQuestion = 16384
     case lonelyReach = 32768
+    case sunriseLookUp = 65536
+    case focusBlink = 131072
+    case afternoonWobble = 262144
+    case eveningCampfire = 524288
+    case nightNestGuard = 1048576
+    case tinyTrust = 2097152
+    case trailCourage = 4194304
+    case guardianGlow = 8388608
 
     var title: String {
         switch self {
@@ -2779,6 +2787,22 @@ enum PetMoodStory: Int, CaseIterable {
             return "Curious Question"
         case .lonelyReach:
             return "Lonely Reach"
+        case .sunriseLookUp:
+            return "Look Up Smile"
+        case .focusBlink:
+            return "Focus Blink"
+        case .afternoonWobble:
+            return "Afternoon Wobble"
+        case .eveningCampfire:
+            return "Campfire Pulse"
+        case .nightNestGuard:
+            return "Nest Guard"
+        case .tinyTrust:
+            return "Tiny Trust"
+        case .trailCourage:
+            return "Trail Courage"
+        case .guardianGlow:
+            return "Guardian Glow"
         }
     }
 
@@ -2816,30 +2840,46 @@ enum PetMoodStory: Int, CaseIterable {
             return "Ask"
         case .lonelyReach:
             return "Reach"
+        case .sunriseLookUp:
+            return "Look"
+        case .focusBlink:
+            return "Blink"
+        case .afternoonWobble:
+            return "Wobble"
+        case .eveningCampfire:
+            return "Fire"
+        case .nightNestGuard:
+            return "Nest"
+        case .tinyTrust:
+            return "Trust"
+        case .trailCourage:
+            return "Courage"
+        case .guardianGlow:
+            return "Glow"
         }
     }
 
     var feeling: PetFeeling {
         switch self {
-        case .brightHello:
+        case .brightHello, .sunriseLookUp:
             return .bright
-        case .eagerStep:
+        case .eagerStep, .trailCourage:
             return .eager
         case .proudReceipt:
             return .proud
         case .overchargeGround:
             return .overcharged
-        case .focusedPerch:
+        case .focusedPerch, .focusBlink:
             return .focused
         case .celebrationSave:
             return .celebrating
-        case .guardianCheck:
+        case .guardianCheck, .nightNestGuard, .guardianGlow:
             return .protective
-        case .gentleRepair:
+        case .gentleRepair, .afternoonWobble:
             return .comfort
         case .playfulSpark:
             return .playful
-        case .gratefulThanks:
+        case .gratefulThanks, .eveningCampfire:
             return .grateful
         case .determinedBridge:
             return .determined
@@ -2851,28 +2891,28 @@ enum PetMoodStory: Int, CaseIterable {
             return .sleepy
         case .curiousQuestion:
             return .curious
-        case .lonelyReach:
+        case .lonelyReach, .tinyTrust:
             return .lonely
         }
     }
 
     var intent: PetCheerIntent {
         switch self {
-        case .brightHello, .curiousQuestion:
+        case .brightHello, .curiousQuestion, .sunriseLookUp, .tinyTrust:
             return .checkIn
-        case .eagerStep, .determinedBridge:
+        case .eagerStep, .determinedBridge, .trailCourage:
             return .quest
         case .proudReceipt, .celebrationSave, .gratefulThanks:
             return .tinyWin
         case .overchargeGround:
             return .boost
-        case .focusedPerch:
+        case .focusedPerch, .focusBlink:
             return .focus
-        case .guardianCheck, .sleepyPermission:
+        case .guardianCheck, .sleepyPermission, .nightNestGuard, .guardianGlow:
             return .rest
-        case .gentleRepair, .lonelyReach:
+        case .gentleRepair, .lonelyReach, .afternoonWobble:
             return .feeling
-        case .playfulSpark:
+        case .playfulSpark, .eveningCampfire:
             return .tinyWin
         case .restlessPolish:
             return .upgrade
@@ -2883,30 +2923,30 @@ enum PetMoodStory: Int, CaseIterable {
 
     var vital: PetCareVital {
         switch self {
-        case .snackAsk, .brightHello, .gratefulThanks:
+        case .snackAsk, .brightHello, .gratefulThanks, .sunriseLookUp, .afternoonWobble:
             return .snack
-        case .guardianCheck, .gentleRepair, .sleepyPermission, .lonelyReach:
+        case .guardianCheck, .gentleRepair, .sleepyPermission, .lonelyReach, .nightNestGuard, .tinyTrust, .guardianGlow:
             return .rest
-        case .eagerStep, .celebrationSave, .playfulSpark, .determinedBridge:
+        case .eagerStep, .celebrationSave, .playfulSpark, .determinedBridge, .eveningCampfire, .trailCourage:
             return .play
-        case .proudReceipt, .overchargeGround, .focusedPerch, .restlessPolish, .curiousQuestion:
+        case .proudReceipt, .overchargeGround, .focusedPerch, .restlessPolish, .curiousQuestion, .focusBlink:
             return .focus
         }
     }
 
     var moodStep: PetMoodCareStep {
         switch self {
-        case .brightHello, .gentleRepair, .lonelyReach:
+        case .brightHello, .gentleRepair, .lonelyReach, .sunriseLookUp, .tinyTrust:
             return .soothe
         case .snackAsk:
             return .snack
-        case .guardianCheck, .sleepyPermission:
+        case .guardianCheck, .sleepyPermission, .nightNestGuard, .guardianGlow:
             return .rest
-        case .playfulSpark, .celebrationSave:
+        case .playfulSpark, .celebrationSave, .afternoonWobble:
             return .play
-        case .focusedPerch, .overchargeGround, .restlessPolish:
+        case .focusedPerch, .overchargeGround, .restlessPolish, .focusBlink:
             return .focus
-        case .eagerStep, .determinedBridge:
+        case .eagerStep, .determinedBridge, .eveningCampfire, .trailCourage:
             return .adventure
         case .curiousQuestion:
             return .puzzle
@@ -2917,15 +2957,15 @@ enum PetMoodStory: Int, CaseIterable {
 
     var mood: PetMood {
         switch self {
-        case .brightHello, .proudReceipt, .celebrationSave, .gratefulThanks:
+        case .brightHello, .proudReceipt, .celebrationSave, .gratefulThanks, .sunriseLookUp, .eveningCampfire:
             return .happy
-        case .eagerStep, .playfulSpark, .overchargeGround:
+        case .eagerStep, .playfulSpark, .overchargeGround, .trailCourage, .guardianGlow:
             return .hyper
-        case .focusedPerch, .restlessPolish:
+        case .focusedPerch, .restlessPolish, .focusBlink:
             return .perch
-        case .guardianCheck:
+        case .guardianCheck, .nightNestGuard:
             return .sleepGuard
-        case .gentleRepair, .lonelyReach:
+        case .gentleRepair, .lonelyReach, .afternoonWobble, .tinyTrust:
             return .alert
         case .determinedBridge:
             return .patrol
@@ -2940,11 +2980,11 @@ enum PetMoodStory: Int, CaseIterable {
 
     var sparkReward: Int {
         switch self {
-        case .brightHello, .gentleRepair, .snackAsk, .sleepyPermission, .lonelyReach:
+        case .brightHello, .gentleRepair, .snackAsk, .sleepyPermission, .lonelyReach, .tinyTrust:
             return 5
-        case .eagerStep, .focusedPerch, .playfulSpark, .gratefulThanks, .curiousQuestion:
+        case .eagerStep, .focusedPerch, .playfulSpark, .gratefulThanks, .curiousQuestion, .sunriseLookUp, .focusBlink, .afternoonWobble:
             return 7
-        case .proudReceipt, .overchargeGround, .celebrationSave, .guardianCheck, .determinedBridge, .restlessPolish:
+        case .proudReceipt, .overchargeGround, .celebrationSave, .guardianCheck, .determinedBridge, .restlessPolish, .eveningCampfire, .nightNestGuard, .trailCourage, .guardianGlow:
             return 9
         }
     }
@@ -2983,6 +3023,22 @@ enum PetMoodStory: Int, CaseIterable {
             return "Answer one thing"
         case .lonelyReach:
             return "Reach back"
+        case .sunriseLookUp:
+            return "Share the look-up smile"
+        case .focusBlink:
+            return "Start blink focus"
+        case .afternoonWobble:
+            return "Soften the wobble"
+        case .eveningCampfire:
+            return "Open campfire pulse"
+        case .nightNestGuard:
+            return "Settle into nest guard"
+        case .tinyTrust:
+            return "Build tiny trust"
+        case .trailCourage:
+            return "Take trail courage"
+        case .guardianGlow:
+            return "Save guardian glow"
         }
     }
 
@@ -3020,6 +3076,22 @@ enum PetMoodStory: Int, CaseIterable {
             return "What is happening over there? Give me one small piece to carry."
         case .lonelyReach:
             return "I waited quietly. Want to reach back with one gentle tap?"
+        case .sunriseLookUp:
+            return "\(stage.shortLabel) looked down, looked up, and smiled. What kind of morning should we make?"
+        case .focusBlink:
+            return "\(stage.shortLabel) blinked twice and chose the task. Want one tiny focus perch?"
+        case .afternoonWobble:
+            return "The afternoon got wobbly. Want to turn the wobble into a softer reset?"
+        case .eveningCampfire:
+            return "\(stage.shortLabel) found a little campfire glow. Want to tuck one loose loop beside it?"
+        case .nightNestGuard:
+            return "\(stage.shortLabel) is curled in the nest but still watching. Want a quiet closing check?"
+        case .tinyTrust:
+            return "The tiny spark is not sure yet, but it leaned closer. Want to show it this desk is safe?"
+        case .trailCourage:
+            return "\(stage.shortLabel) tapped the trail map twice. Want one brave breadcrumb?"
+        case .guardianGlow:
+            return "\(stage.title) is glowing like it remembers every return. Want to save this guardian pulse?"
         }
     }
 
@@ -3057,6 +3129,22 @@ enum PetMoodStory: Int, CaseIterable {
             return "Curiosity becomes a named check-in."
         case .lonelyReach:
             return "Loneliness becomes a soft reach-back memory."
+        case .sunriseLookUp:
+            return "The look-up smile becomes the morning's first anchor."
+        case .focusBlink:
+            return "A tiny blink turns into protected focus."
+        case .afternoonWobble:
+            return "Afternoon wobble gets softened before it grows teeth."
+        case .eveningCampfire:
+            return "A loose loop finds a warm place to rest."
+        case .nightNestGuard:
+            return "The nest becomes a gentle guard instead of a shutdown."
+        case .tinyTrust:
+            return "Tiny trust becomes the first proof of safety."
+        case .trailCourage:
+            return "A brave breadcrumb joins the trail."
+        case .guardianGlow:
+            return "Guardian glow becomes proof that the bond is alive."
         }
     }
 
@@ -3094,6 +3182,22 @@ enum PetMoodStory: Int, CaseIterable {
             return "curious-question"
         case .lonelyReach:
             return "lonely-reach"
+        case .sunriseLookUp:
+            return "sunrise-look-up"
+        case .focusBlink:
+            return "focus-blink"
+        case .afternoonWobble:
+            return "afternoon-wobble"
+        case .eveningCampfire:
+            return "evening-campfire"
+        case .nightNestGuard:
+            return "night-nest-guard"
+        case .tinyTrust:
+            return "tiny-trust"
+        case .trailCourage:
+            return "trail-courage"
+        case .guardianGlow:
+            return "guardian-glow"
         }
     }
 
@@ -3138,10 +3242,50 @@ enum PetMoodStory: Int, CaseIterable {
         }
     }
 
-    static func next(feeling: PetFeeling, offeredMask: Int, index: Int) -> PetMoodStory? {
-        let preferred = story(for: feeling)
-        if offeredMask & preferred.rawValue == 0 {
-            return preferred
+    static func story(for careMoment: PetCareMoment) -> PetMoodStory {
+        switch careMoment {
+        case .sunrise:
+            return .sunriseLookUp
+        case .focus:
+            return .focusBlink
+        case .afternoon:
+            return .afternoonWobble
+        case .evening:
+            return .eveningCampfire
+        case .night:
+            return .nightNestGuard
+        }
+    }
+
+    static func story(for stage: PetGrowthStage) -> PetMoodStory {
+        switch stage {
+        case .tinySpark:
+            return .tinyTrust
+        case .pocketPal:
+            return .brightHello
+        case .trailBuddy:
+            return .trailCourage
+        case .stormScout:
+            return .focusedPerch
+        case .stormGuardian:
+            return .guardianGlow
+        }
+    }
+
+    static func next(
+        feeling: PetFeeling,
+        careMoment: PetCareMoment,
+        stage: PetGrowthStage,
+        offeredMask: Int,
+        index: Int
+    ) -> PetMoodStory? {
+        let preferred = [
+            story(for: careMoment),
+            story(for: stage),
+            story(for: feeling)
+        ]
+        for story in preferred where offeredMask & story.rawValue == 0 {
+            return story
         }
         let remaining = allCases.filter { offeredMask & $0.rawValue == 0 }
         guard !remaining.isEmpty else { return nil }

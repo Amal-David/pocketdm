@@ -273,9 +273,10 @@ The native macOS companion now has the first version of the loop:
 - Spark Route now adds a six-step daily path drawn from twelve possible route
   beats, feeds combo/tasks/vitals/mood care, pays a completion reward, unlocks a
   route charm, and surfaces exact sprite filenames in the Ritual journal.
-- Mood Stories now add sixteen proactive check-in prompts tied to the current
-  pet feeling and growth stage, with answered/skipped state, permanent album
-  proof, care-vital effects, mood-care effects, and matching sprite filenames.
+- Mood Stories now add twenty-four proactive check-in prompts tied to the
+  current pet feeling, care window, and growth stage, with answered/skipped
+  state, permanent album proof, care-vital effects, mood-care effects, and
+  matching sprite filenames.
 - Field Notes now add collectible desktop reports that the pet can surface from
   mood/daypart/growth context, with found/saved/skipped state, rewards, journal
   progress, and a fresh sprite batch for tiny "I found this for you" moments.

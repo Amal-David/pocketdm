@@ -726,6 +726,22 @@ Generate these as proactive emotional check-in sheets for each growth stage:
   - Asks "what is happening?" and carries one small answer.
 - `pet-{stage}-mood-story-lonely-reach.png`
   - Reaches back softly after waiting, without guilt.
+- `pet-{stage}-mood-story-sunrise-look-up.png`
+  - Looks down, looks up, recognizes the user, and smiles into the morning.
+- `pet-{stage}-mood-story-focus-blink.png`
+  - Blinks twice, chooses the task, and settles into a focus perch.
+- `pet-{stage}-mood-story-afternoon-wobble.png`
+  - Shows a soft low-energy wobble that can be turned into a reset.
+- `pet-{stage}-mood-story-evening-campfire.png`
+  - Holds a warm campfire glow for tucking one loose loop.
+- `pet-{stage}-mood-story-night-nest-guard.png`
+  - Curls into a nest while still keeping a protective watch.
+- `pet-{stage}-mood-story-tiny-trust.png`
+  - Tiny form leans closer, unsure but starting to trust the desktop.
+- `pet-{stage}-mood-story-trail-courage.png`
+  - Trail form taps the map and offers one brave breadcrumb.
+- `pet-{stage}-mood-story-guardian-glow.png`
+  - Final guardian form glows with remembered returns and calm confidence.
 - `pet-{stage}-journal-mood-stories.png`
   - Journal view of answered, skipped, and album-saved mood stories.
 

@@ -423,3 +423,10 @@ counter, and referenced hamster-style viral retention loops.
 windows, each with state, rewards, vitals, proactive-bubble completion, album
 proof, and exact sprite filenames, so returning later in the day feels like
 relationship care.
+
+## 2026-06-13 — Proactive mood should reflect context
+The user wants cheer bubbles to feel like a living pet with emotions, growth,
+and day rhythm, not a generic notification feed.
+**Rule:** proactive mood prompts should choose from current feeling, current
+care window, and growth stage, then persist answered/skipped state and request
+exact sprite sheets for those emotional beats.
