@@ -335,3 +335,16 @@ day with many small text moments.
 **Rule:** proactive copy should live in a rotating, persistent scriptbook with
 daypart/intent targeting, accepted/skipped state, care rewards, journal
 receipts, and exact sprite requests, not as loose one-off bubble strings.
+
+## 2026-06-13 — Idle animation needs state
+A proper desktop pet should feel alive even between clicks.
+**Rule:** ambient idle behaviors should be timed, care-aware, persisted in a
+daily/permanent album, and tied to exact sprite requests so animation loops
+express relationship state rather than decorative motion.
+
+## 2026-06-13 — Catchphrase is part of the model contract
+User clarified that the model should also say "pika pika" in text and in
+voice.
+**Rule:** direct assistant/model responses should go through the shared
+catchphrase text wrapper and forced speech preview; do not rely on a quiet
+chirp or debounced sound when the user is expecting the character to speak.

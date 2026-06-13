@@ -3349,6 +3349,196 @@ enum PetRecoveryScene: Int, CaseIterable {
     }
 }
 
+enum PetAmbientMoment: Int, CaseIterable {
+    case firstLook = 1
+    case deskPerch = 2
+    case snackSniff = 4
+    case softStretch = 8
+    case sparkPatrol = 16
+    case cheekSpark = 32
+    case sleepyGuard = 64
+    case journalPeek = 128
+
+    var title: String {
+        switch self {
+        case .firstLook:
+            return "First Look"
+        case .deskPerch:
+            return "Desk Perch"
+        case .snackSniff:
+            return "Snack Sniff"
+        case .softStretch:
+            return "Soft Stretch"
+        case .sparkPatrol:
+            return "Spark Patrol"
+        case .cheekSpark:
+            return "Cheek Spark"
+        case .sleepyGuard:
+            return "Sleepy Guard"
+        case .journalPeek:
+            return "Journal Peek"
+        }
+    }
+
+    var shortLabel: String {
+        switch self {
+        case .firstLook:
+            return "Look"
+        case .deskPerch:
+            return "Desk"
+        case .snackSniff:
+            return "Snack"
+        case .softStretch:
+            return "Stretch"
+        case .sparkPatrol:
+            return "Patrol"
+        case .cheekSpark:
+            return "Spark"
+        case .sleepyGuard:
+            return "Guard"
+        case .journalPeek:
+            return "Peek"
+        }
+    }
+
+    var line: String {
+        switch self {
+        case .firstLook:
+            return "It looks down, looks up, finds you, and smiles like the desk is home."
+        case .deskPerch:
+            return "It perches beside the current task and keeps one quiet eye on it."
+        case .snackSniff:
+            return "It sniffs for a snack spark, then politely waits instead of whining."
+        case .softStretch:
+            return "It stretches, shakes off static, and makes the next minute softer."
+        case .sparkPatrol:
+            return "It walks a tiny patrol around the screen and checks the bond lights."
+        case .cheekSpark:
+            return "Its cheeks fizz once, then it settles proudly back into place."
+        case .sleepyGuard:
+            return "It gets drowsy but keeps a small night-watch glow open."
+        case .journalPeek:
+            return "It peeks at the field journal, then nudges the next sprite request."
+        }
+    }
+
+    var moodStep: PetMoodCareStep {
+        switch self {
+        case .firstLook, .sleepyGuard:
+            return .soothe
+        case .deskPerch, .journalPeek:
+            return .focus
+        case .snackSniff:
+            return .snack
+        case .softStretch:
+            return .rest
+        case .sparkPatrol:
+            return .adventure
+        case .cheekSpark:
+            return .play
+        }
+    }
+
+    var vital: PetCareVital {
+        switch self {
+        case .firstLook, .snackSniff:
+            return .snack
+        case .deskPerch, .journalPeek:
+            return .focus
+        case .softStretch, .sleepyGuard:
+            return .rest
+        case .sparkPatrol, .cheekSpark:
+            return .play
+        }
+    }
+
+    var sparkReward: Int {
+        switch self {
+        case .firstLook, .deskPerch, .snackSniff, .softStretch:
+            return 3
+        case .sparkPatrol, .cheekSpark, .sleepyGuard, .journalPeek:
+            return 4
+        }
+    }
+
+    var mood: PetMood {
+        switch self {
+        case .firstLook:
+            return .look
+        case .deskPerch:
+            return .perch
+        case .snackSniff:
+            return .snack
+        case .softStretch:
+            return .stretch
+        case .sparkPatrol:
+            return .patrol
+        case .cheekSpark:
+            return .spark
+        case .sleepyGuard:
+            return .sleepGuard
+        case .journalPeek:
+            return .peek
+        }
+    }
+
+    var spriteRequestName: String {
+        switch self {
+        case .firstLook:
+            return "pet-{stage}-ambient-first-look.png"
+        case .deskPerch:
+            return "pet-{stage}-ambient-desk-perch.png"
+        case .snackSniff:
+            return "pet-{stage}-ambient-snack-sniff.png"
+        case .softStretch:
+            return "pet-{stage}-ambient-soft-stretch.png"
+        case .sparkPatrol:
+            return "pet-{stage}-ambient-spark-patrol.png"
+        case .cheekSpark:
+            return "pet-{stage}-ambient-cheek-spark.png"
+        case .sleepyGuard:
+            return "pet-{stage}-ambient-sleepy-guard.png"
+        case .journalPeek:
+            return "pet-{stage}-ambient-journal-peek.png"
+        }
+    }
+
+    static func count(mask: Int) -> Int {
+        allCases.filter { mask & $0.rawValue != 0 }.count
+    }
+
+    static func next(dailyMask: Int, lowestVital: PetCareVital, hour: Int, index: Int) -> PetAmbientMoment {
+        let remaining = allCases.filter { dailyMask & $0.rawValue == 0 }
+        let pool = remaining.isEmpty ? allCases : remaining
+        let preferred: PetAmbientMoment
+        if hour >= 21 || hour < 6 {
+            preferred = .sleepyGuard
+        } else {
+            switch lowestVital {
+            case .snack:
+                preferred = .snackSniff
+            case .rest:
+                preferred = .softStretch
+            case .play:
+                preferred = .sparkPatrol
+            case .focus:
+                preferred = .deskPerch
+            }
+        }
+        if pool.contains(preferred) {
+            return preferred
+        }
+        return pool[index % pool.count]
+    }
+
+    static func summary(dailyMask: Int, albumMask: Int, latest: PetAmbientMoment?) -> String {
+        let today = count(mask: dailyMask)
+        let album = count(mask: albumMask)
+        let latestText = latest.map { "Latest \($0.title)" } ?? "waiting for a tiny idle moment"
+        return "Ambient Life \(today) today · Album \(album)/\(allCases.count) · \(latestText)"
+    }
+}
+
 struct PetComebackReward {
     let sparks: Int
     let joy: Int

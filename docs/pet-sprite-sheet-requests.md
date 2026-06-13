@@ -642,6 +642,18 @@ After the buddy form works, repeat the stage matrix for:
 - `storm-scout`
 - `storm-guardian`
 
+### Batch 19: Ambient Desktop Life
+
+- `pet-{stage}-ambient-first-look.png`
+- `pet-{stage}-ambient-desk-perch.png`
+- `pet-{stage}-ambient-snack-sniff.png`
+- `pet-{stage}-ambient-soft-stretch.png`
+- `pet-{stage}-ambient-spark-patrol.png`
+- `pet-{stage}-ambient-cheek-spark.png`
+- `pet-{stage}-ambient-sleepy-guard.png`
+- `pet-{stage}-ambient-journal-peek.png`
+- `pet-{stage}-journal-ambient-life.png`
+
 ## Growth Stages
 
 Each stage should share the same personality but visibly grow:
@@ -1228,6 +1240,28 @@ Streak recovery:
 - `pet-{stage}-journal-recovery-page.png`
   - Pet opens the recovery album showing shields, comeback scenes, and the next
     recovery sprite request.
+
+Ambient desktop life:
+
+- `pet-{stage}-ambient-first-look.png`
+  - Looks down, looks up, recognizes the user, and smiles as if the desk is
+    home.
+- `pet-{stage}-ambient-desk-perch.png`
+  - Perches beside the current task and watches quietly.
+- `pet-{stage}-ambient-snack-sniff.png`
+  - Sniffs for a snack spark, waits politely, and returns to idle.
+- `pet-{stage}-ambient-soft-stretch.png`
+  - Stretches, shakes off static, and settles into a softer posture.
+- `pet-{stage}-ambient-spark-patrol.png`
+  - Walks a tiny patrol around the screen and checks bond lights.
+- `pet-{stage}-ambient-cheek-spark.png`
+  - Cheeks fizz once, pet looks proud, then calms back down.
+- `pet-{stage}-ambient-sleepy-guard.png`
+  - Drowsy guard pose with a small night-watch glow.
+- `pet-{stage}-ambient-journal-peek.png`
+  - Peeks at the field journal and nudges the next art request.
+- `pet-{stage}-journal-ambient-life.png`
+  - Opens the ambient-life album showing seen today and permanent idle moments.
 
 Upgrade card deck:
 

@@ -351,6 +351,10 @@ The native macOS companion now has the first version of the loop:
   focus, afternoon, evening, night, comeback, and upgrade contexts; accepted
   scripts pay care rewards, fill the journal, and request matching animation
   sheets.
+- Ambient Life now lets the native pet run small idle behaviors while the user
+  is not clicking: first look, desk perch, snack sniff, soft stretch, spark
+  patrol, cheek spark, sleepy guard, and journal peek, with daily and permanent
+  album receipts.
 
 This is not the full final pet fantasy yet. It is the backbone that lets the
 next sprite sheets matter: new art can now map to real emotions, upgrades,

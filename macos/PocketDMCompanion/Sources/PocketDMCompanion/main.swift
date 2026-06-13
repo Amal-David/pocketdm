@@ -261,6 +261,11 @@ final class DragonOverlayModel: ObservableObject {
     private static let dailyCheerScriptAnsweredMaskKey = "PocketDMCompanion.dailyCheerScriptAnsweredMask"
     private static let dailyCheerScriptDismissedMaskKey = "PocketDMCompanion.dailyCheerScriptDismissedMask"
     private static let cheerScriptAlbumMaskKey = "PocketDMCompanion.cheerScriptAlbumMask"
+    private static let dailyAmbientDateKey = "PocketDMCompanion.dailyAmbientDate"
+    private static let dailyAmbientMaskKey = "PocketDMCompanion.dailyAmbientMask"
+    private static let ambientAlbumMaskKey = "PocketDMCompanion.ambientAlbumMask"
+    private static let latestAmbientMomentRawKey = "PocketDMCompanion.latestAmbientMomentRaw"
+    private static let lastAmbientAtKey = "PocketDMCompanion.lastAmbientAt"
     private static let snackVitalKey = "PocketDMCompanion.snackVital"
     private static let restVitalKey = "PocketDMCompanion.restVital"
     private static let playVitalKey = "PocketDMCompanion.playVital"
@@ -272,6 +277,7 @@ final class DragonOverlayModel: ObservableObject {
     private static let vitalDecaySeconds: TimeInterval = 4 * 60 * 60
     private static let passiveSparkSeconds: TimeInterval = 15 * 60
     private static let cheerCooldownSeconds: TimeInterval = 2 * 60 * 60
+    private static let ambientCooldownSeconds: TimeInterval = 4 * 60
     private static let dayFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.calendar = Calendar(identifier: .gregorian)
@@ -380,6 +386,10 @@ final class DragonOverlayModel: ObservableObject {
     @Published var dailyCheerScriptAnsweredMask = UserDefaults.standard.object(forKey: DragonOverlayModel.dailyCheerScriptAnsweredMaskKey) as? Int ?? 0
     @Published var dailyCheerScriptDismissedMask = UserDefaults.standard.object(forKey: DragonOverlayModel.dailyCheerScriptDismissedMaskKey) as? Int ?? 0
     @Published var cheerScriptAlbumMask = UserDefaults.standard.object(forKey: DragonOverlayModel.cheerScriptAlbumMaskKey) as? Int ?? 0
+    @Published var dailyAmbientDate = UserDefaults.standard.string(forKey: DragonOverlayModel.dailyAmbientDateKey) ?? ""
+    @Published var dailyAmbientMask = UserDefaults.standard.object(forKey: DragonOverlayModel.dailyAmbientMaskKey) as? Int ?? 0
+    @Published var ambientAlbumMask = UserDefaults.standard.object(forKey: DragonOverlayModel.ambientAlbumMaskKey) as? Int ?? 0
+    @Published var latestAmbientMomentRaw = UserDefaults.standard.object(forKey: DragonOverlayModel.latestAmbientMomentRawKey) as? Int ?? 0
     @Published var snackVital = UserDefaults.standard.object(forKey: DragonOverlayModel.snackVitalKey) as? Int ?? DragonOverlayModel.maxVital
     @Published var restVital = UserDefaults.standard.object(forKey: DragonOverlayModel.restVitalKey) as? Int ?? DragonOverlayModel.maxVital
     @Published var playVital = UserDefaults.standard.object(forKey: DragonOverlayModel.playVitalKey) as? Int ?? DragonOverlayModel.maxVital
@@ -403,9 +413,11 @@ final class DragonOverlayModel: ObservableObject {
     private var moodTask: Task<Void, Never>?
     private var energyTask: Task<Void, Never>?
     private var cheerTask: Task<Void, Never>?
+    private var ambientTask: Task<Void, Never>?
     private var lastEnergyAt = UserDefaults.standard.double(forKey: DragonOverlayModel.lastEnergyAtKey)
     private var passiveSparkAt = UserDefaults.standard.double(forKey: DragonOverlayModel.passiveSparkAtKey)
     private var lastLifecycleAt = UserDefaults.standard.double(forKey: DragonOverlayModel.lastLifecycleAtKey)
+    private var lastAmbientAt = UserDefaults.standard.double(forKey: DragonOverlayModel.lastAmbientAtKey)
     private var lastComebackChestDay = UserDefaults.standard.string(forKey: DragonOverlayModel.lastComebackChestDayKey) ?? ""
     private var lastNeedBonusDay = UserDefaults.standard.string(forKey: DragonOverlayModel.lastNeedBonusDayKey) ?? ""
     private var lastVitalAt = UserDefaults.standard.double(forKey: DragonOverlayModel.lastVitalAtKey)
@@ -423,6 +435,10 @@ final class DragonOverlayModel: ObservableObject {
         if lastLifecycleAt == 0 {
             lastLifecycleAt = Date().timeIntervalSince1970
             UserDefaults.standard.set(lastLifecycleAt, forKey: Self.lastLifecycleAtKey)
+        }
+        if lastAmbientAt == 0 {
+            lastAmbientAt = Date().timeIntervalSince1970
+            UserDefaults.standard.set(lastAmbientAt, forKey: Self.lastAmbientAtKey)
         }
         if lastVitalAt == 0 {
             lastVitalAt = Date().timeIntervalSince1970
@@ -447,6 +463,7 @@ final class DragonOverlayModel: ObservableObject {
         }
         startEnergyLoop()
         startCheerLoop()
+        startAmbientLoop()
     }
 
     func refreshHealth() async {
@@ -909,7 +926,7 @@ final class DragonOverlayModel: ObservableObject {
         UserDefaults.standard.set(Date().timeIntervalSince1970, forKey: Self.lastCheerAtKey)
         persistCare()
         play(.reply)
-        speakPikaLine(message)
+        speakPikaLine(message, force: true)
         setMood(.hyper, duration: 1.6)
         setMinimized(false)
     }
@@ -1354,6 +1371,18 @@ final class DragonOverlayModel: ObservableObject {
         PetRecoveryScene.allCases
     }
 
+    var ambientLine: String {
+        PetAmbientMoment.summary(
+            dailyMask: dailyAmbientMask,
+            albumMask: ambientAlbumMask,
+            latest: PetAmbientMoment(rawValue: latestAmbientMomentRaw)
+        )
+    }
+
+    var ambientMoments: [PetAmbientMoment] {
+        PetAmbientMoment.allCases
+    }
+
     var cheerRhythmLine: String {
         PetDaypartNudge.summary(
             offeredMask: dailyNudgeOfferedMask,
@@ -1693,6 +1722,22 @@ final class DragonOverlayModel: ObservableObject {
         return "Recovery sprite: \(next.spriteRequestName.replacingOccurrences(of: "{stage}", with: growthStage.assetSlug))"
     }
 
+    var journalAmbientProgress: Double {
+        Double(PetAmbientMoment.count(mask: ambientAlbumMask)) / Double(PetAmbientMoment.allCases.count)
+    }
+
+    var journalAmbientCaption: String {
+        ambientLine
+    }
+
+    var journalAmbientSpriteLine: String {
+        let latest = PetAmbientMoment(rawValue: latestAmbientMomentRaw)
+        let next = PetAmbientMoment.allCases.first { ambientAlbumMask & $0.rawValue == 0 }
+            ?? latest
+            ?? .firstLook
+        return "Ambient sprite: \(next.spriteRequestName.replacingOccurrences(of: "{stage}", with: growthStage.assetSlug))"
+    }
+
     var journalCheerProgress: Double {
         let answered = PetDaypartNudge.count(mask: dailyNudgeAnsweredMask)
             + PetCheerDialogue.count(mask: dailyCheerDialogueAnsweredMask)
@@ -1936,6 +1981,11 @@ final class DragonOverlayModel: ObservableObject {
         UserDefaults.standard.set(dailyCheerScriptAnsweredMask, forKey: Self.dailyCheerScriptAnsweredMaskKey)
         UserDefaults.standard.set(dailyCheerScriptDismissedMask, forKey: Self.dailyCheerScriptDismissedMaskKey)
         UserDefaults.standard.set(cheerScriptAlbumMask, forKey: Self.cheerScriptAlbumMaskKey)
+        UserDefaults.standard.set(dailyAmbientDate, forKey: Self.dailyAmbientDateKey)
+        UserDefaults.standard.set(dailyAmbientMask, forKey: Self.dailyAmbientMaskKey)
+        UserDefaults.standard.set(ambientAlbumMask, forKey: Self.ambientAlbumMaskKey)
+        UserDefaults.standard.set(latestAmbientMomentRaw, forKey: Self.latestAmbientMomentRawKey)
+        UserDefaults.standard.set(lastAmbientAt, forKey: Self.lastAmbientAtKey)
         UserDefaults.standard.set(snackVital, forKey: Self.snackVitalKey)
         UserDefaults.standard.set(restVital, forKey: Self.restVitalKey)
         UserDefaults.standard.set(playVital, forKey: Self.playVitalKey)
@@ -2125,6 +2175,14 @@ final class DragonOverlayModel: ObservableObject {
 
     func isRecoverySceneUnlocked(_ scene: PetRecoveryScene) -> Bool {
         recoveryAlbumMask & scene.rawValue != 0
+    }
+
+    func isAmbientMomentSeenToday(_ moment: PetAmbientMoment) -> Bool {
+        dailyAmbientMask & moment.rawValue != 0
+    }
+
+    func isAmbientMomentUnlocked(_ moment: PetAmbientMoment) -> Bool {
+        ambientAlbumMask & moment.rawValue != 0
     }
 
     private func setVital(_ vital: PetCareVital, value: Int) {
@@ -2408,6 +2466,8 @@ final class DragonOverlayModel: ObservableObject {
             return .proud
         case "life scene":
             return .proud
+        case "ambient":
+            return .comfort
         default:
             return petFeeling
         }
@@ -2537,6 +2597,11 @@ final class DragonOverlayModel: ObservableObject {
             dailyCheerScriptOfferedMask = 0
             dailyCheerScriptAnsweredMask = 0
             dailyCheerScriptDismissedMask = 0
+            changed = true
+        }
+        if dailyAmbientDate != today {
+            dailyAmbientDate = today
+            dailyAmbientMask = 0
             changed = true
         }
         if dailyComboDate != today {
@@ -2841,6 +2906,35 @@ final class DragonOverlayModel: ObservableObject {
         persistCare()
     }
 
+    private func recordAmbientMoment(_ moment: PetAmbientMoment) -> String {
+        syncDailyCombo()
+        latestAmbientMomentRaw = moment.rawValue
+        let seenToday = dailyAmbientMask & moment.rawValue != 0
+        let seenEver = ambientAlbumMask & moment.rawValue != 0
+        dailyAmbientMask |= moment.rawValue
+        ambientAlbumMask |= moment.rawValue
+
+        guard !seenToday else {
+            persistCare()
+            return "\(moment.title) passed by again. \(moment.line)"
+        }
+
+        let reward = seenEver ? 1 : moment.sparkReward
+        sparkDust = min(999, sparkDust + reward)
+        if !seenEver {
+            happiness = min(5, happiness + 1)
+        }
+        var notes = ["\(moment.title): \(moment.line) Sparks +\(reward)\(!seenEver ? ", Joy +1" : "")."]
+        if let vitalNote = refillVital(moment.vital, by: seenEver ? 1 : 2) {
+            notes.append(vitalNote)
+        }
+        if let moodCareNote = markMoodCare(moment.moodStep) {
+            notes.append(moodCareNote)
+        }
+        persistCare()
+        return notes.joined(separator: " ")
+    }
+
     private func markCombo(_ action: PetComboAction) {
         syncDailyCombo()
         let wasComplete = isDailyComboComplete
@@ -3044,6 +3138,41 @@ final class DragonOverlayModel: ObservableObject {
         }
     }
 
+    private func startAmbientLoop() {
+        ambientTask?.cancel()
+        ambientTask = Task { [weak self] in
+            try? await Task.sleep(nanoseconds: 10_000_000_000)
+            while !Task.isCancelled {
+                await MainActor.run {
+                    self?.showAmbientMomentIfReady()
+                }
+                try? await Task.sleep(nanoseconds: 60_000_000_000)
+            }
+        }
+    }
+
+    private func showAmbientMomentIfReady() {
+        syncDailyCombo()
+        guard cheerBubble == nil, !busy, learningMode == .chat, mood == .idle else { return }
+        let now = Date().timeIntervalSince1970
+        guard now - lastAmbientAt >= Self.ambientCooldownSeconds else { return }
+
+        let index = PetAmbientMoment.count(mask: dailyAmbientMask) + PetAmbientMoment.count(mask: ambientAlbumMask)
+        let moment = PetAmbientMoment.next(
+            dailyMask: dailyAmbientMask,
+            lowestVital: lowestVital,
+            hour: currentHour,
+            index: index
+        )
+        lastAmbientAt = now
+        lastRequest = "Ambient"
+        message = pikaText(recordAmbientMoment(moment))
+        appendEmotionScene(trigger: "ambient")
+        persistCare()
+        play(.happy)
+        setMood(moment.mood, duration: 2.6)
+    }
+
     private func showCheerIfReady() {
         syncDailyCombo()
         guard minimized, cheerBubble == nil else { return }
@@ -3174,16 +3303,24 @@ enum PetMood: String, CaseIterable {
     case hyper
     case alert
     case thinking
+    case look
+    case perch
+    case snack
+    case stretch
+    case patrol
+    case spark
+    case sleepGuard
+    case peek
 
     var fallbackAssetName: String {
         switch self {
-        case .idle, .happy:
+        case .idle, .happy, .look, .perch, .snack, .stretch, .peek:
             return "pet-happy"
         case .nap:
             return "pet-nap"
-        case .hyper:
+        case .hyper, .patrol, .spark:
             return "pet-hyper"
-        case .alert, .thinking:
+        case .alert, .thinking, .sleepGuard:
             return "pet-alert"
         }
     }
@@ -3228,6 +3365,54 @@ enum PetMood: String, CaseIterable {
                 "\(prefix)-focused-watch-mode",
                 "\(prefix)-alert"
             ]
+        case .look:
+            stageCandidates = [
+                "\(prefix)-ambient-first-look",
+                "\(prefix)-eager-idle-look-smile",
+                "\(prefix)-idle-look-smile"
+            ]
+        case .perch:
+            stageCandidates = [
+                "\(prefix)-ambient-desk-perch",
+                "\(prefix)-focused-watch-mode",
+                "\(prefix)-curious-listen"
+            ]
+        case .snack:
+            stageCandidates = [
+                "\(prefix)-ambient-snack-sniff",
+                "\(prefix)-need-snack",
+                "\(prefix)-snacky"
+            ]
+        case .stretch:
+            stageCandidates = [
+                "\(prefix)-ambient-soft-stretch",
+                "\(prefix)-mood-care-rest",
+                "\(prefix)-gentle"
+            ]
+        case .patrol:
+            stageCandidates = [
+                "\(prefix)-ambient-spark-patrol",
+                "\(prefix)-playful-wiggle",
+                "\(prefix)-hyper"
+            ]
+        case .spark:
+            stageCandidates = [
+                "\(prefix)-ambient-cheek-spark",
+                "\(prefix)-overcharged",
+                "\(prefix)-hyper"
+            ]
+        case .sleepGuard:
+            stageCandidates = [
+                "\(prefix)-ambient-sleepy-guard",
+                "\(prefix)-sleepy-nap",
+                "\(prefix)-protective"
+            ]
+        case .peek:
+            stageCandidates = [
+                "\(prefix)-ambient-journal-peek",
+                "\(prefix)-journal-open",
+                "\(prefix)-proud"
+            ]
         }
         return stageCandidates + [fallbackAssetName]
     }
@@ -3244,6 +3429,14 @@ enum PetMood: String, CaseIterable {
             return [0, 1, 2, 3, 4, 5, 4, 3, 2, 1, 0, 0]
         case .hyper:
             return [0, 3, 5, 6, 7, 8, 9, 10, 11, 4, 2, 1]
+        case .look:
+            return [0, 0, 1, 1, 2, 3, 4, 5, 5, 4, 3, 0]
+        case .perch, .sleepGuard:
+            return [0, 1, 1, 2, 2, 3, 2, 1, 0, 0, 4, 4]
+        case .snack, .stretch, .peek:
+            return [0, 1, 2, 3, 4, 5, 5, 4, 3, 2, 1, 0]
+        case .patrol, .spark:
+            return [0, 2, 4, 6, 8, 10, 11, 9, 7, 5, 3, 1]
         default:
             return Array(0..<12)
         }
@@ -4013,6 +4206,9 @@ struct PetJournalPanel: View {
             journalHero("Care Vitals", value: model.journalVitalProgress, caption: model.journalVitalCaption)
             vitalGrid
             artLine(model.journalVitalSpriteLine)
+            journalHero("Ambient Life", value: model.journalAmbientProgress, caption: model.journalAmbientCaption)
+            ambientGrid
+            artLine(model.journalAmbientSpriteLine)
             journalHero("Cheer Rhythm", value: model.journalCheerProgress, caption: model.journalCheerCaption)
             detailLine(model.cheerRhythmLine)
             artLine(model.journalCheerSpriteLine)
@@ -4208,6 +4404,16 @@ struct PetJournalPanel: View {
         LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 4), count: 4), spacing: 3) {
             ForEach(PetCareVital.allCases, id: \.self) { vital in
                 vitalChip(vital)
+            }
+        }
+    }
+
+    private var ambientGrid: some View {
+        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 4), count: 4), spacing: 3) {
+            ForEach(model.ambientMoments, id: \.rawValue) { moment in
+                let today = model.isAmbientMomentSeenToday(moment)
+                let unlocked = model.isAmbientMomentUnlocked(moment)
+                journalChip("\(moment.shortLabel)\(today ? " ✓" : "")", isUnlocked: unlocked || today)
             }
         }
     }
