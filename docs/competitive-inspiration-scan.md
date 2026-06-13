@@ -372,6 +372,10 @@ The native macOS companion now has the first version of the loop:
   quest peek, snack, rest, hyper lap, focus perch, cipher peek, upgrade dream,
   field sketch, scout wave, or night thanks, and fulfilling that wish pays care
   rewards while filling a permanent album.
+- Toybox now adds object play: Pikachu can ask for a ball, bell, ribbon,
+  compass, blanket, pebble, cube, kite, flag, or lamp, then reward the user and
+  save the object in an album. This turns retention mechanics into visible
+  relationship props rather than abstract tasks.
 
 This is not the full final pet fantasy yet. It is the backbone that lets the
 next sprite sheets matter: new art can now map to real emotions, upgrades,

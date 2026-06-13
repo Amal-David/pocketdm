@@ -393,3 +393,9 @@ growth, and proactive care.
 **Rule:** add loops where the pet expresses small desires in its own voice,
 tracks whether the user answered, rewards care, and records the moment in an
 album with exact sprite requests. Desire makes the companion feel alive.
+
+## 2026-06-13 — Catchphrase cannot be only a chirp
+The user clarified that the model should say "pika pika" in text and in voice.
+**Rule:** assistant replies, pet rewards, and proactive bubbles should share one
+guarded text prefix and one spoken preview path so the user sees and hears the
+same character beat without duplicate catchphrases.

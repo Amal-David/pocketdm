@@ -5165,6 +5165,286 @@ enum PetWish: Int, CaseIterable {
     }
 }
 
+enum PetToy: Int, CaseIterable {
+    case sparkBall = 1
+    case snackBell = 2
+    case phraseRibbon = 4
+    case questCompass = 8
+    case napBlanket = 16
+    case focusPebble = 32
+    case cipherCube = 64
+    case upgradeKite = 128
+    case scoutFlag = 256
+    case moonLamp = 512
+
+    var title: String {
+        switch self {
+        case .sparkBall:
+            return "Spark Ball"
+        case .snackBell:
+            return "Snack Bell"
+        case .phraseRibbon:
+            return "Phrase Ribbon"
+        case .questCompass:
+            return "Quest Compass"
+        case .napBlanket:
+            return "Nap Blanket"
+        case .focusPebble:
+            return "Focus Pebble"
+        case .cipherCube:
+            return "Cipher Cube"
+        case .upgradeKite:
+            return "Upgrade Kite"
+        case .scoutFlag:
+            return "Scout Flag"
+        case .moonLamp:
+            return "Moon Lamp"
+        }
+    }
+
+    var shortLabel: String {
+        switch self {
+        case .sparkBall:
+            return "Ball"
+        case .snackBell:
+            return "Bell"
+        case .phraseRibbon:
+            return "Ribbon"
+        case .questCompass:
+            return "Map"
+        case .napBlanket:
+            return "Nap"
+        case .focusPebble:
+            return "Focus"
+        case .cipherCube:
+            return "Cube"
+        case .upgradeKite:
+            return "Kite"
+        case .scoutFlag:
+            return "Flag"
+        case .moonLamp:
+            return "Lamp"
+        }
+    }
+
+    var action: String {
+        switch self {
+        case .sparkBall:
+            return "Roll ball"
+        case .snackBell:
+            return "Ring bell"
+        case .phraseRibbon:
+            return "Wave ribbon"
+        case .questCompass:
+            return "Spin compass"
+        case .napBlanket:
+            return "Tuck blanket"
+        case .focusPebble:
+            return "Hold pebble"
+        case .cipherCube:
+            return "Turn cube"
+        case .upgradeKite:
+            return "Fly kite"
+        case .scoutFlag:
+            return "Plant flag"
+        case .moonLamp:
+            return "Light lamp"
+        }
+    }
+
+    func playLine(stage: PetGrowthStage, feeling: PetFeeling) -> String {
+        switch self {
+        case .sparkBall:
+            return "\(stage.shortLabel) bats a glowing spark ball across the desktop and grins \(feeling.title.lowercased())."
+        case .snackBell:
+            return "\(stage.shortLabel) rings the snack bell once, then waits politely for the care map."
+        case .phraseRibbon:
+            return "\(stage.shortLabel) waves a tiny ribbon while practicing a phrase echo."
+        case .questCompass:
+            return "\(stage.shortLabel) spins the compass until one safe route glows."
+        case .napBlanket:
+            return "\(stage.shortLabel) tucks the blanket, blinks slowly, and makes rest feel useful."
+        case .focusPebble:
+            return "\(stage.shortLabel) holds the focus pebble and settles beside the first minute."
+        case .cipherCube:
+            return "\(stage.shortLabel) turns the cipher cube and listens for a puzzle click."
+        case .upgradeKite:
+            return "\(stage.shortLabel) flies the upgrade kite and watches the next card shimmer."
+        case .scoutFlag:
+            return "\(stage.shortLabel) plants a little flag where the scout trail begins."
+        case .moonLamp:
+            return "\(stage.shortLabel) lights the moon lamp and softens the night watch."
+        }
+    }
+
+    var vital: PetCareVital {
+        switch self {
+        case .snackBell:
+            return .snack
+        case .napBlanket, .moonLamp:
+            return .rest
+        case .sparkBall, .questCompass, .scoutFlag:
+            return .play
+        case .phraseRibbon, .focusPebble, .cipherCube, .upgradeKite:
+            return .focus
+        }
+    }
+
+    var moodStep: PetMoodCareStep {
+        switch self {
+        case .sparkBall:
+            return .play
+        case .snackBell:
+            return .snack
+        case .phraseRibbon:
+            return .study
+        case .questCompass, .scoutFlag:
+            return .adventure
+        case .napBlanket, .moonLamp:
+            return .rest
+        case .focusPebble, .upgradeKite:
+            return .focus
+        case .cipherCube:
+            return .puzzle
+        }
+    }
+
+    var mood: PetMood {
+        switch self {
+        case .sparkBall:
+            return .hyper
+        case .snackBell:
+            return .snack
+        case .phraseRibbon:
+            return .peek
+        case .questCompass, .scoutFlag:
+            return .patrol
+        case .napBlanket:
+            return .stretch
+        case .focusPebble:
+            return .perch
+        case .cipherCube, .upgradeKite:
+            return .thinking
+        case .moonLamp:
+            return .sleepGuard
+        }
+    }
+
+    var sparkReward: Int {
+        switch self {
+        case .sparkBall, .snackBell, .napBlanket:
+            return 7
+        case .phraseRibbon, .questCompass, .focusPebble, .cipherCube:
+            return 9
+        case .upgradeKite, .scoutFlag, .moonLamp:
+            return 11
+        }
+    }
+
+    var spriteSlug: String {
+        switch self {
+        case .sparkBall:
+            return "spark-ball"
+        case .snackBell:
+            return "snack-bell"
+        case .phraseRibbon:
+            return "phrase-ribbon"
+        case .questCompass:
+            return "quest-compass"
+        case .napBlanket:
+            return "nap-blanket"
+        case .focusPebble:
+            return "focus-pebble"
+        case .cipherCube:
+            return "cipher-cube"
+        case .upgradeKite:
+            return "upgrade-kite"
+        case .scoutFlag:
+            return "scout-flag"
+        case .moonLamp:
+            return "moon-lamp"
+        }
+    }
+
+    var spriteRequestName: String {
+        "pet-{stage}-toy-\(spriteSlug).png"
+    }
+
+    static func count(mask: Int) -> Int {
+        allCases.filter { mask & $0.rawValue != 0 }.count
+    }
+
+    static func next(
+        daypart: PetDaypartNudge,
+        feeling: PetFeeling,
+        careNeed: PetCareNeed,
+        playedMask: Int,
+        index: Int
+    ) -> PetToy? {
+        let remaining = allCases.filter { playedMask & $0.rawValue == 0 }
+        guard !remaining.isEmpty else { return nil }
+
+        let preferred: PetToy
+        if daypart == .night {
+            preferred = .moonLamp
+        } else {
+            switch feeling {
+            case .hungry:
+                preferred = .snackBell
+            case .sleepy, .protective:
+                preferred = .napBlanket
+            case .focused:
+                preferred = .focusPebble
+            case .overcharged, .playful:
+                preferred = .sparkBall
+            case .curious:
+                preferred = .cipherCube
+            case .restless, .determined:
+                preferred = .upgradeKite
+            case .proud, .celebrating:
+                preferred = .scoutFlag
+            case .lonely, .comfort, .grateful:
+                preferred = .moonLamp
+            case .bright, .eager:
+                switch careNeed {
+                case .affection, .play:
+                    preferred = .sparkBall
+                case .study:
+                    preferred = .phraseRibbon
+                case .adventure:
+                    preferred = .questCompass
+                case .rest:
+                    preferred = .napBlanket
+                case .focus:
+                    preferred = .focusPebble
+                case .puzzle:
+                    preferred = .cipherCube
+                }
+            }
+        }
+
+        if remaining.contains(preferred) {
+            return preferred
+        }
+        return remaining[index % remaining.count]
+    }
+
+    static func summary(
+        offeredMask: Int,
+        playedMask: Int,
+        dismissedMask: Int,
+        albumMask: Int,
+        latest: PetToy?
+    ) -> String {
+        let offered = count(mask: offeredMask)
+        let played = count(mask: playedMask)
+        let dismissed = count(mask: dismissedMask)
+        let album = count(mask: albumMask)
+        let latestText = latest.map { "Latest \($0.title)" } ?? "toybox waiting"
+        return "Toybox \(played)/\(allCases.count) played · \(offered) offered · \(dismissed) skipped · Album \(album)/\(allCases.count) · \(latestText)"
+    }
+}
+
 struct PetComebackReward {
     let sparks: Int
     let joy: Int

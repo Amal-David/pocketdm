@@ -1637,6 +1637,35 @@ like a small desire being expressed, not a generic button state:
 - `pet-{stage}-journal-wishbook.png`
   - Pet presents a tiny wish album with fulfilled-wish stickers.
 
+## Toybox Sheets
+
+These support object play: the pet asks for or uses a tiny toy, earns care
+progress, and saves the object in the Toybox album. Each toy needs a 12-frame
+transparent strip for every growth stage:
+
+- `pet-{stage}-toy-spark-ball.png`
+  - Pet bats or rolls a glowing ball with happy cheek sparks.
+- `pet-{stage}-toy-snack-bell.png`
+  - Pet rings a tiny bell, waits politely, and brightens after care.
+- `pet-{stage}-toy-phrase-ribbon.png`
+  - Pet waves a ribbon while listening and repeating a short phrase.
+- `pet-{stage}-toy-quest-compass.png`
+  - Pet spins a small compass until one safe quest route glows.
+- `pet-{stage}-toy-nap-blanket.png`
+  - Pet tucks a little blanket, settles, then peeks back up.
+- `pet-{stage}-toy-focus-pebble.png`
+  - Pet holds a focus pebble and sits beside the user's first minute.
+- `pet-{stage}-toy-cipher-cube.png`
+  - Pet turns a small puzzle cube, tilts its head, then finds the click.
+- `pet-{stage}-toy-upgrade-kite.png`
+  - Pet flies a tiny upgrade kite and watches a card shimmer.
+- `pet-{stage}-toy-scout-flag.png`
+  - Pet plants a little flag where a scout trail begins.
+- `pet-{stage}-toy-moon-lamp.png`
+  - Pet lights a soft lamp for night watch without adding a dark outline.
+- `pet-{stage}-journal-toybox.png`
+  - Pet opens a tiny Toybox album with played and locked objects.
+
 ## Language Coach Sheets
 
 Spanish and Mandarin lessons need teaching-specific reactions:
