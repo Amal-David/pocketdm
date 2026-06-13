@@ -1666,6 +1666,32 @@ one 12-frame transparent strip per gesture and growth stage:
 - `pet-{stage}-journal-affection.png`
   - Pet opens a Bond gesture album with given and locked care moments.
 
+## Home Room Sheets
+
+These support the pet's persistent habitat: rooms it can visit directly or ask
+for proactively while minimized. Each room should feel like a place the pet
+lives in, not a menu background. Generate one 12-frame transparent strip per
+room and growth stage:
+
+- `pet-{stage}-home-cozy-nest.png`
+  - Pet circles the blanket, settles the nest, and looks safe.
+- `pet-{stage}-home-snack-nook.png`
+  - Pet checks a tiny snack nook and stores one treat for later.
+- `pet-{stage}-home-study-perch.png`
+  - Pet climbs to a study perch and watches the user's first useful minute.
+- `pet-{stage}-home-quest-lookout.png`
+  - Pet peers from a small lookout and marks one gentle quest direction.
+- `pet-{stage}-home-spark-gym.png`
+  - Pet runs a compact spark loop so hyper energy has somewhere to go.
+- `pet-{stage}-home-moon-den.png`
+  - Pet lowers the room noise, guards the streak, and settles into night watch.
+- `pet-{stage}-home-cipher-cave.png`
+  - Pet taps a tiny cipher wall until one clue glow wakes up.
+- `pet-{stage}-home-celebration-porch.png`
+  - Pet hops onto a porch and saves the day's tiny win.
+- `pet-{stage}-journal-home-rooms.png`
+  - Pet opens a home album with visited and locked rooms.
+
 ## Wishbook Sheets
 
 These support the daily "Pikachu wants something" loop. Each wish should look

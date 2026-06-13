@@ -5687,6 +5687,260 @@ enum PetAffectionGesture: Int, CaseIterable {
     }
 }
 
+enum PetHomeRoom: Int, CaseIterable {
+    case cozyNest = 1
+    case snackNook = 2
+    case studyPerch = 4
+    case questLookout = 8
+    case sparkGym = 16
+    case moonDen = 32
+    case cipherCave = 64
+    case celebrationPorch = 128
+
+    var title: String {
+        switch self {
+        case .cozyNest:
+            return "Cozy Nest"
+        case .snackNook:
+            return "Snack Nook"
+        case .studyPerch:
+            return "Study Perch"
+        case .questLookout:
+            return "Quest Lookout"
+        case .sparkGym:
+            return "Spark Gym"
+        case .moonDen:
+            return "Moon Den"
+        case .cipherCave:
+            return "Cipher Cave"
+        case .celebrationPorch:
+            return "Celebration Porch"
+        }
+    }
+
+    var shortLabel: String {
+        switch self {
+        case .cozyNest:
+            return "Nest"
+        case .snackNook:
+            return "Snack"
+        case .studyPerch:
+            return "Study"
+        case .questLookout:
+            return "Quest"
+        case .sparkGym:
+            return "Gym"
+        case .moonDen:
+            return "Moon"
+        case .cipherCave:
+            return "Cipher"
+        case .celebrationPorch:
+            return "Porch"
+        }
+    }
+
+    var action: String {
+        switch self {
+        case .cozyNest:
+            return "Visit nest"
+        case .snackNook:
+            return "Check snacks"
+        case .studyPerch:
+            return "Perch study"
+        case .questLookout:
+            return "Scan quest"
+        case .sparkGym:
+            return "Run sparks"
+        case .moonDen:
+            return "Guard moon"
+        case .cipherCave:
+            return "Check cipher"
+        case .celebrationPorch:
+            return "Celebrate"
+        }
+    }
+
+    func visitLine(stage: PetGrowthStage, feeling: PetFeeling) -> String {
+        switch self {
+        case .cozyNest:
+            return "\(stage.shortLabel) circles the nest twice, settles the blanket, and checks if the home still smells safe."
+        case .snackNook:
+            return "\(stage.shortLabel) noses through the snack nook and stores one tiny treat for later."
+        case .studyPerch:
+            return "\(stage.shortLabel) climbs to the study perch and watches the first useful minute."
+        case .questLookout:
+            return "\(stage.shortLabel) peers from the lookout and marks one gentle quest direction."
+        case .sparkGym:
+            return "\(stage.shortLabel) runs a small spark loop so \(feeling.title.lowercased()) energy has somewhere to go."
+        case .moonDen:
+            return "\(stage.shortLabel) checks the moon den, lowers the room noise, and guards the streak."
+        case .cipherCave:
+            return "\(stage.shortLabel) taps the cipher wall until one clue glow wakes up."
+        case .celebrationPorch:
+            return "\(stage.shortLabel) hops onto the porch and saves the day's tiny win."
+        }
+    }
+
+    var vital: PetCareVital {
+        switch self {
+        case .snackNook:
+            return .snack
+        case .cozyNest, .moonDen:
+            return .rest
+        case .questLookout, .sparkGym, .celebrationPorch:
+            return .play
+        case .studyPerch, .cipherCave:
+            return .focus
+        }
+    }
+
+    var moodStep: PetMoodCareStep {
+        switch self {
+        case .cozyNest, .moonDen:
+            return .rest
+        case .snackNook:
+            return .snack
+        case .studyPerch:
+            return .focus
+        case .questLookout:
+            return .adventure
+        case .sparkGym, .celebrationPorch:
+            return .play
+        case .cipherCave:
+            return .puzzle
+        }
+    }
+
+    var mood: PetMood {
+        switch self {
+        case .cozyNest:
+            return .stretch
+        case .snackNook:
+            return .snack
+        case .studyPerch:
+            return .perch
+        case .questLookout:
+            return .patrol
+        case .sparkGym, .celebrationPorch:
+            return .hyper
+        case .moonDen:
+            return .sleepGuard
+        case .cipherCave:
+            return .thinking
+        }
+    }
+
+    var sparkReward: Int {
+        switch self {
+        case .cozyNest, .snackNook:
+            return 8
+        case .studyPerch, .questLookout, .sparkGym:
+            return 10
+        case .moonDen, .cipherCave, .celebrationPorch:
+            return 12
+        }
+    }
+
+    var spriteSlug: String {
+        switch self {
+        case .cozyNest:
+            return "cozy-nest"
+        case .snackNook:
+            return "snack-nook"
+        case .studyPerch:
+            return "study-perch"
+        case .questLookout:
+            return "quest-lookout"
+        case .sparkGym:
+            return "spark-gym"
+        case .moonDen:
+            return "moon-den"
+        case .cipherCave:
+            return "cipher-cave"
+        case .celebrationPorch:
+            return "celebration-porch"
+        }
+    }
+
+    var spriteRequestName: String {
+        "pet-{stage}-home-\(spriteSlug).png"
+    }
+
+    static func count(mask: Int) -> Int {
+        allCases.filter { mask & $0.rawValue != 0 }.count
+    }
+
+    static func next(
+        hour: Int,
+        feeling: PetFeeling,
+        careNeed: PetCareNeed,
+        offeredMask: Int,
+        visitedMask: Int,
+        index: Int
+    ) -> PetHomeRoom? {
+        let unavailable = offeredMask | visitedMask
+        let remaining = allCases.filter { unavailable & $0.rawValue == 0 }
+        guard !remaining.isEmpty else { return nil }
+
+        let preferred: PetHomeRoom
+        if hour >= 21 || hour < 6 {
+            preferred = .moonDen
+        } else {
+            switch feeling {
+            case .hungry:
+                preferred = .snackNook
+            case .sleepy, .protective, .comfort:
+                preferred = .cozyNest
+            case .focused:
+                preferred = .studyPerch
+            case .curious:
+                preferred = .cipherCave
+            case .overcharged, .playful, .restless:
+                preferred = .sparkGym
+            case .proud, .celebrating, .grateful:
+                preferred = .celebrationPorch
+            case .determined:
+                preferred = .questLookout
+            case .lonely:
+                preferred = .cozyNest
+            case .bright, .eager:
+                switch careNeed {
+                case .affection, .rest:
+                    preferred = .cozyNest
+                case .study, .focus:
+                    preferred = .studyPerch
+                case .adventure:
+                    preferred = .questLookout
+                case .play:
+                    preferred = .sparkGym
+                case .puzzle:
+                    preferred = .cipherCave
+                }
+            }
+        }
+
+        if remaining.contains(preferred) {
+            return preferred
+        }
+        return remaining[index % remaining.count]
+    }
+
+    static func summary(
+        offeredMask: Int,
+        visitedMask: Int,
+        dismissedMask: Int,
+        albumMask: Int,
+        latest: PetHomeRoom?
+    ) -> String {
+        let offered = count(mask: offeredMask)
+        let visited = count(mask: visitedMask)
+        let dismissed = count(mask: dismissedMask)
+        let album = count(mask: albumMask)
+        let latestText = latest.map { "Latest \($0.title)" } ?? "home waiting"
+        return "Home \(visited)/\(allCases.count) rooms · \(offered) offered · \(dismissed) skipped · Album \(album)/\(allCases.count) · \(latestText)"
+    }
+}
+
 enum PetToy: Int, CaseIterable {
     case sparkBall = 1
     case snackBell = 2

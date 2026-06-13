@@ -444,3 +444,10 @@ The user keeps pushing for a proper digital pet, not a utility mascot.
 **Rule:** touch/care should have named gestures, proactive asks, daily
 answered/skipped state, album progress, care-vital effects, rewards, and exact
 sprite filenames. A pet should remember being cared for.
+
+## 2026-06-13 — A proper pet needs a home
+The user wants the companion to feel like a living pet with lore, growth, and
+return loops.
+**Rule:** add habitat rooms as remembered places with direct actions,
+proactive asks, daily visited/skipped state, album progress, rewards, care
+effects, and exact sprite filenames. The pet should appear to live somewhere.

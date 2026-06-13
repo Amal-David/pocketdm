@@ -381,6 +381,10 @@ The native macOS companion now has the first version of the loop:
   Victory Cuddle. The pet can ask for these proactively, the user can trigger
   them with `Bond`, and each one pays Joy/Sparks, updates vitals, fills an
   album, and names a sprite sheet.
+- Home Rooms now give the pet a habitat instead of only action buttons: Cozy
+  Nest, Snack Nook, Study Perch, Quest Lookout, Spark Gym, Moon Den, Cipher
+  Cave, and Celebration Porch. Visiting rooms rewards care, fills a Home album,
+  can be triggered with `Home`, and can appear as proactive minimized bubbles.
 - Wishbook now gives the pet daily desires: Pikachu can ask for a hello, phrase,
   quest peek, snack, rest, hyper lap, focus perch, cipher peek, upgrade dream,
   field sketch, scout wave, or night thanks, and fulfilling that wish pays care
