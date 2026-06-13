@@ -348,3 +348,11 @@ voice.
 **Rule:** direct assistant/model responses should go through the shared
 catchphrase text wrapper and forced speech preview; do not rely on a quiet
 chirp or debounced sound when the user is expecting the character to speak.
+
+## 2026-06-13 — Viral loops need a visible daily path
+The user wants the Telegram hamster-style loop, but for a proper desktop pet
+with care, lore, growth, and proactive cheer.
+**Rule:** recurring mechanics should assemble into a named daily route with
+step receipts, album progress, care-vital effects, mood-care effects, and exact
+sprite filenames; avoid leaving combo, cipher, boost, upgrade, and check-in
+actions as disconnected buttons.

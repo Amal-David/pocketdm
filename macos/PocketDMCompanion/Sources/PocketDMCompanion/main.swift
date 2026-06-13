@@ -266,6 +266,10 @@ final class DragonOverlayModel: ObservableObject {
     private static let ambientAlbumMaskKey = "PocketDMCompanion.ambientAlbumMask"
     private static let latestAmbientMomentRawKey = "PocketDMCompanion.latestAmbientMomentRaw"
     private static let lastAmbientAtKey = "PocketDMCompanion.lastAmbientAt"
+    private static let dailyRouteDateKey = "PocketDMCompanion.dailyRouteDate"
+    private static let dailyRouteMaskKey = "PocketDMCompanion.dailyRouteMask"
+    private static let routeAlbumMaskKey = "PocketDMCompanion.routeAlbumMask"
+    private static let latestRouteStepRawKey = "PocketDMCompanion.latestRouteStepRaw"
     private static let snackVitalKey = "PocketDMCompanion.snackVital"
     private static let restVitalKey = "PocketDMCompanion.restVital"
     private static let playVitalKey = "PocketDMCompanion.playVital"
@@ -390,6 +394,10 @@ final class DragonOverlayModel: ObservableObject {
     @Published var dailyAmbientMask = UserDefaults.standard.object(forKey: DragonOverlayModel.dailyAmbientMaskKey) as? Int ?? 0
     @Published var ambientAlbumMask = UserDefaults.standard.object(forKey: DragonOverlayModel.ambientAlbumMaskKey) as? Int ?? 0
     @Published var latestAmbientMomentRaw = UserDefaults.standard.object(forKey: DragonOverlayModel.latestAmbientMomentRawKey) as? Int ?? 0
+    @Published var dailyRouteDate = UserDefaults.standard.string(forKey: DragonOverlayModel.dailyRouteDateKey) ?? ""
+    @Published var dailyRouteMask = UserDefaults.standard.object(forKey: DragonOverlayModel.dailyRouteMaskKey) as? Int ?? 0
+    @Published var routeAlbumMask = UserDefaults.standard.object(forKey: DragonOverlayModel.routeAlbumMaskKey) as? Int ?? 0
+    @Published var latestRouteStepRaw = UserDefaults.standard.object(forKey: DragonOverlayModel.latestRouteStepRawKey) as? Int ?? 0
     @Published var snackVital = UserDefaults.standard.object(forKey: DragonOverlayModel.snackVitalKey) as? Int ?? DragonOverlayModel.maxVital
     @Published var restVital = UserDefaults.standard.object(forKey: DragonOverlayModel.restVitalKey) as? Int ?? DragonOverlayModel.maxVital
     @Published var playVital = UserDefaults.standard.object(forKey: DragonOverlayModel.playVitalKey) as? Int ?? DragonOverlayModel.maxVital
@@ -1148,6 +1156,37 @@ final class DragonOverlayModel: ObservableObject {
         speakPika()
     }
 
+    func playSparkRoute() {
+        let priorStage = growthStage
+        applyVitalDecay()
+        syncDailyCombo()
+        guard let step = nextRouteStep else {
+            lastRequest = "Route"
+            message = pikaText("Today's Spark Route is complete. The pet circles the board, checks every receipt, and saves the route for tomorrow.")
+            appendEmotionScene(trigger: "daily route")
+            play(.happy)
+            speakPika()
+            setMood(.hyper, duration: 1.4)
+            return
+        }
+
+        lastRequest = "Route"
+        message = pikaText(recordRouteStep(step))
+        if let comboAction = step.comboAction {
+            markCombo(comboAction)
+        }
+        recordDailyQuest(step.dailyQuest)
+        if let moodCareNote = markMoodCare(step.moodStep) {
+            message += " \(moodCareNote)"
+        }
+        appendEmotionScene(trigger: "daily route")
+        appendEvolutionNote(from: priorStage)
+        persistCare()
+        play(.happy)
+        speakPika()
+        setMood(step.mood, duration: 1.6)
+    }
+
     func playBondBoard() {
         let priorStage = growthStage
         applyVitalDecay()
@@ -1381,6 +1420,19 @@ final class DragonOverlayModel: ObservableObject {
 
     var ambientMoments: [PetAmbientMoment] {
         PetAmbientMoment.allCases
+    }
+
+    var routeLine: String {
+        PetDailyRouteStep.summary(
+            dailyMask: dailyRouteMask,
+            albumMask: routeAlbumMask,
+            route: dailyRouteSteps,
+            latest: PetDailyRouteStep(rawValue: latestRouteStepRaw)
+        )
+    }
+
+    var routeSteps: [PetDailyRouteStep] {
+        dailyRouteSteps
     }
 
     var cheerRhythmLine: String {
@@ -1647,17 +1699,37 @@ final class DragonOverlayModel: ObservableObject {
         let comboDone = dailyComboActions.filter { dailyComboMask & $0.rawValue != 0 }.count
         let questDone = dailyQuests.filter { dailyQuestMask & $0.rawValue != 0 }.count
         let bondDone = dailyBondContracts.filter { dailyBondBoardMask & $0.rawValue != 0 }.count
+        let routeDone = dailyRouteSteps.filter { dailyRouteMask & $0.rawValue != 0 }.count
         let next = nextBondContract?.title ?? nextDailyQuest?.title ?? "Board clear"
-        return "Combo \(comboDone)/\(dailyComboActions.count) · Tasks \(questDone)/\(dailyQuests.count) · Bonds \(bondDone)/\(dailyBondContracts.count) · Next \(next)"
+        return "Route \(routeDone)/\(dailyRouteSteps.count) · Combo \(comboDone)/\(dailyComboActions.count) · Tasks \(questDone)/\(dailyQuests.count) · Bonds \(bondDone)/\(dailyBondContracts.count) · Next \(next)"
     }
 
     var journalRitualProgress: Double {
         let comboDone = dailyComboActions.filter { dailyComboMask & $0.rawValue != 0 }.count
         let questDone = dailyQuests.filter { dailyQuestMask & $0.rawValue != 0 }.count
         let bondDone = dailyBondContracts.filter { dailyBondBoardMask & $0.rawValue != 0 }.count
-        let total = dailyComboActions.count + dailyQuests.count + dailyBondContracts.count + dailyEvent.requiredSteps
-        let done = comboDone + questDone + bondDone + min(dailyEventProgress, dailyEvent.requiredSteps)
+        let routeDone = dailyRouteSteps.filter { dailyRouteMask & $0.rawValue != 0 }.count
+        let total = dailyRouteSteps.count + dailyComboActions.count + dailyQuests.count + dailyBondContracts.count + dailyEvent.requiredSteps
+        let done = routeDone + comboDone + questDone + bondDone + min(dailyEventProgress, dailyEvent.requiredSteps)
         return total == 0 ? 0 : Double(done) / Double(total)
+    }
+
+    var journalRouteProgress: Double {
+        let route = dailyRouteSteps
+        let done = route.filter { dailyRouteMask & $0.rawValue != 0 }.count
+        return Double(done) / Double(max(1, route.count))
+    }
+
+    var journalRouteCaption: String {
+        routeLine
+    }
+
+    var journalRouteSpriteLine: String {
+        let latest = PetDailyRouteStep(rawValue: latestRouteStepRaw)
+        let next = dailyRouteSteps.first { dailyRouteMask & $0.rawValue == 0 }
+            ?? latest
+            ?? .wakeSpark
+        return "Route sprite: \(next.spriteRequestName.replacingOccurrences(of: "{stage}", with: growthStage.assetSlug))"
     }
 
     var journalBondBoardProgress: Double {
@@ -1986,6 +2058,10 @@ final class DragonOverlayModel: ObservableObject {
         UserDefaults.standard.set(ambientAlbumMask, forKey: Self.ambientAlbumMaskKey)
         UserDefaults.standard.set(latestAmbientMomentRaw, forKey: Self.latestAmbientMomentRawKey)
         UserDefaults.standard.set(lastAmbientAt, forKey: Self.lastAmbientAtKey)
+        UserDefaults.standard.set(dailyRouteDate, forKey: Self.dailyRouteDateKey)
+        UserDefaults.standard.set(dailyRouteMask, forKey: Self.dailyRouteMaskKey)
+        UserDefaults.standard.set(routeAlbumMask, forKey: Self.routeAlbumMaskKey)
+        UserDefaults.standard.set(latestRouteStepRaw, forKey: Self.latestRouteStepRawKey)
         UserDefaults.standard.set(snackVital, forKey: Self.snackVitalKey)
         UserDefaults.standard.set(restVital, forKey: Self.restVitalKey)
         UserDefaults.standard.set(playVital, forKey: Self.playVitalKey)
@@ -2183,6 +2259,14 @@ final class DragonOverlayModel: ObservableObject {
 
     func isAmbientMomentUnlocked(_ moment: PetAmbientMoment) -> Bool {
         ambientAlbumMask & moment.rawValue != 0
+    }
+
+    func isRouteStepDone(_ step: PetDailyRouteStep) -> Bool {
+        dailyRouteMask & step.rawValue != 0
+    }
+
+    func isRouteStepUnlocked(_ step: PetDailyRouteStep) -> Bool {
+        routeAlbumMask & step.rawValue != 0
     }
 
     private func setVital(_ vital: PetCareVital, value: Int) {
@@ -2468,6 +2552,8 @@ final class DragonOverlayModel: ObservableObject {
             return .proud
         case "ambient":
             return .comfort
+        case "daily route":
+            return .determined
         default:
             return petFeeling
         }
@@ -2602,6 +2688,11 @@ final class DragonOverlayModel: ObservableObject {
         if dailyAmbientDate != today {
             dailyAmbientDate = today
             dailyAmbientMask = 0
+            changed = true
+        }
+        if dailyRouteDate != today {
+            dailyRouteDate = today
+            dailyRouteMask = 0
             changed = true
         }
         if dailyComboDate != today {
@@ -2935,6 +3026,49 @@ final class DragonOverlayModel: ObservableObject {
         return notes.joined(separator: " ")
     }
 
+    private func recordRouteStep(_ step: PetDailyRouteStep) -> String {
+        syncDailyCombo()
+        latestRouteStepRaw = step.rawValue
+        let wasDone = dailyRouteMask & step.rawValue != 0
+        let wasAlbumUnlocked = routeAlbumMask & step.rawValue != 0
+        let wasComplete = isDailyRouteComplete
+        dailyRouteMask |= step.rawValue
+        routeAlbumMask |= step.rawValue
+
+        guard !wasDone else {
+            persistCare()
+            return "\(step.title) is already on today's Spark Route. \(step.rewardLine)"
+        }
+
+        let reward = step.sparkReward + min(5, sparkLevel)
+        sparkDust = min(999, sparkDust + reward)
+        happiness = min(5, happiness + 1)
+        let done = dailyRouteSteps.filter { dailyRouteMask & $0.rawValue != 0 }.count
+        var notes = [
+            "\(step.title) \(done)/\(dailyRouteSteps.count): \(step.actionLine). \(step.rewardLine) Joy +1, Sparks +\(reward)."
+        ]
+        if !wasAlbumUnlocked {
+            notes.append("Route album unlocked: \(step.shortLabel).")
+        }
+        if let vitalNote = refillVital(step.vital, by: wasAlbumUnlocked ? 1 : 2) {
+            notes.append(vitalNote)
+        }
+        if !wasComplete, isDailyRouteComplete {
+            companionHP = min(10, companionHP + 1)
+            let completeReward = 24 + sparkLevel * 2
+            sparkDust = min(999, sparkDust + completeReward)
+            notes.append("Spark Route complete: Bond HP +1 and Sparks +\(completeReward).")
+            if let charmNote = unlockCharm(.sparkRoute) {
+                notes.append(charmNote)
+            }
+            play(.happy)
+            setMood(.hyper, duration: 1.9)
+        }
+
+        persistCare()
+        return notes.joined(separator: " ")
+    }
+
     private func markCombo(_ action: PetComboAction) {
         syncDailyCombo()
         let wasComplete = isDailyComboComplete
@@ -3042,6 +3176,10 @@ final class DragonOverlayModel: ObservableObject {
         dailyBondContracts.allSatisfy { dailyBondBoardMask & $0.rawValue != 0 }
     }
 
+    private var isDailyRouteComplete: Bool {
+        dailyRouteSteps.allSatisfy { dailyRouteMask & $0.rawValue != 0 }
+    }
+
     private var isLifeSceneStageComplete: Bool {
         currentLifeScenes.allSatisfy { lifeSceneMask & $0.rawValue != 0 }
     }
@@ -3077,6 +3215,14 @@ final class DragonOverlayModel: ObservableObject {
 
     private var nextBondContract: PetBondContract? {
         dailyBondContracts.first { dailyBondBoardMask & $0.rawValue == 0 }
+    }
+
+    private var dailyRouteSteps: [PetDailyRouteStep] {
+        PetDailyRouteStep.dailyRoute(for: dailyRouteDate.isEmpty ? Self.dayFormatter.string(from: Date()) : dailyRouteDate)
+    }
+
+    private var nextRouteStep: PetDailyRouteStep? {
+        dailyRouteSteps.first { dailyRouteMask & $0.rawValue == 0 }
     }
 
     private var nextLifeScene: PetLifeScene? {
@@ -3744,6 +3890,11 @@ struct DragonOverlayView: View {
                             Button("Hint") { Task { await model.ask("hint") } }
                                 .buttonStyle(DragonButtonStyle(kind: .secondary))
                                 .disabled(model.busy)
+                            Button("Route") {
+                                model.playSparkRoute()
+                            }
+                            .buttonStyle(DragonButtonStyle(kind: .secondary))
+                            .disabled(model.busy)
                             Button("Upgrade") {
                                 model.buyNextUpgrade()
                             }
@@ -4197,6 +4348,9 @@ struct PetJournalPanel: View {
             artLine(model.journalCharmSpriteLine)
         case .rituals:
             journalHero("Today's Ritual", value: model.journalRitualProgress, caption: model.journalRitualCaption)
+            journalHero("Spark Route", value: model.journalRouteProgress, caption: model.journalRouteCaption)
+            sparkRouteGrid
+            artLine(model.journalRouteSpriteLine)
             detailLine(model.needLine)
             detailLine(model.comboLine)
             detailLine(model.taskLine)
@@ -4414,6 +4568,16 @@ struct PetJournalPanel: View {
                 let today = model.isAmbientMomentSeenToday(moment)
                 let unlocked = model.isAmbientMomentUnlocked(moment)
                 journalChip("\(moment.shortLabel)\(today ? " ✓" : "")", isUnlocked: unlocked || today)
+            }
+        }
+    }
+
+    private var sparkRouteGrid: some View {
+        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 4), count: 3), spacing: 3) {
+            ForEach(model.routeSteps, id: \.rawValue) { step in
+                let done = model.isRouteStepDone(step)
+                let unlocked = model.isRouteStepUnlocked(step)
+                journalChip("\(step.shortLabel)\(done ? " ✓" : "")", isUnlocked: done || unlocked)
             }
         }
     }

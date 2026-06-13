@@ -1894,6 +1894,298 @@ enum PetBondContract: Int, CaseIterable {
     }
 }
 
+enum PetDailyRouteStep: Int, CaseIterable {
+    case wakeSpark = 1
+    case careTap = 2
+    case snackStash = 4
+    case focusPerch = 8
+    case lessonSpark = 16
+    case questTrail = 32
+    case cipherPulse = 64
+    case upgradePolish = 128
+    case cheerCall = 256
+    case boostRush = 512
+    case ambientPatrol = 1024
+    case bedtimeNest = 2048
+
+    static func dailyRoute(for dateKey: String) -> [PetDailyRouteStep] {
+        let seed = dateKey.unicodeScalars.reduce(0) { $0 + Int($1.value) }
+        let routes: [[PetDailyRouteStep]] = [
+            [.wakeSpark, .careTap, .focusPerch, .lessonSpark, .cheerCall, .bedtimeNest],
+            [.wakeSpark, .snackStash, .questTrail, .cipherPulse, .boostRush, .ambientPatrol],
+            [.careTap, .lessonSpark, .upgradePolish, .focusPerch, .questTrail, .bedtimeNest],
+            [.wakeSpark, .cheerCall, .snackStash, .cipherPulse, .ambientPatrol, .boostRush],
+            [.careTap, .focusPerch, .questTrail, .upgradePolish, .cheerCall, .bedtimeNest],
+            [.wakeSpark, .lessonSpark, .cipherPulse, .boostRush, .ambientPatrol, .snackStash]
+        ]
+        return routes[seed % routes.count]
+    }
+
+    var title: String {
+        switch self {
+        case .wakeSpark:
+            return "Wake Spark"
+        case .careTap:
+            return "Care Tap"
+        case .snackStash:
+            return "Snack Stash"
+        case .focusPerch:
+            return "Focus Perch"
+        case .lessonSpark:
+            return "Lesson Spark"
+        case .questTrail:
+            return "Quest Trail"
+        case .cipherPulse:
+            return "Cipher Pulse"
+        case .upgradePolish:
+            return "Upgrade Polish"
+        case .cheerCall:
+            return "Cheer Call"
+        case .boostRush:
+            return "Boost Rush"
+        case .ambientPatrol:
+            return "Ambient Patrol"
+        case .bedtimeNest:
+            return "Bedtime Nest"
+        }
+    }
+
+    var shortLabel: String {
+        switch self {
+        case .wakeSpark:
+            return "Wake"
+        case .careTap:
+            return "Care"
+        case .snackStash:
+            return "Snack"
+        case .focusPerch:
+            return "Focus"
+        case .lessonSpark:
+            return "Lesson"
+        case .questTrail:
+            return "Quest"
+        case .cipherPulse:
+            return "Cipher"
+        case .upgradePolish:
+            return "Polish"
+        case .cheerCall:
+            return "Cheer"
+        case .boostRush:
+            return "Boost"
+        case .ambientPatrol:
+            return "Patrol"
+        case .bedtimeNest:
+            return "Nest"
+        }
+    }
+
+    var actionLine: String {
+        switch self {
+        case .wakeSpark:
+            return "wake the pet and let it find you"
+        case .careTap:
+            return "give one visible care tap"
+        case .snackStash:
+            return "check the tiny snack stash"
+        case .focusPerch:
+            return "let it perch beside one task"
+        case .lessonSpark:
+            return "practice one phrase together"
+        case .questTrail:
+            return "open the next adventure trail"
+        case .cipherPulse:
+            return "solve one tiny daily secret"
+        case .upgradePolish:
+            return "polish one kit card"
+        case .cheerCall:
+            return "answer or save one check-in"
+        case .boostRush:
+            return "claim the daily spark rush"
+        case .ambientPatrol:
+            return "watch it do one desk patrol"
+        case .bedtimeNest:
+            return "close with a quiet nest moment"
+        }
+    }
+
+    var rewardLine: String {
+        switch self {
+        case .wakeSpark:
+            return "The first look becomes today's anchor."
+        case .careTap:
+            return "Affection turns into a clean bond receipt."
+        case .snackStash:
+            return "A full stash keeps the pet from feeling ignored."
+        case .focusPerch:
+            return "The desk becomes safer for one small task."
+        case .lessonSpark:
+            return "A phrase becomes part of the shared routine."
+        case .questTrail:
+            return "The map gains one bright breadcrumb."
+        case .cipherPulse:
+            return "A secret word gets tucked into the journal."
+        case .upgradePolish:
+            return "The kit feels maintained, not merely purchased."
+        case .cheerCall:
+            return "The check-in becomes relationship memory."
+        case .boostRush:
+            return "The day gets a controlled energy burst."
+        case .ambientPatrol:
+            return "The idle animation earns story value."
+        case .bedtimeNest:
+            return "The pet learns that closing gently counts."
+        }
+    }
+
+    var sparkReward: Int {
+        switch self {
+        case .wakeSpark, .careTap, .snackStash, .bedtimeNest:
+            return 6
+        case .focusPerch, .lessonSpark, .cheerCall, .ambientPatrol:
+            return 8
+        case .questTrail, .cipherPulse, .upgradePolish, .boostRush:
+            return 10
+        }
+    }
+
+    var vital: PetCareVital {
+        switch self {
+        case .wakeSpark, .careTap, .snackStash:
+            return .snack
+        case .bedtimeNest:
+            return .rest
+        case .questTrail, .cheerCall, .boostRush, .ambientPatrol:
+            return .play
+        case .focusPerch, .lessonSpark, .cipherPulse, .upgradePolish:
+            return .focus
+        }
+    }
+
+    var moodStep: PetMoodCareStep {
+        switch self {
+        case .wakeSpark, .careTap:
+            return .soothe
+        case .snackStash:
+            return .snack
+        case .focusPerch, .upgradePolish:
+            return .focus
+        case .lessonSpark:
+            return .study
+        case .questTrail, .ambientPatrol:
+            return .adventure
+        case .cipherPulse:
+            return .puzzle
+        case .cheerCall:
+            return .cheer
+        case .boostRush:
+            return .play
+        case .bedtimeNest:
+            return .rest
+        }
+    }
+
+    var mood: PetMood {
+        switch self {
+        case .wakeSpark:
+            return .look
+        case .careTap, .snackStash, .lessonSpark, .cheerCall:
+            return .happy
+        case .focusPerch, .upgradePolish:
+            return .perch
+        case .questTrail, .ambientPatrol:
+            return .patrol
+        case .cipherPulse:
+            return .thinking
+        case .boostRush:
+            return .hyper
+        case .bedtimeNest:
+            return .nap
+        }
+    }
+
+    var comboAction: PetComboAction? {
+        switch self {
+        case .wakeSpark, .careTap, .snackStash, .bedtimeNest:
+            return .pet
+        case .focusPerch, .cheerCall:
+            return nil
+        case .lessonSpark:
+            return .learn
+        case .questTrail:
+            return .open
+        case .cipherPulse:
+            return .cipher
+        case .upgradePolish:
+            return .upgrade
+        case .boostRush:
+            return .boost
+        case .ambientPatrol:
+            return .hyper
+        }
+    }
+
+    var dailyQuest: PetDailyQuest {
+        switch self {
+        case .wakeSpark, .careTap, .snackStash, .bedtimeNest:
+            return .care
+        case .focusPerch, .cheerCall:
+            return .cheer
+        case .lessonSpark:
+            return .learn
+        case .questTrail, .ambientPatrol:
+            return .adventure
+        case .cipherPulse:
+            return .cipher
+        case .upgradePolish:
+            return .upgrade
+        case .boostRush:
+            return .boost
+        }
+    }
+
+    var spriteRequestName: String {
+        switch self {
+        case .wakeSpark:
+            return "pet-{stage}-route-wake-spark.png"
+        case .careTap:
+            return "pet-{stage}-route-care-tap.png"
+        case .snackStash:
+            return "pet-{stage}-route-snack-stash.png"
+        case .focusPerch:
+            return "pet-{stage}-route-focus-perch.png"
+        case .lessonSpark:
+            return "pet-{stage}-route-lesson-spark.png"
+        case .questTrail:
+            return "pet-{stage}-route-quest-trail.png"
+        case .cipherPulse:
+            return "pet-{stage}-route-cipher-pulse.png"
+        case .upgradePolish:
+            return "pet-{stage}-route-upgrade-polish.png"
+        case .cheerCall:
+            return "pet-{stage}-route-cheer-call.png"
+        case .boostRush:
+            return "pet-{stage}-route-boost-rush.png"
+        case .ambientPatrol:
+            return "pet-{stage}-route-ambient-patrol.png"
+        case .bedtimeNest:
+            return "pet-{stage}-route-bedtime-nest.png"
+        }
+    }
+
+    static func count(mask: Int) -> Int {
+        allCases.filter { mask & $0.rawValue != 0 }.count
+    }
+
+    static func summary(dailyMask: Int, albumMask: Int, route: [PetDailyRouteStep], latest: PetDailyRouteStep?) -> String {
+        let done = route.filter { dailyMask & $0.rawValue != 0 }.count
+        let album = count(mask: albumMask)
+        let next = route.first { dailyMask & $0.rawValue == 0 }
+        let nextText = next.map { "Next \($0.title)" } ?? "Route complete"
+        let latestText = latest.map { "Latest \($0.title)" } ?? "fresh route"
+        return "Spark Route \(done)/\(route.count) today · Album \(album)/\(allCases.count) · \(nextText) · \(latestText)"
+    }
+}
+
 struct PetDailyCipher {
     let clue: String
     let answer: String
@@ -2618,6 +2910,7 @@ enum PetCareCharm: Int, CaseIterable {
     case upgradeCard = 512
     case weeklyTrail = 1024
     case vitalGlow = 2048
+    case sparkRoute = 4096
 
     var title: String {
         switch self {
@@ -2645,6 +2938,8 @@ enum PetCareCharm: Int, CaseIterable {
             return "Weekly Trail"
         case .vitalGlow:
             return "Vital Glow"
+        case .sparkRoute:
+            return "Spark Route"
         }
     }
 
@@ -2674,6 +2969,8 @@ enum PetCareCharm: Int, CaseIterable {
             return "Wk"
         case .vitalGlow:
             return "All"
+        case .sparkRoute:
+            return "Rt"
         }
     }
 
@@ -2703,6 +3000,8 @@ enum PetCareCharm: Int, CaseIterable {
             return "It can see the week becoming a path."
         case .vitalGlow:
             return "All four care vitals glowed at once."
+        case .sparkRoute:
+            return "It finished a full daily route without pressure."
         }
     }
 
@@ -2732,6 +3031,8 @@ enum PetCareCharm: Int, CaseIterable {
             return "pet-{stage}-charm-weekly-trail.png"
         case .vitalGlow:
             return "pet-{stage}-charm-vital-glow.png"
+        case .sparkRoute:
+            return "pet-{stage}-charm-spark-route.png"
         }
     }
 

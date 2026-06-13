@@ -654,6 +654,39 @@ After the buddy form works, repeat the stage matrix for:
 - `pet-{stage}-ambient-journal-peek.png`
 - `pet-{stage}-journal-ambient-life.png`
 
+### Batch 20: Daily Spark Route
+
+Generate these as route/progression sheets for each growth stage:
+
+- `pet-{stage}-route-wake-spark.png`
+  - Looks down, looks up, finds the user, and starts the daily path.
+- `pet-{stage}-route-care-tap.png`
+  - Receives one care tap and turns it into a visible bond receipt.
+- `pet-{stage}-route-snack-stash.png`
+  - Checks a tiny snack stash and relaxes when it is full.
+- `pet-{stage}-route-focus-perch.png`
+  - Perches beside a task like a calm desk companion.
+- `pet-{stage}-route-lesson-spark.png`
+  - Repeats one language phrase and saves the sound as a spark.
+- `pet-{stage}-route-quest-trail.png`
+  - Points toward a small adventure breadcrumb.
+- `pet-{stage}-route-cipher-pulse.png`
+  - Solves or protects one secret daily word.
+- `pet-{stage}-route-upgrade-polish.png`
+  - Polishes one kit/card upgrade and looks proud of maintenance.
+- `pet-{stage}-route-cheer-call.png`
+  - Pops into a proactive check-in and waits warmly for an answer.
+- `pet-{stage}-route-boost-rush.png`
+  - Claims a controlled spark boost without looking frantic.
+- `pet-{stage}-route-ambient-patrol.png`
+  - Makes one tiny desk patrol, turning idle animation into story progress.
+- `pet-{stage}-route-bedtime-nest.png`
+  - Curls into a quiet close-of-day nest moment.
+- `pet-{stage}-charm-spark-route.png`
+  - One collectible charm for completing the whole daily Spark Route.
+- `pet-{stage}-journal-spark-route.png`
+  - Journal view showing today's route, completed beats, and next step.
+
 ## Growth Stages
 
 Each stage should share the same personality but visibly grow:
@@ -1367,6 +1400,12 @@ These are for the progression layer:
 - Cipher Stone daily-puzzle upgrade.
 - Daily task board complete.
 - Daily task board almost complete.
+- Daily Spark Route opened.
+- Daily Spark Route step ready.
+- Daily Spark Route step completed.
+- Daily Spark Route album updated.
+- Daily Spark Route complete.
+- Spark Route charm unlocked.
 - Bond Board opened.
 - Bond Board contract ready.
 - Bond Board contract accepted.

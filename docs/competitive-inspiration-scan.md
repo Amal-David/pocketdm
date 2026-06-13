@@ -267,6 +267,9 @@ The native macOS companion now has the first version of the loop:
 - A Care Charms album now unlocks collectible keepsakes for hello, snack care,
   study, adventure, rest, play, focus, cipher, event, upgrade, weekly trail,
   and all-vitals-glowing moments.
+- Spark Route now adds a six-step daily path drawn from twelve possible route
+  beats, feeds combo/tasks/vitals/mood care, pays a completion reward, unlocks a
+  route charm, and surfaces exact sprite filenames in the Ritual journal.
 - A Life button now unlocks stage-specific life scenes for the current growth
   form, rewards Joy/Sparks, refills the matching vital, advances Mood Care, and
   surfaces the next life-scene sprite request in the Growth journal.
