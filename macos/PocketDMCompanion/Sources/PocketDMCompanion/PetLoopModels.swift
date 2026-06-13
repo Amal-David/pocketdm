@@ -5941,6 +5941,294 @@ enum PetHomeRoom: Int, CaseIterable {
     }
 }
 
+enum PetUserCheckIn: Int, CaseIterable {
+    case bright = 1
+    case tired = 2
+    case stuck = 4
+    case overwhelmed = 8
+    case lonely = 16
+    case proud = 32
+    case focused = 64
+    case needBreak = 128
+
+    var title: String {
+        switch self {
+        case .bright:
+            return "Bright Check"
+        case .tired:
+            return "Tired Check"
+        case .stuck:
+            return "Stuck Check"
+        case .overwhelmed:
+            return "Too Much Check"
+        case .lonely:
+            return "Company Check"
+        case .proud:
+            return "Proud Check"
+        case .focused:
+            return "Focus Check"
+        case .needBreak:
+            return "Break Check"
+        }
+    }
+
+    var shortLabel: String {
+        switch self {
+        case .bright:
+            return "Bright"
+        case .tired:
+            return "Tired"
+        case .stuck:
+            return "Stuck"
+        case .overwhelmed:
+            return "Full"
+        case .lonely:
+            return "Company"
+        case .proud:
+            return "Proud"
+        case .focused:
+            return "Focus"
+        case .needBreak:
+            return "Break"
+        }
+    }
+
+    var action: String {
+        switch self {
+        case .bright:
+            return "Save bright"
+        case .tired:
+            return "Save tired"
+        case .stuck:
+            return "Save stuck"
+        case .overwhelmed:
+            return "Save too much"
+        case .lonely:
+            return "Save company"
+        case .proud:
+            return "Save proud"
+        case .focused:
+            return "Save focus"
+        case .needBreak:
+            return "Save break"
+        }
+    }
+
+    func body(stage: PetGrowthStage, feeling: PetFeeling) -> String {
+        switch self {
+        case .bright:
+            return "How are you doing? \(stage.shortLabel) sees a bright spark and wants to save it before the day runs past."
+        case .tired:
+            return "How are you doing? If you are tired, \(stage.shortLabel) can lower the noise and guard one softer step."
+        case .stuck:
+            return "What is happening? \(stage.shortLabel) tilts its head at the stuck point and waits beside the first small clue."
+        case .overwhelmed:
+            return "How are you doing? If everything feels too much, \(stage.shortLabel) can shrink this to one breath and one next tap."
+        case .lonely:
+            return "How are you doing? \(stage.shortLabel) steps closer and keeps tiny company instead of asking you to explain everything."
+        case .proud:
+            return "How are you doing? \(stage.shortLabel) noticed a proud signal in your \(feeling.title.lowercased()) rhythm and wants to mark it."
+        case .focused:
+            return "What is happening? \(stage.shortLabel) can sit beside one focus minute and keep the next task warm."
+        case .needBreak:
+            return "How are you doing? \(stage.shortLabel) sees the sparks running fast and asks for a tiny break before the next push."
+        }
+    }
+
+    var supportLine: String {
+        switch self {
+        case .bright:
+            return "The bright check goes into the trail as proof the day started with a spark."
+        case .tired:
+            return "The tired check tells the pet to protect rest before pushing."
+        case .stuck:
+            return "The stuck check turns the block into a smaller clue instead of a failure."
+        case .overwhelmed:
+            return "The too-much check trims the next loop down to one safe step."
+        case .lonely:
+            return "The company check teaches the pet to stay close for a while."
+        case .proud:
+            return "The proud check stores the win so it can be celebrated later."
+        case .focused:
+            return "The focus check parks the pet beside the next useful minute."
+        case .needBreak:
+            return "The break check spends a spark on softness before momentum burns out."
+        }
+    }
+
+    var vital: PetCareVital {
+        switch self {
+        case .bright, .proud:
+            return .play
+        case .tired, .overwhelmed, .needBreak:
+            return .rest
+        case .stuck, .focused:
+            return .focus
+        case .lonely:
+            return .snack
+        }
+    }
+
+    var careNeed: PetCareNeed {
+        switch self {
+        case .bright, .proud:
+            return .play
+        case .tired, .overwhelmed, .needBreak:
+            return .rest
+        case .stuck:
+            return .puzzle
+        case .lonely:
+            return .affection
+        case .focused:
+            return .focus
+        }
+    }
+
+    var moodStep: PetMoodCareStep {
+        switch self {
+        case .bright, .proud:
+            return .cheer
+        case .tired, .needBreak:
+            return .rest
+        case .stuck:
+            return .puzzle
+        case .overwhelmed, .lonely:
+            return .soothe
+        case .focused:
+            return .focus
+        }
+    }
+
+    var mood: PetMood {
+        switch self {
+        case .bright, .proud:
+            return .happy
+        case .tired:
+            return .nap
+        case .stuck:
+            return .thinking
+        case .overwhelmed:
+            return .stretch
+        case .lonely:
+            return .look
+        case .focused:
+            return .perch
+        case .needBreak:
+            return .sleepGuard
+        }
+    }
+
+    var sparkReward: Int {
+        switch self {
+        case .bright, .focused:
+            return 8
+        case .tired, .stuck, .lonely:
+            return 10
+        case .overwhelmed, .needBreak:
+            return 12
+        case .proud:
+            return 14
+        }
+    }
+
+    var spriteSlug: String {
+        switch self {
+        case .bright:
+            return "bright"
+        case .tired:
+            return "tired"
+        case .stuck:
+            return "stuck"
+        case .overwhelmed:
+            return "overwhelmed"
+        case .lonely:
+            return "lonely"
+        case .proud:
+            return "proud"
+        case .focused:
+            return "focused"
+        case .needBreak:
+            return "need-break"
+        }
+    }
+
+    var spriteRequestName: String {
+        "pet-{stage}-user-check-\(spriteSlug).png"
+    }
+
+    static func count(mask: Int) -> Int {
+        allCases.filter { mask & $0.rawValue != 0 }.count
+    }
+
+    static func next(
+        daypart: PetDaypartNudge,
+        feeling: PetFeeling,
+        careNeed: PetCareNeed,
+        offeredMask: Int,
+        answeredMask: Int,
+        index: Int
+    ) -> PetUserCheckIn? {
+        let unavailable = offeredMask | answeredMask
+        let remaining = allCases.filter { unavailable & $0.rawValue == 0 }
+        guard !remaining.isEmpty else { return nil }
+
+        let preferred: PetUserCheckIn
+        if daypart == .night {
+            preferred = .tired
+        } else {
+            switch feeling {
+            case .sleepy, .hungry:
+                preferred = .tired
+            case .focused:
+                preferred = .focused
+            case .determined, .curious:
+                preferred = .stuck
+            case .overcharged, .restless:
+                preferred = .needBreak
+            case .lonely, .comfort:
+                preferred = .lonely
+            case .proud, .celebrating, .grateful:
+                preferred = .proud
+            case .playful, .bright, .eager:
+                switch careNeed {
+                case .rest:
+                    preferred = .tired
+                case .focus, .study:
+                    preferred = .focused
+                case .puzzle, .adventure:
+                    preferred = .stuck
+                case .affection:
+                    preferred = .lonely
+                case .play:
+                    preferred = .bright
+                }
+            case .protective:
+                preferred = .needBreak
+            }
+        }
+
+        if remaining.contains(preferred) {
+            return preferred
+        }
+        return remaining[index % remaining.count]
+    }
+
+    static func summary(
+        offeredMask: Int,
+        answeredMask: Int,
+        dismissedMask: Int,
+        albumMask: Int,
+        latest: PetUserCheckIn?
+    ) -> String {
+        let offered = count(mask: offeredMask)
+        let answered = count(mask: answeredMask)
+        let dismissed = count(mask: dismissedMask)
+        let album = count(mask: albumMask)
+        let latestText = latest.map { "Latest \($0.title)" } ?? "waiting to ask"
+        return "User Check \(answered)/\(allCases.count) answered · \(offered) asked · \(dismissed) skipped · Album \(album)/\(allCases.count) · \(latestText)"
+    }
+}
+
 enum PetToy: Int, CaseIterable {
     case sparkBall = 1
     case snackBell = 2

@@ -214,6 +214,9 @@ The new layer should add:
 - A daily Bond Board: four rotating care contracts inspired by daily
   combo/cipher/upgrade retention loops, but expressed as care, study, focus,
   rest, story, and adventure rituals instead of finance mechanics.
+- User check-ins that ask "how are you doing?" and save answers such as bright,
+  tired, stuck, overwhelmed, lonely, proud, focused, and need-break as daily
+  care receipts with Joy, Sparks, vitals, and album progress.
 - A journal/album view that pulls progress out of the cramped status stack and
   makes growth, moods, memories, badges, rituals, upgrade cards, and next sprite
   needs readable.

@@ -512,7 +512,19 @@ consistent:
 - `pet-buddy-proactive-intent-care-ritual.png`
 - `pet-buddy-journal-checkin-types.png`
 
-### Batch 14: Stage Life Scenes
+### Batch 14: User Check-in States
+
+- `pet-buddy-user-check-bright.png`
+- `pet-buddy-user-check-tired.png`
+- `pet-buddy-user-check-stuck.png`
+- `pet-buddy-user-check-overwhelmed.png`
+- `pet-buddy-user-check-lonely.png`
+- `pet-buddy-user-check-proud.png`
+- `pet-buddy-user-check-focused.png`
+- `pet-buddy-user-check-need-break.png`
+- `pet-buddy-journal-user-checkins.png`
+
+### Batch 15: Stage Life Scenes
 
 - `pet-tiny-spark-life-first-look.png`
 - `pet-tiny-spark-life-desk-nest.png`
@@ -1691,6 +1703,32 @@ room and growth stage:
   - Pet hops onto a porch and saves the day's tiny win.
 - `pet-{stage}-journal-home-rooms.png`
   - Pet opens a home album with visited and locked rooms.
+
+## User Check-in Sheets
+
+These support the pet asking the user "How are you doing?" and remembering the
+answer as an emotional care receipt. Each state needs a 12-frame transparent
+strip per growth stage, with the pet reacting to the user's state rather than
+performing generic happiness:
+
+- `pet-{stage}-user-check-bright.png`
+  - Pet catches a bright spark, smiles at the user, and stores it carefully.
+- `pet-{stage}-user-check-tired.png`
+  - Pet lowers the noise, softens its posture, and guards a tiny rest moment.
+- `pet-{stage}-user-check-stuck.png`
+  - Pet tilts its head, studies a small invisible block, and points to one clue.
+- `pet-{stage}-user-check-overwhelmed.png`
+  - Pet shrinks a big swirl into one small safe step with calm eyes.
+- `pet-{stage}-user-check-lonely.png`
+  - Pet steps closer, sits beside the user, and keeps quiet company.
+- `pet-{stage}-user-check-proud.png`
+  - Pet notices a small win, holds it like a spark charm, and celebrates gently.
+- `pet-{stage}-user-check-focused.png`
+  - Pet perches beside an invisible task and watches the first useful minute.
+- `pet-{stage}-user-check-need-break.png`
+  - Pet sees fast sparks, invites a tiny pause, then settles into a calmer loop.
+- `pet-{stage}-journal-user-checkins.png`
+  - Pet opens a user check-in album with answered and locked emotional states.
 
 ## Wishbook Sheets
 

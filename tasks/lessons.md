@@ -451,3 +451,10 @@ return loops.
 **Rule:** add habitat rooms as remembered places with direct actions,
 proactive asks, daily visited/skipped state, album progress, rewards, care
 effects, and exact sprite filenames. The pet should appear to live somewhere.
+
+## 2026-06-13 — Cheer should remember the user too
+The user wants proactive "how are you doing?" moments, not just pet-state
+notifications.
+**Rule:** user check-ins should have named emotional states, direct and
+proactive entry points, daily answered/skipped state, album proof, rewards,
+care-vital effects, visible feedback, and exact sprite filenames.
