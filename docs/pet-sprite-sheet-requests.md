@@ -1605,6 +1605,38 @@ needs a 12-frame transparent strip for every growth stage:
 - `pet-{stage}-journal-scout-trips.png`
   - Pet presents a tiny scout album with found-object badges.
 
+## Wishbook Sheets
+
+These support the daily "Pikachu wants something" loop. Each wish should look
+like a small desire being expressed, not a generic button state:
+
+- `pet-{stage}-wish-hello-pat.png`
+  - Pet leans in, asks for a clear hello, and brightens after attention.
+- `pet-{stage}-wish-phrase-repeat.png`
+  - Pet listens to one phrase, repeats it, and nods proudly.
+- `pet-{stage}-wish-tiny-quest.png`
+  - Pet peeks toward a quest marker with cautious curiosity.
+- `pet-{stage}-wish-snack-share.png`
+  - Pet holds or discovers a tiny snack spark.
+- `pet-{stage}-wish-rest-nest.png`
+  - Pet settles into a soft nest and makes rest feel earned.
+- `pet-{stage}-wish-hyper-lap.png`
+  - Pet runs one excited little lap with cheek sparks.
+- `pet-{stage}-wish-focus-perch.png`
+  - Pet perches beside an invisible task and watches calmly.
+- `pet-{stage}-wish-cipher-peek.png`
+  - Pet studies a small puzzle/cipher glint with a thinking face.
+- `pet-{stage}-wish-upgrade-dream.png`
+  - Pet dreams over a small upgrade card or charm shape.
+- `pet-{stage}-wish-field-sketch.png`
+  - Pet sketches a found-object field note for the album.
+- `pet-{stage}-wish-scout-wave.png`
+  - Pet waves at the scout path before or after an expedition.
+- `pet-{stage}-wish-night-thanks.png`
+  - Pet gives a soft night thank-you before guarding the desk.
+- `pet-{stage}-journal-wishbook.png`
+  - Pet presents a tiny wish album with fulfilled-wish stickers.
+
 ## Language Coach Sheets
 
 Spanish and Mandarin lessons need teaching-specific reactions:

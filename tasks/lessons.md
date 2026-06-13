@@ -386,3 +386,10 @@ button.
 collect action, proactive return bubble, rewards, album progress, and exact
 sprite requests so the user feels Pikachu actually went somewhere and came
 back.
+
+## 2026-06-13 — A pet needs wants, not only tasks
+The user keeps pushing the companion toward a proper pet with emotions, lore,
+growth, and proactive care.
+**Rule:** add loops where the pet expresses small desires in its own voice,
+tracks whether the user answered, rewards care, and records the moment in an
+album with exact sprite requests. Desire makes the companion feel alive.

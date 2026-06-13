@@ -368,6 +368,10 @@ The native macOS companion now has the first version of the loop:
   short desktop expedition, waits for a return timer, collects a report, earns
   Sparks/Joy/vital progress, and fills a Scout Trips album with exact sprite
   requests.
+- Wishbook now gives the pet daily desires: Pikachu can ask for a hello, phrase,
+  quest peek, snack, rest, hyper lap, focus perch, cipher peek, upgrade dream,
+  field sketch, scout wave, or night thanks, and fulfilling that wish pays care
+  rewards while filling a permanent album.
 
 This is not the full final pet fantasy yet. It is the backbone that lets the
 next sprite sheets matter: new art can now map to real emotions, upgrades,

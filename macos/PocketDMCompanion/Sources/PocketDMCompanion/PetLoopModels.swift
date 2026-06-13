@@ -4854,6 +4854,317 @@ enum PetScoutTrip: Int, CaseIterable {
     }
 }
 
+enum PetWish: Int, CaseIterable {
+    case helloPat = 1
+    case phraseRepeat = 2
+    case tinyQuest = 4
+    case snackShare = 8
+    case restNest = 16
+    case hyperLap = 32
+    case focusPerch = 64
+    case cipherPeek = 128
+    case upgradeDream = 256
+    case fieldSketch = 512
+    case scoutWave = 1024
+    case nightThanks = 2048
+
+    var title: String {
+        switch self {
+        case .helloPat:
+            return "Hello Pat"
+        case .phraseRepeat:
+            return "Phrase Repeat"
+        case .tinyQuest:
+            return "Tiny Quest"
+        case .snackShare:
+            return "Snack Share"
+        case .restNest:
+            return "Rest Nest"
+        case .hyperLap:
+            return "Hyper Lap"
+        case .focusPerch:
+            return "Focus Perch"
+        case .cipherPeek:
+            return "Cipher Peek"
+        case .upgradeDream:
+            return "Upgrade Dream"
+        case .fieldSketch:
+            return "Field Sketch"
+        case .scoutWave:
+            return "Scout Wave"
+        case .nightThanks:
+            return "Night Thanks"
+        }
+    }
+
+    var shortLabel: String {
+        switch self {
+        case .helloPat:
+            return "Pat"
+        case .phraseRepeat:
+            return "Phrase"
+        case .tinyQuest:
+            return "Quest"
+        case .snackShare:
+            return "Snack"
+        case .restNest:
+            return "Nest"
+        case .hyperLap:
+            return "Lap"
+        case .focusPerch:
+            return "Perch"
+        case .cipherPeek:
+            return "Cipher"
+        case .upgradeDream:
+            return "Dream"
+        case .fieldSketch:
+            return "Sketch"
+        case .scoutWave:
+            return "Wave"
+        case .nightThanks:
+            return "Night"
+        }
+    }
+
+    var action: String {
+        switch self {
+        case .helloPat:
+            return "Give a pat"
+        case .phraseRepeat:
+            return "Practice phrase"
+        case .tinyQuest:
+            return "Open quest"
+        case .snackShare:
+            return "Share snack"
+        case .restNest:
+            return "Rest together"
+        case .hyperLap:
+            return "Run a lap"
+        case .focusPerch:
+            return "Focus perch"
+        case .cipherPeek:
+            return "Peek cipher"
+        case .upgradeDream:
+            return "Study upgrade"
+        case .fieldSketch:
+            return "Save sketch"
+        case .scoutWave:
+            return "Wave scout"
+        case .nightThanks:
+            return "Say thanks"
+        }
+    }
+
+    var wishLine: String {
+        switch self {
+        case .helloPat:
+            return "It wants one clear hello before the day gets loud."
+        case .phraseRepeat:
+            return "It wants to hear one phrase and bounce the sound back."
+        case .tinyQuest:
+            return "It wants to peek at a quest marker without sprinting."
+        case .snackShare:
+            return "It wants a tiny snack ritual so Joy does not dip."
+        case .restNest:
+            return "It wants a soft rest moment that still counts as care."
+        case .hyperLap:
+            return "It wants to burn extra sparks in one bright lap."
+        case .focusPerch:
+            return "It wants to perch beside the first focused minute."
+        case .cipherPeek:
+            return "It wants to peek at the cipher like a shiny puzzle toy."
+        case .upgradeDream:
+            return "It wants to dream over the next upgrade card."
+        case .fieldSketch:
+            return "It wants to sketch one found-object note for the album."
+        case .scoutWave:
+            return "It wants to wave at the scout path before it goes quiet."
+        case .nightThanks:
+            return "It wants to say a small thank-you before night watch."
+        }
+    }
+
+    func body(stage: PetGrowthStage, feeling: PetFeeling) -> String {
+        "\(stage.shortLabel) wish: \(wishLine) Mood: \(feeling.title.lowercased())."
+    }
+
+    var vital: PetCareVital {
+        switch self {
+        case .helloPat, .snackShare:
+            return .snack
+        case .restNest, .nightThanks:
+            return .rest
+        case .tinyQuest, .hyperLap, .scoutWave:
+            return .play
+        case .phraseRepeat, .focusPerch, .cipherPeek, .upgradeDream, .fieldSketch:
+            return .focus
+        }
+    }
+
+    var moodStep: PetMoodCareStep {
+        switch self {
+        case .helloPat, .nightThanks:
+            return .soothe
+        case .phraseRepeat:
+            return .study
+        case .tinyQuest, .scoutWave:
+            return .adventure
+        case .snackShare:
+            return .snack
+        case .restNest:
+            return .rest
+        case .hyperLap:
+            return .play
+        case .focusPerch, .upgradeDream, .fieldSketch:
+            return .focus
+        case .cipherPeek:
+            return .puzzle
+        }
+    }
+
+    var mood: PetMood {
+        switch self {
+        case .helloPat, .nightThanks:
+            return .happy
+        case .phraseRepeat, .fieldSketch:
+            return .peek
+        case .tinyQuest, .scoutWave:
+            return .patrol
+        case .snackShare:
+            return .snack
+        case .restNest:
+            return .stretch
+        case .hyperLap:
+            return .hyper
+        case .focusPerch:
+            return .perch
+        case .cipherPeek, .upgradeDream:
+            return .thinking
+        }
+    }
+
+    var sparkReward: Int {
+        switch self {
+        case .helloPat, .snackShare, .restNest:
+            return 6
+        case .phraseRepeat, .tinyQuest, .hyperLap, .focusPerch, .cipherPeek:
+            return 8
+        case .upgradeDream, .fieldSketch, .scoutWave, .nightThanks:
+            return 10
+        }
+    }
+
+    var spriteSlug: String {
+        switch self {
+        case .helloPat:
+            return "hello-pat"
+        case .phraseRepeat:
+            return "phrase-repeat"
+        case .tinyQuest:
+            return "tiny-quest"
+        case .snackShare:
+            return "snack-share"
+        case .restNest:
+            return "rest-nest"
+        case .hyperLap:
+            return "hyper-lap"
+        case .focusPerch:
+            return "focus-perch"
+        case .cipherPeek:
+            return "cipher-peek"
+        case .upgradeDream:
+            return "upgrade-dream"
+        case .fieldSketch:
+            return "field-sketch"
+        case .scoutWave:
+            return "scout-wave"
+        case .nightThanks:
+            return "night-thanks"
+        }
+    }
+
+    var spriteRequestName: String {
+        "pet-{stage}-wish-\(spriteSlug).png"
+    }
+
+    static func count(mask: Int) -> Int {
+        allCases.filter { mask & $0.rawValue != 0 }.count
+    }
+
+    static func next(
+        daypart: PetDaypartNudge,
+        feeling: PetFeeling,
+        careNeed: PetCareNeed,
+        stage: PetGrowthStage,
+        offeredMask: Int,
+        index: Int
+    ) -> PetWish? {
+        let remaining = allCases.filter { offeredMask & $0.rawValue == 0 }
+        guard !remaining.isEmpty else { return nil }
+
+        let preferred: PetWish
+        if daypart == .night {
+            preferred = .nightThanks
+        } else {
+            switch feeling {
+            case .hungry:
+                preferred = .snackShare
+            case .sleepy, .protective:
+                preferred = .restNest
+            case .focused:
+                preferred = .focusPerch
+            case .overcharged, .playful:
+                preferred = .hyperLap
+            case .curious:
+                preferred = .fieldSketch
+            case .restless, .determined:
+                preferred = .upgradeDream
+            case .proud, .celebrating:
+                preferred = .scoutWave
+            case .lonely, .comfort, .grateful:
+                preferred = .helloPat
+            case .bright, .eager:
+                switch careNeed {
+                case .affection:
+                    preferred = .helloPat
+                case .study:
+                    preferred = .phraseRepeat
+                case .adventure:
+                    preferred = stage == .tinySpark ? .tinyQuest : .scoutWave
+                case .rest:
+                    preferred = .restNest
+                case .play:
+                    preferred = .hyperLap
+                case .focus:
+                    preferred = .focusPerch
+                case .puzzle:
+                    preferred = .cipherPeek
+                }
+            }
+        }
+
+        if remaining.contains(preferred) {
+            return preferred
+        }
+        return remaining[index % remaining.count]
+    }
+
+    static func summary(
+        offeredMask: Int,
+        fulfilledMask: Int,
+        dismissedMask: Int,
+        albumMask: Int,
+        latest: PetWish?
+    ) -> String {
+        let offered = count(mask: offeredMask)
+        let fulfilled = count(mask: fulfilledMask)
+        let dismissed = count(mask: dismissedMask)
+        let album = count(mask: albumMask)
+        let latestText = latest.map { "Latest \($0.title)" } ?? "waiting for today's wish"
+        return "Wishbook \(fulfilled)/\(allCases.count) fulfilled · \(offered) heard · \(dismissed) skipped · Album \(album)/\(allCases.count) · \(latestText)"
+    }
+}
+
 struct PetComebackReward {
     let sparks: Int
     let joy: Int
