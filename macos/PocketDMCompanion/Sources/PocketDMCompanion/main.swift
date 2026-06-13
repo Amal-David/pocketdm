@@ -168,10 +168,31 @@ enum CompanionCharacter: String, CaseIterable, Identifiable {
     var voiceSummary: String {
         switch self {
         case .pika:
-            return "Cute high voice"
+            return "Pika-like chirp voice"
         case .golden:
-            return "Soft golden voice"
+            return "Soft golden demo voice"
         }
+    }
+
+    var voiceProfileName: String {
+        switch self {
+        case .pika:
+            return "Pika chirp profile"
+        case .golden:
+            return "Goldie sparkle voice"
+        }
+    }
+
+    var selectedVoiceName: String {
+        Self.preferredSpeechVoice(for: self)?.name ?? "System voice"
+    }
+
+    var commandHint: String {
+        "/\(rawValue)"
+    }
+
+    var launchHint: String {
+        "--character \(rawValue)"
     }
 
     var voiceRate: Float {
@@ -195,19 +216,56 @@ enum CompanionCharacter: String, CaseIterable, Identifiable {
     var voicePitch: Float {
         switch self {
         case .pika:
-            return 1.36
+            return 1.42
         case .golden:
             return 1.12
+        }
+    }
+
+    var catchphraseVoiceRate: Float {
+        switch self {
+        case .pika:
+            return 0.62
+        case .golden:
+            return voiceRate
+        }
+    }
+
+    var catchphraseVoiceVolume: Float {
+        switch self {
+        case .pika:
+            return 0.52
+        case .golden:
+            return voiceVolume
+        }
+    }
+
+    var catchphraseVoicePitch: Float {
+        switch self {
+        case .pika:
+            return 1.78
+        case .golden:
+            return voicePitch
         }
     }
 
     var preferredVoiceNames: [String] {
         switch self {
         case .pika:
-            return ["Nicky", "Samantha", "Ava"]
+            return ["Nicky", "Sandy", "Shelley", "Junior", "Flo", "Samantha", "Ava"]
         case .golden:
-            return ["Samantha", "Ava", "Alex"]
+            return ["Samantha", "Ava", "Noelle", "Allison", "Alex"]
         }
+    }
+
+    static func preferredSpeechVoice(for character: CompanionCharacter) -> AVSpeechSynthesisVoice? {
+        let englishVoices = AVSpeechSynthesisVoice.speechVoices().filter { $0.language.hasPrefix("en") }
+        for preferredName in character.preferredVoiceNames {
+            if let voice = englishVoices.first(where: { $0.name.localizedCaseInsensitiveContains(preferredName) }) {
+                return voice
+            }
+        }
+        return AVSpeechSynthesisVoice(language: "en-US")
     }
 
     func rewrite(_ text: String) -> String {
@@ -5112,12 +5170,51 @@ final class PetSoundPlayer {
         guard force || now.timeIntervalSince(lastPikaAt) >= 1.4 else { return }
         lastPikaAt = now
         speech.stopSpeaking(at: .immediate)
-        let utterance = AVSpeechUtterance(string: line)
-        utterance.rate = character.voiceRate
-        utterance.volume = character.voiceVolume
-        utterance.pitchMultiplier = character.voicePitch
-        utterance.voice = preferredVoice(for: character)
-        speech.speak(utterance)
+        for part in speechParts(from: line, character: character) {
+            let utterance = AVSpeechUtterance(string: part.text)
+            utterance.rate = part.rate
+            utterance.volume = part.volume
+            utterance.pitchMultiplier = part.pitch
+            utterance.postUtteranceDelay = part.pause
+            utterance.voice = CompanionCharacter.preferredSpeechVoice(for: character)
+            speech.speak(utterance)
+        }
+    }
+
+    private func speechParts(
+        from line: String,
+        character: CompanionCharacter
+    ) -> [(text: String, rate: Float, volume: Float, pitch: Float, pause: TimeInterval)] {
+        let trimmed = line.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard character == .pika else {
+            return [(trimmed, character.voiceRate, character.voiceVolume, character.voicePitch, 0)]
+        }
+
+        let body = trimmed
+            .replacingOccurrences(
+                of: #"(?i)^\s*pika[\s,-]+pika[!,.:\s-]*"#,
+                with: "",
+                options: .regularExpression
+            )
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+
+        guard body != trimmed else {
+            return [(trimmed, character.voiceRate, character.voiceVolume, character.voicePitch, 0)]
+        }
+
+        var parts = [
+            (
+                text: character.catchphrase,
+                rate: character.catchphraseVoiceRate,
+                volume: character.catchphraseVoiceVolume,
+                pitch: character.catchphraseVoicePitch,
+                pause: TimeInterval(0.06)
+            )
+        ]
+        if !body.isEmpty {
+            parts.append((body, character.voiceRate, character.voiceVolume, character.voicePitch, 0))
+        }
+        return parts
     }
 
     private func pikaSpeechLine(from text: String, character: CompanionCharacter) -> String {
@@ -5140,16 +5237,6 @@ final class PetSoundPlayer {
             ? String(compacted.prefix(maxCharacters)).trimmingCharacters(in: .whitespacesAndNewlines) + "..."
             : compacted
         return "\(character.catchphrase) \(clipped)"
-    }
-
-    private func preferredVoice(for character: CompanionCharacter) -> AVSpeechSynthesisVoice? {
-        let englishVoices = AVSpeechSynthesisVoice.speechVoices().filter { $0.language.hasPrefix("en") }
-        for preferredName in character.preferredVoiceNames {
-            if let voice = englishVoices.first(where: { $0.name.localizedCaseInsensitiveContains(preferredName) }) {
-                return voice
-            }
-        }
-        return AVSpeechSynthesisVoice(language: "en-US")
     }
 
     func stopAll() {
@@ -5266,15 +5353,34 @@ struct DragonOverlayView: View {
             }
 
             if petHovering {
-                Button {
-                    closeCompanion()
-                } label: {
-                    Image(systemName: "xmark")
+                VStack(spacing: 6) {
+                    Button {
+                        withAnimation(.spring(response: 0.24, dampingFraction: 0.78)) {
+                            showingSettings.toggle()
+                        }
+                    } label: {
+                        Image(systemName: "gearshape.fill")
+                    }
+                    .buttonStyle(DragonIconButtonStyle(kind: showingSettings ? .primary : .secondary))
+                    .frame(width: 30, height: 28)
+                    .accessibilityLabel("Open \(model.companionCharacter.title) settings")
+
+                    Button {
+                        closeCompanion()
+                    } label: {
+                        Image(systemName: "xmark")
+                    }
+                    .buttonStyle(DragonIconButtonStyle(kind: .secondary))
+                    .frame(width: 30, height: 28)
+                    .accessibilityLabel("Close \(model.companionCharacter.title)")
                 }
-                .buttonStyle(DragonIconButtonStyle(kind: .secondary))
-                .frame(width: 30, height: 28)
-                .accessibilityLabel("Close \(model.companionCharacter.title)")
                 .transition(.opacity)
+            }
+
+            if showingSettings {
+                petOnlySettingsPanel
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
         .frame(width: 184, height: 190)
@@ -5284,6 +5390,46 @@ struct DragonOverlayView: View {
                 petHovering = isHovering
             }
         }
+    }
+
+    private var petOnlySettingsPanel: some View {
+        VStack(alignment: .leading, spacing: 5) {
+            HStack(spacing: 5) {
+                Text("Mode")
+                    .font(.system(size: 8.8, weight: .black, design: .rounded))
+                    .foregroundStyle(Color.ivory.opacity(0.72))
+                Spacer(minLength: 0)
+                Text(model.companionCharacter.commandHint)
+                    .font(.system(size: 8.2, weight: .black, design: .monospaced))
+                    .foregroundStyle(Color.gold)
+            }
+
+            HStack(spacing: 5) {
+                ForEach(CompanionCharacter.allCases) { character in
+                    Button {
+                        model.switchCharacter(character)
+                    } label: {
+                        Label(character.shortTitle, systemImage: character.iconName)
+                            .labelStyle(.titleAndIcon)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.7)
+                    }
+                    .buttonStyle(DragonMiniButtonStyle(kind: model.companionCharacter == character ? .primary : .secondary))
+                }
+            }
+
+            Text("\(model.companionCharacter.voiceProfileName) · \(model.companionCharacter.selectedVoiceName)")
+                .font(.system(size: 7.8, weight: .black, design: .rounded))
+                .foregroundStyle(Color.ivory.opacity(0.66))
+                .lineLimit(1)
+                .minimumScaleFactor(0.58)
+        }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 7)
+        .frame(width: 176)
+        .background(.black.opacity(0.76), in: RoundedRectangle(cornerRadius: 8))
+        .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.gold.opacity(0.32), lineWidth: 1))
+        .padding(.bottom, 4)
     }
 
     private var expandedBody: some View {
@@ -5594,33 +5740,48 @@ struct DragonOverlayView: View {
     }
 
     private var characterSettingsPanel: some View {
-        HStack(alignment: .center, spacing: 8) {
-            ForEach(CompanionCharacter.allCases) { character in
-                Button {
-                    model.switchCharacter(character)
-                } label: {
-                    HStack(spacing: 5) {
-                        Image(systemName: character.iconName)
-                        Text(character.shortTitle)
-                    }
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.72)
-                }
-                .buttonStyle(DragonButtonStyle(kind: model.companionCharacter == character ? .primary : .secondary))
+        VStack(alignment: .leading, spacing: 7) {
+            HStack(spacing: 6) {
+                Image(systemName: "gearshape.fill")
+                    .foregroundStyle(Color.gold)
+                Text("Character Mode")
+                    .font(.system(size: 10.5, weight: .black, design: .rounded))
+                    .foregroundStyle(Color.ivory)
+                Spacer(minLength: 0)
+                Text("Slash or launch flag")
+                    .font(.system(size: 8.3, weight: .black, design: .rounded))
+                    .foregroundStyle(Color.ivory.opacity(0.56))
             }
 
-            VStack(alignment: .leading, spacing: 2) {
-                Text(model.companionCharacter.voiceSummary)
-                    .font(.system(size: 9.4, weight: .black, design: .rounded))
-                    .foregroundStyle(Color.gold)
-                    .lineLimit(1)
-                Text("/\(model.companionCharacter.rawValue) · --character \(model.companionCharacter.rawValue)")
-                    .font(.system(size: 8.8, weight: .black, design: .monospaced))
-                    .foregroundStyle(Color.ivory.opacity(0.68))
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.62)
+            HStack(alignment: .center, spacing: 8) {
+                ForEach(CompanionCharacter.allCases) { character in
+                    Button {
+                        model.switchCharacter(character)
+                    } label: {
+                        HStack(spacing: 5) {
+                            Image(systemName: character.iconName)
+                            Text(character.shortTitle)
+                        }
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.72)
+                    }
+                    .buttonStyle(DragonButtonStyle(kind: model.companionCharacter == character ? .primary : .secondary))
+                }
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("\(model.companionCharacter.voiceSummary) · \(model.companionCharacter.selectedVoiceName)")
+                        .font(.system(size: 9.2, weight: .black, design: .rounded))
+                        .foregroundStyle(Color.gold)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.58)
+                    Text("\(model.companionCharacter.commandHint) · \(model.companionCharacter.launchHint)")
+                        .font(.system(size: 8.8, weight: .black, design: .monospaced))
+                        .foregroundStyle(Color.ivory.opacity(0.68))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.58)
+                }
+                .frame(width: 214, alignment: .leading)
             }
-            .frame(width: 168, alignment: .leading)
         }
         .padding(8)
         .background(.black.opacity(0.68), in: RoundedRectangle(cornerRadius: 7))
@@ -6668,6 +6829,27 @@ struct DragonButtonStyle: ButtonStyle {
             .frame(maxWidth: .infinity)
             .background(kind == .primary ? Color.gold : Color.black.opacity(0.34), in: RoundedRectangle(cornerRadius: 6))
             .overlay(RoundedRectangle(cornerRadius: 6).stroke(Color.ivory.opacity(kind == .primary ? 0 : 0.18), lineWidth: 1))
+            .opacity(isEnabled ? (configuration.isPressed ? 0.72 : 1) : 0.48)
+    }
+}
+
+struct DragonMiniButtonStyle: ButtonStyle {
+    enum Kind {
+        case primary
+        case secondary
+    }
+
+    @Environment(\.isEnabled) private var isEnabled
+    var kind: Kind = .primary
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(.system(size: 9.4, weight: .black, design: .rounded))
+            .foregroundStyle(kind == .primary ? Color.black : Color.ivory)
+            .frame(height: 24)
+            .frame(maxWidth: .infinity)
+            .background(kind == .primary ? Color.gold : Color.black.opacity(0.36), in: RoundedRectangle(cornerRadius: 6))
+            .overlay(RoundedRectangle(cornerRadius: 6).stroke(Color.ivory.opacity(kind == .primary ? 0 : 0.16), lineWidth: 1))
             .opacity(isEnabled ? (configuration.isPressed ? 0.72 : 1) : 0.48)
     }
 }

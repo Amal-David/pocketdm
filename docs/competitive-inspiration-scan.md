@@ -391,6 +391,10 @@ The native macOS companion now has the first version of the loop:
 - Character skin switching now lets the same companion logic run as Pika or the
   original golden 3D mascot, with a gear setting, slash commands, launch flags,
   separate catchphrases, and separate local voice profiles.
+- The minimized pet now has its own hover gear switcher, so the demo can swap
+  Pika and the golden 3D mascot without opening the full chat panel. Pika's
+  spoken catchphrase uses a separate high, cute local TTS utterance before the
+  reply preview, while Goldie keeps a softer sparkle voice.
 
 This is not the full final pet fantasy yet. It is the backbone that lets the
 next sprite sheets matter: new art can now map to real emotions, upgrades,

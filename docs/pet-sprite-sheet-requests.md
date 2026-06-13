@@ -1737,10 +1737,16 @@ The native companion can now run in two character modes:
 
 - `--character pika`
   - Uses the Pika-facing text prefix and a cuter, higher-pitched local voice
-    profile.
+    profile. The spoken catchphrase is queued as its own brighter utterance so
+    "Pika pika!" lands like a quick character chirp before the reply preview.
 - `--character golden`
   - Uses the original golden 3D mascot concept sheets from
     `output/sprite-sheets/` when available and a softer sparkle voice profile.
+
+The minimized pet now exposes a hover gear switcher as well as the expanded
+settings panel. Both surfaces show the active voice profile, slash command, and
+launch flag. Pika uses an original "pika-like" local TTS profile, not official
+sampled or cloned character audio.
 
 The same pet logic, albums, nudges, and care loops apply to both characters.
 Future skins should keep the same filename/action vocabulary so the app can

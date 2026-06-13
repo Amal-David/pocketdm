@@ -430,3 +430,11 @@ and day rhythm, not a generic notification feed.
 **Rule:** proactive mood prompts should choose from current feeling, current
 care window, and growth stage, then persist answered/skipped state and request
 exact sprite sheets for those emotional beats.
+
+## 2026-06-13 — Demo skins must switch from the pet surface
+The user wants to showcase Pika and the original golden 3D mascot as two launch
+or slash-command modes, but also needs a visible gear on the desktop pet itself.
+**Rule:** keep character switching available at launch, through slash commands,
+and through a native gear control in minimized and expanded states. Give each
+skin a distinct visible catchphrase and local voice profile, and keep Pika's
+voice original and pika-like rather than using sampled official character audio.
