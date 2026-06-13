@@ -1641,6 +1641,31 @@ needs a 12-frame transparent strip for every growth stage:
 - `pet-{stage}-journal-scout-trips.png`
   - Pet presents a tiny scout album with found-object badges.
 
+## Bond Gesture Sheets
+
+These support direct affection rituals: small touch/care moments the pet asks
+for proactively, rewards with Joy/Sparks, and saves in the Bond album. Generate
+one 12-frame transparent strip per gesture and growth stage:
+
+- `pet-{stage}-affection-head-pat.png`
+  - Pet lowers its head, looks up after the pat, and smiles at the user.
+- `pet-{stage}-affection-cheek-rub.png`
+  - Pet leans one cheek into the rub; cheek sparks settle into a warm glow.
+- `pet-{stage}-affection-spark-brush.png`
+  - Pet is hyperactive, then a tiny brush turns scattered sparks into calm.
+- `pet-{stage}-affection-tail-polish.png`
+  - Pet holds still while the tail shine becomes a confidence ritual.
+- `pet-{stage}-affection-snack-boop.png`
+  - Pet touches a tiny snack with both paws, boops it once, and brightens.
+- `pet-{stage}-affection-focus-perch-pet.png`
+  - Pet perches beside an invisible task and accepts one careful focus pet.
+- `pet-{stage}-affection-sleep-tuck.png`
+  - Pet curls down while the user tucks it into a safe sleepy pose.
+- `pet-{stage}-affection-victory-cuddle.png`
+  - Pet celebrates a completed loop with a proud, compact cuddle.
+- `pet-{stage}-journal-affection.png`
+  - Pet opens a Bond gesture album with given and locked care moments.
+
 ## Wishbook Sheets
 
 These support the daily "Pikachu wants something" loop. Each wish should look

@@ -5440,6 +5440,253 @@ enum PetWish: Int, CaseIterable {
     }
 }
 
+enum PetAffectionGesture: Int, CaseIterable {
+    case headPat = 1
+    case cheekRub = 2
+    case sparkBrush = 4
+    case tailPolish = 8
+    case snackBoop = 16
+    case focusPerchPet = 32
+    case sleepTuck = 64
+    case victoryCuddle = 128
+
+    var title: String {
+        switch self {
+        case .headPat:
+            return "Head Pat"
+        case .cheekRub:
+            return "Cheek Rub"
+        case .sparkBrush:
+            return "Spark Brush"
+        case .tailPolish:
+            return "Tail Polish"
+        case .snackBoop:
+            return "Snack Boop"
+        case .focusPerchPet:
+            return "Focus Perch Pet"
+        case .sleepTuck:
+            return "Sleep Tuck"
+        case .victoryCuddle:
+            return "Victory Cuddle"
+        }
+    }
+
+    var shortLabel: String {
+        switch self {
+        case .headPat:
+            return "Pat"
+        case .cheekRub:
+            return "Rub"
+        case .sparkBrush:
+            return "Brush"
+        case .tailPolish:
+            return "Tail"
+        case .snackBoop:
+            return "Boop"
+        case .focusPerchPet:
+            return "Perch"
+        case .sleepTuck:
+            return "Tuck"
+        case .victoryCuddle:
+            return "Cuddle"
+        }
+    }
+
+    var action: String {
+        switch self {
+        case .headPat:
+            return "Pat head"
+        case .cheekRub:
+            return "Rub cheeks"
+        case .sparkBrush:
+            return "Brush sparks"
+        case .tailPolish:
+            return "Polish tail"
+        case .snackBoop:
+            return "Boop snack"
+        case .focusPerchPet:
+            return "Pet perch"
+        case .sleepTuck:
+            return "Tuck in"
+        case .victoryCuddle:
+            return "Cuddle"
+        }
+    }
+
+    func careLine(stage: PetGrowthStage, feeling: PetFeeling) -> String {
+        switch self {
+        case .headPat:
+            return "\(stage.shortLabel) lowers its head, waits for the pat, then looks back up with \(feeling.title.lowercased()) eyes."
+        case .cheekRub:
+            return "\(stage.shortLabel) leans one cheek into the rub and lets a small warm spark settle."
+        case .sparkBrush:
+            return "\(stage.shortLabel) shakes off extra sparks while the brush turns hyper energy into calm glow."
+        case .tailPolish:
+            return "\(stage.shortLabel) holds still while the tail shine becomes a tiny confidence ritual."
+        case .snackBoop:
+            return "\(stage.shortLabel) touches the snack with both paws, boops it once, and brightens."
+        case .focusPerchPet:
+            return "\(stage.shortLabel) perches beside the first minute and accepts one careful focus pet."
+        case .sleepTuck:
+            return "\(stage.shortLabel) curls down as the tuck makes the desk feel safe for rest."
+        case .victoryCuddle:
+            return "\(stage.shortLabel) celebrates a completed loop with a proud little cuddle."
+        }
+    }
+
+    var vital: PetCareVital {
+        switch self {
+        case .snackBoop:
+            return .snack
+        case .sleepTuck:
+            return .rest
+        case .sparkBrush, .tailPolish, .victoryCuddle:
+            return .play
+        case .headPat, .cheekRub, .focusPerchPet:
+            return .focus
+        }
+    }
+
+    var moodStep: PetMoodCareStep {
+        switch self {
+        case .headPat, .cheekRub:
+            return .soothe
+        case .sparkBrush, .tailPolish, .victoryCuddle:
+            return .play
+        case .snackBoop:
+            return .snack
+        case .focusPerchPet:
+            return .focus
+        case .sleepTuck:
+            return .rest
+        }
+    }
+
+    var mood: PetMood {
+        switch self {
+        case .headPat, .cheekRub, .victoryCuddle:
+            return .happy
+        case .sparkBrush, .tailPolish:
+            return .hyper
+        case .snackBoop:
+            return .snack
+        case .focusPerchPet:
+            return .perch
+        case .sleepTuck:
+            return .sleepGuard
+        }
+    }
+
+    var sparkReward: Int {
+        switch self {
+        case .headPat, .cheekRub, .snackBoop, .sleepTuck:
+            return 7
+        case .sparkBrush, .tailPolish, .focusPerchPet:
+            return 9
+        case .victoryCuddle:
+            return 11
+        }
+    }
+
+    var spriteSlug: String {
+        switch self {
+        case .headPat:
+            return "head-pat"
+        case .cheekRub:
+            return "cheek-rub"
+        case .sparkBrush:
+            return "spark-brush"
+        case .tailPolish:
+            return "tail-polish"
+        case .snackBoop:
+            return "snack-boop"
+        case .focusPerchPet:
+            return "focus-perch-pet"
+        case .sleepTuck:
+            return "sleep-tuck"
+        case .victoryCuddle:
+            return "victory-cuddle"
+        }
+    }
+
+    var spriteRequestName: String {
+        "pet-{stage}-affection-\(spriteSlug).png"
+    }
+
+    static func count(mask: Int) -> Int {
+        allCases.filter { mask & $0.rawValue != 0 }.count
+    }
+
+    static func next(
+        daypart: PetDaypartNudge,
+        feeling: PetFeeling,
+        careNeed: PetCareNeed,
+        stage: PetGrowthStage,
+        offeredMask: Int,
+        givenMask: Int,
+        index: Int
+    ) -> PetAffectionGesture? {
+        let unavailable = offeredMask | givenMask
+        let remaining = allCases.filter { unavailable & $0.rawValue == 0 }
+        guard !remaining.isEmpty else { return nil }
+
+        let preferred: PetAffectionGesture
+        if daypart == .night {
+            preferred = .sleepTuck
+        } else {
+            switch feeling {
+            case .hungry:
+                preferred = .snackBoop
+            case .sleepy, .protective:
+                preferred = .sleepTuck
+            case .focused:
+                preferred = .focusPerchPet
+            case .overcharged, .playful, .restless:
+                preferred = .sparkBrush
+            case .curious, .determined:
+                preferred = .tailPolish
+            case .proud, .celebrating, .grateful:
+                preferred = .victoryCuddle
+            case .lonely, .comfort:
+                preferred = .cheekRub
+            case .bright, .eager:
+                switch careNeed {
+                case .affection:
+                    preferred = .headPat
+                case .study, .focus:
+                    preferred = .focusPerchPet
+                case .adventure, .puzzle:
+                    preferred = stage == .tinySpark ? .headPat : .tailPolish
+                case .rest:
+                    preferred = .sleepTuck
+                case .play:
+                    preferred = .sparkBrush
+                }
+            }
+        }
+
+        if remaining.contains(preferred) {
+            return preferred
+        }
+        return remaining[index % remaining.count]
+    }
+
+    static func summary(
+        offeredMask: Int,
+        givenMask: Int,
+        dismissedMask: Int,
+        albumMask: Int,
+        latest: PetAffectionGesture?
+    ) -> String {
+        let offered = count(mask: offeredMask)
+        let given = count(mask: givenMask)
+        let dismissed = count(mask: dismissedMask)
+        let album = count(mask: albumMask)
+        let latestText = latest.map { "Latest \($0.title)" } ?? "waiting for touch"
+        return "Bond \(given)/\(allCases.count) gestures · \(offered) asked · \(dismissed) skipped · Album \(album)/\(allCases.count) · \(latestText)"
+    }
+}
+
 enum PetToy: Int, CaseIterable {
     case sparkBall = 1
     case snackBell = 2

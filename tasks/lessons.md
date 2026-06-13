@@ -438,3 +438,9 @@ or slash-command modes, but also needs a visible gear on the desktop pet itself.
 and through a native gear control in minimized and expanded states. Give each
 skin a distinct visible catchphrase and local voice profile, and keep Pika's
 voice original and pika-like rather than using sampled official character audio.
+
+## 2026-06-13 — Affection needs its own remembered loop
+The user keeps pushing for a proper digital pet, not a utility mascot.
+**Rule:** touch/care should have named gestures, proactive asks, daily
+answered/skipped state, album progress, care-vital effects, rewards, and exact
+sprite filenames. A pet should remember being cared for.

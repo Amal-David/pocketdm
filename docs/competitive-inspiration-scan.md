@@ -376,6 +376,11 @@ The native macOS companion now has the first version of the loop:
   short desktop expedition, waits for a return timer, collects a report, earns
   Sparks/Joy/vital progress, and fills a Scout Trips album with exact sprite
   requests.
+- Bond Gestures now add eight touch-first affection rituals: Head Pat, Cheek
+  Rub, Spark Brush, Tail Polish, Snack Boop, Focus Perch Pet, Sleep Tuck, and
+  Victory Cuddle. The pet can ask for these proactively, the user can trigger
+  them with `Bond`, and each one pays Joy/Sparks, updates vitals, fills an
+  album, and names a sprite sheet.
 - Wishbook now gives the pet daily desires: Pikachu can ask for a hello, phrase,
   quest peek, snack, rest, hyper lap, focus perch, cipher peek, upgrade dream,
   field sketch, scout wave, or night thanks, and fulfilling that wish pays care
