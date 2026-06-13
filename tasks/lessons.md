@@ -399,3 +399,19 @@ The user clarified that the model should say "pika pika" in text and in voice.
 **Rule:** assistant replies, pet rewards, and proactive bubbles should share one
 guarded text prefix and one spoken preview path so the user sees and hears the
 same character beat without duplicate catchphrases.
+
+## 2026-06-13 — Growth must change available behavior
+The user wants the pet to grow from small to big with many emotions, flows, and
+spritesheets.
+**Rule:** new relationship loops should include growth-locked behavior whenever
+possible, so later stages unlock new actions, proactive prompts, album progress,
+and sprite filenames instead of only scaling the same idle pet.
+
+## 2026-06-13 — Character skins need separate controls and voices
+The user wants to showcase Pika and the original golden 3D mascot as
+interchangeable modes, and noted the new batch is 2x6 rather than a single
+horizontal strip.
+**Rule:** support both launch-time and in-app character switching, keep each
+skin's catchphrase and voice profile distinct, and make the sprite loader accept
+first-pass 2x6 sheets while still documenting horizontal strips as the final
+preferred format.

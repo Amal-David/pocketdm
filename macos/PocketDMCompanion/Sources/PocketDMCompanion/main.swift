@@ -35,7 +35,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         let client = PocketDMClient(baseURL: arguments.baseURL)
         let launcher = GameLauncher(baseURL: arguments.baseURL)
-        overlayController = DragonOverlayController(client: client, launcher: launcher)
+        overlayController = DragonOverlayController(
+            client: client,
+            launcher: launcher,
+            character: arguments.character,
+            repoRoot: arguments.repoRoot
+        )
         overlayController?.show()
     }
 
@@ -48,10 +53,12 @@ struct CompanionArguments {
     let baseURL: URL
     let launchServer: Bool
     let repoRoot: URL
+    let character: CompanionCharacter
 
     static func parse(_ raw: [String]) -> CompanionArguments {
         var baseURL = URL(string: "http://127.0.0.1:7860")!
         var launchServer = false
+        var character = CompanionCharacter.savedDefault
         var index = 1
 
         while index < raw.count {
@@ -59,6 +66,13 @@ struct CompanionArguments {
             case "--attach" where index + 1 < raw.count:
                 baseURL = URL(string: raw[index + 1]) ?? baseURL
                 index += 2
+            case "--character", "--pet":
+                if index + 1 < raw.count {
+                    character = CompanionCharacter.parse(raw[index + 1]) ?? character
+                    index += 2
+                } else {
+                    index += 1
+                }
             case "--launch-server":
                 launchServer = true
                 index += 1
@@ -69,7 +83,166 @@ struct CompanionArguments {
 
         let environmentRoot = ProcessInfo.processInfo.environment["POCKETDM_REPO"]
         let repoRoot = URL(fileURLWithPath: environmentRoot ?? FileManager.default.currentDirectoryPath)
-        return CompanionArguments(baseURL: baseURL, launchServer: launchServer, repoRoot: repoRoot)
+        if let environmentCharacter = ProcessInfo.processInfo.environment["POCKETDM_COMPANION_CHARACTER"] {
+            character = CompanionCharacter.parse(environmentCharacter) ?? character
+        }
+        return CompanionArguments(baseURL: baseURL, launchServer: launchServer, repoRoot: repoRoot, character: character)
+    }
+}
+
+enum CompanionCharacter: String, CaseIterable, Identifiable {
+    case pika
+    case golden
+
+    var id: String { rawValue }
+
+    static let defaultsKey = "PocketDMCompanion.character"
+
+    static var savedDefault: CompanionCharacter {
+        parse(UserDefaults.standard.string(forKey: defaultsKey)) ?? .pika
+    }
+
+    static func parse(_ raw: String?) -> CompanionCharacter? {
+        guard let normalized = raw?.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() else {
+            return nil
+        }
+        switch normalized {
+        case "pika", "pikachu", "/pika", "/pikachu":
+            return .pika
+        case "gold", "golden", "goldie", "mascot", "/gold", "/golden", "/goldie":
+            return .golden
+        default:
+            return nil
+        }
+    }
+
+    var title: String {
+        switch self {
+        case .pika:
+            return "Pikachu"
+        case .golden:
+            return "Goldie"
+        }
+    }
+
+    var shortTitle: String {
+        switch self {
+        case .pika:
+            return "Pika"
+        case .golden:
+            return "Goldie"
+        }
+    }
+
+    var catchphrase: String {
+        switch self {
+        case .pika:
+            return "Pika pika!"
+        case .golden:
+            return "Glim glim!"
+        }
+    }
+
+    var normalizedCatchphrase: String {
+        catchphrase.lowercased().filter(\.isLetter)
+    }
+
+    var welcomeBody: String {
+        switch self {
+        case .pika:
+            return "Your electric partner keeps a tiny bond spark. Pet once each day to earn +1 HP and refill joy."
+        case .golden:
+            return "Your golden 3D mascot is loaded. It keeps the same pet loop, with softer sparkle energy for the demo."
+        }
+    }
+
+    var iconName: String {
+        switch self {
+        case .pika:
+            return "bolt.fill"
+        case .golden:
+            return "sparkles"
+        }
+    }
+
+    var voiceSummary: String {
+        switch self {
+        case .pika:
+            return "Cute high voice"
+        case .golden:
+            return "Soft golden voice"
+        }
+    }
+
+    var voiceRate: Float {
+        switch self {
+        case .pika:
+            return 0.54
+        case .golden:
+            return 0.46
+        }
+    }
+
+    var voiceVolume: Float {
+        switch self {
+        case .pika:
+            return 0.44
+        case .golden:
+            return 0.40
+        }
+    }
+
+    var voicePitch: Float {
+        switch self {
+        case .pika:
+            return 1.36
+        case .golden:
+            return 1.12
+        }
+    }
+
+    var preferredVoiceNames: [String] {
+        switch self {
+        case .pika:
+            return ["Nicky", "Samantha", "Ava"]
+        case .golden:
+            return ["Samantha", "Ava", "Alex"]
+        }
+    }
+
+    func rewrite(_ text: String) -> String {
+        guard self == .golden else { return text }
+        return text
+            .replacingOccurrences(of: #"(?i)\bpika[\s,-]+pika\b"#, with: "Glim glim", options: .regularExpression)
+            .replacingOccurrences(of: #"(?i)\bpikachu\b"#, with: title, options: .regularExpression)
+    }
+
+    func spriteCandidates(stage: PetGrowthStage, mood: PetMood) -> [String] {
+        switch self {
+        case .pika:
+            return mood.spriteCandidates(stage: stage)
+        case .golden:
+            switch mood {
+            case .idle:
+                return ["pet-buddy-idle-look-smile", "pet-baby-idle-look-smile"]
+            case .happy, .look:
+                return ["pet-buddy-pet-reaction", "pet-buddy-idle-look-smile"]
+            case .nap, .sleepGuard:
+                return ["pet-buddy-nap", "pet-buddy-need-rest"]
+            case .hyper, .spark, .patrol:
+                return ["pet-buddy-hyper", "pet-buddy-spark-boost", "pet-buddy-event-sky-sprint"]
+            case .alert:
+                return ["pet-buddy-cheer-bubble", "pet-buddy-proactive-checkin"]
+            case .thinking, .peek:
+                return ["pet-buddy-daily-cipher", "pet-buddy-need-puzzle", "pet-buddy-learn"]
+            case .perch:
+                return ["pet-buddy-need-focus", "pet-buddy-proactive-focus-checkin"]
+            case .snack:
+                return ["pet-buddy-event-spark-picnic", "pet-buddy-need-affection"]
+            case .stretch:
+                return ["pet-buddy-mood-repair", "pet-buddy-comeback"]
+            }
+        }
     }
 }
 
@@ -78,9 +251,10 @@ final class DragonOverlayController {
     private let panel: NSPanel
     private let model: DragonOverlayModel
 
-    init(client: PocketDMClient, launcher: GameLauncher) {
-        model = DragonOverlayModel(client: client, launcher: launcher)
+    init(client: PocketDMClient, launcher: GameLauncher, character: CompanionCharacter, repoRoot: URL) {
+        model = DragonOverlayModel(client: client, launcher: launcher, initialCharacter: character)
         panel = FloatingDragonPanel()
+        PetSpriteSheet.externalAssetDirectory = repoRoot.appending(path: "output/sprite-sheets", directoryHint: .isDirectory)
 
         let content = DragonOverlayView(
             model: model,
@@ -114,7 +288,7 @@ final class DragonOverlayController {
     }
 
     private func setMinimized(_ minimized: Bool) {
-        let size = minimized ? NSSize(width: 184, height: 190) : NSSize(width: 500, height: 430)
+        let size = minimized ? NSSize(width: 184, height: 190) : NSSize(width: 500, height: 500)
         var frame = panel.frame
         let top = frame.maxY
         frame.size = size
@@ -156,7 +330,7 @@ final class DragonOverlayController {
 final class FloatingDragonPanel: NSPanel {
     init() {
         super.init(
-            contentRect: NSRect(x: 0, y: 0, width: 500, height: 430),
+            contentRect: NSRect(x: 0, y: 0, width: 500, height: 500),
             styleMask: [.borderless, .nonactivatingPanel],
             backing: .buffered,
             defer: false
@@ -292,6 +466,12 @@ final class DragonOverlayModel: ObservableObject {
     private static let dailyToyDismissedMaskKey = "PocketDMCompanion.dailyToyDismissedMask"
     private static let toyAlbumMaskKey = "PocketDMCompanion.toyAlbumMask"
     private static let latestToyRawKey = "PocketDMCompanion.latestToyRaw"
+    private static let dailyTrickDateKey = "PocketDMCompanion.dailyTrickDate"
+    private static let dailyTrickOfferedMaskKey = "PocketDMCompanion.dailyTrickOfferedMask"
+    private static let dailyTrickPracticedMaskKey = "PocketDMCompanion.dailyTrickPracticedMask"
+    private static let dailyTrickDismissedMaskKey = "PocketDMCompanion.dailyTrickDismissedMask"
+    private static let trickAlbumMaskKey = "PocketDMCompanion.trickAlbumMask"
+    private static let latestTrickRawKey = "PocketDMCompanion.latestTrickRaw"
     private static let dailyAmbientDateKey = "PocketDMCompanion.dailyAmbientDate"
     private static let dailyAmbientMaskKey = "PocketDMCompanion.dailyAmbientMask"
     private static let ambientAlbumMaskKey = "PocketDMCompanion.ambientAlbumMask"
@@ -338,6 +518,7 @@ final class DragonOverlayModel: ObservableObject {
         return calendar.dateComponents([.day], from: start, to: end).day
     }
 
+    @Published var companionCharacter = CompanionCharacter.savedDefault
     @Published var message = "Pika pika! Your electric partner keeps a tiny bond spark. Pet once each day to earn +1 HP and refill joy."
     @Published var lastRequest = ""
     @Published var serverLine = "Checking PocketDM..."
@@ -453,6 +634,12 @@ final class DragonOverlayModel: ObservableObject {
     @Published var dailyToyDismissedMask = UserDefaults.standard.object(forKey: DragonOverlayModel.dailyToyDismissedMaskKey) as? Int ?? 0
     @Published var toyAlbumMask = UserDefaults.standard.object(forKey: DragonOverlayModel.toyAlbumMaskKey) as? Int ?? 0
     @Published var latestToyRaw = UserDefaults.standard.object(forKey: DragonOverlayModel.latestToyRawKey) as? Int ?? 0
+    @Published var dailyTrickDate = UserDefaults.standard.string(forKey: DragonOverlayModel.dailyTrickDateKey) ?? ""
+    @Published var dailyTrickOfferedMask = UserDefaults.standard.object(forKey: DragonOverlayModel.dailyTrickOfferedMaskKey) as? Int ?? 0
+    @Published var dailyTrickPracticedMask = UserDefaults.standard.object(forKey: DragonOverlayModel.dailyTrickPracticedMaskKey) as? Int ?? 0
+    @Published var dailyTrickDismissedMask = UserDefaults.standard.object(forKey: DragonOverlayModel.dailyTrickDismissedMaskKey) as? Int ?? 0
+    @Published var trickAlbumMask = UserDefaults.standard.object(forKey: DragonOverlayModel.trickAlbumMaskKey) as? Int ?? 0
+    @Published var latestTrickRaw = UserDefaults.standard.object(forKey: DragonOverlayModel.latestTrickRawKey) as? Int ?? 0
     @Published var dailyAmbientDate = UserDefaults.standard.string(forKey: DragonOverlayModel.dailyAmbientDateKey) ?? ""
     @Published var dailyAmbientMask = UserDefaults.standard.object(forKey: DragonOverlayModel.dailyAmbientMaskKey) as? Int ?? 0
     @Published var ambientAlbumMask = UserDefaults.standard.object(forKey: DragonOverlayModel.ambientAlbumMaskKey) as? Int ?? 0
@@ -480,6 +667,7 @@ final class DragonOverlayModel: ObservableObject {
     @Published var cheerScoutTripRaw = 0
     @Published var cheerWishRaw = 0
     @Published var cheerToyRaw = 0
+    @Published var cheerTrickRaw = 0
 
     let languageCoach = LanguageCoachStore()
 
@@ -498,9 +686,12 @@ final class DragonOverlayModel: ObservableObject {
     private var lastComebackChestDay = UserDefaults.standard.string(forKey: DragonOverlayModel.lastComebackChestDayKey) ?? ""
     private var lastNeedBonusDay = UserDefaults.standard.string(forKey: DragonOverlayModel.lastNeedBonusDayKey) ?? ""
     private var lastVitalAt = UserDefaults.standard.double(forKey: DragonOverlayModel.lastVitalAtKey)
-    init(client: PocketDMClient, launcher: GameLauncher) {
+    init(client: PocketDMClient, launcher: GameLauncher, initialCharacter: CompanionCharacter) {
         self.client = client
         self.launcher = launcher
+        companionCharacter = initialCharacter
+        UserDefaults.standard.set(initialCharacter.rawValue, forKey: CompanionCharacter.defaultsKey)
+        message = pikaText(initialCharacter.welcomeBody)
         if lastEnergyAt == 0 {
             lastEnergyAt = Date().timeIntervalSince1970
             UserDefaults.standard.set(lastEnergyAt, forKey: Self.lastEnergyAtKey)
@@ -618,6 +809,25 @@ final class DragonOverlayModel: ObservableObject {
         if next {
             play(.open)
         }
+    }
+
+    func switchCharacter(_ character: CompanionCharacter) {
+        guard companionCharacter != character else { return }
+        companionCharacter = character
+        UserDefaults.standard.set(character.rawValue, forKey: CompanionCharacter.defaultsKey)
+        lastRequest = "Character"
+        message = pikaText(character.welcomeBody)
+        play(.open)
+        speakPika(force: true)
+        setMood(.happy, duration: 1.4)
+    }
+
+    private func handleCharacterCommand(_ prompt: String) -> Bool {
+        let trimmed = prompt.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard trimmed.hasPrefix("/"), let character = CompanionCharacter.parse(trimmed) else { return false }
+        switchCharacter(character)
+        lastRequest = trimmed
+        return true
     }
 
     func happy() {
@@ -878,6 +1088,9 @@ final class DragonOverlayModel: ObservableObject {
         let asksForHint = isHintPrompt(prompt)
         applyVitalDecay()
         lastRequest = prompt
+        if handleCharacterCommand(prompt) {
+            return
+        }
         if handlesCare(prompt) {
             petDaily(requestLabel: prompt)
             return
@@ -948,6 +1161,7 @@ final class DragonOverlayModel: ObservableObject {
         let scoutTripNote = recordScoutTripAnswer()
         let wishNote = recordWishAnswer()
         let toyNote = recordToyAnswer()
+        let trickNote = recordTrickAnswer()
         let intentNote = recordCheerIntentAnswer()
         let memoryNote = recordCheerMemory(dialogue: cheerDialogue, intent: cheerIntent, daypart: cheerDaypart)
         clearCheerBubble()
@@ -978,6 +1192,9 @@ final class DragonOverlayModel: ObservableObject {
         }
         if let toyNote {
             message += " \(toyNote)"
+        }
+        if let trickNote {
+            message += " \(trickNote)"
         }
         if let intentNote {
             message += " \(intentNote)"
@@ -1040,6 +1257,7 @@ final class DragonOverlayModel: ObservableObject {
         recordFieldNoteDismissal()
         recordWishDismissal()
         recordToyDismissal()
+        recordTrickDismissal()
         clearCheerBubble()
         UserDefaults.standard.set(Date().timeIntervalSince1970, forKey: Self.lastCheerAtKey)
         play(.minimize)
@@ -1446,6 +1664,22 @@ final class DragonOverlayModel: ObservableObject {
         setMood(toy.mood, duration: 1.7)
     }
 
+    func playTrick() {
+        let priorStage = growthStage
+        applyVitalDecay()
+        syncDailyCombo()
+        let trick = nextTrick ?? PetTrick(rawValue: latestTrickRaw) ?? .helloWave
+        lastRequest = "Trick"
+        message = pikaText(recordTrick(trick))
+        recordDailyQuest(.cheer)
+        appendEmotionScene(trigger: "trickbook")
+        appendEvolutionNote(from: priorStage)
+        persistCare()
+        play(.happy)
+        speakPikaLine(message, force: true)
+        setMood(trick.mood, duration: 1.7)
+    }
+
     func setMood(_ next: PetMood, duration: TimeInterval? = nil) {
         moodTask?.cancel()
         mood = next
@@ -1755,6 +1989,21 @@ final class DragonOverlayModel: ObservableObject {
         PetToy.allCases
     }
 
+    var trickLine: String {
+        PetTrick.summary(
+            offeredMask: dailyTrickOfferedMask,
+            practicedMask: dailyTrickPracticedMask,
+            dismissedMask: dailyTrickDismissedMask,
+            albumMask: trickAlbumMask,
+            latest: PetTrick(rawValue: latestTrickRaw),
+            stage: growthStage
+        )
+    }
+
+    var tricks: [PetTrick] {
+        PetTrick.allCases
+    }
+
     var cheerIntentTitle: String {
         (PetCheerIntent(rawValue: cheerIntentRaw) ?? .checkIn).title
     }
@@ -1988,6 +2237,20 @@ final class DragonOverlayModel: ObservableObject {
         return "Toy sprite: \(next.spriteRequestName.replacingOccurrences(of: "{stage}", with: growthStage.assetSlug))"
     }
 
+    var journalTrickProgress: Double {
+        let unlocked = PetTrick.unlocked(stage: growthStage).count
+        return Double(PetTrick.count(mask: dailyTrickPracticedMask)) / Double(max(1, unlocked))
+    }
+
+    var journalTrickCaption: String {
+        trickLine
+    }
+
+    var journalTrickSpriteLine: String {
+        let next = nextTrick ?? PetTrick(rawValue: latestTrickRaw) ?? .helloWave
+        return "Trick sprite: \(next.spriteRequestName.replacingOccurrences(of: "{stage}", with: growthStage.assetSlug))"
+    }
+
     var journalMoodCareProgress: Double {
         moodCareRecipe.progress(mask: dailyMoodCareMask)
     }
@@ -2165,7 +2428,8 @@ final class DragonOverlayModel: ObservableObject {
             + PetFieldNote.count(mask: dailyFieldNoteSavedMask)
             + PetWish.count(mask: dailyWishFulfilledMask)
             + PetToy.count(mask: dailyToyPlayedMask)
-        let total = PetDaypartNudge.allCases.count + PetCheerDialogue.allCases.count + PetCheerIntent.allCases.count + PetCheerScript.allCases.count + PetMoodStory.allCases.count + PetFieldNote.allCases.count + PetWish.allCases.count + PetToy.allCases.count
+            + PetTrick.count(mask: dailyTrickPracticedMask)
+        let total = PetDaypartNudge.allCases.count + PetCheerDialogue.allCases.count + PetCheerIntent.allCases.count + PetCheerScript.allCases.count + PetMoodStory.allCases.count + PetFieldNote.allCases.count + PetWish.allCases.count + PetToy.allCases.count + PetTrick.allCases.count
         return Double(answered) / Double(max(1, total))
     }
 
@@ -2178,6 +2442,7 @@ final class DragonOverlayModel: ObservableObject {
             + PetFieldNote.count(mask: dailyFieldNoteSavedMask)
             + PetWish.count(mask: dailyWishFulfilledMask)
             + PetToy.count(mask: dailyToyPlayedMask)
+            + PetTrick.count(mask: dailyTrickPracticedMask)
         let offered = PetDaypartNudge.count(mask: dailyNudgeOfferedMask)
             + PetCheerDialogue.count(mask: dailyCheerDialogueOfferedMask)
             + PetCheerIntent.count(mask: dailyCheerIntentOfferedMask)
@@ -2186,6 +2451,7 @@ final class DragonOverlayModel: ObservableObject {
             + PetFieldNote.count(mask: dailyFieldNoteOfferedMask)
             + PetWish.count(mask: dailyWishOfferedMask)
             + PetToy.count(mask: dailyToyOfferedMask)
+            + PetTrick.count(mask: dailyTrickOfferedMask)
         let albumDone = PetCheerDialogue.count(mask: cheerDialogueAlbumMask)
         let intentAlbumDone = PetCheerIntent.count(mask: cheerIntentAlbumMask)
         let scriptAlbumDone = PetCheerScript.count(mask: cheerScriptAlbumMask)
@@ -2193,7 +2459,8 @@ final class DragonOverlayModel: ObservableObject {
         let fieldAlbumDone = PetFieldNote.count(mask: fieldNoteAlbumMask)
         let wishAlbumDone = PetWish.count(mask: wishAlbumMask)
         let toyAlbumDone = PetToy.count(mask: toyAlbumMask)
-        return "\(answered)/\(PetDaypartNudge.allCases.count + PetCheerDialogue.allCases.count + PetCheerIntent.allCases.count + PetCheerScript.allCases.count + PetMoodStory.allCases.count + PetFieldNote.allCases.count + PetWish.allCases.count + PetToy.allCases.count) answered today · \(offered) seen · Dialogues \(albumDone)/\(PetCheerDialogue.allCases.count) · Types \(intentAlbumDone)/\(PetCheerIntent.allCases.count) · Scripts \(scriptAlbumDone)/\(PetCheerScript.allCases.count) · Mood \(moodStoryAlbumDone)/\(PetMoodStory.allCases.count) · Field \(fieldAlbumDone)/\(PetFieldNote.allCases.count) · Wishes \(wishAlbumDone)/\(PetWish.allCases.count) · Toys \(toyAlbumDone)/\(PetToy.allCases.count)"
+        let trickAlbumDone = PetTrick.count(mask: trickAlbumMask)
+        return "\(answered)/\(PetDaypartNudge.allCases.count + PetCheerDialogue.allCases.count + PetCheerIntent.allCases.count + PetCheerScript.allCases.count + PetMoodStory.allCases.count + PetFieldNote.allCases.count + PetWish.allCases.count + PetToy.allCases.count + PetTrick.allCases.count) answered today · \(offered) seen · Dialogues \(albumDone)/\(PetCheerDialogue.allCases.count) · Types \(intentAlbumDone)/\(PetCheerIntent.allCases.count) · Scripts \(scriptAlbumDone)/\(PetCheerScript.allCases.count) · Mood \(moodStoryAlbumDone)/\(PetMoodStory.allCases.count) · Field \(fieldAlbumDone)/\(PetFieldNote.allCases.count) · Wishes \(wishAlbumDone)/\(PetWish.allCases.count) · Toys \(toyAlbumDone)/\(PetToy.allCases.count) · Tricks \(trickAlbumDone)/\(PetTrick.allCases.count)"
     }
 
     var journalCheerSpriteLine: String {
@@ -2297,24 +2564,24 @@ final class DragonOverlayModel: ObservableObject {
     private func speakPika(force: Bool = false) {
         let line = message.trimmingCharacters(in: .whitespacesAndNewlines)
         if line.isEmpty {
-            soundPlayer.speakPika(enabled: soundEnabled, force: force)
+            soundPlayer.speakPika(character: companionCharacter, enabled: soundEnabled, force: force)
         } else {
-            soundPlayer.speakPikaLine(line, enabled: soundEnabled, force: force)
+            soundPlayer.speakPikaLine(line, character: companionCharacter, enabled: soundEnabled, force: force)
         }
     }
 
     private func speakPikaLine(_ text: String, force: Bool = false) {
-        soundPlayer.speakPikaLine(text, enabled: soundEnabled, force: force)
+        soundPlayer.speakPikaLine(text, character: companionCharacter, enabled: soundEnabled, force: force)
     }
 
     private func pikaText(_ text: String) -> String {
-        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmed = companionCharacter.rewrite(text.trimmingCharacters(in: .whitespacesAndNewlines))
         let normalized = trimmed.lowercased().filter(\.isLetter)
-        if normalized.contains("pikapika") {
+        if normalized.contains(companionCharacter.normalizedCatchphrase) {
             return trimmed
         }
-        guard !trimmed.isEmpty else { return "Pika pika!" }
-        return "Pika pika! \(trimmed)"
+        guard !trimmed.isEmpty else { return companionCharacter.catchphrase }
+        return "\(companionCharacter.catchphrase) \(trimmed)"
     }
 
     private func appendPetNote(_ note: String) {
@@ -2343,6 +2610,7 @@ final class DragonOverlayModel: ObservableObject {
         cheerScoutTripRaw = 0
         cheerWishRaw = 0
         cheerToyRaw = 0
+        cheerTrickRaw = 0
     }
 
     private func persistCare() {
@@ -2458,6 +2726,12 @@ final class DragonOverlayModel: ObservableObject {
         UserDefaults.standard.set(dailyToyDismissedMask, forKey: Self.dailyToyDismissedMaskKey)
         UserDefaults.standard.set(toyAlbumMask, forKey: Self.toyAlbumMaskKey)
         UserDefaults.standard.set(latestToyRaw, forKey: Self.latestToyRawKey)
+        UserDefaults.standard.set(dailyTrickDate, forKey: Self.dailyTrickDateKey)
+        UserDefaults.standard.set(dailyTrickOfferedMask, forKey: Self.dailyTrickOfferedMaskKey)
+        UserDefaults.standard.set(dailyTrickPracticedMask, forKey: Self.dailyTrickPracticedMaskKey)
+        UserDefaults.standard.set(dailyTrickDismissedMask, forKey: Self.dailyTrickDismissedMaskKey)
+        UserDefaults.standard.set(trickAlbumMask, forKey: Self.trickAlbumMaskKey)
+        UserDefaults.standard.set(latestTrickRaw, forKey: Self.latestTrickRawKey)
         UserDefaults.standard.set(dailyAmbientDate, forKey: Self.dailyAmbientDateKey)
         UserDefaults.standard.set(dailyAmbientMask, forKey: Self.dailyAmbientMaskKey)
         UserDefaults.standard.set(ambientAlbumMask, forKey: Self.ambientAlbumMaskKey)
@@ -2684,6 +2958,14 @@ final class DragonOverlayModel: ObservableObject {
 
     func isToyUnlocked(_ toy: PetToy) -> Bool {
         toyAlbumMask & toy.rawValue != 0
+    }
+
+    func isTrickPracticed(_ trick: PetTrick) -> Bool {
+        dailyTrickPracticedMask & trick.rawValue != 0
+    }
+
+    func isTrickUnlocked(_ trick: PetTrick) -> Bool {
+        trick.isUnlocked(stage: growthStage) || trickAlbumMask & trick.rawValue != 0
     }
 
     func isLifeSceneUnlocked(_ scene: PetLifeScene) -> Bool {
@@ -3168,6 +3450,13 @@ final class DragonOverlayModel: ObservableObject {
             dailyToyDismissedMask = 0
             changed = true
         }
+        if dailyTrickDate != today {
+            dailyTrickDate = today
+            dailyTrickOfferedMask = 0
+            dailyTrickPracticedMask = 0
+            dailyTrickDismissedMask = 0
+            changed = true
+        }
         if dailyAmbientDate != today {
             dailyAmbientDate = today
             dailyAmbientMask = 0
@@ -3442,6 +3731,12 @@ final class DragonOverlayModel: ObservableObject {
         return recordToy(toy)
     }
 
+    private func recordTrickAnswer() -> String? {
+        syncDailyCombo()
+        guard let trick = PetTrick(rawValue: cheerTrickRaw) else { return nil }
+        return recordTrick(trick)
+    }
+
     private func recordFieldNote(_ note: PetFieldNote) -> String {
         syncDailyCombo()
         let wasSavedToday = dailyFieldNoteSavedMask & note.rawValue != 0
@@ -3592,6 +3887,48 @@ final class DragonOverlayModel: ObservableObject {
         return notes.joined(separator: " ")
     }
 
+    private func recordTrick(_ trick: PetTrick) -> String {
+        syncDailyCombo()
+        guard trick.isUnlocked(stage: growthStage) else {
+            let nextStage = trick.requiredStage.title
+            persistCare()
+            return "\(trick.title) unlocks when Pikachu reaches \(nextStage). \(PetGrowthStage.progressLine(companionHP: companionHP, sparkDust: sparkDust))"
+        }
+
+        let wasPracticedToday = dailyTrickPracticedMask & trick.rawValue != 0
+        let wasUnlocked = trickAlbumMask & trick.rawValue != 0
+        dailyTrickOfferedMask |= trick.rawValue
+        dailyTrickPracticedMask |= trick.rawValue
+        dailyTrickDismissedMask &= ~trick.rawValue
+        trickAlbumMask |= trick.rawValue
+        latestTrickRaw = trick.rawValue
+
+        guard !wasPracticedToday else {
+            persistCare()
+            return "\(trick.title) already got practice today. \(trick.performLine(stage: growthStage, feeling: petFeeling))"
+        }
+
+        let reward = (wasUnlocked ? 3 : trick.sparkReward) + min(5, sparkLevel + cheerLevel + focusLevel)
+        sparkDust = min(999, sparkDust + reward)
+        happiness = min(5, happiness + 1)
+
+        var notes = [
+            "Trick practiced: \(trick.title). \(trick.performLine(stage: growthStage, feeling: petFeeling)) Joy +1, Sparks +\(reward)."
+        ]
+        if let vitalNote = refillVital(trick.vital, by: wasUnlocked ? 1 : 2) {
+            notes.append(vitalNote)
+        }
+        if let moodCareNote = markMoodCare(trick.moodStep) {
+            notes.append(moodCareNote)
+        }
+        if !wasUnlocked {
+            notes.append("Trickbook album unlocked: \(trick.shortLabel).")
+        }
+        persistCare()
+        setMood(trick.mood, duration: 1.7)
+        return notes.joined(separator: " ")
+    }
+
     private func recordCheerIntentAnswer() -> String? {
         syncDailyCombo()
         guard let intent = PetCheerIntent(rawValue: cheerIntentRaw) else { return nil }
@@ -3721,6 +4058,15 @@ final class DragonOverlayModel: ObservableObject {
         dailyToyOfferedMask |= toy.rawValue
         dailyToyDismissedMask |= toy.rawValue
         latestToyRaw = toy.rawValue
+        persistCare()
+    }
+
+    private func recordTrickDismissal() {
+        syncDailyCombo()
+        guard let trick = PetTrick(rawValue: cheerTrickRaw) else { return }
+        dailyTrickOfferedMask |= trick.rawValue
+        dailyTrickDismissedMask |= trick.rawValue
+        latestTrickRaw = trick.rawValue
         persistCare()
     }
 
@@ -3997,6 +4343,17 @@ final class DragonOverlayModel: ObservableObject {
         )
     }
 
+    private var nextTrick: PetTrick? {
+        PetTrick.next(
+            stage: growthStage,
+            feeling: petFeeling,
+            careNeed: careNeed,
+            practicedMask: dailyTrickPracticedMask,
+            index: PetTrick.count(mask: dailyTrickOfferedMask)
+                + PetTrick.count(mask: dailyTrickPracticedMask)
+        )
+    }
+
     private var nextLifeScene: PetLifeScene? {
         currentLifeScenes.first { lifeSceneMask & $0.rawValue == 0 }
     }
@@ -4143,23 +4500,31 @@ final class DragonOverlayModel: ObservableObject {
             playedMask: dailyToyPlayedMask,
             index: index
         )
+        let nextTrick = PetTrick.next(
+            stage: growthStage,
+            feeling: petFeeling,
+            careNeed: careNeed,
+            practicedMask: dailyTrickPracticedMask,
+            index: index
+        )
         let shouldUseWish = !shouldUseScoutReturn && !shouldUseDaypart && nextWish != nil && index % 4 == 0
         let shouldUseToy = !shouldUseScoutReturn && !shouldUseDaypart && !shouldUseWish && nextToy != nil && index % 5 == 2
-        let shouldUseMoodStory = !shouldUseScoutReturn && !shouldUseDaypart && !shouldUseWish && !shouldUseToy && nextMoodStory != nil && index % 3 == 1
-        let shouldUseFieldNote = !shouldUseScoutReturn && !shouldUseDaypart && !shouldUseWish && !shouldUseToy && !shouldUseMoodStory && nextFieldNote != nil && index % 4 == 3
+        let shouldUseTrick = !shouldUseScoutReturn && !shouldUseDaypart && !shouldUseWish && !shouldUseToy && nextTrick != nil && index % 6 == 4
+        let shouldUseMoodStory = !shouldUseScoutReturn && !shouldUseDaypart && !shouldUseWish && !shouldUseToy && !shouldUseTrick && nextMoodStory != nil && index % 3 == 1
+        let shouldUseFieldNote = !shouldUseScoutReturn && !shouldUseDaypart && !shouldUseWish && !shouldUseToy && !shouldUseTrick && !shouldUseMoodStory && nextFieldNote != nil && index % 4 == 3
         let nextMoodCareStep = moodCareRecipe.nextStep(mask: dailyMoodCareMask)
-        let shouldUseMoodCare = !shouldUseScoutReturn && !shouldUseDaypart && !shouldUseWish && !shouldUseToy && !shouldUseMoodStory && !shouldUseFieldNote && nextMoodCareStep != nil && index % 2 == 0
+        let shouldUseMoodCare = !shouldUseScoutReturn && !shouldUseDaypart && !shouldUseWish && !shouldUseToy && !shouldUseTrick && !shouldUseMoodStory && !shouldUseFieldNote && nextMoodCareStep != nil && index % 2 == 0
         let nextContract = nextBondContract
-        let shouldUseBondBoard = !shouldUseScoutReturn && !shouldUseDaypart && !shouldUseWish && !shouldUseToy && !shouldUseMoodStory && !shouldUseFieldNote && !shouldUseMoodCare && nextContract != nil && index % 3 == 2
+        let shouldUseBondBoard = !shouldUseScoutReturn && !shouldUseDaypart && !shouldUseWish && !shouldUseToy && !shouldUseTrick && !shouldUseMoodStory && !shouldUseFieldNote && !shouldUseMoodCare && nextContract != nil && index % 3 == 2
         let nextDialogue = PetCheerDialogue.next(offeredMask: dailyCheerDialogueOfferedMask, index: index)
         let nextScript = PetCheerScript.next(
             daypart: daypart,
-            intent: shouldUseFieldNote ? .fieldNote : (shouldUseWish || shouldUseToy ? .care : (nextMoodStory?.intent ?? nextDialogue?.intent ?? .checkIn)),
+            intent: shouldUseFieldNote ? .fieldNote : (shouldUseWish || shouldUseToy || shouldUseTrick ? .care : (nextMoodStory?.intent ?? nextDialogue?.intent ?? .checkIn)),
             offeredMask: dailyCheerScriptOfferedMask,
             index: index
         )
-        let shouldUseScript = !shouldUseScoutReturn && !shouldUseDaypart && !shouldUseWish && !shouldUseToy && !shouldUseMoodStory && !shouldUseFieldNote && !shouldUseMoodCare && !shouldUseBondBoard && nextScript != nil && (index % 2 == 1 || nextDialogue == nil)
-        let shouldUseDialogue = !shouldUseScoutReturn && !shouldUseDaypart && !shouldUseWish && !shouldUseToy && !shouldUseMoodStory && !shouldUseFieldNote && !shouldUseMoodCare && !shouldUseBondBoard && !shouldUseScript && nextDialogue != nil
+        let shouldUseScript = !shouldUseScoutReturn && !shouldUseDaypart && !shouldUseWish && !shouldUseToy && !shouldUseTrick && !shouldUseMoodStory && !shouldUseFieldNote && !shouldUseMoodCare && !shouldUseBondBoard && nextScript != nil && (index % 2 == 1 || nextDialogue == nil)
+        let shouldUseDialogue = !shouldUseScoutReturn && !shouldUseDaypart && !shouldUseWish && !shouldUseToy && !shouldUseTrick && !shouldUseMoodStory && !shouldUseFieldNote && !shouldUseMoodCare && !shouldUseBondBoard && !shouldUseScript && nextDialogue != nil
         let prompt: PetNudgeLibrary.PetCheerPrompt
         if shouldUseScoutReturn, let activeScoutTrip {
             prompt = PetNudgeLibrary.PetCheerPrompt(
@@ -4190,6 +4555,14 @@ final class DragonOverlayModel: ObservableObject {
                 body: "Toybox wants \(nextToy.title). \(nextToy.playLine(stage: growthStage, feeling: petFeeling))",
                 action: nextToy.action,
                 rewardLine: "\(nextToy.title) played",
+                intent: .care
+            )
+        } else if shouldUseTrick, let nextTrick {
+            prompt = PetNudgeLibrary.PetCheerPrompt(
+                title: nextTrick.title,
+                body: "Trickbook wants practice. \(nextTrick.performLine(stage: growthStage, feeling: petFeeling))",
+                action: nextTrick.action,
+                rewardLine: "\(nextTrick.title) practiced",
                 intent: .care
             )
         } else if shouldUseMoodStory, let nextMoodStory {
@@ -4272,6 +4645,7 @@ final class DragonOverlayModel: ObservableObject {
         cheerScoutTripRaw = shouldUseScoutReturn ? (activeScoutTrip?.rawValue ?? 0) : 0
         cheerWishRaw = shouldUseWish ? (nextWish?.rawValue ?? 0) : 0
         cheerToyRaw = shouldUseToy ? (nextToy?.rawValue ?? 0) : 0
+        cheerTrickRaw = shouldUseTrick ? (nextTrick?.rawValue ?? 0) : 0
         cheerIntentRaw = prompt.intent.rawValue
         cheerBubble = pikaText(prompt.body)
         dailyCheerIntentOfferedMask |= prompt.intent.rawValue
@@ -4292,6 +4666,11 @@ final class DragonOverlayModel: ObservableObject {
             dailyToyOfferedMask |= nextToy.rawValue
             dailyToyDismissedMask &= ~nextToy.rawValue
             latestToyRaw = nextToy.rawValue
+            persistCare()
+        } else if shouldUseTrick, let nextTrick {
+            dailyTrickOfferedMask |= nextTrick.rawValue
+            dailyTrickDismissedMask &= ~nextTrick.rawValue
+            latestTrickRaw = nextTrick.rawValue
             persistCare()
         } else if shouldUseDialogue, let nextDialogue {
             dailyCheerDialogueOfferedMask |= nextDialogue.rawValue
@@ -4324,6 +4703,8 @@ final class DragonOverlayModel: ObservableObject {
             promptMood = nextWish?.mood ?? .hyper
         } else if shouldUseToy {
             promptMood = nextToy?.mood ?? .hyper
+        } else if shouldUseTrick {
+            promptMood = nextTrick?.mood ?? .hyper
         } else if shouldUseMoodStory {
             promptMood = nextMoodStory?.mood ?? .hyper
         } else if shouldUseFieldNote {
@@ -4560,7 +4941,6 @@ enum PetSound: CaseIterable {
 
 @MainActor
 final class PetSoundPlayer {
-    private static let catchphrase = "Pika pika!"
     private var cache: [PetSound: NSSound] = [:]
     private var lastPlayed: [PetSound: Date] = [:]
     private let speech = AVSpeechSynthesizer()
@@ -4579,33 +4959,34 @@ final class PetSoundPlayer {
         player.play()
     }
 
-    func speakPika(enabled: Bool, force: Bool = false) {
-        speak(Self.catchphrase, enabled: enabled, force: force)
+    func speakPika(character: CompanionCharacter, enabled: Bool, force: Bool = false) {
+        speak(character.catchphrase, character: character, enabled: enabled, force: force)
     }
 
-    func speakPikaLine(_ text: String, enabled: Bool, force: Bool = false) {
-        speak(pikaSpeechLine(from: text), enabled: enabled, force: force)
+    func speakPikaLine(_ text: String, character: CompanionCharacter, enabled: Bool, force: Bool = false) {
+        speak(pikaSpeechLine(from: text, character: character), character: character, enabled: enabled, force: force)
     }
 
-    private func speak(_ line: String, enabled: Bool, force: Bool) {
+    private func speak(_ line: String, character: CompanionCharacter, enabled: Bool, force: Bool) {
         guard enabled else { return }
         let now = Date()
         guard force || now.timeIntervalSince(lastPikaAt) >= 1.4 else { return }
         lastPikaAt = now
         speech.stopSpeaking(at: .immediate)
         let utterance = AVSpeechUtterance(string: line)
-        utterance.rate = 0.48
-        utterance.volume = 0.42
-        utterance.pitchMultiplier = 1.18
-        utterance.voice = AVSpeechSynthesisVoice(language: "en-US")
+        utterance.rate = character.voiceRate
+        utterance.volume = character.voiceVolume
+        utterance.pitchMultiplier = character.voicePitch
+        utterance.voice = preferredVoice(for: character)
         speech.speak(utterance)
     }
 
-    private func pikaSpeechLine(from text: String) -> String {
+    private func pikaSpeechLine(from text: String, character: CompanionCharacter) -> String {
         // Keep the spoken pet voice aligned with the visible assistant line:
-        // exactly one "Pika pika!" lead-in, then a concise reply preview.
-        let withoutCatchphrase = text.replacingOccurrences(
-            of: #"(?i)\bpika[\s,-]+pika[!,.:\s-]*"#,
+        // exactly one character catchphrase lead-in, then a concise reply preview.
+        let rewritten = character.rewrite(text)
+        let withoutCatchphrase = rewritten.replacingOccurrences(
+            of: #"(?i)\b(pika[\s,-]+pika|glim[\s,-]+glim)[!,.:\s-]*"#,
             with: "",
             options: .regularExpression
         )
@@ -4614,12 +4995,22 @@ final class PetSoundPlayer {
             .filter { !$0.isEmpty }
             .joined(separator: " ")
             .trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !compacted.isEmpty else { return Self.catchphrase }
+        guard !compacted.isEmpty else { return character.catchphrase }
         let maxCharacters = 180
         let clipped = compacted.count > maxCharacters
             ? String(compacted.prefix(maxCharacters)).trimmingCharacters(in: .whitespacesAndNewlines) + "..."
             : compacted
-        return "\(Self.catchphrase) \(clipped)"
+        return "\(character.catchphrase) \(clipped)"
+    }
+
+    private func preferredVoice(for character: CompanionCharacter) -> AVSpeechSynthesisVoice? {
+        let englishVoices = AVSpeechSynthesisVoice.speechVoices().filter { $0.language.hasPrefix("en") }
+        for preferredName in character.preferredVoiceNames {
+            if let voice = englishVoices.first(where: { $0.name.localizedCaseInsensitiveContains(preferredName) }) {
+                return voice
+            }
+        }
+        return AVSpeechSynthesisVoice(language: "en-US")
     }
 
     func stopAll() {
@@ -4651,6 +5042,7 @@ struct DragonOverlayView: View {
     @State private var dragOffset: CGSize = .zero
     @State private var customPrompt = ""
     @State private var petHovering = false
+    @State private var showingSettings = false
     @State private var journalPage: PetJournalPage = .growth
 
     var body: some View {
@@ -4680,11 +5072,11 @@ struct DragonOverlayView: View {
                     }
                 }
             } label: {
-                AnimatedPetSprite(stage: model.growthStage, mood: model.mood, size: CGFloat(petHovering ? 166 : 158) * model.petScale)
+                AnimatedPetSprite(character: model.companionCharacter, stage: model.growthStage, mood: model.mood, size: CGFloat(petHovering ? 166 : 158) * model.petScale)
             }
             .buttonStyle(.plain)
             .simultaneousGesture(dragGesture)
-            .accessibilityLabel("Open Pikachu chat")
+            .accessibilityLabel("Open \(model.companionCharacter.title) chat")
 
             if let cheerBubble = model.cheerBubble {
                 HStack(alignment: .top, spacing: 5) {
@@ -4692,7 +5084,7 @@ struct DragonOverlayView: View {
                         model.acceptCheerBubble()
                     } label: {
                         VStack(alignment: .leading, spacing: 2) {
-                            Text(model.cheerTitle.isEmpty ? "Pika check" : model.cheerTitle)
+                            Text(model.cheerTitle.isEmpty ? "\(model.companionCharacter.shortTitle) check" : model.cheerTitle)
                                 .font(.system(size: 9.5, weight: .black, design: .rounded))
                                 .foregroundStyle(Color.black.opacity(0.82))
                                 .lineLimit(1)
@@ -4715,7 +5107,7 @@ struct DragonOverlayView: View {
                         .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.gold.opacity(0.9), lineWidth: 1))
                     }
                     .buttonStyle(.plain)
-                    .accessibilityLabel("Open Pikachu check-in")
+                    .accessibilityLabel("Open \(model.companionCharacter.title) check-in")
 
                     Button {
                         model.dismissCheerBubble()
@@ -4727,7 +5119,7 @@ struct DragonOverlayView: View {
                             .background(Color.ivory.opacity(0.92), in: Circle())
                     }
                     .buttonStyle(.plain)
-                    .accessibilityLabel("Dismiss Pikachu check-in")
+                    .accessibilityLabel("Dismiss \(model.companionCharacter.title) check-in")
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .offset(x: 2, y: 0)
@@ -4742,7 +5134,7 @@ struct DragonOverlayView: View {
                 }
                 .buttonStyle(DragonIconButtonStyle(kind: .secondary))
                 .frame(width: 30, height: 28)
-                .accessibilityLabel("Close Pikachu")
+                .accessibilityLabel("Close \(model.companionCharacter.title)")
                 .transition(.opacity)
             }
         }
@@ -4758,10 +5150,14 @@ struct DragonOverlayView: View {
     private var expandedBody: some View {
         VStack(alignment: .leading, spacing: 9) {
             headerBar(isCompact: false)
+            if showingSettings {
+                characterSettingsPanel
+                    .transition(.move(edge: .top).combined(with: .opacity))
+            }
 
             HStack(alignment: .top, spacing: 12) {
                 VStack(spacing: 8) {
-                    AnimatedPetSprite(stage: model.growthStage, mood: model.mood, size: 176 * model.petScale)
+                    AnimatedPetSprite(character: model.companionCharacter, stage: model.growthStage, mood: model.mood, size: 176 * model.petScale)
                     careStatusPanel
                 }
 
@@ -4847,7 +5243,7 @@ struct DragonOverlayView: View {
             }
         }
         .padding(8)
-        .frame(width: 500, height: 430)
+        .frame(width: 500, height: 500)
         .background(.clear)
     }
 
@@ -4899,6 +5295,11 @@ struct DragonOverlayView: View {
             Text(model.toyLine)
                 .font(.system(size: 8.2, weight: .black, design: .rounded))
                 .foregroundStyle(Color.ivory.opacity(0.68))
+                .lineLimit(1)
+                .minimumScaleFactor(0.46)
+            Text(model.trickLine)
+                .font(.system(size: 8.2, weight: .black, design: .rounded))
+                .foregroundStyle(Color.gold.opacity(0.66))
                 .lineLimit(1)
                 .minimumScaleFactor(0.46)
             Text(model.storyLine)
@@ -5007,7 +5408,7 @@ struct DragonOverlayView: View {
                 Image(systemName: "circle.grid.2x2.fill")
                     .font(.system(size: isCompact ? 13 : 15, weight: .bold))
                     .foregroundStyle(Color.ivory.opacity(0.68))
-                Text("Pikachu")
+                Text(model.companionCharacter.title)
                     .font(.system(size: 12, weight: .black, design: .rounded))
                     .foregroundStyle(Color.ivory)
                 Spacer(minLength: 0)
@@ -5015,7 +5416,16 @@ struct DragonOverlayView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
             .contentShape(Rectangle())
             .gesture(dragGesture)
-            .accessibilityLabel("Drag Pikachu panel")
+            .accessibilityLabel("Drag \(model.companionCharacter.title) panel")
+            Button {
+                withAnimation(.spring(response: 0.24, dampingFraction: 0.78)) {
+                    showingSettings.toggle()
+                }
+            } label: {
+                Image(systemName: "gearshape.fill")
+            }
+            .buttonStyle(DragonIconButtonStyle(kind: showingSettings ? .primary : .secondary))
+            .accessibilityLabel("Open character settings")
             soundButton
             Button {
                 withAnimation(.spring(response: 0.25, dampingFraction: 0.76)) {
@@ -5025,18 +5435,52 @@ struct DragonOverlayView: View {
                 Image(systemName: "minus")
             }
             .buttonStyle(DragonIconButtonStyle(kind: .secondary))
-            .accessibilityLabel("Minimize Pikachu to pet")
+            .accessibilityLabel("Minimize \(model.companionCharacter.title) to pet")
             Button {
                 closeCompanion()
             } label: {
                 Image(systemName: "xmark")
             }
             .buttonStyle(DragonIconButtonStyle(kind: .secondary))
-            .accessibilityLabel("Close Pikachu")
+            .accessibilityLabel("Close \(model.companionCharacter.title)")
         }
         .padding(.horizontal, 10)
         .frame(height: isCompact ? 30 : 34)
         .background(.black.opacity(0.82), in: RoundedRectangle(cornerRadius: 7))
+    }
+
+    private var characterSettingsPanel: some View {
+        HStack(alignment: .center, spacing: 8) {
+            ForEach(CompanionCharacter.allCases) { character in
+                Button {
+                    model.switchCharacter(character)
+                } label: {
+                    HStack(spacing: 5) {
+                        Image(systemName: character.iconName)
+                        Text(character.shortTitle)
+                    }
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.72)
+                }
+                .buttonStyle(DragonButtonStyle(kind: model.companionCharacter == character ? .primary : .secondary))
+            }
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(model.companionCharacter.voiceSummary)
+                    .font(.system(size: 9.4, weight: .black, design: .rounded))
+                    .foregroundStyle(Color.gold)
+                    .lineLimit(1)
+                Text("/\(model.companionCharacter.rawValue) · --character \(model.companionCharacter.rawValue)")
+                    .font(.system(size: 8.8, weight: .black, design: .monospaced))
+                    .foregroundStyle(Color.ivory.opacity(0.68))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.62)
+            }
+            .frame(width: 168, alignment: .leading)
+        }
+        .padding(8)
+        .background(.black.opacity(0.68), in: RoundedRectangle(cornerRadius: 7))
+        .overlay(RoundedRectangle(cornerRadius: 7).stroke(Color.gold.opacity(0.2), lineWidth: 1))
     }
 
     private func chatTranscript(isCompact: Bool) -> some View {
@@ -5044,7 +5488,7 @@ struct DragonOverlayView: View {
             if !model.lastRequest.isEmpty {
                 chatLine(label: "You", text: model.lastRequest, isCompact: isCompact)
             }
-            chatLine(label: "Pikachu", text: model.message, isCompact: isCompact)
+            chatLine(label: model.companionCharacter.title, text: model.message, isCompact: isCompact)
         }
         .padding(isCompact ? 8 : 10)
         .frame(maxWidth: .infinity, minHeight: isCompact ? 56 : 118, alignment: .topLeading)
@@ -5067,19 +5511,25 @@ struct DragonOverlayView: View {
     }
 
     private var emotionControls: some View {
-        HStack(spacing: 5) {
-            Button("Pet") { model.petDaily() }
-                .buttonStyle(DragonButtonStyle(kind: model.mood == .happy ? .primary : .secondary))
-            Button("Nap") { model.nap() }
-                .buttonStyle(DragonButtonStyle(kind: model.mood == .nap ? .primary : .secondary))
-            Button("Hyper") { model.hyper() }
-                .buttonStyle(DragonButtonStyle(kind: model.mood == .hyper ? .primary : .secondary))
-            Button("Field") { model.playFieldNote() }
-                .buttonStyle(DragonButtonStyle(kind: model.mood == .peek ? .primary : .secondary))
-            Button("Wish") { model.playWish() }
-                .buttonStyle(DragonButtonStyle(kind: model.mood == .look ? .primary : .secondary))
-            Button("Toy") { model.playToy() }
-                .buttonStyle(DragonButtonStyle(kind: .secondary))
+        VStack(spacing: 5) {
+            HStack(spacing: 5) {
+                Button("Pet") { model.petDaily() }
+                    .buttonStyle(DragonButtonStyle(kind: model.mood == .happy ? .primary : .secondary))
+                Button("Nap") { model.nap() }
+                    .buttonStyle(DragonButtonStyle(kind: model.mood == .nap ? .primary : .secondary))
+                Button("Hyper") { model.hyper() }
+                    .buttonStyle(DragonButtonStyle(kind: model.mood == .hyper ? .primary : .secondary))
+            }
+            HStack(spacing: 5) {
+                Button("Field") { model.playFieldNote() }
+                    .buttonStyle(DragonButtonStyle(kind: model.mood == .peek ? .primary : .secondary))
+                Button("Wish") { model.playWish() }
+                    .buttonStyle(DragonButtonStyle(kind: model.mood == .look ? .primary : .secondary))
+                Button("Toy") { model.playToy() }
+                    .buttonStyle(DragonButtonStyle(kind: .secondary))
+                Button("Trick") { model.playTrick() }
+                    .buttonStyle(DragonButtonStyle(kind: .secondary))
+            }
         }
         .disabled(model.busy)
     }
@@ -5106,7 +5556,7 @@ struct DragonOverlayView: View {
 
     private func inputRow(isCompact: Bool) -> some View {
         HStack(spacing: 7) {
-            TextField("Ask Pikachu", text: $customPrompt)
+            TextField("Ask \(model.companionCharacter.title)", text: $customPrompt)
                 .textFieldStyle(.plain)
                 .font(.system(size: isCompact ? 12 : 13, weight: .semibold))
                 .padding(.horizontal, 9)
@@ -5133,7 +5583,7 @@ struct DragonOverlayView: View {
         }
         .buttonStyle(DragonIconButtonStyle(kind: .secondary))
         .opacity(model.soundEnabled ? 1 : 0.62)
-        .accessibilityLabel(model.soundEnabled ? "Mute Pikachu sounds" : "Unmute Pikachu sounds")
+        .accessibilityLabel(model.soundEnabled ? "Mute \(model.companionCharacter.title) sounds" : "Unmute \(model.companionCharacter.title) sounds")
     }
 
     private var canSubmit: Bool {
@@ -5280,6 +5730,9 @@ struct PetJournalPanel: View {
             journalHero("Toybox", value: model.journalToyProgress, caption: model.journalToyCaption)
             toyGrid
             artLine(model.journalToySpriteLine)
+            journalHero("Trickbook", value: model.journalTrickProgress, caption: model.journalTrickCaption)
+            trickGrid
+            artLine(model.journalTrickSpriteLine)
             journalHero("Scout Trips", value: model.journalScoutTripProgress, caption: model.journalScoutTripCaption)
             scoutTripGrid
             artLine(model.journalScoutTripSpriteLine)
@@ -5317,6 +5770,9 @@ struct PetJournalPanel: View {
             journalHero("Toybox", value: model.journalToyProgress, caption: model.journalToyCaption)
             toyGrid
             artLine(model.journalToySpriteLine)
+            journalHero("Trickbook", value: model.journalTrickProgress, caption: model.journalTrickCaption)
+            trickGrid
+            artLine(model.journalTrickSpriteLine)
             journalHero("Scout Trips", value: model.journalScoutTripProgress, caption: model.journalScoutTripCaption)
             scoutTripGrid
             artLine(model.journalScoutTripSpriteLine)
@@ -5464,6 +5920,16 @@ struct PetJournalPanel: View {
                 let played = model.isToyPlayed(toy)
                 let unlocked = model.isToyUnlocked(toy)
                 journalChip("\(toy.shortLabel)\(played ? " ✓" : "")", isUnlocked: played || unlocked)
+            }
+        }
+    }
+
+    private var trickGrid: some View {
+        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 4), count: 5), spacing: 3) {
+            ForEach(model.tricks, id: \.rawValue) { trick in
+                let practiced = model.isTrickPracticed(trick)
+                let unlocked = model.isTrickUnlocked(trick)
+                journalChip("\(trick.shortLabel)\(practiced ? " ✓" : "")", isUnlocked: practiced || unlocked)
             }
         }
     }
@@ -5916,6 +6382,7 @@ struct LanguageCoachPanel: View {
 }
 
 struct AnimatedPetSprite: View {
+    let character: CompanionCharacter
     let stage: PetGrowthStage
     let mood: PetMood
     let size: CGFloat
@@ -5925,7 +6392,7 @@ struct AnimatedPetSprite: View {
 
     var body: some View {
         Group {
-            if let image = PetSpriteSheet.image(stage: stage, mood: mood, frame: frameIndex) {
+            if let image = PetSpriteSheet.image(character: character, stage: stage, mood: mood, frame: frameIndex) {
                 Image(nsImage: image)
                     .resizable()
                     .interpolation(.high)
@@ -5945,53 +6412,83 @@ struct AnimatedPetSprite: View {
         .onChange(of: stage) {
             frameIndex = 0
         }
+        .onChange(of: character) {
+            frameIndex = 0
+        }
     }
 }
 
 @MainActor
 enum PetSpriteSheet {
     static let frameCount = 12
+    static var externalAssetDirectory: URL?
     private static var cache: [String: [NSImage]] = [:]
 
-    static func image(stage: PetGrowthStage, mood: PetMood, frame: Int) -> NSImage? {
-        let frames = frames(stage: stage, mood: mood)
+    static func image(character: CompanionCharacter, stage: PetGrowthStage, mood: PetMood, frame: Int) -> NSImage? {
+        let frames = frames(character: character, stage: stage, mood: mood)
         guard !frames.isEmpty else { return nil }
         let sequence = mood.frameSequence
         let frameNumber = sequence[frame % sequence.count]
         return frames[frameNumber % frames.count]
     }
 
-    static func resolvedAssetName(stage: PetGrowthStage, mood: PetMood) -> String {
-        mood.spriteCandidates(stage: stage).first { Bundle.module.url(forResource: $0, withExtension: "png") != nil }
+    static func resolvedAssetName(character: CompanionCharacter, stage: PetGrowthStage, mood: PetMood) -> String {
+        let candidates = character.spriteCandidates(stage: stage, mood: mood)
+            + mood.spriteCandidates(stage: stage)
+            + [mood.fallbackAssetName]
+        return candidates.first { assetURL(for: $0) != nil }
             ?? mood.fallbackAssetName
     }
 
-    private static func frames(stage: PetGrowthStage, mood: PetMood) -> [NSImage] {
-        let assetName = resolvedAssetName(stage: stage, mood: mood)
-        if let cached = cache[assetName] {
+    private static func frames(character: CompanionCharacter, stage: PetGrowthStage, mood: PetMood) -> [NSImage] {
+        let assetName = resolvedAssetName(character: character, stage: stage, mood: mood)
+        let cacheKey = "\(character.rawValue):\(assetName)"
+        if let cached = cache[cacheKey] {
             return cached
         }
         guard
-            let url = Bundle.module.url(forResource: assetName, withExtension: "png"),
+            let url = assetURL(for: assetName),
             let sheet = NSImage(contentsOf: url),
             let cgImage = sheet.cgImage(forProposedRect: nil, context: nil, hints: nil)
         else {
-            cache[assetName] = []
+            cache[cacheKey] = []
             return []
         }
 
-        let frameWidth = cgImage.width / frameCount
-        let frameHeight = cgImage.height
-        let frames = (0..<frameCount).compactMap { index -> NSImage? in
-            let rect = CGRect(x: index * frameWidth, y: 0, width: frameWidth, height: frameHeight)
+        let layout = sheetLayout(width: cgImage.width, height: cgImage.height)
+        let frameWidth = cgImage.width / layout.columns
+        let frameHeight = cgImage.height / layout.rows
+        let frames = (0..<min(frameCount, layout.columns * layout.rows)).compactMap { index -> NSImage? in
+            let column = index % layout.columns
+            let row = index / layout.columns
+            let rect = CGRect(x: column * frameWidth, y: row * frameHeight, width: frameWidth, height: frameHeight)
             guard let cropped = cgImage.cropping(to: rect) else { return nil }
             return NSImage(
                 cgImage: cropped,
                 size: NSSize(width: CGFloat(frameWidth), height: CGFloat(frameHeight))
             )
         }
-        cache[assetName] = frames
+        cache[cacheKey] = frames
         return frames
+    }
+
+    private static func assetURL(for assetName: String) -> URL? {
+        if let bundleURL = Bundle.module.url(forResource: assetName, withExtension: "png") {
+            return bundleURL
+        }
+        if let externalURL = externalAssetDirectory?.appending(path: "\(assetName).png"),
+           FileManager.default.fileExists(atPath: externalURL.path) {
+            return externalURL
+        }
+        return nil
+    }
+
+    private static func sheetLayout(width: Int, height: Int) -> (columns: Int, rows: Int) {
+        let aspect = Double(width) / Double(max(1, height))
+        if aspect > 6.0 {
+            return (frameCount, 1)
+        }
+        return (6, 2)
     }
 }
 

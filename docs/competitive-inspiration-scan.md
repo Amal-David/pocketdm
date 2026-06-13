@@ -376,6 +376,13 @@ The native macOS companion now has the first version of the loop:
   compass, blanket, pebble, cube, kite, flag, or lamp, then reward the user and
   save the object in an album. This turns retention mechanics into visible
   relationship props rather than abstract tasks.
+- Trickbook now adds growth-locked practice: Tiny Spark starts with wave/hop,
+  Pocket Pal learns cheek/phrase tricks, Trail Buddy learns focus/quest tricks,
+  Storm Scout learns cipher/weather tricks, and Storm Guardian unlocks guardian
+  rituals. This makes growth change behavior, not just size.
+- Character skin switching now lets the same companion logic run as Pika or the
+  original golden 3D mascot, with a gear setting, slash commands, launch flags,
+  separate catchphrases, and separate local voice profiles.
 
 This is not the full final pet fantasy yet. It is the backbone that lets the
 next sprite sheets matter: new art can now map to real emotions, upgrades,

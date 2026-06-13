@@ -5445,6 +5445,311 @@ enum PetToy: Int, CaseIterable {
     }
 }
 
+enum PetTrick: Int, CaseIterable {
+    case helloWave = 1
+    case sparkHop = 2
+    case cheekClap = 4
+    case phraseEcho = 8
+    case focusSit = 16
+    case questPoint = 32
+    case cipherTilt = 64
+    case weatherDash = 128
+    case guardianBow = 256
+    case moonGuard = 512
+
+    var title: String {
+        switch self {
+        case .helloWave:
+            return "Hello Wave"
+        case .sparkHop:
+            return "Spark Hop"
+        case .cheekClap:
+            return "Cheek Clap"
+        case .phraseEcho:
+            return "Phrase Echo"
+        case .focusSit:
+            return "Focus Sit"
+        case .questPoint:
+            return "Quest Point"
+        case .cipherTilt:
+            return "Cipher Tilt"
+        case .weatherDash:
+            return "Weather Dash"
+        case .guardianBow:
+            return "Guardian Bow"
+        case .moonGuard:
+            return "Moon Guard"
+        }
+    }
+
+    var shortLabel: String {
+        switch self {
+        case .helloWave:
+            return "Wave"
+        case .sparkHop:
+            return "Hop"
+        case .cheekClap:
+            return "Clap"
+        case .phraseEcho:
+            return "Echo"
+        case .focusSit:
+            return "Sit"
+        case .questPoint:
+            return "Point"
+        case .cipherTilt:
+            return "Tilt"
+        case .weatherDash:
+            return "Dash"
+        case .guardianBow:
+            return "Bow"
+        case .moonGuard:
+            return "Guard"
+        }
+    }
+
+    var action: String {
+        switch self {
+        case .helloWave:
+            return "Wave hello"
+        case .sparkHop:
+            return "Practice hop"
+        case .cheekClap:
+            return "Clap sparks"
+        case .phraseEcho:
+            return "Echo phrase"
+        case .focusSit:
+            return "Practice sit"
+        case .questPoint:
+            return "Point route"
+        case .cipherTilt:
+            return "Tilt clue"
+        case .weatherDash:
+            return "Dash safely"
+        case .guardianBow:
+            return "Bow proudly"
+        case .moonGuard:
+            return "Guard moon"
+        }
+    }
+
+    var requiredStage: PetGrowthStage {
+        switch self {
+        case .helloWave, .sparkHop:
+            return .tinySpark
+        case .cheekClap, .phraseEcho:
+            return .pocketPal
+        case .focusSit, .questPoint:
+            return .trailBuddy
+        case .cipherTilt, .weatherDash:
+            return .stormScout
+        case .guardianBow, .moonGuard:
+            return .stormGuardian
+        }
+    }
+
+    func isUnlocked(stage: PetGrowthStage) -> Bool {
+        stage.rawValue >= requiredStage.rawValue
+    }
+
+    func performLine(stage: PetGrowthStage, feeling: PetFeeling) -> String {
+        switch self {
+        case .helloWave:
+            return "\(stage.shortLabel) looks down, looks up, then gives a tiny hello wave."
+        case .sparkHop:
+            return "\(stage.shortLabel) does one bright spark hop and lands with \(feeling.title.lowercased()) eyes."
+        case .cheekClap:
+            return "\(stage.shortLabel) claps its cheeks softly, saving the sparks instead of scattering them."
+        case .phraseEcho:
+            return "\(stage.shortLabel) repeats a phrase echo, then waits for the user's voice."
+        case .focusSit:
+            return "\(stage.shortLabel) sits beside the first minute and keeps the desk calm."
+        case .questPoint:
+            return "\(stage.shortLabel) points at one safe quest route before the big path."
+        case .cipherTilt:
+            return "\(stage.shortLabel) tilts its head until the clue starts to make sense."
+        case .weatherDash:
+            return "\(stage.shortLabel) dashes through a tiny storm and comes back steady."
+        case .guardianBow:
+            return "\(stage.shortLabel) bows like a proud guardian after a finished care loop."
+        case .moonGuard:
+            return "\(stage.shortLabel) guards the moon lamp and lowers the room's urgency."
+        }
+    }
+
+    var vital: PetCareVital {
+        switch self {
+        case .helloWave, .cheekClap:
+            return .snack
+        case .sparkHop, .questPoint, .weatherDash:
+            return .play
+        case .phraseEcho, .focusSit, .cipherTilt:
+            return .focus
+        case .guardianBow, .moonGuard:
+            return .rest
+        }
+    }
+
+    var moodStep: PetMoodCareStep {
+        switch self {
+        case .helloWave:
+            return .soothe
+        case .sparkHop, .cheekClap, .weatherDash:
+            return .play
+        case .phraseEcho:
+            return .study
+        case .focusSit:
+            return .focus
+        case .questPoint:
+            return .adventure
+        case .cipherTilt:
+            return .puzzle
+        case .guardianBow:
+            return .cheer
+        case .moonGuard:
+            return .rest
+        }
+    }
+
+    var mood: PetMood {
+        switch self {
+        case .helloWave, .cheekClap, .guardianBow:
+            return .happy
+        case .sparkHop, .weatherDash:
+            return .hyper
+        case .phraseEcho, .cipherTilt:
+            return .peek
+        case .focusSit:
+            return .perch
+        case .questPoint:
+            return .patrol
+        case .moonGuard:
+            return .sleepGuard
+        }
+    }
+
+    var sparkReward: Int {
+        switch self {
+        case .helloWave, .sparkHop:
+            return 6
+        case .cheekClap, .phraseEcho:
+            return 8
+        case .focusSit, .questPoint:
+            return 10
+        case .cipherTilt, .weatherDash:
+            return 12
+        case .guardianBow, .moonGuard:
+            return 14
+        }
+    }
+
+    var spriteSlug: String {
+        switch self {
+        case .helloWave:
+            return "hello-wave"
+        case .sparkHop:
+            return "spark-hop"
+        case .cheekClap:
+            return "cheek-clap"
+        case .phraseEcho:
+            return "phrase-echo"
+        case .focusSit:
+            return "focus-sit"
+        case .questPoint:
+            return "quest-point"
+        case .cipherTilt:
+            return "cipher-tilt"
+        case .weatherDash:
+            return "weather-dash"
+        case .guardianBow:
+            return "guardian-bow"
+        case .moonGuard:
+            return "moon-guard"
+        }
+    }
+
+    var spriteRequestName: String {
+        "pet-{stage}-trick-\(spriteSlug).png"
+    }
+
+    static func count(mask: Int) -> Int {
+        allCases.filter { mask & $0.rawValue != 0 }.count
+    }
+
+    static func unlocked(stage: PetGrowthStage) -> [PetTrick] {
+        allCases.filter { $0.isUnlocked(stage: stage) }
+    }
+
+    static func next(
+        stage: PetGrowthStage,
+        feeling: PetFeeling,
+        careNeed: PetCareNeed,
+        practicedMask: Int,
+        index: Int
+    ) -> PetTrick? {
+        let unlocked = unlocked(stage: stage)
+        guard !unlocked.isEmpty else { return nil }
+        let remaining = unlocked.filter { practicedMask & $0.rawValue == 0 }
+        let pool = remaining.isEmpty ? unlocked : remaining
+
+        let preferred: PetTrick
+        switch feeling {
+        case .sleepy, .protective:
+            preferred = .moonGuard
+        case .focused:
+            preferred = .focusSit
+        case .curious:
+            preferred = .cipherTilt
+        case .overcharged, .playful, .restless:
+            preferred = .sparkHop
+        case .proud, .celebrating, .grateful:
+            preferred = .guardianBow
+        case .hungry, .comfort, .lonely:
+            preferred = .helloWave
+        case .determined:
+            preferred = .questPoint
+        case .bright, .eager:
+            switch careNeed {
+            case .study:
+                preferred = .phraseEcho
+            case .adventure:
+                preferred = .questPoint
+            case .focus:
+                preferred = .focusSit
+            case .puzzle:
+                preferred = .cipherTilt
+            case .rest:
+                preferred = .moonGuard
+            case .affection:
+                preferred = .helloWave
+            case .play:
+                preferred = .sparkHop
+            }
+        }
+
+        if pool.contains(where: { $0 == preferred && $0.isUnlocked(stage: stage) }) {
+            return preferred
+        }
+        return pool[index % pool.count]
+    }
+
+    static func summary(
+        offeredMask: Int,
+        practicedMask: Int,
+        dismissedMask: Int,
+        albumMask: Int,
+        latest: PetTrick?,
+        stage: PetGrowthStage
+    ) -> String {
+        let offered = count(mask: offeredMask)
+        let practiced = count(mask: practicedMask)
+        let dismissed = count(mask: dismissedMask)
+        let album = count(mask: albumMask)
+        let unlockedCount = unlocked(stage: stage).count
+        let latestText = latest.map { "Latest \($0.title)" } ?? "trick practice waiting"
+        return "Trickbook \(practiced)/\(max(1, unlockedCount)) practiced · \(offered) offered · \(dismissed) skipped · Album \(album)/\(allCases.count) · \(latestText)"
+    }
+}
+
 struct PetComebackReward {
     let sparks: Int
     let joy: Int

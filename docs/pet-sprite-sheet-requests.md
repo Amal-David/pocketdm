@@ -6,6 +6,9 @@ Use this for every sheet so extraction stays clean:
 
 - PNG with transparent background.
 - 12 frames per animation, horizontal strip preferred.
+- 2 x 6 contact-sheet-style layouts are accepted for first-pass concept demos;
+  the native macOS loader can slice them, but horizontal strips are still the
+  preferred final animation format.
 - 512 x 512 pixels per frame, so a horizontal strip is 6144 x 512.
 - Same camera, same character scale, same ground position, same lighting.
 - No labels, no title text, no grid, no border, no sticker outline, no drop
@@ -1665,6 +1668,50 @@ transparent strip for every growth stage:
   - Pet lights a soft lamp for night watch without adding a dark outline.
 - `pet-{stage}-journal-toybox.png`
   - Pet opens a tiny Toybox album with played and locked objects.
+
+## Trickbook Sheets
+
+These support growth-locked trick practice. Each trick needs a 12-frame
+transparent strip for the stages where that trick is unlocked:
+
+- `pet-{stage}-trick-hello-wave.png`
+  - Tiny Spark and later: looks down, looks up, notices the user, then waves.
+- `pet-{stage}-trick-spark-hop.png`
+  - Tiny Spark and later: one safe bright hop with a clean landing.
+- `pet-{stage}-trick-cheek-clap.png`
+  - Pocket Pal and later: soft cheek clap that stores sparks instead of
+    scattering them.
+- `pet-{stage}-trick-phrase-echo.png`
+  - Pocket Pal and later: listens, repeats a phrase shape, and waits proudly.
+- `pet-{stage}-trick-focus-sit.png`
+  - Trail Buddy and later: sits beside an invisible first-minute task.
+- `pet-{stage}-trick-quest-point.png`
+  - Trail Buddy and later: points toward one safe route before the full quest.
+- `pet-{stage}-trick-cipher-tilt.png`
+  - Storm Scout and later: head tilt, clue click, small solved sparkle.
+- `pet-{stage}-trick-weather-dash.png`
+  - Storm Scout and later: tiny storm dash, quick recovery, steady return.
+- `pet-{stage}-trick-guardian-bow.png`
+  - Storm Guardian: proud bow after a completed care loop.
+- `pet-{stage}-trick-moon-guard.png`
+  - Storm Guardian: quiet moon-lamp guard, no dark outline or heavy shadow.
+- `pet-{stage}-journal-trickbook.png`
+  - Pet opens a Trickbook album with practiced and locked tricks.
+
+## Character Skin Modes
+
+The native companion can now run in two character modes:
+
+- `--character pika`
+  - Uses the Pika-facing text prefix and a cuter, higher-pitched local voice
+    profile.
+- `--character golden`
+  - Uses the original golden 3D mascot concept sheets from
+    `output/sprite-sheets/` when available and a softer sparkle voice profile.
+
+The same pet logic, albums, nudges, and care loops apply to both characters.
+Future skins should keep the same filename/action vocabulary so the app can
+switch characters without rewriting the game logic.
 
 ## Language Coach Sheets
 
