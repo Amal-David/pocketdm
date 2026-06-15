@@ -1106,6 +1106,8 @@ final class DragonOverlayModel: ObservableObject {
     @Published var chatMessages = DragonOverlayModel.loadChatMessages()
     @Published var serverLine = "Checking PocketDM..."
     @Published var minimized = true
+    @Published var introVideoActive: Bool = !UserDefaults.standard.bool(forKey: "PocketDMCompanion.hasSeenIntro")
+    @Published var napVideoActive = false
     @Published var soundEnabled = UserDefaults.standard.object(forKey: DragonOverlayModel.soundEnabledKey) as? Bool ?? true
     @Published var busy = false
     @Published var mood: PetMood = .idle
@@ -1999,8 +2001,15 @@ final class DragonOverlayModel: ObservableObject {
         setMood(.happy, duration: 1.6)
     }
 
+    func finishIntroVideo() {
+        guard introVideoActive else { return }
+        introVideoActive = false
+        UserDefaults.standard.set(true, forKey: "PocketDMCompanion.hasSeenIntro")
+    }
+
     func nap() {
         applyVitalDecay()
+        napVideoActive = true
         message = pikaText("Pikachu curls up for a tiny recharge. It will keep watch quietly.")
         conversationBubbleActive = true
         appendChatMessage(.user, "Nap")
@@ -2415,6 +2424,7 @@ final class DragonOverlayModel: ObservableObject {
         let priorStage = growthStage
         let asksForHint = isHintPrompt(prompt)
         applyVitalDecay()
+        napVideoActive = false
         let requestText = displayRequest ?? prompt
         lastRequest = requestText
         conversationBubbleActive = true
@@ -10266,6 +10276,7 @@ struct DragonOverlayView: View {
                         mood: model.mood,
                         size: min(CGFloat(petHovering ? 190 : 182) * model.petScale, 198)
                     )
+                    .overlay(petVideoOverlay)
                 }
                 .buttonStyle(.plain)
                 .contentShape(PetHoverShape())
@@ -10496,6 +10507,20 @@ struct DragonOverlayView: View {
         .frame(maxWidth: .infinity, alignment: .top)
     }
 
+    @ViewBuilder private var petVideoOverlay: some View {
+        if model.introVideoActive {
+            TransparentVideoView(resource: "pet-intro-greeting", onFinished: { model.finishIntroVideo() })
+                .frame(width: 230, height: 230)
+                .allowsHitTesting(false)
+                .transition(.opacity)
+        } else if model.napVideoActive {
+            TransparentVideoView(resource: "pet-nap")
+                .frame(width: 230, height: 230)
+                .allowsHitTesting(false)
+                .transition(.opacity)
+        }
+    }
+
     private var expandedPetStage: some View {
         ZStack(alignment: .topTrailing) {
             VStack(spacing: -2) {
@@ -10510,6 +10535,7 @@ struct DragonOverlayView: View {
                     size: min(CGFloat(petHovering ? 188 : 178) * model.petScale, 198)
                 )
                 .frame(width: 252, height: 184)
+                .overlay(petVideoOverlay)
                 .contentShape(PetHoverShape())
                 .onHover { isHovering in
                     withAnimation(.spring(response: 0.22, dampingFraction: 0.72)) {
@@ -12706,6 +12732,103 @@ struct ConfettiBurstView: View {
                 animate = true
             }
         }
+    }
+}
+
+final class TransparentVideoNSView: NSView {
+    private var player: AVPlayer?
+    private var playerLayer: AVPlayerLayer?
+    private var loopObserver: NSObjectProtocol?
+    private var endObserver: NSObjectProtocol?
+    private var currentResource: String?
+    var onFinished: (() -> Void)?
+
+    override init(frame frameRect: NSRect) {
+        super.init(frame: frameRect)
+        configureLayer()
+    }
+
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        configureLayer()
+    }
+
+    private func configureLayer() {
+        wantsLayer = true
+        layer?.backgroundColor = NSColor.clear.cgColor
+        layer?.isOpaque = false
+    }
+
+    func play(resource: String, loop: Bool) {
+        guard currentResource != resource else { return }
+        currentResource = resource
+        cleanup()
+        guard let url = Bundle.module.url(forResource: resource, withExtension: "mov") else {
+            onFinished?()
+            return
+        }
+        let item = AVPlayerItem(url: url)
+        let avPlayer = AVPlayer(playerItem: item)
+        avPlayer.actionAtItemEnd = loop ? .none : .pause
+        let avLayer = AVPlayerLayer(player: avPlayer)
+        avLayer.videoGravity = .resizeAspectFill
+        avLayer.backgroundColor = NSColor.clear.cgColor
+        avLayer.isOpaque = false
+        avLayer.frame = bounds
+        layer?.addSublayer(avLayer)
+        player = avPlayer
+        playerLayer = avLayer
+        if loop {
+            loopObserver = NotificationCenter.default.addObserver(
+                forName: .AVPlayerItemDidPlayToEndTime, object: item, queue: .main
+            ) { [weak avPlayer] _ in
+                avPlayer?.seek(to: .zero)
+                avPlayer?.play()
+            }
+        } else {
+            endObserver = NotificationCenter.default.addObserver(
+                forName: .AVPlayerItemDidPlayToEndTime, object: item, queue: .main
+            ) { [weak self] _ in
+                self?.onFinished?()
+            }
+        }
+        avPlayer.play()
+    }
+
+    private func cleanup() {
+        if let loopObserver { NotificationCenter.default.removeObserver(loopObserver) }
+        if let endObserver { NotificationCenter.default.removeObserver(endObserver) }
+        loopObserver = nil
+        endObserver = nil
+        player?.pause()
+        playerLayer?.removeFromSuperlayer()
+        player = nil
+        playerLayer = nil
+    }
+
+    override func layout() {
+        super.layout()
+        playerLayer?.frame = bounds
+    }
+
+    deinit { cleanup() }
+}
+
+struct TransparentVideoView: NSViewRepresentable {
+    let resource: String
+    var loop: Bool = false
+    var onFinished: (() -> Void)? = nil
+
+    func makeNSView(context: Context) -> TransparentVideoNSView {
+        let view = TransparentVideoNSView()
+        view.onFinished = onFinished
+        view.play(resource: resource, loop: loop)
+        return view
+    }
+
+    func updateNSView(_ nsView: TransparentVideoNSView, context: Context) {
+        nsView.onFinished = onFinished
+        nsView.play(resource: resource, loop: loop)
     }
 }
 
