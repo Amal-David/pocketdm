@@ -1117,6 +1117,12 @@ final class DragonOverlayModel: ObservableObject {
     @Published var voiceTranscript = ""
     @Published var voiceStatusLine = "Ready for a daily check-in."
     @Published var voiceVisualState: VoiceVisualState = .idle
+    /// True while Pika's TTS is audibly playing. Half-duplex turn-taking: the mic stays
+    /// gated (fully torn down) until playback finishes so we never transcribe our own voice.
+    private var isSpeaking = false
+    /// Tail cooldown after TTS playback ends before the mic re-opens, so the speaker's
+    /// acoustic decay / room reverb can't false-trigger the VAD (Pipecat/LiveKit pattern).
+    private static let postSpeechResumeCooldown: TimeInterval = 0.6
     @Published var conversationBubbleActive = false
     @Published var runtimeStackStatus = RuntimeStackStatus.detecting
     @Published var companionHP = UserDefaults.standard.object(forKey: DragonOverlayModel.companionHPKey) as? Int ?? 3
@@ -1451,6 +1457,9 @@ final class DragonOverlayModel: ObservableObject {
             guard let self else { return }
             self.voiceStatusLine = statusLine
             self.handleVoicePlaybackStatus(statusLine)
+        }
+        soundPlayer.onPlaybackFinished = { [weak self] in
+            self?.handleVoicePlaybackFinished()
         }
         syncDailyCombo()
         rechargeEnergy()
@@ -1830,6 +1839,7 @@ final class DragonOverlayModel: ObservableObject {
                 guard let self,
                       self.handsFreeConversationEnabled,
                       !self.isVoiceListening,
+                      !self.isSpeaking,
                       !self.busy,
                       self.learningMode == .chat else {
                     return
@@ -1844,18 +1854,20 @@ final class DragonOverlayModel: ObservableObject {
         handsFreeRestartTask = nil
     }
 
-    private func markVoiceSpeaking(autoResetAfter delay: TimeInterval = 2.4) {
+    private func markVoiceSpeaking(autoResetAfter delay: TimeInterval = 15.0) {
         guard soundEnabled else { return }
+        // Pika is (about to be) audibly speaking: gate the mic for the whole utterance.
+        isSpeaking = true
         voiceVisualResetTask?.cancel()
         voiceVisualState = .speaking
+        // Safety net only — the real reset comes from the playback-finished callback. This
+        // just guarantees we never get stuck "speaking" forever if a TTS request hangs.
         voiceVisualResetTask = Task { [weak self] in
             try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
             if Task.isCancelled { return }
             await MainActor.run {
-                guard let self,
-                      !self.isVoiceListening,
-                      self.voiceVisualState == .speaking else { return }
-                self.voiceVisualState = self.busy ? .thinking : .idle
+                guard let self, self.isSpeaking, self.voiceVisualState == .speaking else { return }
+                self.handleVoicePlaybackFinished()
             }
         }
     }
@@ -1871,9 +1883,29 @@ final class DragonOverlayModel: ObservableObject {
                     || lowered.contains("returned no playable")
                     || lowered.contains("could not play")
                     || lowered.contains("muted") {
-            if !isVoiceListening {
-                voiceVisualState = busy ? .thinking : .idle
-            }
+            // No audio will play for this turn — treat it as playback finished so the
+            // half-duplex loop still re-opens the mic instead of stalling in "speaking".
+            handleVoicePlaybackFinished()
+        }
+    }
+
+    /// Called once the ENTIRE TTS stream for a reply has finished playing (or failed). This
+    /// is the only place the mic is allowed to re-open in hands-free mode — never on a fixed
+    /// timer while Pika is still talking, which would transcribe her own voice back as a new
+    /// turn (the echo loop). Mirrors Pipecat's STTMuteStrategy.ALWAYS (mute STT while the bot
+    /// speaks) plus a tail cooldown before un-gating.
+    private func handleVoicePlaybackFinished() {
+        isSpeaking = false
+        voiceVisualResetTask?.cancel()
+        if handsFreeConversationEnabled, soundEnabled, !busy, !isVoiceListening {
+            // Keep the UI in "speaking" through the short cooldown so the user doesn't talk
+            // into a still-muted mic; startVoiceConversation flips it to "listening" the
+            // instant the mic actually re-opens. The mic/WS were fully torn down while
+            // speaking, so resuming starts a fresh capture + fresh server VAD — any TTS tail
+            // is discarded, never replayed as input.
+            scheduleHandsFreeRestart(after: Self.postSpeechResumeCooldown)
+        } else if !isVoiceListening {
+            voiceVisualState = busy ? .thinking : .idle
         }
     }
 
@@ -10047,6 +10079,9 @@ final class PetSoundPlayer {
     private var lastPikaAt = Date.distantPast
     private var externalVoiceSound: NSSound?
     var onVoiceStatus: ((String) -> Void)?
+    /// Fired on the main actor once the full TTS stream for a reply has finished playing
+    /// (or failed). The model uses this to re-open the mic in half-duplex hands-free mode.
+    var onPlaybackFinished: (() -> Void)?
 
     func play(_ sound: PetSound, enabled: Bool) {
         guard enabled, let player = soundInstance(for: sound) else { return }
@@ -10128,11 +10163,13 @@ final class PetSoundPlayer {
                     self.onVoiceStatus?("Pika voice fallback: bundled chirp.")
                     self.play(sound, enabled: enabled)
                 }
+                self.onPlaybackFinished?()
             }
             return
         }
 
         play(sound, enabled: enabled)
+        onPlaybackFinished?()
     }
 
     private func recentlyPlayedMascotSound(at now: Date) -> Bool {
@@ -10174,9 +10211,11 @@ final class PetSoundPlayer {
                         self.onVoiceStatus?("Pika voice fallback: bundled chirp.")
                         self.play(sound, enabled: enabled)
                     }
+                    self.onPlaybackFinished?()
                 }
             } else {
                 play(sound, enabled: enabled)
+                onPlaybackFinished?()
             }
             return
         }
