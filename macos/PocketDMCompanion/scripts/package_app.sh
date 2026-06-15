@@ -91,7 +91,7 @@ if [[ ! -d "$resource_bundle" ]]; then
   echo "SwiftPM did not produce the expected resource bundle: $resource_bundle" >&2
   exit 66
 fi
-cp -R "$resource_bundle" "$bundle/$resource_bundle_name"
+cp -R "$resource_bundle" "$bundle/Contents/Resources/$resource_bundle_name"
 chmod 755 "$bundle/Contents/MacOS/PocketDMCompanion"
 printf 'APPL????' > "$bundle/Contents/PkgInfo"
 
@@ -104,5 +104,15 @@ if [[ "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$bundle/Content
   exit 65
 fi
 
-echo "Created unsigned local app bundle: $bundle" >&2
+# Code-sign with a stable Apple Development identity so macOS (TCC) remembers the
+# microphone/speech permission grant across rebuilds and relaunches. An ad-hoc
+# signature changes every build, which is why the mic permission kept re-prompting.
+# Falls back to ad-hoc if the stable identity isn't available on this machine.
+sign_identity="${POCKETDM_CODESIGN_IDENTITY:-7D85F11EAF637E167025E747F0303E092EA3C781}"
+if codesign --force --deep --sign "$sign_identity" "$bundle" >/dev/null 2>&1; then
+  echo "Signed app bundle with stable identity ($sign_identity): $bundle" >&2
+else
+  codesign --force --deep --sign - "$bundle" >/dev/null 2>&1 || true
+  echo "Created ad-hoc signed app bundle (stable identity unavailable): $bundle" >&2
+fi
 printf '%s\n' "$bundle"
