@@ -1,7 +1,7 @@
 {
   "workspace_path": "/Users/amal/listenowl/experiments/build-small",
   "session_id": "workspace:/Users/amal/listenowl/experiments/build-small",
-  "updated_at": "2026-06-11T14:00:46.908Z",
+  "updated_at": "2026-06-15T20:16:39.239Z",
   "focused_change": {
     "change_id": "pocketdm",
     "title": "PocketDM — offline voiced tiny-model Dungeon Master (Build Small hackathon)",
@@ -148,6 +148,47 @@
         "started_at": "2026-06-11T13:44:07.047Z",
         "completed_at": "2026-06-11T13:45:21.690Z",
         "updated_at": "2026-06-11T13:45:21.690Z"
+      },
+      {
+        "task_id": "T-0017",
+        "title": "Tighten the existing wellness/game-loop state in `macos/PocketDMCompanion/Sources/PocketDMCompanion/main.swift` and add focused tests that protect the requested behavior without widening unrelated native app work.",
+        "status": "done",
+        "completed_acceptance_criteria": 5,
+        "total_acceptance_criteria": 5,
+        "progress_percent": 100
+      },
+      {
+        "task_id": "T-0101",
+        "title": "Create space/app.py: a self-contained Gradio app reusing web_pet.py's UI/CSS/layout (centered Pikachu, mic click-to-talk, text input, chat bubbles, daily check-in, chip row) but loading models IN-PROCESS, lazy-loaded on first request with a 'waking up' status. Brain = MiniCPM5-1B via llama_cpp, GGUF downloaded with hf_hub_download('openbmb/MiniCPM5-1B-GGUF','MiniCPM5-1B-Q4_K_M.gguf'); reply built with server.py system prompt + gather_tool_facts injection. STT = faster_whisper.WhisperModel('small.en'). TTS = voxcpm.VoxCPM.from_pretrained('openbmb/VoxCPM-0.5B') using bundled female ref as prompt_wav_path/prompt_text, then _style_voice pitch(1.18)/rate(0.85) ffmpeg styling. Copy app/static/pika-*.png and app/voices/refs/pika-female-ref.{wav,txt} into space/.",
+        "status": "done",
+        "completed_acceptance_criteria": 3,
+        "total_acceptance_criteria": 3,
+        "progress_percent": 100,
+        "started_at": "2026-06-15T20:01:05.379Z",
+        "completed_at": "2026-06-15T20:05:59.379Z",
+        "updated_at": "2026-06-15T20:05:59.379Z"
+      },
+      {
+        "task_id": "T-0102",
+        "title": "Finalize space/README.md with HF Spaces YAML front-matter using the EXACT verified tags from docs/hackathon-submission.md (track:wood, sponsor:openbmb, achievement:offbrand, achievement:offgrid) plus title/emoji/colorFrom/colorTo/sdk:gradio/sdk_version/app_file:app.py/pinned + a short write-up. Update space/requirements.txt with all in-process deps (gradio==6.17.3, llama-cpp-python, voxcpm, faster-whisper, huggingface_hub, numpy, soundfile).",
+        "status": "done",
+        "completed_acceptance_criteria": 2,
+        "total_acceptance_criteria": 2,
+        "progress_percent": 100,
+        "started_at": "2026-06-15T20:06:10.248Z",
+        "completed_at": "2026-06-15T20:07:19.754Z",
+        "updated_at": "2026-06-15T20:07:19.754Z"
+      },
+      {
+        "task_id": "T-0103",
+        "title": "Create the Space amal-david/pocket-pikachu (repo_type=space, space_sdk=gradio) via huggingface_hub.HfApi. Upload space/ contents with upload_folder, excluding large local models. Set hardware to cpu-basic. Poll the Space runtime/status once to confirm it exists and is building. Report URL, build/start state, and any blocker (CPU latency, dep conflicts, sdk_version rejection).",
+        "status": "done",
+        "completed_acceptance_criteria": 3,
+        "total_acceptance_criteria": 3,
+        "progress_percent": 100,
+        "started_at": "2026-06-15T20:07:29.743Z",
+        "completed_at": "2026-06-15T20:16:39.234Z",
+        "updated_at": "2026-06-15T20:16:39.234Z"
       }
     ],
     "blocked": [

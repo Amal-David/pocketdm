@@ -96,6 +96,22 @@ if [[ -n "$model" ]]; then
   export POCKETDM_PIKA_TTS_MODEL="$model"
 fi
 
+# Default to the single cute, high-energy female Pika voice (cloned from a clean,
+# license-free reference) with a higher pitch and slower, enthusiastic delivery so
+# every VoxCPM start sounds consistent. All overridable via env.
+if [[ "$backend" == "voxcpm" ]]; then
+  ref_default="$repo_root/app/voices/refs/pika-female-ref.wav"
+  if [[ -z "${POCKETDM_PIKA_TTS_REF:-}" && -f "$ref_default" ]]; then
+    export POCKETDM_PIKA_TTS_REF="$ref_default"
+    if [[ -z "${POCKETDM_PIKA_TTS_PROMPT_TEXT:-}" && -f "$repo_root/app/voices/refs/pika-female-ref.txt" ]]; then
+      export POCKETDM_PIKA_TTS_PROMPT_TEXT="$(cat "$repo_root/app/voices/refs/pika-female-ref.txt")"
+    fi
+  fi
+  export POCKETDM_PIKA_TTS_PITCH="${POCKETDM_PIKA_TTS_PITCH:-1.18}"
+  export POCKETDM_PIKA_TTS_RATE="${POCKETDM_PIKA_TTS_RATE:-0.85}"
+  export POCKETDM_PIKA_TTS_STEPS="${POCKETDM_PIKA_TTS_STEPS:-16}"
+fi
+
 args=(--host "$host" --port "$port" --backend "$backend")
 if [[ "$warmup" -eq 1 ]]; then
   args+=(--warmup)

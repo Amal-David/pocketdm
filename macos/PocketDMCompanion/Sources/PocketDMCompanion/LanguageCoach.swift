@@ -306,11 +306,19 @@ final class LanguageSpeechSynthesizer {
             synthesizer.stopSpeaking(at: .immediate)
         }
         let utterance = AVSpeechUtterance(string: text)
-        utterance.voice = AVSpeechSynthesisVoice(language: languageCode)
+        utterance.voice = Self.femaleVoice(for: languageCode)
+            ?? AVSpeechSynthesisVoice(language: languageCode)
             ?? AVSpeechSynthesisVoice(language: "en-US")
         utterance.rate = slow ? 0.32 : 0.46
         utterance.pitchMultiplier = 1.04
         utterance.volume = 0.92
         synthesizer.speak(utterance)
+    }
+
+    private static func femaleVoice(for languageCode: String) -> AVSpeechSynthesisVoice? {
+        let prefix = String(languageCode.prefix(2)).lowercased()
+        return AVSpeechSynthesisVoice.speechVoices().first {
+            $0.language.lowercased().hasPrefix(prefix) && $0.gender == .female
+        }
     }
 }

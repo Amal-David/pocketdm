@@ -346,7 +346,7 @@ enum CompanionCharacter: String, CaseIterable, Identifiable {
 @MainActor
 final class DragonOverlayController {
     private static let minimizedSize = NSSize(width: 216, height: 224)
-    private static let expandedSize = NSSize(width: 620, height: 560)
+    private static let expandedSize = NSSize(width: 620, height: 520)
     private static let expandedMinimumSize = NSSize(width: 520, height: 430)
 
     private let panel: NSPanel
@@ -452,7 +452,7 @@ final class DragonOverlayController {
         let screen = activeScreen(for: frame).visibleFrame
         var next = frame
         let availableWidth = max(Self.minimizedSize.width, screen.width - 16)
-        let availableHeight = max(Self.minimizedSize.height, screen.height - 16)
+        let availableHeight = max(Self.minimizedSize.height, screen.height - 48)
         next.size.width = min(next.width, availableWidth)
         next.size.height = min(next.height, availableHeight)
         let minX = screen.minX + 8
@@ -470,7 +470,7 @@ final class DragonOverlayController {
 
     private func fittedSize(_ desired: NSSize, minimum: NSSize, visibleFrame: NSRect) -> NSSize {
         let availableWidth = max(Self.minimizedSize.width, visibleFrame.width - 16)
-        let availableHeight = max(Self.minimizedSize.height, visibleFrame.height - 16)
+        let availableHeight = max(Self.minimizedSize.height, visibleFrame.height - 48)
         let width = availableWidth >= minimum.width ? min(desired.width, availableWidth) : availableWidth
         let height = availableHeight >= minimum.height ? min(desired.height, availableHeight) : availableHeight
         return NSSize(width: width, height: height)
@@ -2200,14 +2200,22 @@ final class DragonOverlayModel: ObservableObject {
         applyVitalDecay()
         syncDailyCombo()
         guard let expected = nextIncompleteDailyWellnessAction else {
-            lastRequest = "Wellness"
+            // All daily checks done — still give a small bonus care tap so the bond keeps
+            // growing. Keeps Health improvable on demand (and great for the live demo).
+            lastRequest = "Bonus care"
             conversationBubbleActive = true
             if recordUserMessage {
-                appendChatMessage(.user, "Wellness")
+                appendChatMessage(.user, "Bonus care")
             }
-            message = pikaText("All wellness checks are complete for today. Pikachu keeps today's care spark warm.")
+            companionHP = min(10, companionHP + 1)
+            awardCompanionHealth(20)
+            happiness = min(5, happiness + 1)
+            earnSparkDust(2)
+            celebrationBurstID += 1
+            persistCare()
+            message = pikaText("Pika pika! Bonus care! Bond HP up and Joy refilled.")
             appendChatMessage(.assistant, message)
-            voiceStatusLine = "Wellness complete for today."
+            voiceStatusLine = "Bonus care. Health up."
             play(.happy)
             setMood(.happy, duration: 1.2)
             return
@@ -10319,7 +10327,7 @@ struct DragonOverlayView: View {
                     .accessibilityLabel("Open \(model.companionCharacter.title) conversation")
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .offset(x: -18, y: 0)
+                .offset(x: 4, y: 0)
                 .transition(.move(edge: .top).combined(with: .opacity))
             }
 
@@ -10509,10 +10517,13 @@ struct DragonOverlayView: View {
                     }
                 }
 
-                if model.voiceVisualState.isAnimated {
+                if model.voiceVisualState == .listening || model.voiceVisualState == .speaking {
                     AudioWaveView(state: model.voiceVisualState, compact: false)
                         .frame(width: 122, height: 28)
                         .transition(.scale(scale: 0.9).combined(with: .opacity))
+                } else if model.busy || model.voiceVisualState == .thinking || model.voiceVisualState == .transcribing {
+                    thinkingIndicator
+                        .transition(.scale.combined(with: .opacity))
                 }
 
                 dailyCareNudge
@@ -10525,6 +10536,20 @@ struct DragonOverlayView: View {
         }
         .frame(maxWidth: .infinity, minHeight: 250, alignment: .center)
         .overlay(ConfettiBurstView(trigger: model.celebrationBurstID))
+    }
+
+    private var thinkingIndicator: some View {
+        HStack(spacing: 8) {
+            ThinkingDotsView()
+            Text(model.voiceVisualState == .transcribing ? "Listening to you…" : "Pikachu is thinking…")
+                .font(.system(size: 12, weight: .black, design: .rounded))
+                .foregroundStyle(Color.ivory.opacity(0.92))
+                .lineLimit(1)
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 6)
+        .background(.black.opacity(0.55), in: Capsule())
+        .overlay(Capsule().stroke(Color.gold.opacity(0.35), lineWidth: 1))
     }
 
     private var careStatusPanel: some View {
@@ -10554,7 +10579,7 @@ struct DragonOverlayView: View {
                         Label(action.actionTitle, systemImage: action.systemImage)
                     }
                     .buttonStyle(MiniPanelButtonStyle(kind: .primary))
-                    .disabled(model.busy || model.isVoiceListening || model.isDailyWellnessComplete)
+                    .disabled(model.busy || model.isVoiceListening)
 
                     Button {
                         model.spinEmotionWheel()
@@ -10615,7 +10640,7 @@ struct DragonOverlayView: View {
 
     private var dailyCareNudge: some View {
         let action = model.nextDailyWellnessAction
-        let promptText = model.isDailyWellnessComplete ? "Care done for today." : action.question
+        let promptText = model.isDailyWellnessComplete ? "Bonus care keeps the bond glowing!" : action.question
 
         return HStack(spacing: 8) {
             Image(systemName: action.systemImage)
@@ -10638,7 +10663,7 @@ struct DragonOverlayView: View {
             }
             .buttonStyle(DragonMiniButtonStyle(kind: .primary))
             .frame(width: 112)
-            .disabled(model.busy || model.isVoiceListening || model.isDailyWellnessComplete)
+            .disabled(model.busy || model.isVoiceListening)
 
             Button {
                 model.spinEmotionWheel()
@@ -10683,7 +10708,7 @@ struct DragonOverlayView: View {
 
     private var companionHealthHUD: some View {
         let action = model.nextDailyWellnessAction
-        let promptText = model.isDailyWellnessComplete ? "Care done for today." : action.question
+        let promptText = model.isDailyWellnessComplete ? "Bonus care keeps the bond glowing!" : action.question
 
         return VStack(alignment: .leading, spacing: 7) {
             HStack(alignment: .firstTextBaseline, spacing: 8) {
@@ -10716,7 +10741,7 @@ struct DragonOverlayView: View {
                 }
                 .buttonStyle(DragonMiniButtonStyle(kind: .primary))
                 .frame(width: 112)
-                .disabled(model.busy || model.isVoiceListening || model.isDailyWellnessComplete)
+                .disabled(model.busy || model.isVoiceListening)
 
                 Button {
                     model.spinEmotionWheel()
@@ -11410,29 +11435,13 @@ struct DragonOverlayView: View {
     }
 
     private func beginVoiceFromExpanded(mode: VoiceConversationMode = .freeform) {
-        guard microphonePermissionNeedsPrompt else {
-            model.startVoiceConversation(mode: mode)
-            return
-        }
-        withAnimation(.spring(response: 0.24, dampingFraction: 0.78)) {
-            model.setMinimized(true)
-        }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.24) {
-            model.startVoiceConversation(mode: mode)
-        }
+        // Stay expanded while talking — never collapse to pet-only on mic start.
+        model.startVoiceConversation(mode: mode)
     }
 
     private func toggleHandsFreeFromExpanded() {
-        guard !model.handsFreeConversationEnabled, microphonePermissionNeedsPrompt else {
-            model.toggleHandsFreeConversation()
-            return
-        }
-        withAnimation(.spring(response: 0.24, dampingFraction: 0.78)) {
-            model.setMinimized(true)
-        }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.24) {
-            model.toggleHandsFreeConversation()
-        }
+        // Stay expanded while talking — never collapse to pet-only on mic start.
+        model.toggleHandsFreeConversation()
     }
 
     private func toggleSingleTurnVoiceFromExpanded() {
@@ -12697,6 +12706,29 @@ struct ConfettiBurstView: View {
                 animate = true
             }
         }
+    }
+}
+
+struct ThinkingDotsView: View {
+    @State private var phase = 0
+    private let timer = Timer.publish(every: 0.32, on: .main, in: .common).autoconnect()
+
+    var body: some View {
+        HStack(spacing: 5) {
+            ForEach(0..<3, id: \.self) { index in
+                Circle()
+                    .fill(Color.gold)
+                    .frame(width: 7, height: 7)
+                    .opacity(phase == index ? 1.0 : 0.32)
+                    .scaleEffect(phase == index ? 1.25 : 0.8)
+            }
+        }
+        .onReceive(timer) { _ in
+            withAnimation(.easeInOut(duration: 0.28)) {
+                phase = (phase + 1) % 3
+            }
+        }
+        .accessibilityLabel("Thinking")
     }
 }
 

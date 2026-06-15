@@ -19,6 +19,7 @@ from fastapi.responses import HTMLResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 from gradio import Server
 
+from app.agent_tools import gather_tool_facts
 from engine.generate import MockBackend, next_turn
 from engine.generate import TurnBackend
 from engine.schema import StateDelta, Turn
@@ -543,6 +544,8 @@ def _local_companion_llm_reply(session: PlaySession, message: str, *, purpose: s
         "location": session.state.location,
         "turn_count": session.state.turn_count,
     }
+    if tool_facts := gather_tool_facts(message):
+        context["tool_facts"] = tool_facts
     payload = {
         "model": configured_llama_server_model(base_url),
         "messages": [

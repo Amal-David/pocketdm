@@ -1,0 +1,30 @@
+# Hugging Face Space requirements for the self-contained Pocket Pikachu talking pet.
+#
+# Everything runs IN-PROCESS (no localhost sidecars): MiniCPM5-1B brain via
+# llama-cpp-python, VoxCPM-0.5B voice, NVIDIA Nemotron ASR (NeMo) ears with
+# faster-whisper as a silent fallback. Model weights download from the HF hub
+# on first request.
+
+# --- UI (pin matches README sdk_version) -------------------------------------
+gradio==6.17.3
+
+# --- Brain: MiniCPM5-1B GGUF via llama.cpp ------------------------------------
+llama-cpp-python>=0.3.2
+huggingface_hub>=0.25
+
+# --- TTS: VoxCPM-0.5B ---------------------------------------------------------
+voxcpm>=0.4
+soundfile>=0.12
+numpy>=1.26
+
+# --- STT (primary): NVIDIA Nemotron streaming ASR via NeMo --------------------
+# Heavy (~GBs of deps) and the model is ~2.3 GB; on cpu-basic this may fail to
+# load — the app then falls back silently to faster-whisper so the demo still
+# works, but the credited STT is Nemotron. Use a GPU/ZeroGPU Space for real
+# Nemotron latency. Pinned to a PyPI release (not a git ref) for reproducibility.
+nemo_toolkit[asr]>=2.0,<3
+Cython
+packaging
+
+# --- STT (silent fallback): faster-whisper small.en --------------------------
+faster-whisper>=1.0

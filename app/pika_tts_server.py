@@ -6,6 +6,8 @@ import importlib
 import io
 import math
 import os
+import subprocess
+import tempfile
 import wave
 from dataclasses import dataclass
 from functools import lru_cache
@@ -132,7 +134,7 @@ class VoxCPMPikaVoice:
         except TypeError:
             generated = self.model.generate(text=text)
         samples = _float_samples(generated)
-        return _wav_bytes(samples, self.sample_rate)
+        return _style_voice(_wav_bytes(samples, self.sample_rate), self.sample_rate)
 
 
 def create_app() -> FastAPI:
@@ -238,6 +240,63 @@ def _env_flag(name: str, *, default: bool) -> bool:
     if raw is None:
         return default
     return raw.strip().casefold() in {"1", "true", "yes", "on"}
+
+
+def _pitch_factor() -> float:
+    """Cute/high-energy lift for the Pika voice. >1 = higher + peppier; tune via env."""
+    try:
+        factor = float(os.environ.get("POCKETDM_PIKA_TTS_PITCH", "1.0"))
+    except ValueError:
+        return 1.0
+    return max(0.5, min(2.0, factor))
+
+
+def _rate_factor() -> float:
+    """Speech tempo for the Pika voice. <1 = slower/more deliberate; tune via env."""
+    try:
+        factor = float(os.environ.get("POCKETDM_PIKA_TTS_RATE", "1.0"))
+    except ValueError:
+        return 1.0
+    return max(0.5, min(2.0, factor))
+
+
+def _style_voice(wav: bytes, sample_rate: int) -> bytes:
+    """Pikachu-style the voice: independent high-pitch + slow tempo via ffmpeg.
+
+    POCKETDM_PIKA_TTS_PITCH > 1 raises pitch (cuter/higher); POCKETDM_PIKA_TTS_RATE
+    < 1 slows it down (more deliberate, enthusiastic). asetrate shifts pitch+tempo,
+    atempo compensates tempo (pitch-preserving) so the two are independent. Falls
+    back to the unstyled wav if ffmpeg is unavailable.
+    """
+    pitch = _pitch_factor()
+    rate = _rate_factor()
+    if abs(pitch - 1.0) < 0.01 and abs(rate - 1.0) < 0.01:
+        return wav
+    atempo = max(0.5, min(2.0, rate / pitch))
+    flt = f"asetrate={sample_rate}*{pitch:.4f},aresample={sample_rate},atempo={atempo:.4f}"
+    out_path = None
+    try:
+        with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as handle:
+            out_path = handle.name
+        proc = subprocess.run(
+            ["ffmpeg", "-hide_banner", "-loglevel", "error", "-y", "-i", "pipe:0", "-af", flt, out_path],
+            input=wav,
+            capture_output=True,
+            timeout=15,
+        )
+        if proc.returncode == 0:
+            data = Path(out_path).read_bytes()
+            if data[:4] == b"RIFF":
+                return data
+    except Exception:  # pragma: no cover - ffmpeg optional
+        pass
+    finally:
+        if out_path:
+            try:
+                os.unlink(out_path)
+            except OSError:
+                pass
+    return wav
 
 
 def _resolve_device(raw_device: str) -> str:
