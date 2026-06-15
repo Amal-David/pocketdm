@@ -346,7 +346,7 @@ enum CompanionCharacter: String, CaseIterable, Identifiable {
 @MainActor
 final class DragonOverlayController {
     private static let minimizedSize = NSSize(width: 216, height: 224)
-    private static let expandedSize = NSSize(width: 620, height: 520)
+    private static let expandedSize = NSSize(width: 620, height: 620)
     private static let expandedMinimumSize = NSSize(width: 520, height: 430)
 
     private let panel: NSPanel
@@ -2211,10 +2211,10 @@ final class DragonOverlayModel: ObservableObject {
         guard let expected = nextIncompleteDailyWellnessAction else {
             // All daily checks done — still give a small bonus care tap so the bond keeps
             // growing. Keeps Health improvable on demand (and great for the live demo).
-            lastRequest = "Bonus care"
+            lastRequest = "Pet"
             conversationBubbleActive = true
             if recordUserMessage {
-                appendChatMessage(.user, "Bonus care")
+                appendChatMessage(.user, "Pet me")
             }
             companionHP = min(10, companionHP + 1)
             awardCompanionHealth(20)
@@ -2222,9 +2222,9 @@ final class DragonOverlayModel: ObservableObject {
             earnSparkDust(2)
             celebrationBurstID += 1
             persistCare()
-            message = pikaText("Pika pika! Bonus care! Bond HP up and Joy refilled.")
+            message = pikaText("Pika pika! Thanks for the pet! Bond HP up and Joy refilled.")
             appendChatMessage(.assistant, message)
-            voiceStatusLine = "Bonus care. Health up."
+            voiceStatusLine = "Petted. Health up."
             play(.happy)
             setMood(.happy, duration: 1.2)
             return
@@ -10602,7 +10602,7 @@ struct DragonOverlayView: View {
                     Button {
                         model.completeDailyWellness(action)
                     } label: {
-                        Label(action.actionTitle, systemImage: action.systemImage)
+                        Label(model.isDailyWellnessComplete ? "Pet me" : action.actionTitle, systemImage: action.systemImage)
                     }
                     .buttonStyle(MiniPanelButtonStyle(kind: .primary))
                     .disabled(model.busy || model.isVoiceListening)
@@ -10666,7 +10666,7 @@ struct DragonOverlayView: View {
 
     private var dailyCareNudge: some View {
         let action = model.nextDailyWellnessAction
-        let promptText = model.isDailyWellnessComplete ? "Bonus care keeps the bond glowing!" : action.question
+        let promptText = model.isDailyWellnessComplete ? "Pet Pikachu to keep the bond glowing!" : action.question
 
         return HStack(spacing: 8) {
             Image(systemName: action.systemImage)
@@ -10685,7 +10685,7 @@ struct DragonOverlayView: View {
             Button {
                 model.completeDailyWellness(action)
             } label: {
-                Text(action.actionTitle)
+                Text(model.isDailyWellnessComplete ? "Pet me" : action.actionTitle)
             }
             .buttonStyle(DragonMiniButtonStyle(kind: .primary))
             .frame(width: 112)
@@ -10734,7 +10734,7 @@ struct DragonOverlayView: View {
 
     private var companionHealthHUD: some View {
         let action = model.nextDailyWellnessAction
-        let promptText = model.isDailyWellnessComplete ? "Bonus care keeps the bond glowing!" : action.question
+        let promptText = model.isDailyWellnessComplete ? "Pet Pikachu to keep the bond glowing!" : action.question
 
         return VStack(alignment: .leading, spacing: 7) {
             HStack(alignment: .firstTextBaseline, spacing: 8) {
@@ -10763,7 +10763,7 @@ struct DragonOverlayView: View {
                 Button {
                     model.completeDailyWellness(action)
                 } label: {
-                    Text(action.actionTitle)
+                    Text(model.isDailyWellnessComplete ? "Pet me" : action.actionTitle)
                 }
                 .buttonStyle(DragonMiniButtonStyle(kind: .primary))
                 .frame(width: 112)
@@ -11153,7 +11153,7 @@ struct DragonOverlayView: View {
             }
         }
         .padding(isCompact ? 8 : 12)
-        .frame(maxWidth: .infinity, minHeight: isCompact ? 64 : 150, maxHeight: isCompact ? 92 : 210, alignment: .topLeading)
+        .frame(maxWidth: .infinity, minHeight: isCompact ? 64 : 130, maxHeight: isCompact ? 92 : 180, alignment: .topLeading)
         .background(.black.opacity(0.95), in: RoundedRectangle(cornerRadius: 7))
         .overlay(RoundedRectangle(cornerRadius: 7).stroke(Color.gold.opacity(0.26), lineWidth: 1))
     }
