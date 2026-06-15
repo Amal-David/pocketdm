@@ -137,6 +137,53 @@ class VoxCPMPikaVoice:
         return _style_voice(_wav_bytes(samples, self.sample_rate), self.sample_rate)
 
 
+class KokoroPikaVoice:
+    """Local kokoro-onnx backend: torch-free, fast (RTF ~0.3 on CPU), warm female
+    "af_heart" voice plus the same cute pitch/rate styling. Best pick for a snappy
+    live demo where time-to-first-audio matters more than voice cloning."""
+
+    def __init__(self, settings: PikaVoiceSettings) -> None:
+        try:
+            module = importlib.import_module("kokoro_onnx")
+            kokoro_class = getattr(module, "Kokoro")
+        except Exception as exc:  # pragma: no cover - exercised by endpoint status
+            raise PikaVoiceUnavailable(
+                "kokoro-onnx is not installed; start the sidecar with --backend kokoro first"
+            ) from exc
+
+        onnx_path = Path(os.environ.get("POCKETDM_KOKORO_ONNX", "")).expanduser()
+        voices_path = Path(os.environ.get("POCKETDM_KOKORO_VOICES", "")).expanduser()
+        if not onnx_path.exists() or not voices_path.exists():
+            raise PikaVoiceUnavailable(
+                "kokoro model files not found; set POCKETDM_KOKORO_ONNX and "
+                f"POCKETDM_KOKORO_VOICES (got {onnx_path!s}, {voices_path!s})"
+            )
+
+        self.model = kokoro_class(str(onnx_path), str(voices_path))
+        self.voice = os.environ.get("POCKETDM_KOKORO_VOICE", "af_heart").strip() or "af_heart"
+        self.lang = os.environ.get("POCKETDM_KOKORO_LANG", "en-us").strip() or "en-us"
+        self.speed = float(os.environ.get("POCKETDM_KOKORO_SPEED", "1.0"))
+        # kokoro-onnx returns 24 kHz float samples.
+        self.sample_rate = DEFAULT_SAMPLE_RATE
+        # Cute Pika pitch/tempo styling on by default; set POCKETDM_KOKORO_STYLE=0 for
+        # the natural af_heart voice.
+        self.style = os.environ.get("POCKETDM_KOKORO_STYLE", "1").strip().casefold() not in {
+            "0",
+            "false",
+            "no",
+            "off",
+        }
+
+    def synthesize(self, text: str) -> bytes:
+        samples, sample_rate = self.model.create(
+            text, voice=self.voice, speed=self.speed, lang=self.lang
+        )
+        wav = _wav_bytes(_float_samples(samples), int(sample_rate))
+        if self.style:
+            wav = _style_voice(wav, int(sample_rate))
+        return wav
+
+
 def create_app() -> FastAPI:
     app = FastAPI(title="PocketDM Pika TTS", version="0.1.0")
 
@@ -202,7 +249,7 @@ def _is_signature_voice(voice: str) -> bool:
 
 
 @lru_cache(maxsize=1)
-def _voice() -> GeneratedChirpVoice | ChatterboxPikaVoice | VoxCPMPikaVoice:
+def _voice() -> GeneratedChirpVoice | ChatterboxPikaVoice | VoxCPMPikaVoice | KokoroPikaVoice:
     settings = _settings()
     if settings.backend == "stub":
         return GeneratedChirpVoice()
@@ -210,6 +257,8 @@ def _voice() -> GeneratedChirpVoice | ChatterboxPikaVoice | VoxCPMPikaVoice:
         return ChatterboxPikaVoice(settings)
     if settings.backend == "voxcpm":
         return VoxCPMPikaVoice(settings)
+    if settings.backend == "kokoro":
+        return KokoroPikaVoice(settings)
     raise PikaVoiceUnavailable(f"unknown Pika TTS backend: {settings.backend}")
 
 
@@ -472,7 +521,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Run the local PocketDM Pika TTS sidecar.")
     parser.add_argument("--host", default=os.environ.get("POCKETDM_PIKA_TTS_HOST", "127.0.0.1"))
     parser.add_argument("--port", type=int, default=int(os.environ.get("POCKETDM_PIKA_TTS_PORT", "7861")))
-    parser.add_argument("--backend", choices=("chatterbox", "voxcpm", "stub"), default=None)
+    parser.add_argument("--backend", choices=("chatterbox", "voxcpm", "kokoro", "stub"), default=None)
     parser.add_argument("--warmup", action="store_true", help="Load the selected backend before accepting requests.")
     args = parser.parse_args()
     if args.backend:
