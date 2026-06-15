@@ -1396,7 +1396,6 @@ final class DragonOverlayModel: ObservableObject {
     private let soundPlayer = PetSoundPlayer()
     private let voiceTranscriber = VoiceConversationTranscriber()
     private var voiceConversationMode: VoiceConversationMode = .freeform
-    private var voiceAutoSendTask: Task<Void, Never>?
     private var handsFreeRestartTask: Task<Void, Never>?
     private var voiceVisualResetTask: Task<Void, Never>?
     private var moodTask: Task<Void, Never>?
@@ -1671,7 +1670,6 @@ final class DragonOverlayModel: ObservableObject {
             // Mute is a hard stop: end the realtime/hands-free loop and any listening turn
             // so the pet goes fully quiet instead of continuing to auto-chat in the background.
             handsFreeConversationEnabled = false
-            cancelVoiceAutoSend()
             cancelHandsFreeRestart()
             if isVoiceListening {
                 stopVoiceConversation(sendTranscript: false)
@@ -1694,7 +1692,6 @@ final class DragonOverlayModel: ObservableObject {
     func toggleHandsFreeConversation() {
         if handsFreeConversationEnabled {
             handsFreeConversationEnabled = false
-            cancelVoiceAutoSend()
             cancelHandsFreeRestart()
             if isVoiceListening {
                 stopVoiceConversation(sendTranscript: false)
@@ -1764,11 +1761,11 @@ final class DragonOverlayModel: ObservableObject {
                 self.scheduleHandsFreeRestart(after: 1.2)
             }
         )
-        scheduleVoiceAutoSendIfNeeded()
+        // No local turn timer: the server's Silero VAD decides when each turn ends and
+        // emits a `final` event, which calls finishVoiceConversation(transcript).
     }
 
     func stopVoiceConversation(sendTranscript: Bool = false) {
-        cancelVoiceAutoSend()
         let transcript = voiceTranscript.trimmingCharacters(in: .whitespacesAndNewlines)
         let awaitingLocalTranscription = voiceTranscriber.stop(sendRecordedAudio: sendTranscript)
         isVoiceListening = false
@@ -1789,7 +1786,6 @@ final class DragonOverlayModel: ObservableObject {
     }
 
     private func finishVoiceConversation(_ transcript: String) {
-        cancelVoiceAutoSend()
         let mode = voiceConversationMode
         voiceConversationMode = .freeform
         voiceTranscriber.stop()
@@ -1824,82 +1820,6 @@ final class DragonOverlayModel: ObservableObject {
         "Realtime listening. Speak naturally; I send after a pause."
     }
 
-    private func scheduleVoiceAutoSendIfNeeded() {
-        cancelVoiceAutoSend()
-        guard handsFreeConversationEnabled else { return }
-        voiceAutoSendTask = Task { [weak self] in
-            let startedAt = Date()
-            var heardSpeech = false
-            var lastSpeechAt = Date()
-            while !Task.isCancelled {
-                try? await Task.sleep(nanoseconds: 220_000_000)
-                let sample = await MainActor.run { () -> (active: Bool, transcript: String, isLoud: Bool) in
-                    guard let self,
-                          self.handsFreeConversationEnabled,
-                          self.isVoiceListening else {
-                        return (false, "", false)
-                    }
-                    let transcript = self.voiceTranscript.trimmingCharacters(in: .whitespacesAndNewlines)
-                    let meterPower = self.voiceTranscriber.currentMeterPower()
-                    return (true, transcript, meterPower.map { $0 > -38 } ?? false)
-                }
-                guard sample.active else { return }
-
-                if !sample.transcript.isEmpty || sample.isLoud {
-                    heardSpeech = true
-                    lastSpeechAt = Date()
-                    if sample.isLoud && sample.transcript.isEmpty {
-                        await MainActor.run {
-                            self?.voiceStatusLine = "I hear you..."
-                        }
-                    }
-                }
-
-                let elapsed = Date().timeIntervalSince(startedAt)
-                let quietFor = Date().timeIntervalSince(lastSpeechAt)
-                let shouldSend: Bool
-                if heardSpeech && quietFor >= 1.25 {
-                    await MainActor.run {
-                        self?.voiceStatusLine = "Sending after your pause..."
-                    }
-                    shouldSend = true
-                } else if elapsed >= 10.0 {
-                    if heardSpeech {
-                        await MainActor.run { self?.voiceStatusLine = "Sending your turn..." }
-                        shouldSend = true
-                    } else {
-                        // 10s with no real speech: stop the loop instead of auto-sending an
-                        // empty turn (this was the runaway-loop cause in quiet/noisy rooms).
-                        await MainActor.run {
-                            guard let self else { return }
-                            self.handsFreeConversationEnabled = false
-                            self.cancelHandsFreeRestart()
-                            self.stopVoiceConversation(sendTranscript: false)
-                            self.voiceStatusLine = "No voice heard. Tap the mic when you want to talk."
-                            self.voiceVisualState = .idle
-                            self.setMood(.idle)
-                        }
-                        return
-                    }
-                } else {
-                    shouldSend = false
-                }
-                if shouldSend {
-                    await MainActor.run {
-                        guard let self,
-                              self.handsFreeConversationEnabled,
-                              self.isVoiceListening else {
-                            return
-                        }
-                        self.voiceStatusLine = "Sending after your pause..."
-                        self.stopVoiceConversation(sendTranscript: true)
-                    }
-                    return
-                }
-            }
-        }
-    }
-
     private func scheduleHandsFreeRestart(after delay: TimeInterval = 2.2) {
         cancelHandsFreeRestart()
         guard handsFreeConversationEnabled else { return }
@@ -1917,11 +1837,6 @@ final class DragonOverlayModel: ObservableObject {
                 self.startVoiceConversation(mode: .freeform)
             }
         }
-    }
-
-    private func cancelVoiceAutoSend() {
-        voiceAutoSendTask?.cancel()
-        voiceAutoSendTask = nil
     }
 
     private func cancelHandsFreeRestart() {
@@ -9506,6 +9421,8 @@ final class VoiceConversationTranscriber {
     private var localOnFinal: (@MainActor (String) -> Void)?
     private var localOnError: (@MainActor (String) -> Void)?
     private var isStopping = false
+    // Live realtime VAD streaming session (replaces the record-then-replay path).
+    private var realtimeSession: RealtimeVADStreamingSession?
     private let realtimeSTTURL: URL? = {
         let raw = ProcessInfo.processInfo.environment["POCKETDM_REALTIME_STT_URL"]?
             .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
@@ -9524,7 +9441,19 @@ final class VoiceConversationTranscriber {
         onFinal: @escaping @MainActor (String) -> Void,
         onError: @escaping @MainActor (String) -> Void
     ) {
-        if realtimeSTTURL != nil || localSTTURL != nil {
+        // Realtime path: stream the mic LIVE into the VAD-gated WebSocket. The server's
+        // Silero VAD detects each turn and emits `final`; no local recording/replay.
+        if let realtimeSTTURL {
+            startRealtimeStreaming(
+                endpoint: realtimeSTTURL,
+                onPartial: onPartial,
+                onFinal: onFinal,
+                onError: onError
+            )
+            return
+        }
+        // Non-realtime local STT (faster-whisper batch): keep the record-then-POST path.
+        if localSTTURL != nil {
             startLocalRecording(onPartial: onPartial, onFinal: onFinal, onError: onError)
             return
         }
@@ -9569,6 +9498,13 @@ final class VoiceConversationTranscriber {
     @discardableResult
     func stop(sendRecordedAudio: Bool = false) -> Bool {
         isStopping = true
+        // Realtime streaming: tear down the live mic tap + WebSocket. The server already
+        // finalizes each turn via VAD, so there is never a pending local transcription.
+        if let realtimeSession {
+            realtimeSession.stop()
+            self.realtimeSession = nil
+            return false
+        }
         if let localRecorder {
             let recordingURL = localRecordingURL
             localRecorder.stop()
@@ -9592,10 +9528,65 @@ final class VoiceConversationTranscriber {
         return false
     }
 
-    func currentMeterPower() -> Float? {
-        guard let localRecorder else { return nil }
-        localRecorder.updateMeters()
-        return localRecorder.averagePower(forChannel: 0)
+    private func startRealtimeStreaming(
+        endpoint: URL,
+        onPartial: @escaping @MainActor (String) -> Void,
+        onFinal: @escaping @MainActor (String) -> Void,
+        onError: @escaping @MainActor (String) -> Void
+    ) {
+        switch AVCaptureDevice.authorizationStatus(for: .audio) {
+        case .authorized:
+            startAuthorizedRealtimeStreaming(endpoint: endpoint, onPartial: onPartial, onFinal: onFinal, onError: onError)
+        case .notDetermined:
+            AVCaptureDevice.requestAccess(for: .audio) { [weak self] granted in
+                Task { @MainActor in
+                    guard let self else { return }
+                    guard granted else {
+                        onError(Self.microphoneAuthorizationMessage(for: .denied))
+                        return
+                    }
+                    self.startAuthorizedRealtimeStreaming(endpoint: endpoint, onPartial: onPartial, onFinal: onFinal, onError: onError)
+                }
+            }
+        case .denied, .restricted:
+            onError(Self.microphoneAuthorizationMessage(for: AVCaptureDevice.authorizationStatus(for: .audio)))
+        @unknown default:
+            onError("Microphone is unavailable on this Mac.")
+        }
+    }
+
+    private func startAuthorizedRealtimeStreaming(
+        endpoint: URL,
+        onPartial: @escaping @MainActor (String) -> Void,
+        onFinal: @escaping @MainActor (String) -> Void,
+        onError: @escaping @MainActor (String) -> Void
+    ) {
+        _ = stop()
+        isStopping = false
+        let wsURL = Self.realtimeTranscribeEndpoint(from: endpoint)
+        let session = RealtimeVADStreamingSession(
+            url: wsURL,
+            onPartial: onPartial,
+            onFinal: { [weak self] transcript in
+                // The server's VAD finalized a turn; mark stopped so a duplicate stop()
+                // from the model layer is a no-op, then deliver the transcript.
+                self?.isStopping = true
+                self?.realtimeSession = nil
+                onFinal(transcript)
+            },
+            onError: { [weak self] line in
+                self?.realtimeSession = nil
+                onError(line)
+            }
+        )
+        realtimeSession = session
+        do {
+            try session.start()
+            onPartial("Realtime listening...")
+        } catch {
+            realtimeSession = nil
+            onError("Realtime microphone failed to start: \(error.localizedDescription)")
+        }
     }
 
     private func startLocalRecording(
@@ -9646,18 +9637,13 @@ final class VoiceConversationTranscriber {
         ]
         do {
             let recorder = try AVAudioRecorder(url: recordingURL, settings: settings)
-            recorder.isMeteringEnabled = true
             recorder.prepareToRecord()
             guard recorder.record() else {
                 throw CompanionError.badResponse
             }
             localRecorder = recorder
             localRecordingURL = recordingURL
-            if realtimeSTTURL != nil {
-                onPartial("Realtime listening...")
-            } else {
-                onPartial("Listening locally...")
-            }
+            onPartial("Listening locally...")
         } catch {
             recordingURL.deleteQuietly()
             onError("Local microphone recording failed: \(error.localizedDescription)")
@@ -9707,15 +9693,8 @@ final class VoiceConversationTranscriber {
         localEndpoint: URL?,
         onPartial: @escaping (String) async -> Void
     ) async throws -> String {
-        if let realtimeEndpoint {
-            do {
-                return try await transcribeRealtimeRecording(recordingURL, endpoint: realtimeEndpoint, onPartial: onPartial)
-            } catch {
-                guard let localEndpoint else { throw error }
-                await onPartial("Realtime STT failed; trying local STT...")
-                return try await transcribeRecording(recordingURL, endpoint: localEndpoint)
-            }
-        }
+        // The realtime endpoint now streams live (see RealtimeVADStreamingSession); the
+        // record-then-POST path is only the non-realtime faster-whisper batch fallback.
         guard let localEndpoint else { throw CompanionError.badResponse }
         return try await transcribeRecording(recordingURL, endpoint: localEndpoint)
     }
@@ -9740,65 +9719,6 @@ final class VoiceConversationTranscriber {
         }
         let decoded = try JSONDecoder().decode(LocalSTTResponse.self, from: data)
         return decoded.text.trimmingCharacters(in: .whitespacesAndNewlines)
-    }
-
-    private static func transcribeRealtimeRecording(
-        _ recordingURL: URL,
-        endpoint: URL,
-        onPartial: @escaping (String) async -> Void
-    ) async throws -> String {
-        let url = realtimeTranscribeEndpoint(from: endpoint)
-        let socket = URLSession.shared.webSocketTask(with: url)
-        socket.resume()
-        defer { socket.cancel(with: .normalClosure, reason: nil) }
-
-        let audio = try Data(contentsOf: recordingURL)
-        try await socket.send(.string(#"{"type":"start","format":"wav","sample_rate":16000}"#))
-        let chunkSize = 64 * 1024
-        var offset = 0
-        while offset < audio.count {
-            let end = min(offset + chunkSize, audio.count)
-            try await socket.send(.data(Data(audio[offset..<end])))
-            offset = end
-        }
-        try await socket.send(.string(#"{"type":"end"}"#))
-        for _ in 0..<32 {
-            let message = try await socket.receive()
-            let data: Data
-            switch message {
-            case .data(let payload):
-                data = payload
-            case .string(let text):
-                data = Data(text.utf8)
-            @unknown default:
-                continue
-            }
-            let frame = try JSONDecoder().decode(RealtimeSTTFrame.self, from: data)
-            switch frame.type {
-            case "partial":
-                if let text = frame.text?.trimmingCharacters(in: .whitespacesAndNewlines),
-                   !text.isEmpty {
-                    await onPartial(text)
-                }
-            case "final":
-                let text = frame.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-                guard !text.isEmpty else { throw CompanionError.badResponse }
-                return text
-            case "error":
-                throw NSError(
-                    domain: "PocketDMRealtimeSTT",
-                    code: 1,
-                    userInfo: [NSLocalizedDescriptionKey: frame.message ?? "Realtime STT failed"]
-                )
-            default:
-                continue
-            }
-        }
-        throw NSError(
-            domain: "PocketDMRealtimeSTT",
-            code: 2,
-            userInfo: [NSLocalizedDescriptionKey: "Realtime STT did not return a final transcript"]
-        )
     }
 
     private static func transcribeEndpoint(from endpoint: URL) -> URL {
@@ -9832,12 +9752,6 @@ final class VoiceConversationTranscriber {
 
     private struct LocalSTTResponse: Decodable {
         let text: String
-    }
-
-    private struct RealtimeSTTFrame: Decodable {
-        let type: String
-        let text: String?
-        let message: String?
     }
 
     private func startAuthorized(
@@ -9927,6 +9841,201 @@ final class VoiceConversationTranscriber {
         @unknown default:
             return "Microphone is unavailable on this Mac."
         }
+    }
+}
+
+/// Live VAD-gated streaming session: taps the mic, converts to 16 kHz mono Int16,
+/// and pushes PCM frames into an open WebSocket whose server-side Silero VAD decides
+/// when each turn ends. The server emits `speech_started` / `speech_ended` / `partial`
+/// / `final`; `final` finalizes the turn (no local timer). The socket stays open across
+/// utterances so hands-free conversation continues without re-opening the mic.
+///
+/// Not `@MainActor`: the AVAudioEngine tap runs on a real-time audio thread. Callbacks
+/// are hopped to the main actor before touching UI. `URLSessionWebSocketTask.send` is
+/// thread-safe, so the hot path never blocks the audio thread.
+final class RealtimeVADStreamingSession: NSObject, @unchecked Sendable {
+    // Flip on to enable barge-in (stop TTS when the user starts speaking over it). Left
+    // OFF by default so the demo never risks clipping the pet mid-sentence.
+    static let bargeInEnabled = false
+
+    private let url: URL
+    private let onPartial: @MainActor (String) -> Void
+    private let onFinal: @MainActor (String) -> Void
+    private let onError: @MainActor (String) -> Void
+
+    private let audioEngine = AVAudioEngine()
+    private var converter: AVAudioConverter?
+    private var targetFormat: AVAudioFormat?
+    private var socket: URLSessionWebSocketTask?
+    private let lock = NSLock()
+    private var finished = false
+
+    init(
+        url: URL,
+        onPartial: @escaping @MainActor (String) -> Void,
+        onFinal: @escaping @MainActor (String) -> Void,
+        onError: @escaping @MainActor (String) -> Void
+    ) {
+        self.url = url
+        self.onPartial = onPartial
+        self.onFinal = onFinal
+        self.onError = onError
+        super.init()
+    }
+
+    func start() throws {
+        let socket = URLSession.shared.webSocketTask(with: url)
+        self.socket = socket
+        socket.resume()
+        // Ask the server to run its Silero VAD turn loop for this connection.
+        socket.send(.string(#"{"type":"start","sample_rate":16000,"vad":true}"#)) { [weak self] error in
+            if let error { self?.fail("Realtime STT connection failed: \(error.localizedDescription)") }
+        }
+        receiveLoop()
+
+        let inputNode = audioEngine.inputNode
+        let inputFormat = inputNode.outputFormat(forBus: 0)
+        guard inputFormat.sampleRate > 0,
+              let targetFormat = AVAudioFormat(
+                  commonFormat: .pcmFormatInt16,
+                  sampleRate: 16_000,
+                  channels: 1,
+                  interleaved: true
+              ),
+              let converter = AVAudioConverter(from: inputFormat, to: targetFormat)
+        else {
+            throw CompanionError.badResponse
+        }
+        self.targetFormat = targetFormat
+        self.converter = converter
+
+        inputNode.removeTap(onBus: 0)
+        inputNode.installTap(onBus: 0, bufferSize: 4096, format: inputFormat) { [weak self] buffer, _ in
+            self?.handleInput(buffer)
+        }
+        audioEngine.prepare()
+        try audioEngine.start()
+    }
+
+    func stop() {
+        if audioEngine.isRunning {
+            audioEngine.inputNode.removeTap(onBus: 0)
+            audioEngine.stop()
+        } else {
+            audioEngine.inputNode.removeTap(onBus: 0)
+        }
+        // Tell the server the stream is done so any in-progress turn flushes.
+        socket?.send(.string(#"{"type":"end"}"#)) { _ in }
+        socket?.cancel(with: .normalClosure, reason: nil)
+        socket = nil
+        converter = nil
+    }
+
+    // MARK: - Audio thread
+
+    private func handleInput(_ buffer: AVAudioPCMBuffer) {
+        guard let converter, let targetFormat, let socket else { return }
+        // Output capacity for the resampled buffer (round up for safety).
+        let ratio = targetFormat.sampleRate / buffer.format.sampleRate
+        let capacity = AVAudioFrameCount(Double(buffer.frameLength) * ratio + 1024)
+        guard capacity > 0,
+              let outBuffer = AVAudioPCMBuffer(pcmFormat: targetFormat, frameCapacity: capacity)
+        else { return }
+
+        var fed = false
+        var conversionError: NSError?
+        let status = converter.convert(to: outBuffer, error: &conversionError) { _, outStatus in
+            if fed {
+                outStatus.pointee = .noDataNow
+                return nil
+            }
+            fed = true
+            outStatus.pointee = .haveData
+            return buffer
+        }
+        guard status == .haveData || status == .inputRanDry,
+              conversionError == nil,
+              outBuffer.frameLength > 0,
+              let channel = outBuffer.int16ChannelData
+        else { return }
+
+        let byteCount = Int(outBuffer.frameLength) * MemoryLayout<Int16>.size
+        let data = Data(bytes: channel[0], count: byteCount)
+        socket.send(.data(data)) { [weak self] error in
+            if let error { self?.fail("Realtime STT send failed: \(error.localizedDescription)") }
+        }
+    }
+
+    // MARK: - WebSocket receive
+
+    private func receiveLoop() {
+        guard let socket else { return }
+        socket.receive { [weak self] result in
+            guard let self else { return }
+            switch result {
+            case .failure(let error):
+                self.fail("Realtime STT disconnected: \(error.localizedDescription)")
+            case .success(let message):
+                let data: Data
+                switch message {
+                case .data(let payload): data = payload
+                case .string(let text): data = Data(text.utf8)
+                @unknown default:
+                    self.receiveLoop()
+                    return
+                }
+                self.handleFrame(data)
+                if !self.isFinished { self.receiveLoop() }
+            }
+        }
+    }
+
+    private var isFinished: Bool {
+        lock.lock(); defer { lock.unlock() }
+        return finished
+    }
+
+    private func handleFrame(_ data: Data) {
+        guard let frame = try? JSONDecoder().decode(StreamFrame.self, from: data) else { return }
+        switch frame.type {
+        case "speech_started":
+            // Barge-in hook (stubbed/flagged off): a real implementation would stop TTS here.
+            _ = Self.bargeInEnabled
+        case "speech_ended":
+            break
+        case "partial":
+            if let text = frame.text?.trimmingCharacters(in: .whitespacesAndNewlines), !text.isEmpty {
+                let onPartial = self.onPartial
+                Task { @MainActor in onPartial(text) }
+            }
+        case "final":
+            let text = frame.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            guard !text.isEmpty else { return }
+            lock.lock(); finished = true; lock.unlock()
+            stop()
+            let onFinal = self.onFinal
+            Task { @MainActor in onFinal(text) }
+        case "error":
+            fail(frame.message ?? "Realtime STT failed")
+        default:
+            break
+        }
+    }
+
+    private func fail(_ line: String) {
+        lock.lock()
+        if finished { lock.unlock(); return }
+        finished = true
+        lock.unlock()
+        stop()
+        let onError = self.onError
+        Task { @MainActor in onError(line) }
+    }
+
+    private struct StreamFrame: Decodable {
+        let type: String
+        let text: String?
+        let message: String?
     }
 }
 

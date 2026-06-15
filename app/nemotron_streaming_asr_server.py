@@ -23,6 +23,8 @@ DEFAULT_NIM_FUNCTION_ID = "bb0837de-8c7b-481f-9ec8-ef5663e9c1fa"
 DEFAULT_NIM_SERVER = "grpc.nvcf.nvidia.com:443"
 DEFAULT_FALLBACK_URL = "http://127.0.0.1:7862"
 VAD_SAMPLE_RATE = 16_000
+# Silero VADIterator only accepts exactly 512-sample (32 ms @16 kHz) float32 frames.
+VAD_FRAME_SAMPLES = 512
 
 
 def _env_flag(name: str, default: bool) -> bool:
@@ -30,6 +32,26 @@ def _env_flag(name: str, default: bool) -> bool:
     if raw is None:
         return default
     return raw.strip().casefold() in {"1", "true", "yes", "on"}
+
+
+def _env_int(name: str, default: int) -> int:
+    raw = os.environ.get(name)
+    if raw is None or not raw.strip():
+        return default
+    try:
+        return int(float(raw.strip()))
+    except (TypeError, ValueError):
+        return default
+
+
+def _env_float(name: str, default: float) -> float:
+    raw = os.environ.get(name)
+    if raw is None or not raw.strip():
+        return default
+    try:
+        return float(raw.strip())
+    except (TypeError, ValueError):
+        return default
 
 
 @lru_cache(maxsize=1)
@@ -65,6 +87,22 @@ def _wav_bytes_to_mono16k(audio: bytes) -> "tuple[Any, int] | None":
     if samples.size == 0:
         return None
     return torch.from_numpy(np.ascontiguousarray(samples)), sample_rate
+
+
+def _pcm16_to_wav_bytes(pcm: bytes, sample_rate: int = VAD_SAMPLE_RATE) -> bytes:
+    """Wrap raw little-endian 16-bit mono PCM bytes in a minimal WAV container.
+
+    The VAD streaming path receives raw PCM frames (not a WAV file), so a turn's
+    buffered samples must be re-containerized before the existing transcribe path,
+    which decodes WAV, can read them.
+    """
+    out = io.BytesIO()
+    with wave.open(out, "wb") as wav:
+        wav.setnchannels(1)
+        wav.setsampwidth(2)
+        wav.setframerate(sample_rate)
+        wav.writeframes(pcm)
+    return out.getvalue()
 
 
 def _mono_tensor_to_wav_bytes(tensor: Any, sample_rate: int) -> bytes:
@@ -133,6 +171,101 @@ def _preprocess_audio(audio: bytes) -> bytes:
         return _mono_tensor_to_wav_bytes(trimmed, sample_rate)
     except Exception:
         return audio
+
+
+@dataclass(frozen=True)
+class VADTurnConfig:
+    """Per-connection Silero VADIterator tuning, sourced from env at connect time."""
+
+    threshold: float
+    min_silence_ms: int
+    speech_pad_ms: int
+    min_speech_ms: int
+
+    @classmethod
+    def from_env(cls) -> "VADTurnConfig":
+        return cls(
+            threshold=_env_float("POCKETDM_VAD_THRESHOLD", 0.5),
+            min_silence_ms=_env_int("POCKETDM_VAD_SILENCE_MS", 700),
+            speech_pad_ms=_env_int("POCKETDM_VAD_PAD_MS", 300),
+            # Start events shorter than this (clicks, coughs, lip smacks) are dropped.
+            min_speech_ms=_env_int("POCKETDM_VAD_MIN_SPEECH_MS", 120),
+        )
+
+
+class StreamingVADTurnDetector:
+    """Wrap Silero's ``VADIterator`` for live, multi-turn streaming turn detection.
+
+    Feed raw little-endian 16-bit PCM bytes (mono, 16 kHz) via :meth:`feed`. The
+    detector buffers samples into exact 512-sample float32 frames (Silero's only
+    accepted window) and yields ``("start"|"end", seconds)`` events as Silero
+    reports them. ``start`` events that are immediately followed by an ``end``
+    inside ``min_speech_ms`` are suppressed so clicks/coughs never open a turn.
+    """
+
+    def __init__(self, config: VADTurnConfig) -> None:
+        import numpy as np
+
+        from silero_vad import VADIterator
+
+        self._np = np
+        self._config = config
+        self._iterator = VADIterator(
+            _silero_vad_model(),
+            threshold=config.threshold,
+            sampling_rate=VAD_SAMPLE_RATE,
+            min_silence_duration_ms=config.min_silence_ms,
+            speech_pad_ms=config.speech_pad_ms,
+        )
+        # Leftover int16 bytes that did not fill a full 512-sample frame yet.
+        self._tail = b""
+        # Wall-clock-free speech timing: pending start time (seconds) awaiting an
+        # end so we can measure span length against ``min_speech_ms``.
+        self._pending_start_s: float | None = None
+
+    def feed(self, pcm_bytes: bytes) -> "list[tuple[str, float]]":
+        """Consume PCM bytes; return ordered (event, seconds) tuples ready to emit."""
+        import torch
+
+        events: list[tuple[str, float]] = []
+        data = self._tail + pcm_bytes
+        frame_bytes = VAD_FRAME_SAMPLES * 2  # int16 -> 2 bytes/sample
+        usable = (len(data) // frame_bytes) * frame_bytes
+        self._tail = data[usable:]
+        if usable == 0:
+            return events
+
+        samples = self._np.frombuffer(data[:usable], dtype="<i2").astype(self._np.float32) / 32768.0
+        for offset in range(0, samples.shape[0], VAD_FRAME_SAMPLES):
+            frame = samples[offset : offset + VAD_FRAME_SAMPLES]
+            if frame.shape[0] < VAD_FRAME_SAMPLES:
+                break
+            result = self._iterator(torch.from_numpy(self._np.ascontiguousarray(frame)), return_seconds=True)
+            if not result:
+                continue
+            if "start" in result:
+                self._pending_start_s = float(result["start"])
+                events.append(("start", self._pending_start_s))
+            elif "end" in result:
+                end_s = float(result["end"])
+                start_s = self._pending_start_s
+                self._pending_start_s = None
+                if start_s is not None and (end_s - start_s) * 1000.0 < self._config.min_speech_ms:
+                    # Too short to be speech: retract the spurious start so the caller
+                    # never opens a turn for it.
+                    if events and events[-1] == ("start", start_s):
+                        events.pop()
+                    else:
+                        events.append(("drop", start_s))
+                    continue
+                events.append(("end", end_s))
+        return events
+
+    def reset(self) -> None:
+        """Reset Silero state and buffers between turns (and keep the socket open)."""
+        self._iterator.reset_states()
+        self._tail = b""
+        self._pending_start_s = None
 
 
 @dataclass(frozen=True)
@@ -561,6 +694,69 @@ def _fallback_engine(settings: NemotronASRSettings) -> PikaSTTFallbackASR | Stub
     raise NemotronASRUnavailable(f"unknown Nemotron ASR fallback backend: {settings.fallback_backend}")
 
 
+async def _handle_vad_bytes(
+    websocket: WebSocket,
+    payload: bytes,
+    detector: StreamingVADTurnDetector,
+    turn_pcm: "bytearray",
+    turn_in_speech: bool,
+) -> bool:
+    """Buffer one PCM chunk, run the VAD turn loop, and emit any turn events.
+
+    Returns the updated ``turn_in_speech`` flag. On ``speech_ended`` the buffered
+    turn is transcribed (``partial`` + ``final``) and the turn buffer + detector are
+    reset, so the same socket continues straight into the next utterance.
+    """
+    turn_pcm.extend(payload)
+    if len(turn_pcm) > MAX_AUDIO_BYTES:
+        # Runaway turn (VAD never closed): flush what we have so we never grow forever.
+        await _finalize_vad_turn(websocket, bytes(turn_pcm))
+        turn_pcm.clear()
+        detector.reset()
+        return False
+
+    for event, seconds in detector.feed(payload):
+        if event == "start":
+            turn_in_speech = True
+            await websocket.send_json({"type": "speech_started", "t": round(seconds, 3)})
+        elif event == "end":
+            await websocket.send_json({"type": "speech_ended", "t": round(seconds, 3)})
+            await _finalize_vad_turn(websocket, bytes(turn_pcm))
+            turn_pcm.clear()
+            detector.reset()
+            turn_in_speech = False
+        # "drop" events (sub-min_speech blips) are intentionally silent.
+    return turn_in_speech
+
+
+async def _finalize_vad_turn(websocket: WebSocket, turn_pcm: bytes) -> None:
+    """Transcribe one confirmed VAD utterance and emit partial + final frames."""
+    if not turn_pcm:
+        return
+    final_started = time.perf_counter()
+    audio = _pcm16_to_wav_bytes(turn_pcm)
+    try:
+        result = _transcribe_with_metrics(audio, chunks_received=1)
+    except NemotronASRUnavailable as exc:
+        await websocket.send_json({"type": "error", "message": str(exc)})
+        return
+    result = NemotronASRResult(
+        text=result.text,
+        backend=result.backend,
+        fallback_used=result.fallback_used,
+        primary_error=result.primary_error,
+        streaming_mode="vad-turn",
+        audio_ms=result.audio_ms,
+        asr_request_ms=result.asr_request_ms,
+        chunks_received=result.chunks_received,
+        buffer_ms_to_end=result.buffer_ms_to_end,
+        final_response_ms=(time.perf_counter() - final_started) * 1000,
+        rtfx=result.rtfx,
+    )
+    for frame in _frames_for_result(result, _settings()):
+        await websocket.send_json(frame | {"streaming": True, "vad": True})
+
+
 def create_app() -> FastAPI:
     app = FastAPI(title="PocketDM Nemotron Streaming ASR", version="0.1.0")
 
@@ -581,6 +777,7 @@ def create_app() -> FastAPI:
             "local_model_path": settings.local_model_path,
             "allow_download": settings.allow_download,
             "websocket_protocol": "chunked-v1",
+            "ws_vad": _env_flag("POCKETDM_WS_VAD", True),
         }
 
     @app.post("/warmup")
@@ -626,6 +823,12 @@ def create_app() -> FastAPI:
         streaming = False
         partial_sent = False
         stream_started_at: float | None = None
+        # VAD-gated turn mode (opt-in via {"type":"start","vad":true}). When active,
+        # the socket stays open across utterances and the server itself decides when
+        # each turn ends, instead of waiting for the client's {"type":"end"}.
+        vad_detector: StreamingVADTurnDetector | None = None
+        turn_pcm = bytearray()
+        turn_in_speech = False
         try:
             while True:
                 message = await websocket.receive()
@@ -633,6 +836,16 @@ def create_app() -> FastAPI:
                     return
 
                 if payload := message.get("bytes"):
+                    if vad_detector is not None:
+                        turn_in_speech = await _handle_vad_bytes(
+                            websocket,
+                            payload,
+                            vad_detector,
+                            turn_pcm,
+                            turn_in_speech,
+                        )
+                        continue
+
                     if not streaming:
                         if len(payload) > MAX_AUDIO_BYTES:
                             await websocket.send_json({"type": "error", "message": "audio file is too large"})
@@ -673,7 +886,34 @@ def create_app() -> FastAPI:
                     stream_started_at = time.perf_counter()
                     chunks.clear()
                     partial_sent = False
+                    # Opt into VAD turn-taking only when the client asks AND the server
+                    # knob allows it; otherwise fall through to the legacy buffered path.
+                    want_vad = bool(control.get("vad")) and _env_flag("POCKETDM_WS_VAD", True)
+                    if want_vad:
+                        try:
+                            vad_detector = StreamingVADTurnDetector(VADTurnConfig.from_env())
+                        except Exception as exc:
+                            # No silero / decode failure: degrade gracefully to legacy mode
+                            # rather than break the socket. Client keeps sending {"type":"end"}.
+                            vad_detector = None
+                            await websocket.send_json(
+                                {"type": "ready", "chunk_ms": _settings().chunk_ms, "vad": False, "vad_error": str(exc)}
+                            )
+                            continue
+                        turn_pcm.clear()
+                        turn_in_speech = False
+                        await websocket.send_json({"type": "ready", "chunk_ms": _settings().chunk_ms, "vad": True})
+                        continue
                     await websocket.send_json({"type": "ready", "chunk_ms": _settings().chunk_ms})
+                elif control_type == "end" and vad_detector is not None:
+                    # In VAD mode, {"type":"end"} flushes a turn already in progress
+                    # (e.g. client stopping the mic mid-utterance) then keeps going.
+                    if turn_in_speech and turn_pcm:
+                        await _finalize_vad_turn(websocket, bytes(turn_pcm))
+                    turn_pcm.clear()
+                    turn_in_speech = False
+                    vad_detector.reset()
+                    continue
                 elif control_type == "end":
                     if not chunks:
                         await websocket.send_json({"type": "error", "message": "missing audio"})
