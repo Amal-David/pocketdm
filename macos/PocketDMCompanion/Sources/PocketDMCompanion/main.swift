@@ -1666,7 +1666,18 @@ final class DragonOverlayModel: ObservableObject {
         }
         soundEnabled = next
         UserDefaults.standard.set(next, forKey: Self.soundEnabledKey)
-        voiceStatusLine = next ? "Sound on. Pika voice is ready." : "Muted; text only."
+        voiceStatusLine = next ? "Sound on. Pika voice is ready." : "Muted; voice loop stopped."
+        if !next {
+            // Mute is a hard stop: end the realtime/hands-free loop and any listening turn
+            // so the pet goes fully quiet instead of continuing to auto-chat in the background.
+            handsFreeConversationEnabled = false
+            cancelVoiceAutoSend()
+            cancelHandsFreeRestart()
+            if isVoiceListening {
+                stopVoiceConversation(sendTranscript: false)
+            }
+            voiceVisualState = .idle
+        }
         if next {
             play(.open)
         }
@@ -1785,11 +1796,14 @@ final class DragonOverlayModel: ObservableObject {
         isVoiceListening = false
         let prompt = transcript.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !prompt.isEmpty else {
-            voiceStatusLine = "I did not catch that. Use the mic and try again."
+            voiceStatusLine = "I did not catch that. Tap the mic when you want to talk."
             voiceVisualState = .idle
             play(.alert)
             setMood(.alert, duration: 1.2)
-            scheduleHandsFreeRestart(after: 1.1)
+            // Don't auto-loop on an empty/silence turn — stop hands-free so it can't run
+            // forever in a quiet or noisy room. The user re-taps the mic to start a turn.
+            handsFreeConversationEnabled = false
+            cancelHandsFreeRestart()
             return
         }
         voiceTranscript = prompt
@@ -1850,11 +1864,23 @@ final class DragonOverlayModel: ObservableObject {
                     }
                     shouldSend = true
                 } else if elapsed >= 10.0 {
-                    await MainActor.run {
-                        guard let self else { return }
-                        self.voiceStatusLine = heardSpeech ? "Sending your turn..." : "No voice heard yet; trying this turn."
+                    if heardSpeech {
+                        await MainActor.run { self?.voiceStatusLine = "Sending your turn..." }
+                        shouldSend = true
+                    } else {
+                        // 10s with no real speech: stop the loop instead of auto-sending an
+                        // empty turn (this was the runaway-loop cause in quiet/noisy rooms).
+                        await MainActor.run {
+                            guard let self else { return }
+                            self.handsFreeConversationEnabled = false
+                            self.cancelHandsFreeRestart()
+                            self.stopVoiceConversation(sendTranscript: false)
+                            self.voiceStatusLine = "No voice heard. Tap the mic when you want to talk."
+                            self.voiceVisualState = .idle
+                            self.setMood(.idle)
+                        }
+                        return
                     }
-                    shouldSend = true
                 } else {
                     shouldSend = false
                 }
