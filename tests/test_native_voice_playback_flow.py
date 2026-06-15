@@ -68,21 +68,31 @@ def test_pika_tts_url_status_and_bundled_fallback_exist() -> None:
     assert "synthesizeSentence" in external_tts
 
 
-def test_hands_free_pause_detection_uses_metering_and_max_timeout() -> None:
+def test_turn_taking_is_server_vad_driven_not_energy_metered() -> None:
+    # The energy-meter turn detector (averagePower > -38 dB + 1.25 s quiet + 10 s
+    # timeout) is REPLACED by server-side Silero VAD: the turn ends when the server
+    # emits `final`, which calls finishVoiceConversation. Intent preserved: a turn must
+    # still finalize on a pause — but the decision now lives in the VAD pipeline, not a
+    # local dB meter, so these brittle/buggy local heuristics must be gone.
     source = _source()
-    auto_send = _block(source, "private func scheduleVoiceAutoSendIfNeeded", "private func scheduleHandsFreeRestart")
-    transcriber = _block(source, "final class VoiceConversationTranscriber", "@MainActor\nfinal class PetSoundPlayer")
 
-    assert "let meterPower = self.voiceTranscriber.currentMeterPower()" in auto_send
-    assert "meterPower.map { $0 > -38 } ?? false" in auto_send
-    assert "heardSpeech && quietFor >= 1.25" in auto_send
-    assert "elapsed >= 10.0" in auto_send
-    assert '"Sending after your pause..."' in auto_send
-    assert "self.stopVoiceConversation(sendTranscript: true)" in auto_send
-    assert "func currentMeterPower() -> Float?" in transcriber
-    assert "recorder.isMeteringEnabled = true" in transcriber
-    assert "localRecorder.updateMeters()" in transcriber
-    assert "localRecorder.averagePower(forChannel: 0)" in transcriber
+    # Energy-meter machinery is fully removed.
+    assert "currentMeterPower" not in source
+    assert "scheduleVoiceAutoSendIfNeeded" not in source
+    assert "$0 > -38" not in source
+    assert "quietFor >= 1.25" not in source
+    assert "elapsed >= 10.0" not in source
+    assert ".averagePower(forChannel: 0)" not in source
+
+    # The realtime turn now finalizes on the server's `final` frame.
+    session = _block(source, "final class RealtimeVADStreamingSession", "@MainActor\nfinal class PetSoundPlayer")
+    assert 'socket.send(.string(#"{"type":"start","sample_rate":16000,"vad":true}"#))' in session
+    assert 'case "final":' in session
+    assert "Task { @MainActor in onFinal(text) }" in session
+
+    # The model finalizes the turn via the existing finishVoiceConversation on `final`.
+    start_conv = _block(source, "func startVoiceConversation", "func stopVoiceConversation")
+    assert "self?.finishVoiceConversation(transcript)" in start_conv
 
 
 def test_learning_tts_keeps_language_target_speech_unprefixed_when_visible() -> None:

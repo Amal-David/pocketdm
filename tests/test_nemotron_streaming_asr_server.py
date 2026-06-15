@@ -347,3 +347,209 @@ def test_preprocess_audio_trims_to_detected_speech_spans(monkeypatch) -> None:
         assert result.getnchannels() == 1
         assert result.getnframes() == 14_400 - 4_800
         assert result.getnframes() < original_frames
+
+
+# --- VAD-gated streaming turn loop ---------------------------------------------
+#
+# These tests prove OUR turn-loop wiring (the WebSocket VAD branch,
+# ``_handle_vad_bytes``, ``_finalize_vad_turn``, and the click/cough drop rule)
+# without depending on Silero's acoustic model: a scripted fake detector replays
+# start/end events so the assertions encode *why* each frame is emitted.
+
+
+class _ScriptedVADTurnDetector:
+    """Fake StreamingVADTurnDetector: replays a pre-baked list of events per feed().
+
+    Each ``feed`` call pops the next event group, so we can drive a precise
+    multi-turn timeline (start -> end -> start -> end) and assert the server reacts.
+    """
+
+    def __init__(self, script: "list[list[tuple[str, float]]]") -> None:
+        self._script = list(script)
+        self.reset_calls = 0
+
+    def feed(self, _pcm_bytes: bytes) -> "list[tuple[str, float]]":
+        if not self._script:
+            return []
+        return self._script.pop(0)
+
+    def reset(self) -> None:
+        self.reset_calls += 1
+
+
+def _pcm_chunk(num_samples: int = 512) -> bytes:
+    return b"\x10\x00" * num_samples
+
+
+def test_websocket_vad_turn_loop_finalizes_on_speech_ended_and_stays_open(monkeypatch) -> None:
+    # The core promise of the VAD path: the SERVER decides a turn ended (no client
+    # timer), emits speech_started/speech_ended, transcribes THAT turn, and keeps the
+    # socket open so a second utterance is detected on the same connection.
+    client = _client(monkeypatch, transcript="first turn text")
+
+    # Turn 1 ends on the first byte chunk; turn 2 ends on the second.
+    script = [
+        [("start", 0.1), ("end", 0.9)],
+        [("start", 1.5), ("end", 2.3)],
+    ]
+    detector = _ScriptedVADTurnDetector(script)
+    monkeypatch.setattr(
+        nemotron_streaming_asr_server,
+        "StreamingVADTurnDetector",
+        lambda _config: detector,
+    )
+
+    with client.websocket_connect("/ws/transcribe") as websocket:
+        websocket.send_json({"type": "start", "sample_rate": 16_000, "vad": True})
+        ready = websocket.receive_json()
+
+        # Turn 1
+        websocket.send_bytes(_pcm_chunk())
+        started1 = websocket.receive_json()
+        ended1 = websocket.receive_json()
+        partial1 = websocket.receive_json()
+        final1 = websocket.receive_json()
+
+        # Turn 2 on the SAME socket (multi-turn).
+        websocket.send_bytes(_pcm_chunk())
+        started2 = websocket.receive_json()
+        ended2 = websocket.receive_json()
+        partial2 = websocket.receive_json()
+        final2 = websocket.receive_json()
+
+    assert ready == {"type": "ready", "chunk_ms": 560, "vad": True}
+    assert started1 == {"type": "speech_started", "t": 0.1}
+    assert ended1 == {"type": "speech_ended", "t": 0.9}
+    assert partial1["type"] == "partial"
+    assert final1["type"] == "final"
+    assert final1["text"] == "first turn text"
+    assert final1["streaming_mode"] == "vad-turn"
+    assert final1["vad"] is True
+    # Socket stayed open and detected a second utterance.
+    assert started2 == {"type": "speech_started", "t": 1.5}
+    assert ended2 == {"type": "speech_ended", "t": 2.3}
+    assert final2["type"] == "final"
+    assert final2["text"] == "first turn text"
+    # The turn buffer + Silero state were reset between turns.
+    assert detector.reset_calls >= 2
+
+
+def test_websocket_vad_falls_back_to_legacy_when_detector_unavailable(monkeypatch) -> None:
+    # If the VADIterator can't be built (silero missing), the server must NOT break
+    # the socket: it advertises vad=False and the legacy end-triggers-transcribe path
+    # still works, so older/degraded environments keep transcribing.
+    client = _client(monkeypatch, transcript="legacy fallback works")
+
+    def _boom(_config):
+        raise RuntimeError("no silero_vad here")
+
+    monkeypatch.setattr(nemotron_streaming_asr_server, "StreamingVADTurnDetector", _boom)
+
+    with client.websocket_connect("/ws/transcribe") as websocket:
+        websocket.send_json({"type": "start", "sample_rate": 16_000, "vad": True})
+        ready = websocket.receive_json()
+        websocket.send_bytes(_wav_bytes())
+        partial = websocket.receive_json()
+        websocket.send_json({"type": "end"})
+        final = websocket.receive_json()
+
+    assert ready["type"] == "ready"
+    assert ready["vad"] is False
+    assert "vad_error" in ready
+    assert partial["type"] == "partial"
+    assert final["type"] == "final"
+    assert final["text"] == "legacy fallback works"
+
+
+def test_websocket_without_vad_flag_keeps_legacy_end_triggered_behavior(monkeypatch) -> None:
+    # Backward compat: a start frame WITHOUT vad:true must behave exactly as before —
+    # the client's {"type":"end"} triggers the single buffered transcribe.
+    client = _client(monkeypatch, transcript="legacy chunked")
+
+    with client.websocket_connect("/ws/transcribe") as websocket:
+        websocket.send_json({"type": "start", "format": "wav", "sample_rate": 16_000})
+        ready = websocket.receive_json()
+        websocket.send_bytes(_wav_bytes())
+        partial = websocket.receive_json()
+        websocket.send_json({"type": "end"})
+        final = websocket.receive_json()
+
+    assert ready == {"type": "ready", "chunk_ms": 560}
+    assert "vad" not in ready
+    assert partial["type"] == "partial"
+    assert final["type"] == "final"
+    assert final["text"] == "legacy chunked"
+
+
+def test_streaming_vad_detector_drops_sub_min_speech_blips() -> None:
+    # A start immediately followed by an end inside min_speech_ms is a click/cough,
+    # not speech: the detector must retract the start so no turn is opened.
+    pytest.importorskip("silero_vad")
+    nemotron_streaming_asr_server._silero_vad_model.cache_clear()
+
+    config = nemotron_streaming_asr_server.VADTurnConfig(
+        threshold=0.5, min_silence_ms=700, speech_pad_ms=300, min_speech_ms=200
+    )
+    detector = nemotron_streaming_asr_server.StreamingVADTurnDetector(config)
+
+    # Replace Silero's per-frame call with a scripted sequence: a 50 ms blip
+    # (start 0.00 -> end 0.05) then real speech (start 0.20 -> end 1.00).
+    frame_events = iter(
+        [{"start": 0.0}, None, {"end": 0.05}, None, {"start": 0.20}, None, {"end": 1.00}]
+    )
+    detector._iterator = lambda *_a, **_k: next(frame_events, None)  # type: ignore[assignment]
+
+    # 7 full 512-sample frames so the loop calls the scripted iterator 7 times.
+    events = detector.feed(b"\x10\x00" * (512 * 7))
+
+    # The blip's start is retracted (no "start"/"end" pair for it); only the real
+    # utterance survives.
+    starts = [t for kind, t in events if kind == "start"]
+    ends = [t for kind, t in events if kind == "end"]
+    assert starts == [0.20]
+    assert ends == [1.00]
+
+
+def test_streaming_vad_detector_runs_real_vaditerator_start_then_end(monkeypatch) -> None:
+    # Integration through the REAL Silero VADIterator state machine (its
+    # silence-duration counting, speech padding, and 512-sample contract), driven by
+    # a controlled per-frame speech probability so the test does not depend on a
+    # real-speech audio fixture (a pure synthetic tone reads as non-speech to Silero).
+    pytest.importorskip("silero_vad")
+    import torch
+
+    nemotron_streaming_asr_server._silero_vad_model.cache_clear()
+
+    config = nemotron_streaming_asr_server.VADTurnConfig(
+        threshold=0.5, min_silence_ms=128, speech_pad_ms=0, min_speech_ms=0
+    )
+    detector = nemotron_streaming_asr_server.StreamingVADTurnDetector(config)
+
+    # 6 silent frames, 12 "loud" frames, 12 silent frames. We override only the model's
+    # speech probability; VADIterator still does all start/end bookkeeping itself.
+    loud = [False] * 6 + [True] * 12 + [False] * 12
+    call = {"i": 0}
+    inner_model = detector._iterator.model  # the real Silero callable
+
+    def fake_prob(_x, _sr):  # mimic model(frame, sr) -> tensor probability
+        idx = call["i"]
+        call["i"] += 1
+        is_loud = loud[idx] if idx < len(loud) else False
+        return torch.tensor([[0.95 if is_loud else 0.02]])
+
+    monkeypatch.setattr(detector._iterator, "model", fake_prob)
+
+    events: list[tuple[str, float]] = []
+    pcm_one_frame = b"\x10\x00" * 512
+    for _ in range(len(loud)):
+        events.extend(detector.feed(pcm_one_frame))
+
+    kinds = [kind for kind, _ in events]
+    assert "start" in kinds
+    assert "end" in kinds
+    # Start precedes end, exactly one confirmed turn.
+    assert kinds.index("start") < kinds.index("end")
+    assert kinds.count("start") == 1
+    assert kinds.count("end") == 1
+    # ``inner_model`` is the same object we patched off of; sanity that we used the real iterator.
+    assert inner_model is not fake_prob

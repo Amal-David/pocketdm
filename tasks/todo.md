@@ -37,3 +37,66 @@ Time box: ~2-3 hours → record demo. Branch: codex/pika-clean-demo-stack
 ### Remaining
 - [ ] Owner: eyeball the app UI (transparency/pill/indicator) — only unverified item.
 - [ ] Optional cleanup (CodeMapper): drop `models/gemma-4-e2b-it` (20GB) + `2b-v1-lora` (3GB); commit untracked demo files so a stray `git checkout` can't wipe them.
+
+---
+
+# VAD-gated turn-taking voice pipeline (isolated worktree)
+
+Replace the buggy energy-meter turn detector with a Pipecat/LiveKit-style
+streaming Silero-VAD turn loop. Demo sidecars (7861/7862/7863) untouched.
+
+## Part A — Server (`app/nemotron_streaming_asr_server.py`)
+- [ ] Env knobs: `POCKETDM_WS_VAD` (on), `POCKETDM_VAD_THRESHOLD` (0.5),
+      `POCKETDM_VAD_SILENCE_MS` (700), `POCKETDM_VAD_PAD_MS` (300),
+      `POCKETDM_VAD_MIN_SPEECH_MS` (120 — drop clicks).
+- [ ] Per-connection `VADIterator` via cached `_silero_vad_model()`.
+- [ ] On `{"type":"start", ..., "vad": true}` enter VAD path; reply `ready`.
+- [ ] Buffer int16 PCM bytes -> 512-sample float32 @16k frames; feed VADIterator.
+- [ ] Emit `speech_started`/`speech_ended`; on end, transcribe that turn's
+      buffered segment, send `partial`+`final`, reset turn buffer, keep socket open.
+- [ ] Drop start spans shorter than min-speech.
+- [ ] BACKWARD COMPAT: `vad` absent/false keeps today's end-triggers-transcribe.
+- [ ] faster-whisper fallback path untouched.
+
+## Part B — Client (`macos/.../main.swift`)
+- [ ] DELETE `scheduleVoiceAutoSendIfNeeded()` + `currentMeterPower()` + meter calls.
+- [ ] Live mic stream via AVAudioEngine tap -> AVAudioConverter (16k mono int16)
+      -> push PCM frames into open WS. Send `{"type":"start","sample_rate":16000,"vad":true}`.
+- [ ] Finalize turn on server `final`; `partial` updates live UI. Hands-free re-arms.
+- [ ] Preserve NON-realtime fallback (faster-whisper batch / system speech).
+- [ ] (Optional) barge-in flag stub only; default OFF.
+
+## Verify
+- [ ] `swift build -c release --package-path macos/PocketDMCompanion`.
+- [ ] `uv run --group dev pytest -q` green; update native snapshot tests to VAD.
+- [ ] Focused server test for VADIterator turn loop (monkeypatched, importorskip).
+- [ ] Commit in worktree branch; report branch + SHA + honest caveats.
+
+## Review (VAD pipeline)
+
+### Done + verified
+- **Part A (server)** — new `StreamingVADTurnDetector` wraps Silero `VADIterator`
+  (512-sample @16k frames), per-connection via cached `_silero_vad_model()`. WS
+  `start` with `vad:true` enters a multi-turn loop: emits `speech_started`/`speech_ended`,
+  transcribes each confirmed utterance, sends `partial`+`final` (`streaming_mode:"vad-turn"`),
+  resets the turn buffer, keeps the socket open. Sub-min-speech blips dropped.
+  Env knobs: `POCKETDM_WS_VAD`, `POCKETDM_VAD_THRESHOLD`, `POCKETDM_VAD_SILENCE_MS`,
+  `POCKETDM_VAD_PAD_MS`, `POCKETDM_VAD_MIN_SPEECH_MS`. Backward compat preserved
+  (no `vad` flag → legacy `end`-triggers-transcribe). Graceful degrade if silero missing.
+- **Part B (client)** — energy meter deleted (`scheduleVoiceAutoSendIfNeeded`,
+  `currentMeterPower`, -38 dB / 1.25 s / 10 s rules, recorder metering). New
+  `RealtimeVADStreamingSession` taps the live mic → AVAudioConverter (16k mono Int16)
+  → pushes PCM into the open VAD WebSocket. Turn finalizes on server `final` →
+  `finishVoiceConversation`. Non-realtime faster-whisper batch fallback intact.
+  Barge-in present as an OFF-by-default flag stub only.
+- **Verify** — `swift build -c release` OK (clean, 0 warnings). `pytest -q` = 180 passed,
+  7 skipped (dep-gated), 1 xfailed. Native snapshot tests updated to VAD intent.
+  New server VAD tests pass with real silero installed (throwaway venv), skip cleanly
+  without it. Demo sidecars 7861/7862/7863 untouched (in-process TestClient only).
+
+### Needs the user's live-mic test (cannot verify here — no real mic)
+- Speak a sentence hands-free → pet replies once per pause; multi-turn keeps working
+  on the same WS without re-tapping the mic.
+- Confirm AVAudioConverter resampling on the real input device (48k→16k) yields clean
+  STT (the conversion path is the riskiest unverified spot).
+- Confirm no double-finalize / dropped first word at turn boundaries.
