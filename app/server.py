@@ -58,6 +58,16 @@ app = Server(lifespan=lifespan)
 app.mount("/static", StaticFiles(directory=STATIC_ROOT), name="static")
 
 _SESSIONS: dict[str, PlaySession] = {}
+_MAX_SESSIONS = 500
+
+
+def _evict_stale_sessions() -> None:
+    # Cap the in-memory session map so a long-running public Space can't grow
+    # unbounded (Devin review). Dict preserves insertion order, so the front is
+    # the oldest session — evict from there until back under the cap.
+    while len(_SESSIONS) > _MAX_SESSIONS:
+        oldest_id = next(iter(_SESSIONS))
+        _SESSIONS.pop(oldest_id, None)
 
 
 def _prepare_optional_tts_assets() -> None:
@@ -170,6 +180,7 @@ def _start_payload(payload: dict[str, Any]) -> dict[str, Any]:
     )
     session_id = uuid.uuid4().hex
     _SESSIONS[session_id] = session
+    _evict_stale_sessions()
     turn_payload = _advance_to_next_turn(session)
     return {
         "session_id": session_id,

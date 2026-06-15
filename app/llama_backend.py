@@ -259,11 +259,15 @@ def _ensure_llama_server(config: ManagedLlamaServerConfig) -> subprocess.Popen[b
 
     config.log_path.parent.mkdir(parents=True, exist_ok=True)
     log_handle = config.log_path.open("ab")
-    process = subprocess.Popen(
-        _llama_server_command(config),
-        stdout=log_handle,
-        stderr=subprocess.STDOUT,
-    )
+    try:
+        process = subprocess.Popen(
+            _llama_server_command(config),
+            stdout=log_handle,
+            stderr=subprocess.STDOUT,
+        )
+    except Exception:
+        log_handle.close()
+        raise
     _register_process_cleanup(process, log_handle)
 
     deadline = time.monotonic() + config.start_timeout_seconds
