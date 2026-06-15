@@ -1,166 +1,140 @@
 ---
-title: PocketDM
+title: Pocket Pikachu — A Pokémon You Talk To, 100% Local
 emoji: ⚡
-colorFrom: amber
+colorFrom: yellow
 colorTo: red
 sdk: gradio
 sdk_version: 6.17.3
 app_file: app.py
-pinned: false
+pinned: true
+license: apache-2.0
+short_description: On-device talking Pikachu — MiniCPM5 + VoxCPM + Nemotron, all local
 tags:
-  - build-small-hackathon
   - track:wood
-  - sponsor:openai
-  - sponsor:modal
+  - sponsor:openbmb
   - achievement:offbrand
+  - achievement:offgrid
+  - achievement:fieldnotes
+  - tiny-titan
+  - achievement:tinytitan
+  - build-small-hackathon
+  - minicpm
+  - voxcpm
+  - nemotron
+  - on-device
+  - local-llm
+  - gradio
 ---
 
-# PocketDM
+# ⚡ Pocket Pikachu — a Pokémon you can actually talk to, 100% on your own machine
 
-PocketDM is a tiny-model Dungeon Master for the Build Small Hackathon's
-Thousand Token Wood track. The pitch is simple: a custom Gradio adventure game
-where the model writes the prose, the deterministic engine owns game state, and
-a native Pikachu desktop pet hovers over the Mac with local mood sprite sheets,
-pet-only default mode, daily Bond HP care, hints, subtle original chirps, simple
-Pet/Learn/Nap/Hyper reactions, and beginner Spanish plus Mandarin practice.
+**Pocket Pikachu is a living desktop companion you talk to with your voice — and every word of it runs on‑device.** No cloud, no API keys, no internet. Pull the WiFi and it still listens, thinks, and talks back. It greets you in the morning, asks how you're doing, reminds you to drink water, learns your daily rhythm, and helps you practice a new language — all powered by a stack of *tiny* open‑weight models small enough to live on a laptop.
 
-The first-cut app is a reliable playable demo while the fine-tuned student
-model pipeline finishes. It uses the frozen engine contract and a scripted local
-backend so judges can play a complete adventure immediately. The same server can
-switch to a llama.cpp backend when `POCKETDM_GGUF` points at the trained GGUF.
-The target runtime is a Qwen3.5-2B Q4_K_M llama.cpp model plus Kokoro narration,
-all under the 32B rule and designed for offline play.
+> **Build Small in one line:** the whole brain → voice → ears loop is **three open models, each ≤ 1 B parameters, running locally.** Take the network away and nothing breaks. That's the whole point.
 
-## Why It Fits Build Small
+---
 
-- Track: Thousand Token Wood.
-- Delight: a short playable adventure with a persistent animated electric familiar.
-- AI load-bearing path: teacher-generated adventures train the tiny model to
-  produce valid turn JSON; the engine never lets the model own logic.
-- Custom Gradio UI: `gradio.Server` serves a fully custom parchment frontend,
-  not stock Gradio blocks.
-- Offline story: runtime is designed for local llama.cpp plus local Kokoro TTS;
-  no cloud inference is needed once the model artifact is baked in.
-- Voice: narration uses the local Kokoro path when installed, including a
-  custom-blended Lore Narrator voice artifact. Lore Narrator is a Kokoro tensor
-  blend, not a TTS fine-tune. The pet's quick chatter uses browser speech
-  synthesis so the assistant stays responsive.
-- Evidence path: Modal data-generation costs are logged in `tasks/costs.md`,
-  smoke data lives under `data/out/`, and the train/eval scripts are in place
-  for the model/export/report path once the full teacher run lands.
+## 🎬 The 15‑second pitch (what the demo opens on)
 
-## Local app
+1. **Turn WiFi off.** On camera.
+2. **Click the pet and say "Good morning."** Pikachu rises, perks up, and answers you out loud — in a cute, consistent voice — in a couple of seconds.
+3. **"What's the weather? What time is it?"** It checks real tools and tells you.
+4. **"I drank water."** Confetti, the bond HP bar fills, the pet does a happy hop.
+5. **On‑screen the whole time:** `MiniCPM5‑1B · VoxCPM · Nemotron — all ≤ 1B, all on‑device.`
 
-Run the first-cut custom frontend with:
+A talking desktop pet is *literally* the example the hackathon gives for the whimsical track. We built the canonical one — and made it run with zero cloud.
 
+---
+
+## 🧠 The model stack (this is where "AI is load‑bearing")
+
+There is no Pocket Pikachu without the models. They aren't decoration — they *are* the product.
+
+| Job | Model | Size | Why it matters |
+|---|---|---|---|
+| **Brain** (conversation, tool use, personality) | **OpenBMB MiniCPM5‑1B** (GGUF, Q4) via llama.cpp | **1 B** | Genuinely tiny — well under the 4 B Tiny Titan bar. Drives every reply, daily check‑in, and the "learns your patterns" loop. |
+| **Voice** (text → speech) | **OpenBMB VoxCPM‑0.5B** | **0.5 B** | One consistent, cloned, high‑energy female voice across the whole app. Cute‑tuned, never a robotic system voice. |
+| **Ears** (speech → text) | **NVIDIA Nemotron‑Speech‑Streaming‑0.6B** (native), faster‑whisper fallback | **0.6 B** | Real on‑device ASR with Silero VAD trimming for fast, clean turns. |
+
+**Two OpenBMB models doing the core work** (brain *and* voice) → **Best MiniCPM Build**. **Every model ≤ 1 B** → **Tiny Titan**. **Zero cloud inference** → **Off the Grid**. A fully custom animated 3D‑Pikachu UI (native *and* web) → **Off Brand**.
+
+---
+
+## ✨ What it actually does
+
+- **Talk to it anytime** — push‑to‑talk, hands‑free voice‑to‑voice, or type. Two clean mic icons; chat bubbles show every turn.
+- **Daily morning check‑ins & affirmations** — "Hey, how are you doing? I hope you have a wonderful day!" in a cheerful voice, generated by the local brain, not a hardcoded string.
+- **Gentle wellness loop** — drink‑water nudges, mood spins, and a Bond‑HP care meter that grows when you pet it (with confetti and a slow fill animation).
+- **A little bit intelligent** — it tracks your streaks, moods, and daily patterns locally to feel like it actually knows you, and it can reach **real tools** (time, live weather via Open‑Meteo, web search) — all keyless.
+- **Language practice on the side** — beginner Spanish & Mandarin phrases with a single consistent voice, never an external API.
+- **Personality that reacts** — original mood states (happy / hyper / nap / alert), a transparent first‑launch greeting animation, and a nap animation when you tell it to rest.
+
+---
+
+## 🔒 Off the Grid — prove it yourself
+
+Everything that matters runs locally:
+
+- **Brain:** MiniCPM5‑1B on llama.cpp (CPU/Metal).
+- **Voice:** VoxCPM‑0.5B in‑process.
+- **Ears:** Nemotron / faster‑whisper sidecars.
+
+Disconnect from the internet after the models are cached and the entire loop still works. The only thing that ever touches the network is the optional weather/web‑search tools — and the pet degrades gracefully without them.
+
+---
+
+## ▶️ Run it
+
+**The Gradio web app (the submission):**
 ```bash
-uv run python app.py
+uv run python -m app.web_pet      # http://127.0.0.1:7870
+```
+A centered, bobbing Pikachu you click to talk to — mic in the browser, chat bubbles, daily check‑in, the model stack chip row.
+
+**The full native macOS companion + all local sidecars:**
+```bash
+# Start the local stack (MiniCPM5 brain, Nemotron ASR, VoxCPM voice)
+POCKETDM_PIKA_TTS_BACKEND=voxcpm macos/PocketDMCompanion/scripts/pika_demo_stack.sh start
+# Launch the floating desktop pet against it
+POCKETDM_ASSISTANT_LLAMA_MODEL=minicpm5-1b-q4 \
+  macos/PocketDMCompanion/scripts/pika_demo_stack.sh launch
+```
+Full runbook: [`docs/pika-voice-stack.md`](docs/pika-voice-stack.md). Submission details + verified tags: [`docs/hackathon-submission.md`](docs/hackathon-submission.md).
+
+---
+
+## 🏆 How it maps to Build Small
+
+| Prize / badge | Why we qualify |
+|---|---|
+| **Thousand Token Wood** (whimsical track) | A delightful talking desktop pet — the track's own example, built for real. |
+| **Best MiniCPM Build** (OpenBMB) | MiniCPM5‑1B brain **and** VoxCPM‑0.5B voice carry the whole experience. |
+| **Tiny Titan** (≤ 4 B) | Every model is ≤ 1 B. The brain is 1 B. |
+| **Off the Grid** | 100% local inference — runs with WiFi off. |
+| **Off Brand** | Fully custom animated Pikachu UI (native AppKit + custom Gradio), nothing stock. |
+| **Field Notes** | Public build write‑up of how we shrank a talking companion onto a laptop. |
+
+---
+
+## 🧱 Architecture (short version)
+
+```
+You (voice)
+  └─▶ Nemotron / faster-whisper  ── speech → text (on-device, VAD-trimmed)
+        └─▶ MiniCPM5-1B (llama.cpp) ── reply + tools (time / weather / search)
+              └─▶ VoxCPM-0.5B ── text → one consistent cute voice (pitch/rate-styled)
+                    └─▶ Pikachu talks back, reacts, and remembers your day
 ```
 
-The app serves a `gradio.Server` backend with a custom HTML/CSS/JS frontend. The
-web fallback still reads its Pikachu strips from the older
-`app/static/dragon-sprites*.png` asset names; the native companion bundles its
-own cleaned 3D mood strips under `macos/PocketDMCompanion`. The native companion
-uses macOS system voices for Spanish and Mandarin lesson phrases, ships 100
-words plus 100 sentences per language, emotes between happy/nap/hyper/alert
-states, and does not call an external API for the language coach.
+Deterministic local facts (time, date, weather, pet state) are resolved *before* the model so the pet is reliable; the model owns the personality and phrasing, never the game logic.
 
-By default the app reports `Backend: Scripted` and uses deterministic turns for
-the playable checkpoint. To use the local trained GGUF model:
+---
 
-```bash
-POCKETDM_GGUF=models/2b-v1-lora/gguf/merged.Q4_K_M.gguf uv run --group eval --group tts python app.py
-```
+## 📦 Status
 
-To try the experimental Gemma 4 E2B backend after downloading its GGUF:
+- ✅ Native macOS companion: full voice loop, daily care, language coach, greeting/nap animations, one cloned voice.
+- ✅ Gradio web app (`app/web_pet.py`) + self‑contained Space (`space/`).
+- ✅ All models local, all ≤ 1 B, OpenBMB brain + voice.
+- 🎥 Demo video & social post: see [`docs/hackathon-submission.md`](docs/hackathon-submission.md).
 
-```bash
-POCKETDM_GGUF=models/gemma-4-e2b-it/gguf/gemma-4-E2B-it-Q4_K_M.gguf POCKETDM_LLAMA_THREADS=8 uv run --group eval --group tts python app.py
-```
-
-For the faster Gemma 4 MTP path, PocketDM can manage a recent llama.cpp server
-process with the matching drafter:
-
-```bash
-POCKETDM_LLAMA_SERVER_BIN=/Users/amal/.cache/pocketdm-mtp/llama.cpp/build/bin/llama-server \
-POCKETDM_GGUF=/Users/amal/listenowl/experiments/build-small/models/gemma-4-e2b-it/gguf/gemma-4-E2B-it-Q4_K_M.gguf \
-POCKETDM_LLAMA_DRAFT_GGUF=/Users/amal/listenowl/experiments/build-small/models/gemma-4-e2b-it/gguf/mtp-gemma-4-E2B-it.gguf \
-POCKETDM_LLAMA_SPEC_DRAFT_N=1 \
-POCKETDM_LLAMA_SERVER_LABEL="Gemma 4 E2B Q4_K_M MTP managed llama.cpp server" \
-uv run --group eval --group tts python app.py
-```
-
-Or run the server yourself and point PocketDM at the OpenAI-compatible local
-endpoint:
-
-```bash
-/Users/amal/.cache/pocketdm-mtp/llama.cpp/build/bin/llama-server \
-  --model /Users/amal/listenowl/experiments/build-small/models/gemma-4-e2b-it/gguf/gemma-4-E2B-it-Q4_K_M.gguf \
-  --model-draft /Users/amal/listenowl/experiments/build-small/models/gemma-4-e2b-it/gguf/mtp-gemma-4-E2B-it.gguf \
-  --spec-type draft-mtp --spec-draft-n-max 1 --spec-draft-ngl 999 \
-  --ctx-size 2048 --threads 8 -ngl 999 -fa on \
-  --host 127.0.0.1 --port 8081 --no-ui
-
-POCKETDM_LLAMA_SERVER_URL=http://127.0.0.1:8081 POCKETDM_LLAMA_SERVER_LABEL="Gemma 4 E2B Q4_K_M MTP llama.cpp server" uv run --group eval --group tts python app.py
-```
-
-To prove the MTP speed path from the native CLI, run:
-
-```bash
-PYTHONDONTWRITEBYTECODE=1 uv run python scripts/bench_llama_mtp.py --format both --n-predict 64 --threads 8 --draft-values 1,2,4 --timeout 180 -- --gpu-layers 999 --flash-attn on
-```
-
-A short local CLI benchmark showed `--spec-draft-n-max 1` at `80.6 tok/s`
-generation throughput versus `40.8 tok/s` without MTP; a longer run favored the
-baseline, so treat MTP as a native runtime path to verify and tune on the demo
-machine, not a blanket speedup claim. The detailed runbook is in
-`/Users/amal/listenowl/experiments/build-small/docs/mtp-runtime-runbook.md`.
-
-For a less-compressed Gemma 4 E2B test that is still much lighter than BF16:
-
-```bash
-POCKETDM_GGUF=models/gemma-4-e2b-it/gguf/gemma-4-E2B-it-Q6_K.gguf POCKETDM_LLAMA_THREADS=8 uv run --group eval --group tts python app.py
-```
-
-The BF16 GGUF also loads locally, but it is a quality experiment rather than a
-demo runtime on CPU:
-
-```bash
-POCKETDM_GGUF=models/gemma-4-e2b-it/gguf/gemma-4-E2B-it-BF16.gguf POCKETDM_LLAMA_THREADS=8 uv run --group eval --group tts python app.py
-```
-
-Narration audio is a progressive enhancement. If Kokoro dependencies and local
-model files are available, `/api/tts` returns WAV audio for each turn. If they
-are missing, the text adventure and electric familiar continue without blocking.
-The Space entrypoint preloads the Kokoro ONNX assets at startup when needed;
-turn-time play never downloads them.
-
-You can also use:
-
-```bash
-./run_local.sh
-```
-
-Then open `http://127.0.0.1:7860`.
-
-## Submission Links
-
-- Demo video: TODO
-- Social post: TODO
-- Field notes/blog: TODO; draft in `docs/field-notes-draft.md`
-- Submission copy kit: `docs/submission-copy.md`
-- Hackathon plan: `tasks/hackathon-submission-plan.md`
-- Model repo: TODO after WP-4 training/export
-- Dataset/traces repo: TODO after WP-3 filtering and split
-
-## Candidate Badges Still To Earn
-
-- Off Grid: keep once the live Space runs without hosted inference.
-- Well-Tuned: add after the student fine-tune, eval table, and model repo are live.
-- Llama Champion: add after llama.cpp/GGUF runtime is active in the app.
-- Sharing Is Caring: add after dataset and Codex traces are published.
-- Field Notes: add after the public build write-up is linked.
-
-Before final submission, rerun the registration app tag generator and add only
-earned final tags such as `achievement:offgrid`, `achievement:welltuned`,
-`achievement:llama`, `achievement:sharing`, and `achievement:fieldnotes`.
+Built tiny, on purpose. ⚡
