@@ -534,15 +534,11 @@ def _local_companion_llm_reply(session: PlaySession, message: str, *, purpose: s
         return None
 
     now = datetime.now().astimezone()
+    # Keep context minimal so the tiny 1B model doesn't recite it back as its answer.
+    # Only facts it might actually need: the time, plus live tool facts when relevant.
     context = {
-        "purpose": purpose,
         "local_time": now.isoformat(timespec="seconds"),
         "timezone": now.tzname() or now.strftime("%z"),
-        "runtime": session.backend_label,
-        "model": _model_label(session),
-        "hp": session.state.hp,
-        "location": session.state.location,
-        "turn_count": session.state.turn_count,
     }
     if tool_facts := gather_tool_facts(message):
         context["tool_facts"] = tool_facts
@@ -552,14 +548,15 @@ def _local_companion_llm_reply(session: PlaySession, message: str, *, purpose: s
             {
                 "role": "system",
                 "content": (
-                    "You are Pika, a tiny always-on desktop companion. "
-                    "The user is building the PocketDM/Pika hackathon demo. "
-                    "Reply in one compact helpful line. Include 'Pika pika!' once. "
-                    "Use tool facts exactly. Do not invent weather, time, model, or system data. "
-                    "Do not give adventure hints unless the user explicitly asks for a hint, clue, or choice. "
-                    "If the user asks for encouragement, give encouragement without asking for extra details. "
-                    "Never answer only with Pika sounds; after the catchphrase, include one useful sentence. "
-                    "Do not include analysis, reasoning, markdown, emoji, stage directions, or <think> tags."
+                    "You are Pikachu, a cheerful, high-energy desktop pet companion. "
+                    "Answer the user's actual message directly, warmly, and briefly (one or two short sentences). "
+                    "Start with 'Pika pika!' exactly once, then a genuine, upbeat, helpful reply. "
+                    "The Context line is PRIVATE background only: never repeat, recite, quote, mention, or "
+                    "describe it. Do not talk about timezones, runtime, models, or being 'scripted' or a 'demo' "
+                    "unless the user explicitly asks. Use the tool facts exactly for time/weather/search questions "
+                    "and never invent facts. Only give a hint or clue if the user explicitly asks for one. "
+                    "Be encouraging without asking for extra details. "
+                    "No analysis, reasoning, markdown, emoji, stage directions, or <think> tags."
                 ),
             },
             {"role": "user", "content": f"Context: {json.dumps(context, sort_keys=True)}\nUser: {message}"},

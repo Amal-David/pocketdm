@@ -2514,6 +2514,9 @@ final class DragonOverlayModel: ObservableObject {
             // Keep the visible + spoken reply clean; the notes above only update pet state.
             message = cleanReply
             updateChatMessage(id: assistantMessageID, text: message)
+            // The text reply is on screen now; clear "thinking" immediately instead of
+            // waiting for the (slower) voice to start.
+            voiceVisualState = .idle
             play(.reply)
             speakPikaLine(message, force: true)
             setMood(.happy, duration: 1.5)
@@ -3544,11 +3547,10 @@ final class DragonOverlayModel: ObservableObject {
     }
 
     var voiceTraceLine: String {
-        let sttLabel = runtimeStackStatus.stt == "STT ..." ? "STT" : runtimeStackStatus.stt
-        let frameLabel = runtimeStackStatus.frames == "Frames ..." ? "ASR frames" : runtimeStackStatus.frames
+        let frameLabel = runtimeStackStatus.frames == "Frames ..." ? "Nemotron" : runtimeStackStatus.frames
         let brainLabel = runtimeStackStatus.brain == "Brain ..." ? "LLM" : runtimeStackStatus.brain
         let voiceLabel = runtimeStackStatus.voice == "Voice ..." ? "TTS" : runtimeStackStatus.voice
-        return "STT \(sttLabel) · ASR \(frameLabel) · LLM \(brainLabel) · TTS \(voiceLabel)"
+        return "ASR \(frameLabel) · LLM \(brainLabel) · TTS \(voiceLabel)"
     }
 
     var voiceBubbleLine: String {
