@@ -46,7 +46,7 @@ def test_water_completion_says_it_drinks_water_and_awards_health_once() -> None:
     assert 'return "I drank water."' in enum_block
     assert "guard let expected = nextIncompleteDailyWellnessAction" in completion
     assert "guard expected == action" in completion
-    assert completion.index("guard expected == action") < completion.index(
+    assert completion.index("guard expected == action") < completion.rindex(
         "companionHP = min(10, companionHP + 1)"
     )
     assert 'var body = "\\(action.spokenLine) Health +1."' in completion
@@ -191,18 +191,15 @@ def test_expanded_chat_uses_persisted_scrollable_transcript() -> None:
     assert "model.lastRequest" not in transcript
 
 
-def test_voice_start_collapses_before_first_microphone_prompt() -> None:
+def test_voice_start_stays_expanded_without_collapsing() -> None:
     source = _source()
     helper = _block(source, "private func beginVoiceFromExpanded", "private func toggleSingleTurnVoiceFromExpanded")
-    permission = _block(source, "private var microphonePermissionNeedsPrompt", "private var modeControls")
 
-    assert "microphonePermissionNeedsPrompt" in helper
-    assert "AVCaptureDevice.authorizationStatus(for: .audio) == .notDetermined" in permission
-    assert "model.setMinimized(true)" in helper
-    assert "DispatchQueue.main.asyncAfter" in helper
-    assert helper.index("model.setMinimized(true)") < helper.rindex(
-        "model.startVoiceConversation(mode: mode)"
-    )
+    # Clicking the mic from the expanded panel must NOT collapse it to pet-only.
+    assert "model.startVoiceConversation(mode: mode)" in helper
+    assert "model.toggleHandsFreeConversation()" in helper
+    assert "model.setMinimized(true)" not in helper
+    assert "DispatchQueue.main.asyncAfter" not in helper
 
 
 def test_companion_health_uses_3000_point_decay_loop() -> None:
@@ -236,12 +233,12 @@ def test_native_overlay_caps_expanded_panel_to_visible_screen() -> None:
     source = _source()
     controller = _block(source, "final class DragonOverlayController", "final class FloatingDragonPanel")
 
-    assert "private static let expandedSize = NSSize(width: 620, height: 560)" in controller
+    assert "private static let expandedSize = NSSize(width: 620, height: 620)" in controller
     assert "private static let expandedMinimumSize = NSSize(width: 520, height: 430)" in controller
     assert "private static let expandedMinimumSize" in controller
     assert "fittedSize(" in controller
     assert "visibleFrame.width - 16" in controller
-    assert "visibleFrame.height - 16" in controller
+    assert "visibleFrame.height - 48" in controller
 
 
 def test_pet_hover_settings_stay_stable_while_panel_is_open() -> None:

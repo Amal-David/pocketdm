@@ -26,7 +26,7 @@ def test_app_packager_includes_swiftpm_voice_resources() -> None:
     script = (ROOT / "macos/PocketDMCompanion/scripts/package_app.sh").read_text()
 
     assert 'resource_bundle_name="PocketDMCompanion_PocketDMCompanion.bundle"' in script
-    assert 'cp -R "$resource_bundle" "$bundle/$resource_bundle_name"' in script
+    assert 'cp -R "$resource_bundle" "$bundle/Contents/Resources/$resource_bundle_name"' in script
 
 
 def test_signature_pika_voice_waveform_is_not_silent() -> None:
