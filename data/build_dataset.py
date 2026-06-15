@@ -4,7 +4,7 @@ import argparse
 import glob
 import json
 import random
-from collections import defaultdict
+from collections import Counter, defaultdict
 from pathlib import Path
 from typing import Any
 
@@ -24,6 +24,7 @@ def expand_inputs(patterns: list[str]) -> list[Path]:
 
 def load_adventures(paths: list[Path]) -> list[dict[str, Any]]:
     adventures: list[dict[str, Any]] = []
+    seen_ids: Counter[str] = Counter()
     for path in paths:
         with path.open() as handle:
             for line_number, line in enumerate(handle, start=1):
@@ -31,9 +32,10 @@ def load_adventures(paths: list[Path]) -> list[dict[str, Any]]:
                 if not stripped:
                     continue
                 try:
-                    adventures.append(json.loads(stripped))
+                    adventure = json.loads(stripped)
                 except json.JSONDecodeError as exc:
                     raise ValueError(f"{path}:{line_number}: invalid JSONL: {exc}") from exc
+                adventures.append(_with_unique_adventure_id(adventure, path, seen_ids))
     return adventures
 
 
@@ -150,6 +152,19 @@ def _adventure_id(adventure: dict[str, Any]) -> str:
     if value is None:
         raise ValueError("adventure missing adventure_id")
     return str(value)
+
+
+def _with_unique_adventure_id(
+    adventure: dict[str, Any],
+    path: Path,
+    seen_ids: Counter[str],
+) -> dict[str, Any]:
+    adventure_id = _adventure_id(adventure)
+    seen_ids[adventure_id] += 1
+    if seen_ids[adventure_id] == 1:
+        return adventure
+    unique = f"{adventure_id}__{path.parent.name}__{seen_ids[adventure_id]}"
+    return {**adventure, "adventure_id": unique}
 
 
 if __name__ == "__main__":

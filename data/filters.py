@@ -35,7 +35,7 @@ ADV_GATE_MIN_TURNS = "min_6_turns"
 ADV_GATE_DROPPED = "max_1_dropped_turn"
 ADVENTURE_GATES = (ADV_GATE_ENDING, ADV_GATE_MIN_TURNS, ADV_GATE_DROPPED)
 
-SENTENCE_RE = re.compile(r"[.!?—–]+")
+SENTENCE_RE = re.compile(r"[.!?]+")
 TOKEN_RE = re.compile(r"[a-z0-9]+")
 NON_DELTA_ERROR_PREFIXES = (
     "turn must offer exactly 3 choices",
@@ -102,6 +102,8 @@ class AdventureFilterResult:
     raw_turns: int = 0
     clean_turns: int = 0
     dropped_turns: int = 0
+    bridge_turns: int = 0
+    drop_reasons: Counter[str] = field(default_factory=Counter)
 
     @property
     def passed(self) -> bool:
@@ -152,6 +154,8 @@ def filter_many(
         "raw_turns": aggregate.raw_turns,
         "clean_turns": aggregate.clean_turns,
         "dropped_turns": aggregate.dropped_turns,
+        "bridge_turns": aggregate.bridge_turns,
+        "drop_reasons": dict(aggregate.drop_reasons),
         "turn_gate_passes": dict(aggregate.turn_gate_passes),
         "turn_gate_totals": dict(aggregate.turn_gate_totals),
         "adventure_gate_passes": dict(aggregate.adventure_gate_passes),
@@ -177,6 +181,23 @@ def filter_adventure(
     result.raw_turns = len(raw_turn_records)
 
     for turn_record in raw_turn_records:
+        if turn_record.get("used_bridge") is True:
+            result.dropped_turns += 1
+            result.bridge_turns += 1
+            result.drop_reasons["bridge"] += 1
+            turn = parse_turn_payload(turn_record.get("turn_json"))
+            action_taken = turn_record.get("action_taken")
+            updated = apply_delta(state, turn)
+            if not turn.is_ending and isinstance(action_taken, str) and action_taken:
+                updated = updated.model_copy(
+                    update={
+                        "recent_turns": [*updated.recent_turns, (turn, action_taken)][-2:]
+                    }
+                )
+            state = updated
+            previous_turn = turn
+            continue
+
         turn_result = filter_turn(
             turn_record,
             state=state,
@@ -188,6 +209,8 @@ def filter_adventure(
         _record_turn_gates(result, turn_result)
         if turn_result.parsed_turn is None or not turn_result.passed:
             result.dropped_turns += 1
+            for failure in turn_result.failures:
+                result.drop_reasons[failure] += 1
             continue
 
         turn = turn_result.parsed_turn
@@ -353,12 +376,30 @@ def render_report(report: dict[str, Any]) -> str:
         f"- Raw turns: {report['raw_turns']}",
         f"- Clean turns: {report['clean_turns']}",
         f"- Dropped turns: {report['dropped_turns']}",
+        f"- Bridge fallback turns: {report.get('bridge_turns', 0)}",
         "",
-        "## Turn Gates",
-        "",
-        "| Gate | Passed | Total | Pass rate |",
-        "|---|---:|---:|---:|",
     ]
+    if report.get("drop_reasons"):
+        lines.extend(
+            [
+                "## Drop Reasons",
+                "",
+                "| Reason | Count |",
+                "|---|---:|",
+            ]
+        )
+        for reason, count in sorted(report["drop_reasons"].items()):
+            lines.append(f"| {reason} | {count} |")
+        lines.append("")
+
+    lines.extend(
+        [
+            "## Turn Gates",
+            "",
+            "| Gate | Passed | Total | Pass rate |",
+            "|---|---:|---:|---:|",
+        ]
+    )
     for gate in TURN_GATES:
         passed = int(report["turn_gate_passes"].get(gate, 0))
         total = int(report["turn_gate_totals"].get(gate, 0))
@@ -409,6 +450,8 @@ def _merge_counts(target: AdventureFilterResult, source: AdventureFilterResult) 
     target.raw_turns += source.raw_turns
     target.clean_turns += source.clean_turns
     target.dropped_turns += source.dropped_turns
+    target.bridge_turns += source.bridge_turns
+    target.drop_reasons.update(source.drop_reasons)
 
 
 def _has_real_ending(turn_records: Sequence[dict[str, Any]], config: FilterConfig) -> bool:

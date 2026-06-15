@@ -6,7 +6,7 @@ from typing import Any
 import pytest
 from pydantic import ValidationError
 
-from engine.schema import CANONICAL_KEY_ORDER, Turn
+from engine.schema import CANONICAL_STATE_DELTA_KEY_ORDER, CANONICAL_TURN_KEY_ORDER, Turn
 
 ROOT = Path(__file__).resolve().parents[1]
 GRAMMAR_PATH = ROOT / "engine" / "grammar.gbnf"
@@ -160,10 +160,16 @@ def test_non_ending_turn_cannot_have_ending_type() -> None:
 
 def test_grammar_pins_canonical_keys_and_enums() -> None:
     grammar = GRAMMAR_PATH.read_text()
-    key_literals = [f'"\\"{key}\\""' for key in CANONICAL_KEY_ORDER]
+    turn_key_literals = [f'"\\"{key}\\""' for key in CANONICAL_TURN_KEY_ORDER]
+    delta_key_literals = [f'"\\"{key}\\""' for key in CANONICAL_STATE_DELTA_KEY_ORDER]
 
-    positions = [grammar.index(key_literal) for key_literal in key_literals]
+    for production in ("non-ending-turn", "ending-turn"):
+        start = grammar.index(f"{production} ::=")
+        positions = [grammar.index(key_literal, start) for key_literal in turn_key_literals]
+        assert positions == sorted(positions)
 
+    delta_start = grammar.index("state-delta ::=")
+    positions = [grammar.index(key_literal, delta_start) for key_literal in delta_key_literals]
     assert positions == sorted(positions)
     assert '"\\"victory\\""' in grammar
     assert '"\\"death\\""' in grammar

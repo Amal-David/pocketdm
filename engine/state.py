@@ -68,6 +68,24 @@ def apply_delta(state: GameState, turn: Turn) -> GameState:
     return GameState.model_validate(data)
 
 
+def drop_missing_remove_items(state: GameState, turn: Turn) -> Turn:
+    inventory_keys = {item.casefold() for item in state.inventory}
+    remove_items = [
+        item
+        for item in turn.state_delta.remove_items
+        if item.casefold() in inventory_keys
+    ]
+    if remove_items == turn.state_delta.remove_items:
+        return turn
+    return turn.model_copy(
+        update={
+            "state_delta": turn.state_delta.model_copy(
+                update={"remove_items": remove_items}
+            )
+        }
+    )
+
+
 def validate_turn(state: GameState, turn: Turn) -> list[str]:
     errors: list[str] = []
 

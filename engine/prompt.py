@@ -4,7 +4,7 @@ import json
 import re
 from typing import Any
 
-from engine.pressure import next_turn_number, story_pressure
+from engine.pressure import must_end_this_turn, next_turn_number, story_pressure
 
 GENRE_FLAVORS: dict[str, str] = {
     "cursed_dungeon": (
@@ -34,10 +34,11 @@ _GENRE_ALIASES = {
 }
 
 SYSTEM_BASE = (
-    "You are PocketDM, a concise second-person adventure DM. Return one JSON "
-    "object only, matching keys narration, choices, state_delta, is_ending, "
-    "ending_type. Narration is 2-4 sentences. Choices are exactly 3 distinct "
-    "actions. Engine owns state; propose only deltas. No markdown."
+    "You are PocketDM. Return only JSON keys narration, choices, state_delta, "
+    "is_ending, ending_type. Narration: 2 short sentences. Choices: 3 actions. "
+    "Legal deltas only. Never reuse forbidden_choices. If must_end true, set "
+    "is_ending true and ending_type. No absent-item removes, quotes, ellipsis, "
+    "markdown, kill/blood/dead/drunk/snatch/snuff."
 )
 
 _TOKEN_RE = re.compile(r"[a-z0-9]+")
@@ -70,14 +71,24 @@ def _dynamic_suffix(state: object) -> str:
         "loc": _clip(str(getattr(state, "location", "")), 42),
         "flags": [_clip(flag, 16) for flag in list(getattr(state, "flags", []))[-4:]],
         "turn": next_turn_number(state),
+        "must_end": must_end_this_turn(state),
         "pressure": story_pressure(state),
     }
     premise = getattr(state, "premise", None)
     if premise:
         summary["premise"] = _clip(str(premise), 70)
 
+    recent_turns = list(getattr(state, "recent_turns", []))
     history = []
-    for turn, action in list(getattr(state, "recent_turns", []))[-2:]:
+    forbidden_choices = [
+        _clip(choice, 42)
+        for choice in (
+            recent_turns[-1][0].choices
+            if recent_turns
+            else []
+        )
+    ]
+    for turn, action in recent_turns[-2:]:
         history.append(
             {
                 "n": _clip(_first_sentence(turn.narration), 90),
@@ -91,7 +102,13 @@ def _dynamic_suffix(state: object) -> str:
 
     state_json = json.dumps(summary, ensure_ascii=True, separators=(",", ":"))
     history_json = json.dumps(history, ensure_ascii=True, separators=(",", ":"))
-    return f"State={state_json}\nHistory={history_json}\nRespond with ONLY the turn JSON."
+    forbidden_json = json.dumps(forbidden_choices, ensure_ascii=True, separators=(",", ":"))
+    return (
+        f"State={state_json}\nHistory={history_json}\n"
+        f"forbidden_choices={forbidden_json}\n"
+        "Every choice must be new, concrete, and not in forbidden_choices.\n"
+        "Respond with ONLY the turn JSON."
+    )
 
 
 def _first_sentence(text: str) -> str:

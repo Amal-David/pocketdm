@@ -4,9 +4,20 @@ __pycache__/
 .env
 *.gguf
 *.wav
+!macos/PocketDMCompanion/Sources/PocketDMCompanion/Resources/chirp-*.wav
+!macos/PocketDMCompanion/Sources/PocketDMCompanion/Resources/pika-voice-*.wav
+!app/voices/refs/*.wav
 app/voices/auditions/
 app/voices/models/
 data/raw/
+data/clean*/
+data/out/
+eval/results/
+models/
+output/
+tmp/
+.superplan/changes/
+.superplan/runtime/
 wandb/
 .DS_Store
 

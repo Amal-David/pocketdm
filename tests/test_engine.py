@@ -7,7 +7,12 @@ from engine.generate import MockBackend, next_turn
 from engine.pressure import story_pressure
 from engine.prompt import build_messages
 from engine.schema import StateDelta, Turn
-from engine.state import GameState, apply_delta, validate_turn
+from engine.state import (
+    GameState,
+    apply_delta,
+    drop_missing_remove_items,
+    validate_turn,
+)
 
 
 def make_turn(
@@ -89,6 +94,16 @@ def test_validate_turn_reports_semantic_failures() -> None:
     assert any(error.startswith("remove_items missing") for error in errors)
 
 
+def test_drop_missing_remove_items_removes_only_absent_inventory() -> None:
+    state = GameState(inventory=["key", "coin"])
+    turn = make_turn(remove_items=["missing", "KEY", "coin"])
+
+    repaired = drop_missing_remove_items(state, turn)
+
+    assert repaired.state_delta.remove_items == ["KEY", "coin"]
+    assert validate_turn(state, repaired) == []
+
+
 def test_validate_turn_requires_death_ending_when_hp_hits_zero() -> None:
     state = GameState(hp=1)
     non_ending = make_turn(hp=-1)
@@ -156,12 +171,17 @@ def test_prompt_budget_worst_case_and_stable_prefix() -> None:
         GameState(genre="cursed_dungeon", location="Elsewhere")
     )
     history_json = messages[1]["content"].split("History=", 1)[1].split(
-        "\nRespond",
+        "\nforbidden_choices=",
+        1,
+    )[0]
+    forbidden_json = messages[1]["content"].split("forbidden_choices=", 1)[1].split(
+        "\nEvery choice",
         1,
     )[0]
     history = json.loads(history_json)
+    forbidden_choices = json.loads(forbidden_json)
 
-    assert len(rendered) <= 1250
+    assert len(rendered) <= 1525
     assert messages[0]["content"] == other_messages[0]["content"]
     assert "~" not in rendered
     assert history == [
@@ -182,8 +202,11 @@ def test_prompt_budget_worst_case_and_stable_prefix() -> None:
             "a": "The player then tried another wordy",
         },
     ]
-    assert "Choice alpha" not in rendered
-    assert "Choice delta" not in rendered
+    assert forbidden_choices == [
+        "Choice delta Choice delta Choice delta",
+        "Choice epsilon Choice epsilon Choice",
+        "Choice zeta Choice zeta Choice zeta",
+    ]
 
 
 def test_retry_then_bridge_path() -> None:
@@ -206,6 +229,18 @@ def test_retry_then_bridge_path() -> None:
         )
         for bridge in BRIDGE_TURNS["whispering_wood"]
     ]
+
+
+def test_missing_remove_items_are_repaired_without_retry() -> None:
+    state = GameState(inventory=["key"])
+    backend = MockBackend([make_turn(remove_items=["missing"])])
+
+    result = next_turn(state, backend)
+
+    assert result.used_bridge is False
+    assert result.turn.state_delta.remove_items == []
+    assert len(result.raw_attempts) == 1
+    assert backend.temperatures == [0.8]
 
 
 def test_full_scripted_10_turn_mock_backend_game_reaches_ending() -> None:

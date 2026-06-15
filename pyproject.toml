@@ -4,7 +4,10 @@ version = "0.1.0"
 description = "PocketDM offline adventure engine"
 requires-python = ">=3.11"
 dependencies = [
+    "fastapi>=0.115",
+    "gradio==6.17.3",
     "pydantic>=2",
+    "python-multipart>=0.0.9",
 ]
 
 [project.scripts]
@@ -20,6 +23,13 @@ dev = [
 ]
 repl = [
     "openai>=1",
+]
+eval = [
+    "llama-cpp-python>=0.3.0",
+]
+train = [
+    "datasets>=3.2.0",
+    "trl>=0.18.2,<=0.24.0,!=0.19.0",
 ]
 tts = [
     "kokoro-onnx",
@@ -41,7 +51,7 @@ build-backend = "hatchling.build"
 package = true
 
 [tool.hatch.build.targets.wheel]
-packages = ["engine", "app"]
+packages = ["engine", "app", "train", "eval"]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]

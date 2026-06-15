@@ -1,0 +1,525 @@
+{
+  "model": "models/gemma-4-e2b-it/gguf/gemma-4-E2B-it-Q4_K_M.gguf",
+  "seeds": "data/clean/holdout_seeds.jsonl",
+  "grammar": "engine/grammar.gbnf",
+  "seed": 3407,
+  "chat_template": "auto",
+  "max_turns": 15,
+  "sessions": [
+    {
+      "adventure_id": "adv-000001",
+      "genre": "whispering_wood",
+      "premise": null,
+      "seed": 10001,
+      "turns": [
+        {
+          "turn_json": {
+            "narration": "The air smells of damp earth and night-blooming jasmine. A thick, gnarled root seems to beckon you deeper into the shadowed wood.",
+            "choices": [
+              "Follow the beckoning root.",
+              "Examine the moss growing on a nearby stone.",
+              "Listen for any sounds in the darkness."
+            ],
+            "state_delta": {
+              "hp": 10,
+              "add_items": [],
+              "remove_items": [],
+              "location": "Starting Point",
+              "add_flags": []
+            },
+            "is_ending": false,
+            "ending_type": null
+          },
+          "raw": "{\n\"narration\": \"The air smells of damp earth and night-blooming jasmine. A thick, gnarled root seems to beckon you deeper into the shadowed wood.\",\n\"choices\": [\n\"Follow the beckoning root.\",\n\"Examine the moss growing on a nearby stone.\",\n\"Listen for any sounds in the darkness.\"\n],\n\"state_delta\": {\n\"hp\":10,\n\"add_items\": []\n,\"remove_items\": []\n,\"location\": \"Starting Point\"\n,\"add_flags\": []\n},\n\"is_ending\": false,\n\"ending_type\": null\n}",
+          "grammar_raw": "{\n\"narration\": \"The air smells of damp earth and night-blooming jasmine. A thick, gnarled root seems to beckon you deeper into the shadowed wood.\",\n\"choices\": [\n\"Follow the beckoning root.\",\n\"Examine the moss growing on a nearby stone.\",\n\"Listen for any sounds in the darkness.\"\n],\n\"state_delta\": {\n\"hp\":10,\n\"add_items\": []\n,\"remove_items\": []\n,\"location\": \"Starting Point\"\n,\"add_flags\": []\n},\n\"is_ending\": false,\n\"ending_type\": null\n}",
+          "raw_attempts": [
+            "{\n\"narration\": \"The air smells of damp earth and night-blooming jasmine. A thick, gnarled root seems to beckon you deeper into the shadowed wood.\",\n\"choices\": [\n\"Follow the beckoning root.\",\n\"Examine the moss growing on a nearby stone.\",\n\"Listen for any sounds in the darkness.\"\n],\n\"state_delta\": {\n\"hp\":10,\n\"add_items\": []\n,\"remove_items\": []\n,\"location\": \"Starting Point\"\n,\"add_flags\": []\n},\n\"is_ending\": false,\n\"ending_type\": null\n}"
+          ],
+          "raw_schema_failures": 0,
+          "action_taken": "Listen for any sounds in the darkness.",
+          "used_bridge": false,
+          "tokens": 64,
+          "wall_seconds": 13.641063458053395,
+          "validation_errors": []
+        },
+        {
+          "turn_json": {
+            "narration": "The silence of the Whispering Wood presses in. Strange whispers seem to coil around your ears.",
+            "choices": [
+              "Investigate the faint sound coming from the shadows.",
+              "Attempt to move towards the faint light.",
+              "Examine the ground around your feet."
+            ],
+            "state_delta": {
+              "hp": 10,
+              "add_items": [],
+              "remove_items": [],
+              "location": "Starting Point",
+              "add_flags": [
+                "sound_investigated"
+              ]
+            },
+            "is_ending": false,
+            "ending_type": null
+          },
+          "raw": "{\"narration\":\"The silence of the Whispering Wood presses in. Strange whispers seem to coil around your ears.\",\"choices\":[\"Investigate the faint sound coming from the shadows.\",\"Attempt to move towards the faint light.\",\"Examine the ground around your feet.\"],\"state_delta\":{\"hp\":10,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"sound_investigated\"]},\"is_ending\":false,\"ending_type\":null}",
+          "grammar_raw": "{\"narration\":\"The silence of the Whispering Wood presses in. Strange whispers seem to coil around your ears.\",\"choices\":[\"Investigate the faint sound coming from the shadows.\",\"Attempt to move towards the faint light.\",\"Examine the ground around your feet.\"],\"state_delta\":{\"hp\":10,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"sound_investigated\"]},\"is_ending\":false,\"ending_type\":null}",
+          "raw_attempts": [
+            "{\"narration\":\"The shadows deepen as the moon casts silver light on the forest floor. A low, resonant whisper seems to call your name.\",\"choices\":[\"Follow the beckoning root.\",\"Examine the moss growing on a nearby.\",\"Listen for any sounds in the darkness.\"],\"state_delta\":{\"hp\":10,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"quest_started\"]},\"is_ending\":false,\"ending_type\":null}",
+            "{\"narration\":\"The silence of the Whispering Wood presses in. Strange whispers seem to coil around your ears.\",\"choices\":[\"Investigate the faint sound coming from the shadows.\",\"Attempt to move towards the faint light.\",\"Examine the ground around your feet.\"],\"state_delta\":{\"hp\":10,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"sound_investigated\"]},\"is_ending\":false,\"ending_type\":null}"
+          ],
+          "raw_schema_failures": 0,
+          "action_taken": "Investigate the faint sound coming from the shadows.",
+          "used_bridge": false,
+          "tokens": 35,
+          "wall_seconds": 11.997915167128667,
+          "validation_errors": []
+        },
+        {
+          "turn_json": {
+            "narration": "The night is thick with the scent of wet soil and sweet blossoms. A subtle rustling suggests something is nearby in the deep shadows.",
+            "choices": [
+              "Follow the beckoning root.",
+              "Examine the moss growing on a nearby.",
+              "Listen for any sounds in the darkness."
+            ],
+            "state_delta": {
+              "hp": 10,
+              "add_items": [],
+              "remove_items": [],
+              "location": "Starting Point",
+              "add_flags": [
+                "sound_investigat"
+              ]
+            },
+            "is_ending": false,
+            "ending_type": null
+          },
+          "raw": "{\n\"narration\": \"The night is thick with the scent of wet soil and sweet blossoms. A subtle rustling suggests something is nearby in the deep shadows.\",\n\"choices\": [\n\"Follow the beckoning root.\",\n\"Examine the moss growing on a nearby.\",\n\"Listen for any sounds in the darkness.\"\n],\n\"state_delta\": {\n\"hp\":10,\n\"add_items\":[]\n,\"remove_items\":[]\n,\"location\":\"Starting Point\"\n,\"add_flags\":[\"sound_investigat\"]\n},\n\"is_ending\": false,\n\"ending_type\": null\n}",
+          "grammar_raw": "{\n\"narration\": \"The night is thick with the scent of wet soil and sweet blossoms. A subtle rustling suggests something is nearby in the deep shadows.\",\n\"choices\": [\n\"Follow the beckoning root.\",\n\"Examine the moss growing on a nearby.\",\n\"Listen for any sounds in the darkness.\"\n],\n\"state_delta\": {\n\"hp\":10,\n\"add_items\":[]\n,\"remove_items\":[]\n,\"location\":\"Starting Point\"\n,\"add_flags\":[\"sound_investigat\"]\n},\n\"is_ending\": false,\n\"ending_type\": null\n}",
+          "raw_attempts": [
+            "{\n\"narration\": \"The night is thick with the scent of wet soil and sweet blossoms. A subtle rustling suggests something is nearby in the deep shadows.\",\n\"choices\": [\n\"Follow the beckoning root.\",\n\"Examine the moss growing on a nearby.\",\n\"Listen for any sounds in the darkness.\"\n],\n\"state_delta\": {\n\"hp\":10,\n\"add_items\":[]\n,\"remove_items\":[]\n,\"location\":\"Starting Point\"\n,\"add_flags\":[\"sound_investigat\"]\n},\n\"is_ending\": false,\n\"ending_type\": null\n}"
+          ],
+          "raw_schema_failures": 0,
+          "action_taken": "Examine the moss growing on a nearby.",
+          "used_bridge": false,
+          "tokens": 61,
+          "wall_seconds": 11.368810458807275,
+          "validation_errors": []
+        },
+        {
+          "turn_json": {
+            "narration": "A low thrumming vibrates through the earth. Something is calling your name from the shadows.",
+            "choices": [
+              "Investigate the faint sound coming from",
+              "Attempt to move towards the faint light",
+              "Examine the ground around your feet"
+            ],
+            "state_delta": {
+              "hp": 10,
+              "add_items": [],
+              "remove_items": [],
+              "location": "Starting Point",
+              "add_flags": [
+                "sound_investigat",
+                "sound_investigat"
+              ]
+            },
+            "is_ending": false,
+            "ending_type": null
+          },
+          "raw": "{\"narration\":\"A low thrumming vibrates through the earth. Something is calling your name from the shadows.\",\"choices\":[\"Investigate the faint sound coming from\",\"Attempt to move towards the faint light\",\"Examine the ground around your feet\"],\"state_delta\":{\"hp\":10,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"sound_investigat\",\"sound_investigat\"]},\"is_ending\":false,\"ending_type\":null}",
+          "grammar_raw": "{\"narration\":\"A low thrumming vibrates through the earth. Something is calling your name from the shadows.\",\"choices\":[\"Investigate the faint sound coming from\",\"Attempt to move towards the faint light\",\"Examine the ground around your feet\"],\"state_delta\":{\"hp\":10,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"sound_investigat\",\"sound_investigat\"]},\"is_ending\":false,\"ending_type\":null}",
+          "raw_attempts": [
+            "{\"narration\":\"A low thrumming vibrates through the earth. Something is calling your name from the shadows.\",\"choices\":[\"Investigate the faint sound coming from\",\"Attempt to move towards the faint light\",\"Examine the ground around your feet\"],\"state_delta\":{\"hp\":10,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"sound_investigat\",\"sound_investigat\"]},\"is_ending\":false,\"ending_type\":null}"
+          ],
+          "raw_schema_failures": 0,
+          "action_taken": "Examine the ground around your feet",
+          "used_bridge": false,
+          "tokens": 32,
+          "wall_seconds": 11.26944616716355,
+          "validation_errors": []
+        },
+        {
+          "turn_json": {
+            "narration": "The air hums with unseen energies. A deep, resonant whisper seems to draw you deeper into the wood.",
+            "choices": [
+              "Follow the beckoning root.",
+              "Examine the moss growing on a nearby.",
+              "Listen for any sounds in the darkness."
+            ],
+            "state_delta": {
+              "hp": 10,
+              "add_items": [],
+              "remove_items": [],
+              "location": "Starting Point",
+              "add_flags": [
+                "sound_investigat"
+              ]
+            },
+            "is_ending": false,
+            "ending_type": null
+          },
+          "raw": "{\n\"narration\": \"The air hums with unseen energies. A deep, resonant whisper seems to draw you deeper into the wood.\",\n\"choices\": [\n\"Follow the beckoning root.\",\n\"Examine the moss growing on a nearby.\",\n\"Listen for any sounds in the darkness.\"\n],\n\"state_delta\": {\n\"hp\":10,\n\"add_items\": []\n,\n\"remove_items\": []\n,\n\"location\":\"Starting Point\"\n,\n\"add_flags\":[\"sound_investigat\"]\n},\n\"is_ending\": false,\n\"ending_type\": null\n}",
+          "grammar_raw": "{\n\"narration\": \"The air hums with unseen energies. A deep, resonant whisper seems to draw you deeper into the wood.\",\n\"choices\": [\n\"Follow the beckoning root.\",\n\"Examine the moss growing on a nearby.\",\n\"Listen for any sounds in the darkness.\"\n],\n\"state_delta\": {\n\"hp\":10,\n\"add_items\": []\n,\n\"remove_items\": []\n,\n\"location\":\"Starting Point\"\n,\n\"add_flags\":[\"sound_investigat\"]\n},\n\"is_ending\": false,\n\"ending_type\": null\n}",
+          "raw_attempts": [
+            "{\n\"narration\": \"The air hums with unseen energies. A deep, resonant whisper seems to draw you deeper into the wood.\",\n\"choices\": [\n\"Follow the beckoning root.\",\n\"Examine the moss growing on a nearby.\",\n\"Listen for any sounds in the darkness.\"\n],\n\"state_delta\": {\n\"hp\":10,\n\"add_items\": []\n,\n\"remove_items\": []\n,\n\"location\":\"Starting Point\"\n,\n\"add_flags\":[\"sound_investigat\"]\n},\n\"is_ending\": false,\n\"ending_type\": null\n}"
+          ],
+          "raw_schema_failures": 0,
+          "action_taken": "Follow the beckoning root.",
+          "used_bridge": false,
+          "tokens": 60,
+          "wall_seconds": 9.812207749811932,
+          "validation_errors": []
+        },
+        {
+          "turn_json": {
+            "narration": "A low thrumming vibrates through the earth. The air hums with unseen energies.",
+            "choices": [
+              "Examine the ground around your feet",
+              "Follow the beckoning root",
+              "Listen for any sounds in the darkness"
+            ],
+            "state_delta": {
+              "hp": 10,
+              "add_items": [],
+              "remove_items": [],
+              "location": "Starting Point",
+              "add_flags": [
+                "sound_investigat"
+              ]
+            },
+            "is_ending": false,
+            "ending_type": null
+          },
+          "raw": "{\"narration\":\"A low thrumming vibrates through the earth. The air hums with unseen energies.\",\"choices\":[\"Examine the ground around your feet\",\"Follow the beckoning root\",\"Listen for any sounds in the darkness\"],\"state_delta\":{\"hp\":10,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"sound_investigat\"]},\"is_ending\":false,\"ending_type\":null}",
+          "grammar_raw": "{\"narration\":\"A low thrumming vibrates through the earth. The air hums with unseen energies.\",\"choices\":[\"Examine the ground around your feet\",\"Follow the beckoning root\",\"Listen for any sounds in the darkness\"],\"state_delta\":{\"hp\":10,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"sound_investigat\"]},\"is_ending\":false,\"ending_type\":null}",
+          "raw_attempts": [
+            "{\"narration\":\"A low thrumming vibrates through the earth. The air hums with unseen energies.\",\"choices\":[\"Examine the ground around your feet\",\"Follow the beckoning root\",\"Listen for any sounds in the darkness\"],\"state_delta\":{\"hp\":10,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"sound_investigat\"]},\"is_ending\":false,\"ending_type\":null}"
+          ],
+          "raw_schema_failures": 0,
+          "action_taken": "Follow the beckoning root",
+          "used_bridge": false,
+          "tokens": 28,
+          "wall_seconds": 8.591687874868512,
+          "validation_errors": []
+        },
+        {
+          "turn_json": {
+            "narration": "The air grows thick with ancient whispers. A faint, silvery light guides your steps forward.",
+            "choices": [
+              "Follow the beckoning root.",
+              "Examine the moss growing on a nearby.",
+              "Listen for any sounds in the darkness."
+            ],
+            "state_delta": {
+              "hp": 10,
+              "add_items": [],
+              "remove_items": [],
+              "location": "Starting Point",
+              "add_flags": [
+                "sound_investigat"
+              ]
+            },
+            "is_ending": false,
+            "ending_type": null
+          },
+          "raw": "{\"narration\":\"The air grows thick with ancient whispers. A faint, silvery light guides your steps forward.\",\"choices\":[\"Follow the beckoning root.\",\"Examine the moss growing on a nearby.\",\"Listen for any sounds in the darkness.\"],\"state_delta\":{\"hp\":10,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"sound_investigat\"]},\"is_ending\":false,\"ending_type\":null}",
+          "grammar_raw": "{\"narration\":\"The air grows thick with ancient whispers. A faint, silvery light guides your steps forward.\",\"choices\":[\"Follow the beckoning root.\",\"Examine the moss growing on a nearby.\",\"Listen for any sounds in the darkness.\"],\"state_delta\":{\"hp\":10,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"sound_investigat\"]},\"is_ending\":false,\"ending_type\":null}",
+          "raw_attempts": [
+            "{\"narration\":\"The air grows thick with ancient whispers. A faint, silvery light guides your steps forward.\",\"choices\":[\"Follow the beckoning root.\",\"Examine the moss growing on a nearby.\",\"Listen for any sounds in the darkness.\"],\"state_delta\":{\"hp\":10,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"sound_investigat\"]},\"is_ending\":false,\"ending_type\":null}"
+          ],
+          "raw_schema_failures": 0,
+          "action_taken": "Listen for any sounds in the darkness.",
+          "used_bridge": false,
+          "tokens": 31,
+          "wall_seconds": 7.606735083973035,
+          "validation_errors": []
+        },
+        {
+          "turn_json": {
+            "narration": "The earth hums a low, resonant note. Ancient whispers drift from the shadowed depths.",
+            "choices": [
+              "Follow the beckoning root",
+              "Listen for any sounds in the darkness",
+              "Examine the moss growing on a nearby.']}\u200b"
+            ],
+            "state_delta": {
+              "hp": 10,
+              "add_items": [],
+              "remove_items": [],
+              "location": "Starting Point",
+              "add_flags": [
+                "sound_investigat"
+              ]
+            },
+            "is_ending": false,
+            "ending_type": null
+          },
+          "raw": "{\"narration\":\"The earth hums a low, resonant note. Ancient whispers drift from the shadowed depths.\",\"choices\":[\"Follow the beckoning root\",\"Listen for any sounds in the darkness\",\"Examine the moss growing on a nearby.']}\u200b\"\n]\n,\n\"state_delta\": {\"hp\":10,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"sound_investigat\"]},\n\"is_ending\": false,\n\"ending_type\": null}",
+          "grammar_raw": "{\"narration\":\"The earth hums a low, resonant note. Ancient whispers drift from the shadowed depths.\",\"choices\":[\"Follow the beckoning root\",\"Listen for any sounds in the darkness\",\"Examine the moss growing on a nearby.']}\u200b\"\n]\n,\n\"state_delta\": {\"hp\":10,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"sound_investigat\"]},\n\"is_ending\": false,\n\"ending_type\": null}",
+          "raw_attempts": [
+            "{\"narration\":\"A low thrumming vibrates through the earth. Ancient whispers coil around you.\",\"choices\":[\"Follow the beckoning root\",\"Listen for any sounds in the darkness\",\"Examine the moss growing on a nearby.\"],\"state_delta\":{\"hp\":10,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"sound_investigat\",\"sound_investigat\"]},\"is_ending\":false,\"ending_type\":null}",
+            "{\"narration\":\"The earth hums a low, resonant note. Ancient whispers drift from the shadowed depths.\",\"choices\":[\"Follow the beckoning root\",\"Listen for any sounds in the darkness\",\"Examine the moss growing on a nearby.']}\u200b\"\n]\n,\n\"state_delta\": {\"hp\":10,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"sound_investigat\"]},\n\"is_ending\": false,\n\"ending_type\": null}"
+          ],
+          "raw_schema_failures": 0,
+          "action_taken": "Follow the beckoning root",
+          "used_bridge": false,
+          "tokens": 38,
+          "wall_seconds": 13.322524957824498,
+          "validation_errors": []
+        },
+        {
+          "turn_json": {
+            "narration": "A faint rustling comes from the shadowed depths. The air carries the scent of damp earth and forgotten magic.",
+            "choices": [
+              "Investigate the rustling sound.",
+              "Try to follow the hum.",
+              "Examine the surrounding roots.']}t}s}tate_delta:{"
+            ],
+            "state_delta": {
+              "hp": 10,
+              "add_items": [],
+              "remove_items": [],
+              "location": "Starting Point",
+              "add_flags": []
+            },
+            "is_ending": false,
+            "ending_type": null
+          },
+          "raw": "{\"narration\":\"A faint rustling comes from the shadowed depths. The air carries the scent of damp earth and forgotten magic.\",\"choices\":[\"Investigate the rustling sound.\",\"Try to follow the hum.\",\"Examine the surrounding roots.']}t}s}tate_delta:{\"]\n, \"state_delta\": {\"hp\":10,\"add_items\":[],\"remove_items\":[],\"location\": \"Starting Point\",\"add_flags\":[]},\n\"is_ending\": false,\n\"ending_type\": null}",
+          "grammar_raw": "{\"narration\":\"A faint rustling comes from the shadowed depths. The air carries the scent of damp earth and forgotten magic.\",\"choices\":[\"Investigate the rustling sound.\",\"Try to follow the hum.\",\"Examine the surrounding roots.']}t}s}tate_delta:{\"]\n, \"state_delta\": {\"hp\":10,\"add_items\":[],\"remove_items\":[],\"location\": \"Starting Point\",\"add_flags\":[]},\n\"is_ending\": false,\n\"ending_type\": null}",
+          "raw_attempts": [
+            "{\"narration\":\"A faint rustling comes from the shadowed depths. The air carries the scent of damp earth and forgotten magic.\",\"choices\":[\"Investigate the rustling sound.\",\"Try to follow the hum.\",\"Examine the surrounding roots.']}t}s}tate_delta:{\"]\n, \"state_delta\": {\"hp\":10,\"add_items\":[],\"remove_items\":[],\"location\": \"Starting Point\",\"add_flags\":[]},\n\"is_ending\": false,\n\"ending_type\": null}"
+          ],
+          "raw_schema_failures": 0,
+          "action_taken": "Try to follow the hum.",
+          "used_bridge": false,
+          "tokens": 38,
+          "wall_seconds": 8.66401854204014,
+          "validation_errors": []
+        },
+        {
+          "turn_json": {
+            "narration": "The path folds under a lace of leaves and pretends it was always there. The trees whisper encouragement with suspicious timing.",
+            "choices": [
+              "Follow the new path",
+              "Ask the oldest oak",
+              "Leave a tiny offering"
+            ],
+            "state_delta": {
+              "hp": 0,
+              "add_items": [],
+              "remove_items": [],
+              "location": "Starting Point",
+              "add_flags": []
+            },
+            "is_ending": false,
+            "ending_type": null
+          },
+          "raw": "{\n\"narration\": \"The earth continues its deep, slow thrum. A subtle movement disturbs the quiet air nearby.\",\n\"choices\": [\n\"Investigate the rustling sound.\",\n\"Try to follow the hum.\",\n\"Examine the surrounding\"\n],\n\"state_delta\": {\n\"hp\":10,\n\"add_items\": []\n,\"remove_items\": []\n,\"location\":\"Starting Point\"\n,\"add_flags\":[\"sound_investigat\"]\n},\n\"is_ending\": false,\n\"ending_type\": null\n}",
+          "grammar_raw": "{\n\"narration\": \"The earth continues its deep, slow thrum. A subtle movement disturbs the quiet air nearby.\",\n\"choices\": [\n\"Investigate the rustling sound.\",\n\"Try to follow the hum.\",\n\"Examine the surrounding\"\n],\n\"state_delta\": {\n\"hp\":10,\n\"add_items\": []\n,\"remove_items\": []\n,\"location\":\"Starting Point\"\n,\"add_flags\":[\"sound_investigat\"]\n},\n\"is_ending\": false,\n\"ending_type\": null\n}",
+          "raw_attempts": [
+            "{\n\"narration\": \"The air grows thick with the scent of damp earth. A faint whisper seems to call your attention deeper into the wood.\",\n\"choices\": [\n\"Investigate the rustling sound.\",\n\"Try to follow the hum.\",\n\"Examine the surrounding\"\n],\n\"state_delta\": {\n\"hp\":10,\n\"add_items\":[]\n,\n\"remove_items\":[]\n,\n\"location\":\"Starting Point\"\n,\n\"add_flags\":[\"sound_investigat\"]\n},\n\"is_ending\":false,\n\"ending_type\":null\n}",
+            "{\n\"narration\": \"The earth continues its deep, slow thrum. A subtle movement disturbs the quiet air nearby.\",\n\"choices\": [\n\"Investigate the rustling sound.\",\n\"Try to follow the hum.\",\n\"Examine the surrounding\"\n],\n\"state_delta\": {\n\"hp\":10,\n\"add_items\": []\n,\"remove_items\": []\n,\"location\":\"Starting Point\"\n,\"add_flags\":[\"sound_investigat\"]\n},\n\"is_ending\": false,\n\"ending_type\": null\n}"
+          ],
+          "raw_schema_failures": 0,
+          "action_taken": "Leave a tiny offering",
+          "used_bridge": true,
+          "tokens": 48,
+          "wall_seconds": 15.182366458000615,
+          "validation_errors": [
+            "bridge_after_retries"
+          ]
+        },
+        {
+          "turn_json": {
+            "narration": "A low, melodic hum vibrates through the earth. It seems to beckon you deeper into the wood. You feel a strange pull toward the unseen source.",
+            "choices": [
+              "Follow the hum closely.",
+              "Press forward into the shadows.",
+              "Listen for any other sounds."
+            ],
+            "state_delta": {
+              "hp": 10,
+              "add_items": [],
+              "remove_items": [],
+              "location": "Starting Point",
+              "add_flags": []
+            },
+            "is_ending": false,
+            "ending_type": null
+          },
+          "raw": "{\n\"narration\": \"A low, melodic hum vibrates through the earth. It seems to beckon you deeper into the wood. You feel a strange pull toward the unseen source.\",\n\"choices\": [\n\"Follow the hum closely.\",\n\"Press forward into the shadows.\",\n\"Listen for any other sounds.\"\n],\n\"state_delta\": {\n\"hp\":10,\n\"add_items\": []\n,\"remove_items\": []\n,\"location\":\"Starting Point\"\n,\"add_flags\": []\n},\n\"is_ending\": false,\n\"ending_type\": null\n}",
+          "grammar_raw": "{\n\"narration\": \"A low, melodic hum vibrates through the earth. It seems to beckon you deeper into the wood. You feel a strange pull toward the unseen source.\",\n\"choices\": [\n\"Follow the hum closely.\",\n\"Press forward into the shadows.\",\n\"Listen for any other sounds.\"\n],\n\"state_delta\": {\n\"hp\":10,\n\"add_items\": []\n,\"remove_items\": []\n,\"location\":\"Starting Point\"\n,\"add_flags\": []\n},\n\"is_ending\": false,\n\"ending_type\": null\n}",
+          "raw_attempts": [
+            "{\n\"narration\": \"A low, melodic hum vibrates through the earth. It seems to beckon you deeper into the wood. You feel a strange pull toward the unseen source.\",\n\"choices\": [\n\"Follow the hum closely.\",\n\"Press forward into the shadows.\",\n\"Listen for any other sounds.\"\n],\n\"state_delta\": {\n\"hp\":10,\n\"add_items\": []\n,\"remove_items\": []\n,\"location\":\"Starting Point\"\n,\"add_flags\": []\n},\n\"is_ending\": false,\n\"ending_type\": null\n}"
+          ],
+          "raw_schema_failures": 0,
+          "action_taken": "Follow the hum closely.",
+          "used_bridge": false,
+          "tokens": 62,
+          "wall_seconds": 9.361527499975637,
+          "validation_errors": []
+        },
+        {
+          "turn_json": {
+            "narration": "A brook giggles over stones that look recently rearranged. The wood is clearly trying to look innocent.",
+            "choices": [
+              "Cross the brook",
+              "Inspect the stones",
+              "Compliment the forest"
+            ],
+            "state_delta": {
+              "hp": 0,
+              "add_items": [],
+              "remove_items": [],
+              "location": "Starting Point",
+              "add_flags": []
+            },
+            "is_ending": false,
+            "ending_type": null
+          },
+          "raw": "{\"narration\":\"The air thickens with the scent of damp moss and forgotten magic. A low, melodic hum calls to your attention.\",\"choices\":[\"Follow the hum closely.\",\"Press forward into the shadows.\",\"Listen for any other sounds.\"],\"state_delta\":{\"hp\":10,\"add_items\":[\"hum_tracking_active\"],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"sound_investigat\"]},\"is_ending\":false,\"ending_type\":null}",
+          "grammar_raw": "{\"narration\":\"The air thickens with the scent of damp moss and forgotten magic. A low, melodic hum calls to your attention.\",\"choices\":[\"Follow the hum closely.\",\"Press forward into the shadows.\",\"Listen for any other sounds.\"],\"state_delta\":{\"hp\":10,\"add_items\":[\"hum_tracking_active\"],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"sound_investigat\"]},\"is_ending\":false,\"ending_type\":null}",
+          "raw_attempts": [
+            "{\"narration\":\"The air hangs thick with the scent of damp moss. A soft, silvery light filters through the canopy above.\",\"choices\":[\"Follow the hum closely.\",\"Ask the oldest oak.\",\"Press forward into the shadows.\"],\"state_delta\":{\"hp\":10,\"add_items\":[],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"sound_investigat\"]},\"is_ending\":false,\"ending_type\":null}",
+            "{\"narration\":\"The air thickens with the scent of damp moss and forgotten magic. A low, melodic hum calls to your attention.\",\"choices\":[\"Follow the hum closely.\",\"Press forward into the shadows.\",\"Listen for any other sounds.\"],\"state_delta\":{\"hp\":10,\"add_items\":[\"hum_tracking_active\"],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"sound_investigat\"]},\"is_ending\":false,\"ending_type\":null}"
+          ],
+          "raw_schema_failures": 0,
+          "action_taken": "Inspect the stones",
+          "used_bridge": true,
+          "tokens": 32,
+          "wall_seconds": 12.089027791982517,
+          "validation_errors": [
+            "bridge_after_retries"
+          ]
+        },
+        {
+          "turn_json": {
+            "narration": "The hum deepens, a warm invitation from the earth. Strange shapes begin to coalesce in the surrounding darkness.",
+            "choices": [
+              "Follow the hum closely.",
+              "Press forward into the shadows.",
+              "Listen for any other sounds."
+            ],
+            "state_delta": {
+              "hp": 10,
+              "add_items": [
+                "sound_investigat"
+              ],
+              "remove_items": [],
+              "location": "Starting Point",
+              "add_flags": [
+                "sound_investigat"
+              ]
+            },
+            "is_ending": false,
+            "ending_type": null
+          },
+          "raw": "{\"narration\":\"The hum deepens, a warm invitation from the earth. Strange shapes begin to coalesce in the surrounding darkness.\",\"choices\":[\"Follow the hum closely.\",\"Press forward into the shadows.\",\"Listen for any other sounds.\"],\"state_delta\":{\"hp\":10,\"add_items\":[\"sound_investigat\"],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"sound_investigat\"]},\"is_ending\":false,\"ending_type\":null}",
+          "grammar_raw": "{\"narration\":\"The hum deepens, a warm invitation from the earth. Strange shapes begin to coalesce in the surrounding darkness.\",\"choices\":[\"Follow the hum closely.\",\"Press forward into the shadows.\",\"Listen for any other sounds.\"],\"state_delta\":{\"hp\":10,\"add_items\":[\"sound_investigat\"],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"sound_investigat\"]},\"is_ending\":false,\"ending_type\":null}",
+          "raw_attempts": [
+            "{\"narration\":\"The hum deepens, a warm invitation from the earth. Strange shapes begin to coalesce in the surrounding darkness.\",\"choices\":[\"Follow the hum closely.\",\"Press forward into the shadows.\",\"Listen for any other sounds.\"],\"state_delta\":{\"hp\":10,\"add_items\":[\"sound_investigat\"],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"sound_investigat\"]},\"is_ending\":false,\"ending_type\":null}"
+          ],
+          "raw_schema_failures": 0,
+          "action_taken": "Listen for any other sounds.",
+          "used_bridge": false,
+          "tokens": 30,
+          "wall_seconds": 7.763520959066227,
+          "validation_errors": []
+        },
+        {
+          "turn_json": {
+            "narration": "The brook giggles over stones that look recently rearranged. A warm invitation from the earth hums through the soil.",
+            "choices": [
+              "Inspect the stones",
+              "Follow the hum closely",
+              "Press forward into the shadows"
+            ],
+            "state_delta": {
+              "hp": 10,
+              "add_items": [
+                "sound_investigat"
+              ],
+              "remove_items": [],
+              "location": "Starting Point",
+              "add_flags": [
+                "sound_investigat"
+              ]
+            },
+            "is_ending": false,
+            "ending_type": null
+          },
+          "raw": "{\"narration\":\"The brook giggles over stones that look recently rearranged. A warm invitation from the earth hums through the soil.\",\"choices\":[\"Inspect the stones\",\"Follow the hum closely\",\"Press forward into the shadows\"],\"state_delta\":{\"hp\":10,\"add_items\":[\"sound_investigat\"],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"sound_investigat\"]},\"is_ending\":false,\"ending_type\":null}",
+          "grammar_raw": "{\"narration\":\"The brook giggles over stones that look recently rearranged. A warm invitation from the earth hums through the soil.\",\"choices\":[\"Inspect the stones\",\"Follow the hum closely\",\"Press forward into the shadows\"],\"state_delta\":{\"hp\":10,\"add_items\":[\"sound_investigat\"],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"sound_investigat\"]},\"is_ending\":false,\"ending_type\":null}",
+          "raw_attempts": [
+            "{\"narration\":\"The brook giggles over stones that look recently rearranged. A warm invitation from the earth hums through the soil.\",\"choices\":[\"Inspect the stones\",\"Follow the hum closely\",\"Press forward into the shadows\"],\"state_delta\":{\"hp\":10,\"add_items\":[\"sound_investigat\"],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"sound_investigat\"]},\"is_ending\":false,\"ending_type\":null}"
+          ],
+          "raw_schema_failures": 0,
+          "action_taken": "Inspect the stones",
+          "used_bridge": false,
+          "tokens": 29,
+          "wall_seconds": 8.245476457988843,
+          "validation_errors": []
+        },
+        {
+          "turn_json": {
+            "narration": "The air thickens with the scent of damp moss. A faint, melodic whisper drifts from the ancient roots.",
+            "choices": [
+              "Follow the hum closely.",
+              "Press forward into the shadows.",
+              "Listen for any other sounds."
+            ],
+            "state_delta": {
+              "hp": 10,
+              "add_items": [
+                "sound_investigat"
+              ],
+              "remove_items": [],
+              "location": "Starting Point",
+              "add_flags": [
+                "sound_investigat"
+              ]
+            },
+            "is_ending": true,
+            "ending_type": "bittersweet"
+          },
+          "raw": "{\"narration\":\"The air thickens with the scent of damp moss. A faint, melodic whisper drifts from the ancient roots.\",\"choices\":[\"Follow the hum closely.\",\"Press forward into the shadows.\",\"Listen for any other sounds.\"],\"state_delta\":{\"hp\":10,\"add_items\":[\"sound_investigat\"],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"sound_investigat\"]},\"is_ending\":true,\"ending_type\":\"bittersweet\"}",
+          "grammar_raw": "{\"narration\":\"The air thickens with the scent of damp moss. A faint, melodic whisper drifts from the ancient roots.\",\"choices\":[\"Follow the hum closely.\",\"Press forward into the shadows.\",\"Listen for any other sounds.\"],\"state_delta\":{\"hp\":10,\"add_items\":[\"sound_investigat\"],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"sound_investigat\"]},\"is_ending\":true,\"ending_type\":\"bittersweet\"}",
+          "raw_attempts": [
+            "{\"narration\":\"The air thickens with the scent of damp moss. A faint, melodic whisper drifts from the ancient roots.\",\"choices\":[\"Follow the hum closely.\",\"Press forward into the shadows.\",\"Listen for any other sounds.\"],\"state_delta\":{\"hp\":10,\"add_items\":[\"sound_investigat\"],\"remove_items\":[],\"location\":\"Starting Point\",\"add_flags\":[\"sound_investigat\"]},\"is_ending\":true,\"ending_type\":\"bittersweet\"}"
+          ],
+          "raw_schema_failures": 0,
+          "action_taken": null,
+          "used_bridge": false,
+          "tokens": 30,
+          "wall_seconds": 9.51073958305642,
+          "validation_errors": []
+        }
+      ]
+    }
+  ],
+  "metrics": {
+    "sessions": 1.0,
+    "turns": 15.0,
+    "schema_valid_rate": 1.0,
+    "choice_distinct_rate": 1.0,
+    "delta_legal_rate": 1.0,
+    "zero_bridge_complete_rate": 0.0,
+    "mean_tokens_per_turn": 41.2,
+    "mean_wall_seconds_per_turn": 10.561804547316084
+  },
+  "gate": {
+    "required_sessions": 1,
+    "sessions": 1,
+    "completed_sessions": 1,
+    "grammar_clean_sessions": 0,
+    "bridge_turns": 2,
+    "max_bridge_turns": 0,
+    "raw_schema_failures": 0,
+    "retry_turns": 4,
+    "turns": 15,
+    "passed": false
+  }
+}
