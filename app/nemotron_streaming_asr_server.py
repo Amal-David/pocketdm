@@ -22,6 +22,117 @@ DEFAULT_MODEL_ID = "nvidia/nemotron-speech-streaming-en-0.6b"
 DEFAULT_NIM_FUNCTION_ID = "bb0837de-8c7b-481f-9ec8-ef5663e9c1fa"
 DEFAULT_NIM_SERVER = "grpc.nvcf.nvidia.com:443"
 DEFAULT_FALLBACK_URL = "http://127.0.0.1:7862"
+VAD_SAMPLE_RATE = 16_000
+
+
+def _env_flag(name: str, default: bool) -> bool:
+    raw = os.environ.get(name)
+    if raw is None:
+        return default
+    return raw.strip().casefold() in {"1", "true", "yes", "on"}
+
+
+@lru_cache(maxsize=1)
+def _silero_vad_model() -> Any:
+    """Load the Silero VAD ONNX model exactly once for the process lifetime."""
+    from silero_vad import load_silero_vad
+
+    return load_silero_vad(onnx=True)
+
+
+def _wav_bytes_to_mono16k(audio: bytes) -> "tuple[Any, int] | None":
+    """Decode 16-bit PCM WAV bytes into a mono float32 torch tensor at its native rate.
+
+    Returns (tensor, sample_rate) or None when the audio is not a usable 16-bit PCM WAV.
+    Uses the stdlib ``wave`` module so no torchaudio/torchcodec audio I/O backend is required.
+    """
+    import numpy as np
+    import torch
+
+    try:
+        with wave.open(io.BytesIO(audio), "rb") as wav:
+            channels = wav.getnchannels()
+            sample_width = wav.getsampwidth()
+            sample_rate = wav.getframerate()
+            frames = wav.readframes(wav.getnframes())
+    except (wave.Error, EOFError, OSError):
+        return None
+    if sample_width != 2 or sample_rate <= 0 or not frames:
+        return None
+    samples = np.frombuffer(frames, dtype="<i2").astype(np.float32) / 32768.0
+    if channels > 1:
+        samples = samples.reshape(-1, channels).mean(axis=1)
+    if samples.size == 0:
+        return None
+    return torch.from_numpy(np.ascontiguousarray(samples)), sample_rate
+
+
+def _mono_tensor_to_wav_bytes(tensor: Any, sample_rate: int) -> bytes:
+    """Re-encode a mono float32 torch tensor in [-1, 1] as 16-bit PCM WAV bytes."""
+    import numpy as np
+
+    clipped = tensor.detach().cpu().clamp(-1.0, 1.0).numpy()
+    pcm = (clipped * 32767.0).astype("<i2")
+    out = io.BytesIO()
+    with wave.open(out, "wb") as wav:
+        wav.setnchannels(1)
+        wav.setsampwidth(2)
+        wav.setframerate(sample_rate)
+        wav.writeframes(pcm.tobytes())
+    return out.getvalue()
+
+
+def _denoise_tensor(tensor: Any, sample_rate: int) -> Any:
+    """Optional stationary spectral-gate denoise (pure-numpy noisereduce)."""
+    import noisereduce as nr
+
+    reduced = nr.reduce_noise(y=tensor.numpy(), sr=sample_rate, stationary=True)
+    import torch
+
+    return torch.from_numpy(reduced)
+
+
+def _preprocess_audio(audio: bytes) -> bytes:
+    """Trim silence with Silero VAD (and optionally denoise) before Nemotron transcription.
+
+    Gated by ``POCKETDM_NEMOTRON_VAD`` (default on) and ``POCKETDM_NEMOTRON_DENOISE``
+    (default off). Any decode/dependency/runtime failure falls back to the original
+    audio so STT is never broken by preprocessing.
+    """
+    vad_enabled = _env_flag("POCKETDM_NEMOTRON_VAD", True)
+    denoise_enabled = _env_flag("POCKETDM_NEMOTRON_DENOISE", False)
+    if not vad_enabled and not denoise_enabled:
+        return audio
+    try:
+        decoded = _wav_bytes_to_mono16k(audio)
+        if decoded is None:
+            return audio
+        tensor, sample_rate = decoded
+
+        if denoise_enabled:
+            try:
+                tensor = _denoise_tensor(tensor, sample_rate)
+            except Exception:
+                pass  # denoise is best-effort; keep going with the (un)denoised tensor
+
+        if not vad_enabled:
+            return _mono_tensor_to_wav_bytes(tensor, sample_rate)
+
+        if sample_rate != VAD_SAMPLE_RATE:
+            # Silero VAD expects 16 kHz; never gamble on a mismatched rate.
+            return audio
+        from silero_vad import collect_chunks, get_speech_timestamps
+
+        model = _silero_vad_model()
+        speech = get_speech_timestamps(tensor, model, sampling_rate=VAD_SAMPLE_RATE)
+        if not speech:
+            return audio  # no speech detected: never hand Nemotron an empty clip
+        trimmed = collect_chunks(speech, tensor)
+        if trimmed.numel() == 0:
+            return audio
+        return _mono_tensor_to_wav_bytes(trimmed, sample_rate)
+    except Exception:
+        return audio
 
 
 @dataclass(frozen=True)
@@ -196,8 +307,9 @@ class LocalNemotronStreamingASR:
         return nemo_asr.models.ASRModel.restore_from(restore_path=str(model_file))
 
     def transcribe(self, audio: bytes) -> NemotronASRResult:
+        cleaned = _preprocess_audio(audio)
         with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as temp:
-            temp.write(audio)
+            temp.write(cleaned)
             temp_path = Path(temp.name)
         try:
             text = self._transcribe_file(temp_path)

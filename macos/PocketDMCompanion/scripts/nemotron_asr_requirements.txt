@@ -6,3 +6,11 @@ fastapi
 uvicorn
 python-multipart
 huggingface_hub
+# Silero VAD (ONNX) trims leading/trailing/inter-segment silence before Nemotron
+# transcribes, so voice turns are cleaner and faster. Gated by POCKETDM_NEMOTRON_VAD
+# (default on); failures fall back to the raw audio so STT never breaks.
+silero-vad
+onnxruntime
+# Optional denoise (POCKETDM_NEMOTRON_DENOISE=1) imports noisereduce lazily; it is
+# left out here because it added no measurable Nemotron accuracy gain at 16 kHz and
+# pulls in matplotlib. Install `noisereduce` into the venv only if you enable it.

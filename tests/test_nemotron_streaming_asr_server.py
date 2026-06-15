@@ -4,6 +4,7 @@ import io
 from types import SimpleNamespace
 import wave
 
+import pytest
 from fastapi.testclient import TestClient
 
 from app import nemotron_streaming_asr_server
@@ -23,6 +24,34 @@ def _wav_bytes() -> bytes:
         wav.setsampwidth(2)
         wav.setframerate(16_000)
         wav.writeframes(b"\x00\x00" * 160)
+    return out.getvalue()
+
+
+def _speech_like_wav(*, lead_silence_ms: int = 400, speech_ms: int = 800, tail_silence_ms: int = 400) -> bytes:
+    """A 16 kHz mono WAV with detectable speech-like energy bracketed by silence.
+
+    Used to prove VAD trims silence: the trimmed clip must be shorter than the input.
+    """
+    import math
+
+    rate = 16_000
+
+    def _ms_to_samples(ms: int) -> int:
+        return rate * ms // 1000
+
+    silence_lead = b"\x00\x00" * _ms_to_samples(lead_silence_ms)
+    silence_tail = b"\x00\x00" * _ms_to_samples(tail_silence_ms)
+    speech = bytearray()
+    for index in range(_ms_to_samples(speech_ms)):
+        # ~180 Hz tone at high amplitude reads as voiced energy to the VAD.
+        sample = int(22_000 * math.sin(2 * math.pi * 180 * index / rate))
+        speech += int(sample).to_bytes(2, "little", signed=True)
+    out = io.BytesIO()
+    with wave.open(out, "wb") as wav:
+        wav.setnchannels(1)
+        wav.setsampwidth(2)
+        wav.setframerate(rate)
+        wav.writeframes(silence_lead + bytes(speech) + silence_tail)
     return out.getvalue()
 
 
@@ -255,3 +284,66 @@ def test_nemotron_local_backend_loads_nemo_model_from_local_path(monkeypatch, tm
     assert response.json()["metrics"]["audio_ms"] > 0
     assert calls["restore_path"] == str(model_path)
     assert calls["eval"] is True
+
+
+def test_preprocess_audio_disabled_returns_original_bytes(monkeypatch) -> None:
+    # When both VAD and denoise are off, the audio must be passed through untouched
+    # so we never alter what Nemotron hears unless preprocessing was explicitly asked for.
+    monkeypatch.setenv("POCKETDM_NEMOTRON_VAD", "0")
+    monkeypatch.setenv("POCKETDM_NEMOTRON_DENOISE", "0")
+    audio = _speech_like_wav()
+
+    assert nemotron_streaming_asr_server._preprocess_audio(audio) is audio
+
+
+def test_preprocess_audio_non_wav_falls_back_to_original(monkeypatch) -> None:
+    # A decode failure must never break STT: garbage in -> same garbage back out,
+    # so the downstream transcriber still receives exactly what the caller sent.
+    monkeypatch.setenv("POCKETDM_NEMOTRON_VAD", "1")
+    junk = b"this is not a wav file"
+
+    assert nemotron_streaming_asr_server._preprocess_audio(junk) == junk
+
+
+def test_preprocess_audio_no_speech_detected_falls_back_to_original(monkeypatch) -> None:
+    # When the VAD finds no speech spans, fall back to the original clip rather than
+    # hand Nemotron an empty buffer (which would yield no transcript and a false failure).
+    pytest.importorskip("silero_vad")
+    import silero_vad
+
+    monkeypatch.setenv("POCKETDM_NEMOTRON_VAD", "1")
+    monkeypatch.setenv("POCKETDM_NEMOTRON_DENOISE", "0")
+    nemotron_streaming_asr_server._silero_vad_model.cache_clear()
+    monkeypatch.setattr(silero_vad, "get_speech_timestamps", lambda *a, **k: [])
+    audio = _speech_like_wav(lead_silence_ms=300, speech_ms=600, tail_silence_ms=300)
+
+    assert nemotron_streaming_asr_server._preprocess_audio(audio) == audio
+
+
+def test_preprocess_audio_trims_to_detected_speech_spans(monkeypatch) -> None:
+    # The core promise: VAD-detected speech is kept and the surrounding silence is
+    # dropped, so the trimmed clip is strictly shorter than the padded input and only
+    # contains the detected span. We stub the detector to assert OUR slicing/re-encode
+    # logic, not Silero's acoustic model.
+    pytest.importorskip("silero_vad")
+    import silero_vad
+
+    monkeypatch.setenv("POCKETDM_NEMOTRON_VAD", "1")
+    monkeypatch.setenv("POCKETDM_NEMOTRON_DENOISE", "0")
+    nemotron_streaming_asr_server._silero_vad_model.cache_clear()
+
+    # Keep only the middle 600 ms (samples 4800..14400) of a 1200 ms clip.
+    speech_span = [{"start": 4_800, "end": 14_400}]
+    monkeypatch.setattr(silero_vad, "get_speech_timestamps", lambda *a, **k: speech_span)
+    audio = _speech_like_wav(lead_silence_ms=300, speech_ms=600, tail_silence_ms=300)
+
+    trimmed = nemotron_streaming_asr_server._preprocess_audio(audio)
+
+    assert trimmed != audio
+    with wave.open(io.BytesIO(audio), "rb") as original:
+        original_frames = original.getnframes()
+    with wave.open(io.BytesIO(trimmed), "rb") as result:
+        assert result.getframerate() == 16_000
+        assert result.getnchannels() == 1
+        assert result.getnframes() == 14_400 - 4_800
+        assert result.getnframes() < original_frames
