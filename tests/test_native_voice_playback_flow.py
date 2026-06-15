@@ -63,7 +63,9 @@ def test_pika_tts_url_status_and_bundled_fallback_exist() -> None:
     assert "self.play(sound, enabled: enabled)" in sound_player
     assert "HTTPURLResponse)?.statusCode == 200" in external_tts
     assert '"Pika voice sidecar returned no playable audio."' in external_tts
-    assert '"Pika voice sidecar unavailable."' in external_tts
+    # Sentence-streaming playback: speak per sentence for low time-to-first-audio.
+    assert "Self.streamingSentences(from: line)" in external_tts
+    assert "synthesizeSentence" in external_tts
 
 
 def test_hands_free_pause_detection_uses_metering_and_max_timeout() -> None:

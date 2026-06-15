@@ -10063,6 +10063,41 @@ final class PetSoundPlayer {
     }
 
     private func playExternalVoice(_ line: String, endpoint: URL) async -> Bool {
+        // Sentence-streaming: speak each sentence as soon as it is synthesized while
+        // prefetching the next one. Time-to-first-audio becomes one short sentence
+        // (~2s) instead of the whole reply, so the pet feels real-time on long answers.
+        let sentences = Self.streamingSentences(from: line)
+        guard !sentences.isEmpty else { return false }
+
+        var prefetch = Task { await self.synthesizeSentence(sentences[0], endpoint: endpoint) }
+        var playedAny = false
+        for index in sentences.indices {
+            let data = await prefetch.value
+            if index + 1 < sentences.count {
+                let next = sentences[index + 1]
+                prefetch = Task { await self.synthesizeSentence(next, endpoint: endpoint) }
+            }
+            guard let data, let player = NSSound(data: data) else { continue }
+            externalVoiceSound?.stop()
+            externalVoiceSound = player
+            player.volume = 1.0
+            if player.play() {
+                if !playedAny {
+                    playedAny = true
+                    onVoiceStatus?("Playing Pika sidecar voice.")
+                }
+                while player.isPlaying {
+                    try? await Task.sleep(nanoseconds: 70_000_000)
+                }
+            }
+        }
+        if !playedAny {
+            onVoiceStatus?("Pika voice sidecar returned no playable audio.")
+        }
+        return playedAny
+    }
+
+    private func synthesizeSentence(_ sentence: String, endpoint: URL) async -> Data? {
         do {
             var request = URLRequest(url: endpoint)
             request.httpMethod = "POST"
@@ -10070,23 +10105,41 @@ final class PetSoundPlayer {
                 .flatMap(Double.init) ?? 45
             request.timeoutInterval = max(8, configuredTimeout)
             request.setValue("application/json", forHTTPHeaderField: "content-type")
-            request.httpBody = try JSONEncoder().encode(ExternalPikaTTSRequest(text: line, voice: "pika-signature", format: "wav"))
+            request.httpBody = try JSONEncoder().encode(ExternalPikaTTSRequest(text: sentence, voice: "pika-signature", format: "wav"))
             let (data, response) = try await URLSession.shared.data(for: request)
-            guard (response as? HTTPURLResponse)?.statusCode == 200,
-                  let player = NSSound(data: data) else {
-                onVoiceStatus?("Pika voice sidecar returned no playable audio.")
-                return false
-            }
-            externalVoiceSound?.stop()
-            externalVoiceSound = player
-            player.volume = 1.0
-            let didPlay = player.play()
-            onVoiceStatus?(didPlay ? "Playing Pika sidecar voice." : "Pika sidecar audio could not play.")
-            return didPlay
+            guard (response as? HTTPURLResponse)?.statusCode == 200, !data.isEmpty else { return nil }
+            return data
         } catch {
-            onVoiceStatus?("Pika voice sidecar unavailable.")
-            return false
+            return nil
         }
+    }
+
+    private static func streamingSentences(from line: String) -> [String] {
+        let trimmed = line.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return [] }
+        var sentences: [String] = []
+        var current = ""
+        for character in trimmed {
+            current.append(character)
+            if ".!?".contains(character) {
+                let piece = current.trimmingCharacters(in: .whitespaces)
+                if !piece.isEmpty { sentences.append(piece) }
+                current = ""
+            }
+        }
+        let tail = current.trimmingCharacters(in: .whitespaces)
+        if !tail.isEmpty { sentences.append(tail) }
+        // Merge tiny fragments (e.g. "Pika pika!") into the next chunk so we never
+        // make a separate request for a two-word clip.
+        var merged: [String] = []
+        for piece in sentences {
+            if let last = merged.last, last.count < 14 {
+                merged[merged.count - 1] = last + " " + piece
+            } else {
+                merged.append(piece)
+            }
+        }
+        return merged.isEmpty ? [trimmed] : merged
     }
 
     private func speechParts(
@@ -10148,7 +10201,7 @@ final class PetSoundPlayer {
             .joined(separator: " ")
             .trimmingCharacters(in: .whitespacesAndNewlines)
         guard !spoken.isEmpty else { return character.voiceCatchphrase }
-        let maxCharacters = 300
+        let maxCharacters = 220
         guard spoken.count > maxCharacters else { return spoken }
         let clipped = spoken.prefix(maxCharacters)
         if let lastStop = clipped.lastIndex(where: { ".!?".contains($0) }) {
