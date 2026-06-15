@@ -2045,6 +2045,7 @@ dependencies = [
     { name = "fastapi" },
     { name = "gradio" },
     { name = "pydantic" },
+    { name = "python-multipart" },
 ]
 
 [package.dev-dependencies]
@@ -2082,6 +2083,7 @@ requires-dist = [
     { name = "fastapi", specifier = ">=0.115" },
     { name = "gradio", specifier = "==6.17.3" },
     { name = "pydantic", specifier = ">=2" },
+    { name = "python-multipart", specifier = ">=0.0.9" },
 ]
 
 [package.metadata.requires-dev]

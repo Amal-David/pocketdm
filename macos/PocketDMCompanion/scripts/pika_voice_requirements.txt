@@ -1,0 +1,6 @@
+chatterbox-tts==0.1.7
+fastapi>=0.115
+pydantic>=2
+resemble-perth==1.0.1
+setuptools==81.0.0
+uvicorn>=0.30

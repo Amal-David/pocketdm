@@ -66,6 +66,8 @@ case "$(basename "$bundle")" in
 esac
 
 executable="$project_dir/.build/$configuration/PocketDMCompanion"
+resource_bundle_name="PocketDMCompanion_PocketDMCompanion.bundle"
+resource_bundle="$project_dir/.build/$configuration/$resource_bundle_name"
 
 if [[ "$dry_run" -eq 1 ]]; then
   echo "Would build PocketDMCompanion ($configuration) and create unsigned app bundle: $bundle" >&2
@@ -85,6 +87,11 @@ rm -rf "$bundle"
 mkdir -p "$bundle/Contents/MacOS" "$bundle/Contents/Resources"
 cp "$executable" "$bundle/Contents/MacOS/PocketDMCompanion"
 cp "$project_dir/Info.plist" "$bundle/Contents/Info.plist"
+if [[ ! -d "$resource_bundle" ]]; then
+  echo "SwiftPM did not produce the expected resource bundle: $resource_bundle" >&2
+  exit 66
+fi
+cp -R "$resource_bundle" "$bundle/$resource_bundle_name"
 chmod 755 "$bundle/Contents/MacOS/PocketDMCompanion"
 printf 'APPL????' > "$bundle/Contents/PkgInfo"
 

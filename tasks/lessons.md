@@ -218,6 +218,67 @@ with rewards only.
 time and refill through obvious actions, such as petting for Snack, Nap for
 Rest, Hyper for Play, and Learn/Hint/Boost for Focus.
 
+## 2026-06-15 — Parallel agents should review broadly, but edits need ownership
+User corrected that the hackathon sprint was not using enough subagents.
+**Rule:** when the user asks for heavy parallelization, launch multiple bounded
+review/research/test agents with distinct questions, but keep source edits
+serialized or split by disjoint file ownership so parallelism does not create
+merge noise in shared SwiftUI surfaces.
+
+## 2026-06-15 — llama.cpp is the brain contract, not the whole voice stack
+User reminded that llama.cpp support is a hackathon requirement while the app is
+also using Nemotron ASR and VoxCPM TTS sidecars.
+**Rule:** prove the companion brain through a GGUF llama.cpp/OpenAI-compatible
+server and benchmark it before switching models. Keep ASR/STT and TTS on the
+native runtimes that actually support those checkpoints, with clear fallback
+labels instead of pretending every model belongs in llama.cpp.
+
+## 2026-06-15 — Demo pet UI must ask one tiny thing at a time
+User said the expanded companion had too much information and random "tt" sounds.
+**Rule:** keep the default pet experience to one visible prompt, one primary
+action, one reward receipt, and quiet routine send/reply ticks. Put dense
+systems in Journal/docs, and keep deterministic basics like time/date before
+adventure or LLM routing.
+
+## 2026-06-14 — Reply effects must not cancel mascot voice
+User saw "Pika pika!" text but heard no matching audio after an assistant reply.
+**Rule:** if a response path plays a short UI effect before speech, the forced
+voice path must bypass recent-sound suppression and still attempt the TTS
+sidecar before falling back to bundled chirps.
+
+## 2026-06-14 — Talk flow needs microphone and speech permission checks
+User reported that Talk now was not usable.
+**Rule:** native voice capture should request microphone access explicitly before
+speech recognition, surface denial/restriction as visible status text, and only
+start transcription after both permission layers are available.
+
+## 2026-06-14 — Low vitals should ask for care
+User wants a proper pet, not just counters.
+**Rule:** when Snack, Rest, Play, or Focus drops low, surface it as a proactive
+care pulse with offered, answered, skipped, reward, mood animation, journal
+proof, and exact sprite filenames.
+
+## 2026-06-14 — Pika voice should be original, not generic TTS or ripped clips
+User corrected that written Pika text should not just use generic TTS and asked
+for free/open sound effects.
+**Rule:** keep mascot voice as original local chirps or a consented voice
+recipe, layer CC0 electric/UI sounds for interaction polish, and do not bundle
+official-character clips or unclear mirror downloads.
+
+## 2026-06-14 — Proactive cheer needs its own rhythm
+User wants the companion to talk throughout the day with "how are you doing?"
+and "what is happening?" moments, not only respond to clicks or show counters.
+**Rule:** model lightweight day-rhythm pings separately from vitals, quests, and
+upgrade boards, with offered, answered, skipped, album, reward, mood, and exact
+sprite filenames.
+
+## 2026-06-14 — Codex commits should identify Codex locally
+User corrected that pushes/commits from this repo should say Codex when Codex is
+doing the work.
+**Rule:** keep repo-local Git author and committer metadata set to
+`Codex <codex@local>` before creating commits from this checkout; remember that
+GitHub's "pushed by" label still comes from the authenticated remote account.
+
 ## 2026-06-13 — Pika voice must cover model replies
 User clarified that the model itself should say "pika pika" in text and voice.
 **Rule:** assistant replies, lesson feedback, and pet actions should use a
@@ -322,6 +383,13 @@ voice.
 "Pika pika!" prefix and force the native spoken catchphrase on direct reply or
 quiz feedback moments so debounce never makes the character voice disappear.
 
+## 2026-06-14 — Pet-only chrome must be sprite-triggered
+User corrected that the settings gear and close X should not appear just
+because the pointer is inside the transparent minimized overlay panel.
+**Rule:** minimized chrome should be revealed by hovering the visible pet
+sprite, while blank transparent panel space stays visually inert; once revealed,
+controls can remain hittable long enough to click them.
+
 ## 2026-06-13 — Recovery loops must welcome, not punish
 The user wants Hamster-style retention loops, but the pet fantasy should not
 turn missed days into guilt.
@@ -357,6 +425,15 @@ step receipts, album progress, care-vital effects, mood-care effects, and exact
 sprite filenames; avoid leaving combo, cipher, boost, upgrade, and check-in
 actions as disconnected buttons.
 
+## 2026-06-13 — Generated pet sheets need real alpha
+User reported that the generated pet character still showed its sheet
+background.
+**Rule:** generated external sprite sheets must be treated as opaque contact
+sheets unless proven otherwise. Clean edge-connected sheet backgrounds into
+real RGBA alpha at asset-prep time, and keep a runtime loader cleanup path for
+new `output/sprite-sheets/pet-*.png` files so cream or grid backgrounds never
+show up behind the desktop pet.
+
 ## 2026-06-13 — Cheer must speak from the pet's mood
 The user wants proactive "how are you doing?" bubbles to feel like a real pet,
 not generic scheduled text.
@@ -364,6 +441,14 @@ not generic scheduled text.
 the current feeling and growth stage, and those prompts need answered/skipped
 state, permanent album proof, care-vital effects, mood-care effects, and exact
 sprite filenames.
+
+## 2026-06-13 — Task boards should become pet errands
+The broader goal is hamster-style retention translated into a proper desktop
+pet.
+**Rule:** task-board mechanics should be small in-world errands the pet can ask
+for, do, skip, remember, and show in a journal album. Each errand needs care
+effects, proactive bubble wiring, a direct native button, and exact sprite
+filenames so it feels like relationship activity rather than checklist UI.
 
 ## 2026-06-13 — Lesson audio needs the catchphrase too
 The user clarified again that the model should say "pika pika" in text and in
@@ -458,3 +543,223 @@ notifications.
 **Rule:** user check-ins should have named emotional states, direct and
 proactive entry points, daily answered/skipped state, album proof, rewards,
 care-vital effects, visible feedback, and exact sprite filenames.
+
+## 2026-06-13 — Demo focus beats skin breadth
+The user reversed the earlier Goldy showcase direction because the golden
+mascot does not look good enough. They also flagged that hover-only exit
+controls, tiny paragraphs, and Learn-mode "Pika pika" prefixes make the product
+hard to use.
+**Rule:** prioritize the strongest Pikachu surface for the hackathon demo,
+pause weaker character skins, keep close/show controls always reachable from
+both the pet and menu bar, make the main overlay a readable game HUD, and keep
+language-learning feedback free of pet catchphrases.
+
+## 2026-06-13 — Voice-first must stay original
+The user wants a better Pikachu-like voice and a daily voice conversation loop,
+but requested sourcing from YouTube would create a copied-character demo risk.
+**Rule:** build the voice-first workflow around native or local STT, the
+existing assistant endpoint, and a swappable local TTS server. Use original or
+consented reference audio only; never depend on ripped official character audio
+for the product path.
+
+## 2026-06-14 — Pet chrome should be hover-only
+The user wants the settings gear and close X to appear only when hovering over
+the pet, not as always-visible desktop chrome.
+**Rule:** keep destructive or configuration controls hidden by default on the
+always-on pet surface, reveal them from the pet hover stage, and leave menu-bar
+fallback actions available for accessibility and recovery.
+
+## 2026-06-14 — Pika text should not use generic TTS
+User clarified that visible "Pika pika" text should not be read by a generic
+system TTS voice.
+**Rule:** mascot reactions should use short original or properly licensed
+Pika-like sound effects, while sentence-level TTS stays reserved for language
+lessons, pronunciation help, and explicit narrated content.
+
+## 2026-06-14 — Pika sounds need a clean license path
+User asked to find free/open-source sound effects because text Pika should not
+be treated as normal TTS.
+**Rule:** do not bundle official or ripped character audio; use synthesized
+original mascot cues as the primary voice and only add external SFX after
+verifying CC0 or compatible attribution terms per individual asset.
+
+## 2026-06-14 — Emotions need rituals, not just labels
+User reiterated that the companion is not close to a real pet experience and
+needs many emotions, flows, lore beats, and sprite sheets.
+**Rule:** every major feeling should have a named care ritual with proactive
+bubble copy, rewards, care-vital effects, mood animation, journal progress, and
+exact sprite-sheet filenames so the emotion becomes an interaction loop.
+
+## 2026-06-14 — Return rewards should read as care
+User wants Hamster-style retention mechanics, but the desktop companion still
+needs to feel like a pet.
+**Rule:** daily chests, comeback rewards, and timed claims should be framed as
+pet-care moments with daypart eligibility, proactive asks, visible journal
+proof, care-vital effects, and exact transparent sprite-sheet filenames.
+
+## 2026-06-14 — Growth needs permanent story proof
+User keeps emphasizing that the companion should grow from small to big like a
+proper pet, not only unlock more buttons.
+**Rule:** growth systems should include permanent relationship chapters with
+eligibility gates, proactive save prompts, journal proof, care effects, and
+exact sprite filenames so HP, Sparks, and streaks become visible lore.
+
+## 2026-06-14 — Open sounds are interaction texture, not identity
+User asked again to find free/open sound effects because Pika text should not
+be spoken as generic TTS.
+**Rule:** keep the mascot voice as original or properly licensed short chirps,
+then use CC0/open sound packs for button, send, wake, zap, reward, and motion
+accents. Do not let downloaded SFX replace the character's owned voice style.
+
+## 2026-06-14 — Proactive visits need album proof
+User wants the pet to come in throughout the day and ask how the user is doing,
+not wait like a chat widget.
+**Rule:** time-of-day pet appearances should be modeled as named visits with
+offered/answered/skipped state, care-vital effects, rewards, journal progress,
+and exact sprite filenames so proactive attention becomes relationship history.
+
+## 2026-06-14 — Passive loops need visible care rituals
+User wants Hamster-style game loops, but the pet should still feel alive.
+**Rule:** passive Spark earning should have a visible start/wait/claim ritual,
+active run state, return reward, album proof, and exact sprite filenames instead
+of only invisible background accrual.
+
+## 2026-06-14 — Daily boards must surface as pet prompts
+User wants Telegram/Hamster-style daily loops, but they should not hide inside a
+static journal or button list.
+**Rule:** each daily route/board mechanic needs a direct next-loop entry,
+proactive offered/skipped state, accept handling, route album proof, and exact
+sprite filenames so the pet appears throughout the day with a concrete next
+care action.
+
+## 2026-06-14 — Desktop assistant must not collapse into adventure hints
+User showed that asking "what is the time now" returned the silver-acorn hint,
+and they also could not hear the Pika voice.
+**Rule:** route typed and spoken desktop requests through a local assistant
+intent layer before game-hint logic, expose safe basics like time/date/runtime
+status, keep weather check-ins on the same `/api/assistant` path, and make the
+native UI show whether Pika voice is muted, sidecar-backed, or using bundled
+chirps.
+
+## 2026-06-14 — Local LLM plus STT plus TTS is the core workflow
+User corrected that the pet should still be orchestrated by the local LLM with
+speech-to-text and text-to-speech, not hardcoded copy plus disconnected sounds.
+**Rule:** every voice-first product loop should be modeled as STT transcript,
+local assistant context/tool facts, assistant text, then Pika TTS or bundled
+chirp playback with visible recovery states.
+
+## 2026-06-15 — Launch should be pet-only
+User corrected that server/app startup should show only the desktop Pikachu,
+not the whole expanded chat and status panel.
+**Rule:** native companion launch must default to the pet-only overlay; panels,
+settings, close controls, and chat surfaces should appear only after explicit
+hover/click/menu actions.
+
+## 2026-06-15 — Wellness should feel like pet care
+User asked for two-hour stand, water, and walk reminders as part of the same
+desktop pet experience.
+**Rule:** wellness nudges should be proactive pet bubbles with voice, mood,
+care-vital rewards, and honest desk-time wording instead of separate timer UI
+or fake sensor claims.
+
+## 2026-06-15 — Learn mode should not speak Pika first
+User corrected that lesson interactions should not say "Pika pika" before a
+target phrase such as "Hola."
+**Rule:** language-learning mode should use clean phrase TTS and lesson-copy
+feedback only; keep Pika chirps and catchphrases out of lesson playback.
+
+## 2026-06-15 — Codex commits need Codex identity
+User corrected that commits made from the Codex app or local Codex server should
+not show their personal Git author name.
+**Rule:** keep both repo-local and global Git identity set to `Codex
+<codex@local>` before committing from this workspace; existing historical commits
+remain unchanged unless explicitly amended.
+
+## 2026-06-15 — Voice-first means a real local STT sidecar
+User wants the Pika companion to support an end-to-end spoken loop, not just
+buttons or Apple Speech fallback.
+**Rule:** launch native voice mode with `POCKETDM_PIKA_STT_URL` pointing at the
+local faster-whisper sidecar, keep isolated voice venv requirements synced on
+startup, and route transcripts through `/api/assistant` before Pika TTS playback.
+
+## 2026-06-15 — The native pet UI must be readable at a glance
+User corrected that the expanded companion was failing accessibility because it
+used too many tiny paragraphs and status strings.
+**Rule:** the desktop overlay should feel like a game HUD: large chat text,
+large voice controls, a few high-signal mission cards, and hidden detail in
+journal views instead of dense always-visible microcopy.
+
+## 2026-06-15 — Learn mode should not autoplay on navigation
+User disliked the experience where clicking into learning produced mascot noise
+and immediately played the phrase.
+**Rule:** opening Learn or switching Spanish/Mandarin packs should update the
+card quietly; phrase audio should play only from explicit lesson controls such
+as `Hear`, `Slow`, or the repeat-after step.
+
+## 2026-06-15 — Menu bar must be a reliable escape hatch
+User needs a dependable way to see that the companion is live and close or
+delete/reset it even when hover controls are hidden.
+**Rule:** the menu-bar Pika item should expose short actions for Open Chat, Hide
+to Pet, sound toggle, confirmed Delete Pet Data, and Quit Pika.
+
+## 2026-06-15 — Pet-only launch needs a quiet grace period
+User expects startup to show only the animated Pikachu, not immediate proactive
+text bubbles.
+**Rule:** suppress wellness and cheer bubbles briefly after native launch so the
+first impression is pet-only; proactive care can resume after the user has had a
+clean moment with the character.
+
+## 2026-06-15 — Codex-authored commits must use the Codex identity
+User corrected that commits made from the Codex app/server were showing their
+personal Git author.
+**Rule:** keep both global and repo-local Git identity set to
+`Codex <codex@local>` before making Codex-authored commits; existing commits
+need explicit amend/rewrite if their historical author must change.
+
+## 2026-06-15 — Parallel work should run in waves
+User corrected that the hackathon push was not using enough subagents or
+parallelism.
+**Rule:** when the user asks for a swarm, immediately launch the maximum useful
+bounded wave the platform allows, keep write ownership disjoint, close completed
+agents, and refill slots with the next independent lane instead of pretending a
+literal unbounded number of agents can run at once.
+
+## 2026-06-15 — Expanded pet UI must stay small and permission-safe
+User corrected that the expanded Pikachu overlay was too large, too dense, and
+blocking the macOS microphone permission button.
+**Rule:** default expanded chat should show only pet, transcript, input, a game
+style health bar, and one wellness prompt; routine/details belong behind a
+reveal, and first-time voice capture should collapse before macOS permission
+prompts appear.
+
+## 2026-06-15 — Voice controls must not duplicate or clip
+User corrected that the expanded overlay showed two `Send voice` buttons and
+cropped the chat response text.
+**Rule:** while recording, render exactly one send/stop voice control in the
+active listening panel; quick actions should hide their voice button, and chat
+text should truncate cleanly instead of using forced vertical sizing that clips
+inside the bubble.
+
+## 2026-06-15 — Voice controls should be icon-first, not a form
+User corrected that `Send voice` copy made the pet feel like a form instead of
+a desktop companion.
+**Rule:** keep typed chat as the primary composer with normal Enter submit,
+put realtime voice and one-turn STT behind icon-only controls, center the pet,
+and show a 3000-point game health bar above the pet that decays over time and
+recovers when the user completes check-ins or care actions.
+
+## 2026-06-15 — Pika voice must prove the whole chain
+User corrected that hearing only `Pika Pika` is not enough; the product must
+show where STT, LLM, and TTS succeed or fail.
+**Rule:** every voice/debug pass needs a visible chat transcript, transcript
+status while listening/transcribing/thinking/speaking, and an explicit backend
+test that sends text to `/api/assistant`, generates Pika TTS audio, and uploads
+that audio through the STT/ASR endpoints before claiming the flow works.
+
+## 2026-06-15 — Nemotron ASR should be local-first
+User corrected that Nemotron ASR should not be framed as requiring an NVIDIA API
+key when the hackathon goal is to run the pulled local model.
+**Rule:** treat `nvidia/nemotron-speech-streaming-en-0.6b` as a local
+NeMo/Nemotron ASR backend first, hosted NIM as optional, and faster-whisper as a
+visible fallback; expose latency metrics (`audio_ms`, `asr_request_ms`, `rtfx`,
+fallback status) before calling the path realtime.

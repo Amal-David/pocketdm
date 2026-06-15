@@ -2,13 +2,17 @@ from __future__ import annotations
 
 import html
 import io
+import json
 import os
 import time
 import uuid
 from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
+from datetime import datetime
 from pathlib import Path
 from typing import Any
+from urllib import error as urlerror
+from urllib import request as urlrequest
 
 from fastapi import HTTPException, Request
 from fastapi.responses import HTMLResponse, JSONResponse, Response
@@ -42,6 +46,7 @@ class PlaySession:
     backend: TurnBackend
     backend_label: str
     voice_id: str | None = None
+    started_at: float = field(default_factory=time.time)
     last_turn: Turn | None = None
     last_turn_seconds: float = 0.0
     last_turn_tokens: int = 0
@@ -300,9 +305,25 @@ def _assistant_for_turn(session: PlaySession, action: str) -> str:
 
 def _dragon_reply(session: PlaySession, message: str) -> str:
     lowered = message.casefold()
+    if system_reply := _system_reply(session, lowered):
+        return system_reply
+    if "daily voice check-in" in lowered or "daily check-in" in lowered:
+        return _daily_checkin_reply(lowered)
+    if "morning weather check-in" in lowered or (
+        "weather line:" in lowered and "affirmation" in lowered
+    ):
+        return _weather_affirmation_reply(session, message)
     turn = session.last_turn
     if turn is None:
-        return _pika("Start an adventure and I will start hovering.")
+        if _is_hint_request(lowered) or any(
+            term in lowered for term in ("adventure", "quest", "dungeon", "turn", "choice", "tale")
+        ):
+            return _pika("Start an adventure and I will start hovering.")
+        if local_reply := _local_companion_llm_reply(session, message, purpose="freeform desktop pet chat"):
+            return local_reply
+        if "encourag" in lowered or "affirm" in lowered or "motivat" in lowered:
+            return _pika("One tiny win is enough for the next minute. Take it, and I will cheer when it lands.")
+        return _pika("I am here with you. Ask for a check-in, log water, or start an adventure when you want a quest.")
     if "status" in lowered or "hp" in lowered or "inventory" in lowered:
         return _pika(
             f"Adventure: {session.state.hp}/10 HP. Location {session.state.location}, "
@@ -311,16 +332,314 @@ def _dragon_reply(session: PlaySession, message: str) -> str:
         )
     if "pet" in lowered or "care" in lowered or "happy" in lowered:
         return _pika("Pet me from the desktop companion once a day to charge Bond HP and keep my joy high.")
-    if "hint" in lowered or "help" in lowered or "what" in lowered:
+    if _is_hint_request(lowered):
         if turn.is_ending:
             return _pika("The tale has landed. Start a fresh scroll if you want another flight.")
         choice = _recommended_choice(session)
         return _pika(f"My hint: try '{choice}'. {_choice_reason(session, choice)}")
+    if "what can you do" in lowered or "safe system basics" in lowered:
+        return _pika(
+            "I can answer safe basics like time and date, give adventure hints "
+            "when you explicitly ask, check status, run daily check-ins, and hand "
+            "voice replies to the local Pika sound path."
+        )
+    if "focus" in lowered or "tiny next step" in lowered:
+        return _pika("Pick one tiny visible step, set a ten-minute focus window, and stop when that one step lands.")
+    if "spanish" in lowered or "mandarin" in lowered or "pronounce" in lowered or "quiz" in lowered:
+        return _pika("Use Learn for Spanish or Mandarin. I can teach, replay slowly, quiz you, and reward practice.")
     if "hyper" in lowered or "fire" in lowered or "flame" in lowered or "bolt" in lowered:
         return _pika("Hyper mode. Quick and bright, not reckless.")
     if "offline" in lowered or "tiny" in lowered:
         return _pika("The winning trick is receipts: small model, local rules, no hidden cloud calls.")
+    if local_reply := _local_companion_llm_reply(session, message, purpose="freeform desktop pet chat"):
+        return local_reply
     return _pika("I heard you. Ask me for a hint, check status, or pet me for today's spark.")
+
+
+def _system_reply(session: PlaySession, lowered: str) -> str | None:
+    now = datetime.now().astimezone()
+    if _asks_current_time(lowered):
+        time_text = now.strftime("%I:%M %p").lstrip("0")
+        date_text = f"{now.strftime('%A, %B')} {now.day}"
+        zone = now.tzname() or now.strftime("%z")
+        return _pika(f"Time here: {time_text} {zone}, {date_text}.")
+    if _asks_current_date(lowered):
+        return _pika(f"Today is {now.strftime('%A, %B')} {now.day}, {now.year}.")
+    if "timezone" in lowered or "time zone" in lowered:
+        zone = now.tzname() or now.strftime("%z")
+        return _pika(f"Timezone: {zone} from this Mac server.")
+    if "how long" in lowered and ("playing" in lowered or "session" in lowered):
+        elapsed = max(0, int(time.time() - session.started_at))
+        minutes, seconds = divmod(elapsed, 60)
+        return _pika(f"Session open: {minutes}m {seconds}s, turn {session.state.turn_count}.")
+    if _asks_weather(lowered):
+        return _weather_context_reply(lowered)
+    if _asks_system_status(lowered):
+        return _pika(_system_status_text(session))
+    if "what model" in lowered or "which model" in lowered or "model are you using" in lowered:
+        return _pika(f"Runtime: {session.backend_label}; model: {_model_label(session)}.")
+    if "running locally" in lowered or "in the cloud" in lowered or "local or cloud" in lowered:
+        if session.backend_label == "llama.cpp":
+            return _pika(f"Local llama.cpp is active with {_model_label(session)}.")
+        return _pika("Local scripted safety mode is active until llama.cpp is configured.")
+    return None
+
+
+def _asks_current_time(lowered: str) -> bool:
+    text = lowered.strip(" ?!.")
+    return text == "time" or any(
+        phrase in lowered
+        for phrase in (
+            "what time",
+            "time is it",
+            "the time",
+            "time now",
+            "current time",
+            "tell me time",
+            "tell me the time",
+            "clock",
+        )
+    )
+
+
+def _asks_current_date(lowered: str) -> bool:
+    return any(
+        phrase in lowered
+        for phrase in (
+            "what date",
+            "date today",
+            "today's date",
+            "todays date",
+            "what day is it",
+            "what day is today",
+            "day of the week",
+        )
+    )
+
+
+def _asks_weather(lowered: str) -> bool:
+    if "weather line:" in lowered or "morning weather check-in" in lowered:
+        return False
+    return any(
+        word in lowered
+        for word in (
+            "weather",
+            "forecast",
+            "outside",
+            "umbrella",
+            "rain",
+            "raining",
+            "gloomy",
+            "sunny",
+            "hot out",
+            "cold out",
+        )
+    )
+
+
+def _weather_context_reply(lowered: str) -> str:
+    if "umbrella" in lowered:
+        return _pika("Weather: I do not have live forecast data here; check local radar before deciding on an umbrella.")
+    if "beautiful weather" in lowered:
+        return _pika("Weather noted: beautiful. Want a quick check-in with that spark?")
+    if "gloomy" in lowered:
+        return _pika("Weather: I cannot see live conditions here; if it feels gloomy, try one small indoor reset.")
+    return _pika("Weather: I do not have a live forecast source here. Share a weather line and I will make a check-in.")
+
+
+def _asks_system_status(lowered: str) -> bool:
+    return any(
+        phrase in lowered
+        for phrase in (
+            "system status",
+            "server status",
+            "backend status",
+            "runtime status",
+            "api status",
+            "llm status",
+            "model status",
+        )
+    ) or ("status" in lowered and any(
+        word in lowered for word in ("system", "server", "backend", "runtime", "api", "llm", "model")
+    ))
+
+
+def _system_status_text(session: PlaySession) -> str:
+    speed = ""
+    if tokens_per_second := _turn_tokens_per_second(session):
+        speed = f", last turn {tokens_per_second} tok/s"
+    return (
+        f"System: API awake, backend {session.backend_label}, "
+        f"model {_model_label(session)}, turn {session.state.turn_count}{speed}."
+    )
+
+
+def _is_hint_request(lowered: str) -> bool:
+    if "hint" in lowered or "clue" in lowered:
+        return True
+    adventure_terms = ("adventure", "quest", "dungeon", "turn", "choice", "choose", "tale")
+    if any(term in lowered for term in ("what should i", "which choice", "recommend", "safest choice")):
+        return True
+    return "help" in lowered and any(term in lowered for term in adventure_terms)
+
+
+def _weather_affirmation_reply(session: PlaySession, message: str) -> str:
+    weather = _field_value(message, "Weather line:")
+    title = _field_value(message, "Affirmation title:")
+    line = _field_value(message, "Affirmation line:")
+    llm_prompt = (
+        "Compose the morning weather check-in from these facts. "
+        f"Weather: {weather or 'unknown'}. Affirmation: {title} - {line}. "
+        "Ask exactly one friendly check-in question."
+    )
+    if local_reply := _local_companion_llm_reply(session, llm_prompt, purpose="morning weather check-in"):
+        return local_reply
+    pieces = [piece for piece in (weather, f"{title}: {line}" if title and line else line) if piece]
+    if not pieces:
+        pieces = ["The weather check-in is ready."]
+    return _pika(" ".join(pieces) + " Want to do a check-in with me?")
+
+
+def _field_value(message: str, label: str) -> str:
+    try:
+        start = message.index(label) + len(label)
+    except ValueError:
+        return ""
+    tail = message[start:]
+    stops = [
+        index for marker in ("\n", " Affirmation title:", " Affirmation line:", " Requirements:")
+        if (index := tail.find(marker)) >= 0
+    ]
+    if stops:
+        tail = tail[: min(stops)]
+    return " ".join(tail.split()).strip(" .")
+
+
+def _daily_checkin_reply(lowered: str) -> str:
+    if any(word in lowered for word in ("tired", "exhausted", "sleep", "burned out")):
+        return _pika("I hear tired energy. Take one slow breath, pick one tiny finish line, then rest on purpose.")
+    if any(word in lowered for word in ("stuck", "blocked", "confused", "overwhelmed")):
+        return _pika("That sounds heavy, and you are still here. Name the next smallest visible step, then do only that.")
+    if any(word in lowered for word in ("good", "great", "happy", "excited", "proud")):
+        return _pika("I hear a bright spark. Save the win, then use that energy on one kind next move.")
+    return _pika("Daily check-in logged. I am with you; choose one tiny next step and make it easy to start.")
+
+
+def _local_companion_llm_reply(session: PlaySession, message: str, *, purpose: str) -> str | None:
+    from app.llama_backend import configured_llama_server_model, configured_llama_server_url
+
+    base_url = configured_llama_server_url()
+    if not base_url:
+        return None
+
+    now = datetime.now().astimezone()
+    context = {
+        "purpose": purpose,
+        "local_time": now.isoformat(timespec="seconds"),
+        "timezone": now.tzname() or now.strftime("%z"),
+        "runtime": session.backend_label,
+        "model": _model_label(session),
+        "hp": session.state.hp,
+        "location": session.state.location,
+        "turn_count": session.state.turn_count,
+    }
+    payload = {
+        "model": configured_llama_server_model(base_url),
+        "messages": [
+            {
+                "role": "system",
+                "content": (
+                    "You are Pika, a tiny always-on desktop companion. "
+                    "The user is building the PocketDM/Pika hackathon demo. "
+                    "Reply in one compact helpful line. Include 'Pika pika!' once. "
+                    "Use tool facts exactly. Do not invent weather, time, model, or system data. "
+                    "Do not give adventure hints unless the user explicitly asks for a hint, clue, or choice. "
+                    "If the user asks for encouragement, give encouragement without asking for extra details. "
+                    "Never answer only with Pika sounds; after the catchphrase, include one useful sentence. "
+                    "Do not include analysis, reasoning, markdown, emoji, stage directions, or <think> tags."
+                ),
+            },
+            {"role": "user", "content": f"Context: {json.dumps(context, sort_keys=True)}\nUser: {message}"},
+        ],
+        "max_tokens": int(os.environ.get("POCKETDM_ASSISTANT_LLAMA_MAX_TOKENS", "72")),
+        "temperature": float(os.environ.get("POCKETDM_ASSISTANT_LLAMA_TEMPERATURE", "0.35")),
+        "stop": ["<turn|>", "<|im_end|>"],
+    }
+    request = urlrequest.Request(
+        f"{base_url.rstrip('/')}/v1/chat/completions",
+        data=json.dumps(payload).encode("utf-8"),
+        headers={"content-type": "application/json"},
+    )
+    try:
+        with urlrequest.urlopen(
+            request,
+            timeout=float(os.environ.get("POCKETDM_ASSISTANT_LLAMA_TIMEOUT", "8")),
+        ) as response:
+            result = json.loads(response.read().decode("utf-8"))
+        content = _strip_leading_pika_sounds(
+            _strip_thinking(str(result["choices"][0]["message"]["content"]).strip())
+        )
+    except (OSError, ValueError, KeyError, IndexError, urlerror.URLError):
+        return None
+
+    if not content or not _has_companion_substance(content):
+        return None
+    return _pika(html.escape(_compact_overlay_text(content), quote=False))
+
+
+def _compact_overlay_text(content: str, *, limit: int = 180) -> str:
+    compact = " ".join(content.split())
+    if len(compact) <= limit:
+        return compact
+
+    clipped = compact[:limit].rstrip()
+    sentence_end = max(clipped.rfind("."), clipped.rfind("!"), clipped.rfind("?"))
+    if sentence_end >= 20:
+        return clipped[: sentence_end + 1]
+    return clipped.rstrip(" ,;:") + "."
+
+
+def _strip_thinking(content: str) -> str:
+    cleaned = content.strip()
+    lowered = cleaned.casefold()
+    if "</think>" in lowered:
+        end = lowered.rfind("</think>") + len("</think>")
+        cleaned = cleaned[end:].strip()
+    if cleaned.casefold().startswith("<think>"):
+        return ""
+    return cleaned
+
+
+def _has_companion_substance(content: str) -> bool:
+    words = [
+        "".join(character for character in token.casefold() if character.isalpha())
+        for token in content.split()
+    ]
+    mascot_words = {"pika", "piki", "pikaa", "pikaaa", "pikachu"}
+    meaningful = [
+        word for word in words
+        if word and word not in mascot_words and not word.startswith("pika")
+    ]
+    return len(meaningful) >= 3
+
+
+def _strip_leading_pika_sounds(content: str) -> str:
+    cleaned = content.strip()
+    prefixes = (
+        "pika pika",
+        "pika piki",
+        "pikaa pikaa",
+        "pikaaa pikaaa",
+        "pikaa",
+        "pika",
+    )
+    while cleaned:
+        lowered = cleaned.casefold().lstrip()
+        matched = next((prefix for prefix in prefixes if lowered.startswith(prefix)), None)
+        if matched is None:
+            break
+        cleaned = cleaned[len(matched):].lstrip(" ,.!?-:")
+    return cleaned.strip() or content.strip()
 
 
 def _pika(text: str) -> str:

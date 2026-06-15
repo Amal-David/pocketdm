@@ -13,6 +13,8 @@ from app.llama_backend import (
     _ensure_llama_server,
     _llama_server_command,
     _model_label,
+    configured_llama_server_model,
+    configured_llama_server_url,
     configured_backend,
     render_prompt,
 )
@@ -40,11 +42,21 @@ def test_configured_backend_stays_none_without_existing_model(monkeypatch) -> No
 def test_configured_backend_prefers_llama_server_url(monkeypatch) -> None:
     monkeypatch.setenv("POCKETDM_GGUF", "/tmp/definitely-missing-pocketdm.gguf")
     monkeypatch.setenv("POCKETDM_LLAMA_SERVER_URL", "http://127.0.0.1:8081")
+    monkeypatch.setattr("app.llama_backend._llama_server_model_ids", lambda url: ["minicpm5-1b-q4"])
 
     backend = configured_backend()
 
     assert isinstance(backend, LlamaServerBackend)
-    assert backend.model_label == "llama.cpp server"
+    assert backend.config.model == "minicpm5-1b-q4"
+    assert backend.model_label == "MiniCPM5-1B Q4_K_M GGUF llama.cpp server"
+
+
+def test_configured_llama_server_env_accepts_assistant_aliases(monkeypatch) -> None:
+    monkeypatch.setenv("POCKETDM_ASSISTANT_LLAMA_URL", "http://127.0.0.1:8081")
+    monkeypatch.setenv("POCKETDM_ASSISTANT_LLAMA_MODEL", "minicpm5-1b-q4")
+
+    assert configured_llama_server_url() == "http://127.0.0.1:8081"
+    assert configured_llama_server_model("http://127.0.0.1:8081") == "minicpm5-1b-q4"
 
 
 def test_configured_backend_can_manage_llama_server(monkeypatch, tmp_path) -> None:
@@ -196,6 +208,9 @@ def test_llama_server_backend_posts_chat_completion(monkeypatch, tmp_path) -> No
     seen: dict[str, object] = {}
 
     class FakeResponse:
+        def __init__(self, payload: dict[str, object] | None = None) -> None:
+            self.payload = payload or {"choices": [{"message": {"content": '{"narration":"ok"}'}}]}
+
         def __enter__(self) -> "FakeResponse":
             return self
 
@@ -203,11 +218,11 @@ def test_llama_server_backend_posts_chat_completion(monkeypatch, tmp_path) -> No
             return None
 
         def read(self) -> bytes:
-            return json.dumps(
-                {"choices": [{"message": {"content": '{"narration":"ok"}'}}]}
-            ).encode()
+            return json.dumps(self.payload).encode()
 
     def fake_urlopen(request: object, *, timeout: float) -> FakeResponse:
+        if isinstance(request, str) and request.endswith("/v1/models"):
+            return FakeResponse({"data": [{"id": "gemma-mtp"}]})
         seen["url"] = request.full_url
         seen["timeout"] = timeout
         seen["body"] = json.loads(request.data.decode())
@@ -250,4 +265,23 @@ def test_model_label_distinguishes_gemma_quantization() -> None:
     assert (
         _model_label(Path("models/gemma-4-e2b-it/gguf/gemma-4-E2B-it-BF16.gguf"))
         == "Gemma 4 E2B BF16 GGUF"
+    )
+
+
+def test_model_label_distinguishes_companion_model_ladder() -> None:
+    assert (
+        _model_label(Path("models/minicpm5-1b/MiniCPM5-1B-Q4_K_M.gguf"))
+        == "MiniCPM5-1B Q4_K_M GGUF"
+    )
+    assert (
+        _model_label(Path("models/qwen3.5-2b/Qwen3.5-2B-Q4_K_M.gguf"))
+        == "Qwen3.5-2B Q4_K_M GGUF"
+    )
+    assert (
+        _model_label(Path("models/qwen3.5-0.8b/Qwen3.5-0.8B-Q4_K_M.gguf"))
+        == "Qwen3.5-0.8B Q4_K_M GGUF"
+    )
+    assert (
+        _model_label(Path("models/2b-v1-lora/gguf/merged.Q4_K_M.gguf"))
+        == "PocketDM 2B Q4_K_M GGUF"
     )

@@ -26,6 +26,7 @@ NATIVE_DIR = ROOT / "macos" / "PocketDMCompanion" / "Sources" / "PocketDMCompani
 WEB_DIR = ROOT / "app" / "static"
 FRAME_SIZE = 512
 CHARACTER_MAX_SIZE = 438
+EDGE_BAND_FRACTION = 0.025
 
 
 @dataclass(frozen=True)
@@ -73,14 +74,34 @@ def component_mask(mask: np.ndarray) -> np.ndarray:
     return labels == int(areas.argmax())
 
 
+def color_stats(rgb: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    rgb_float = rgb.astype(np.float32)
+    max_channel = rgb_float.max(axis=2)
+    min_channel = rgb_float.min(axis=2)
+    saturation = (max_channel - min_channel) / np.maximum(max_channel, 1)
+    return max_channel, min_channel, saturation
+
+
+def warm_character_shadow(rgb: np.ndarray) -> np.ndarray:
+    red = rgb[:, :, 0].astype(np.float32)
+    green = rgb[:, :, 1].astype(np.float32)
+    blue = rgb[:, :, 2].astype(np.float32)
+    max_channel, _, saturation = color_stats(rgb)
+    return (
+        (max_channel > 58)
+        & (red > blue + 12)
+        & (green > blue - 6)
+        & (saturation > 0.20)
+    )
+
+
 def remove_outline_components(
     alpha_mask: np.ndarray,
     rgb: np.ndarray,
 ) -> np.ndarray:
-    max_channel = rgb.max(axis=2)
-    min_channel = rgb.min(axis=2)
-    saturation = (max_channel - min_channel) / np.maximum(max_channel, 1)
-    dark = (max_channel < 92) | ((max_channel < 130) & (saturation < 0.24))
+    max_channel, _, saturation = color_stats(rgb)
+    dark = (max_channel < 92) | ((max_channel < 136) & (saturation < 0.30))
+    dark = dark & ~warm_character_shadow(rgb)
     dark = dark & alpha_mask
     labels, count = ndimage.label(dark)
     if count == 0:
@@ -89,6 +110,7 @@ def remove_outline_components(
     distance_to_edge = ndimage.distance_transform_edt(alpha_mask)
     h, w = alpha_mask.shape
     cell_area = h * w
+    edge_band = alpha_mask & (distance_to_edge <= max(5.0, min(h, w) * EDGE_BAND_FRACTION))
     next_mask = alpha_mask.copy()
 
     for label_id in range(1, count + 1):
@@ -100,24 +122,79 @@ def remove_outline_components(
         box_w = int(xs.max() - xs.min() + 1)
         box_h = int(ys.max() - ys.min() + 1)
         median_edge_distance = float(np.median(distance_to_edge[component]))
-        large_for_frame = area > cell_area * 0.0015
+        edge_fraction = float((component & edge_band).sum()) / area
+        large_for_frame = area > cell_area * 0.0005
         spans_body = box_w > w * 0.13 or box_h > h * 0.16
         edge_hugging = median_edge_distance < max(4.0, min(h, w) * 0.02)
+        mostly_edge = edge_fraction > 0.55
 
         # The contour is a long, edge-hugging dark component. Black eye/ear
         # features are compact or sit deeper inside the filled silhouette.
-        if large_for_frame and spans_body and edge_hugging:
+        if large_for_frame and (spans_body or mostly_edge) and (edge_hugging or mostly_edge):
             next_mask[component] = False
 
     return next_mask
 
 
+def trim_edge_outline(alpha_mask: np.ndarray, rgb: np.ndarray) -> np.ndarray:
+    distance_to_edge = ndimage.distance_transform_edt(alpha_mask)
+    h, w = alpha_mask.shape
+    edge_band = alpha_mask & (distance_to_edge <= max(4.0, min(h, w) * EDGE_BAND_FRACTION))
+    max_channel, _, saturation = color_stats(rgb)
+    neutral_black = (max_channel < 76) | ((max_channel < 124) & (saturation < 0.28))
+    outline = edge_band & neutral_black & ~warm_character_shadow(rgb)
+    if not outline.any():
+        return alpha_mask
+    next_mask = alpha_mask.copy()
+    next_mask[outline] = False
+    return next_mask
+
+
+def decontaminate_edge_rgb(image: Image.Image) -> Image.Image:
+    arr = np.asarray(image.convert("RGBA")).copy()
+    rgb = arr[:, :, :3]
+    alpha = arr[:, :, 3]
+    visible = alpha > 0
+    if not visible.any():
+        return Image.fromarray(arr, "RGBA")
+
+    max_channel, _, saturation = color_stats(rgb)
+    yellow_body = (rgb[:, :, 0] > 110) & (rgb[:, :, 1] > 72) & (rgb[:, :, 2] < 170)
+    red_cheek = (rgb[:, :, 0] > 150) & (rgb[:, :, 1] < 140) & (rgb[:, :, 2] < 140)
+    safe_source = visible & (alpha >= 220) & (
+        ((saturation > 0.18) & (max_channel > 95))
+        | yellow_body
+        | red_cheek
+        | warm_character_shadow(rgb)
+    )
+    if not safe_source.any():
+        safe_source = visible & (alpha >= 220)
+    if not safe_source.any():
+        safe_source = visible
+
+    nearest_y, nearest_x = ndimage.distance_transform_edt(
+        ~safe_source,
+        return_distances=False,
+        return_indices=True,
+    )
+    distance_inside_visible = ndimage.distance_transform_edt(visible)
+    edge = visible & (distance_inside_visible <= 3.0)
+    dark_low_alpha = edge & (alpha < 248) & (
+        (max_channel < 112)
+        | ((max_channel < 156) & (saturation < 0.30))
+    )
+    hidden = alpha == 0
+    near_hidden = hidden & (ndimage.distance_transform_edt(~visible) <= 8.0)
+    far_hidden = hidden & ~near_hidden
+    arr[far_hidden, :3] = 255
+    replace_rgb = near_hidden | dark_low_alpha
+    arr[replace_rgb, :3] = arr[nearest_y[replace_rgb], nearest_x[replace_rgb], :3]
+    return Image.fromarray(arr, "RGBA")
+
+
 def cleaned_frame(cell: Image.Image) -> Image.Image:
     rgb = np.asarray(cell.convert("RGB")).astype(np.uint8)
-    rgb_float = rgb.astype(np.float32)
-    max_channel = rgb_float.max(axis=2)
-    min_channel = rgb_float.min(axis=2)
-    saturation = (max_channel - min_channel) / np.maximum(max_channel, 1)
+    max_channel, _, saturation = color_stats(rgb)
 
     colored = (saturation > 0.16) & (max_channel > 86)
     yellow_shadow = (rgb[:, :, 0] > 110) & (rgb[:, :, 1] > 70) & (rgb[:, :, 2] < 130)
@@ -152,6 +229,7 @@ def cleaned_frame(cell: Image.Image) -> Image.Image:
     alpha_mask = ndimage.binary_closing(base | kept_dark, iterations=1)
     alpha_mask = ndimage.binary_fill_holes(alpha_mask)
     alpha_mask = remove_outline_components(alpha_mask, rgb)
+    alpha_mask = trim_edge_outline(alpha_mask, rgb)
     alpha_mask = ndimage.binary_opening(alpha_mask, iterations=1)
     alpha_mask = ndimage.binary_fill_holes(alpha_mask)
 
@@ -183,12 +261,13 @@ def cleaned_frame(cell: Image.Image) -> Image.Image:
         (max(1, round(cropped.width * scale)), max(1, round(cropped.height * scale))),
         Image.Resampling.LANCZOS,
     )
+    resized = decontaminate_edge_rgb(resized)
 
     frame = Image.new("RGBA", (FRAME_SIZE, FRAME_SIZE), (0, 0, 0, 0))
     x = (FRAME_SIZE - resized.width) // 2
     y = FRAME_SIZE - resized.height - 34
     frame.alpha_composite(resized, (x, y))
-    return frame
+    return decontaminate_edge_rgb(frame)
 
 
 def cell_boxes(image: Image.Image, spec: SheetSpec) -> list[tuple[int, int, int, int]]:
@@ -218,7 +297,7 @@ def build_strip(spec: SheetSpec) -> Image.Image:
     strip = Image.new("RGBA", (FRAME_SIZE * len(frames), FRAME_SIZE), (0, 0, 0, 0))
     for index, frame in enumerate(frames):
         strip.alpha_composite(frame, (index * FRAME_SIZE, 0))
-    return strip
+    return decontaminate_edge_rgb(strip)
 
 
 def metrics(path: Path) -> str:

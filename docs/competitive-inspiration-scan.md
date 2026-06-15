@@ -388,6 +388,10 @@ The native macOS companion now has the first version of the loop:
   Nest, Snack Nook, Study Perch, Quest Lookout, Spark Gym, Moon Den, Cipher
   Cave, and Celebration Porch. Visiting rooms rewards care, fills a Home album,
   can be triggered with `Home`, and can appear as proactive minimized bubbles.
+- Errand Board now turns viral task-board energy into pet care: Spark Gather,
+  Snack Fetch, Phrase Courier, Map Scout, Focus Guard, Charm Sort, Moon Watch,
+  and Cheer Courier can be triggered directly or offered proactively, paying
+  vitals/Sparks while filling a permanent Errands album.
 - Wishbook now gives the pet daily desires: Pikachu can ask for a hello, phrase,
   quest peek, snack, rest, hyper lap, focus perch, cipher peek, upgrade dream,
   field sketch, scout wave, or night thanks, and fulfilling that wish pays care
@@ -400,13 +404,12 @@ The native macOS companion now has the first version of the loop:
   Pocket Pal learns cheek/phrase tricks, Trail Buddy learns focus/quest tricks,
   Storm Scout learns cipher/weather tricks, and Storm Guardian unlocks guardian
   rituals. This makes growth change behavior, not just size.
-- Character skin switching now lets the same companion logic run as Pika or the
-  original golden 3D mascot, with a gear setting, slash commands, launch flags,
-  separate catchphrases, and separate local voice profiles.
-- The minimized pet now has its own hover gear switcher, so the demo can swap
-  Pika and the golden 3D mascot without opening the full chat panel. Pika's
-  spoken catchphrase uses a separate high, cute local TTS utterance before the
-  reply preview, while Goldie keeps a softer sparkle voice.
+- Character skin switching is paused for the hackathon demo: the app now keeps
+  the strongest Pikachu surface instead of splitting attention with the weaker
+  golden mascot.
+- The minimized pet keeps always-visible close/settings controls, and the
+  macOS menu bar exposes a live Pika item with Show, Pet Only, Mute, and Close
+  commands so users are never trapped in the overlay.
 
 This is not the full final pet fantasy yet. It is the backbone that lets the
 next sprite sheets matter: new art can now map to real emotions, upgrades,

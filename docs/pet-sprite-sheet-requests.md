@@ -788,6 +788,522 @@ Generate these as tiny desktop-report sheets for each growth stage:
 - `pet-{stage}-journal-field-notes.png`
   - Journal view showing found, saved, skipped, and album field notes.
 
+### Batch 23: Home Rooms
+
+Generate these as habitat sheets for each growth stage. These make the pet feel
+like it has a home, not only a floating chat surface.
+
+- `pet-{stage}-home-cozy-nest.png`
+  - Circles a small nest, settles the blanket, then checks that the desk feels
+    safe.
+- `pet-{stage}-home-snack-nook.png`
+  - Noses through a tiny snack nook and saves one treat for later.
+- `pet-{stage}-home-study-perch.png`
+  - Climbs to a study perch and sits beside one focused minute.
+- `pet-{stage}-home-quest-lookout.png`
+  - Peers from a lookout and marks one gentle quest direction.
+- `pet-{stage}-home-spark-gym.png`
+  - Runs a contained spark loop so high energy has somewhere safe to go.
+- `pet-{stage}-home-moon-den.png`
+  - Checks the moon den, lowers the room noise, and guards the streak.
+- `pet-{stage}-home-cipher-cave.png`
+  - Taps a cipher wall until one clue glow wakes up.
+- `pet-{stage}-home-celebration-porch.png`
+  - Hops onto a tiny porch and saves the day's win without text.
+- `pet-{stage}-journal-home-rooms.png`
+  - Journal view showing visited, offered, skipped, and album-saved rooms.
+
+### Batch 24: Wishbook
+
+Generate these as daily desire sheets for each growth stage. Each wish should
+look like the pet gently asking for something small and emotionally readable.
+
+- `pet-{stage}-wish-hello-pat.png`
+  - Asks for one clear hello before the day gets loud.
+- `pet-{stage}-wish-phrase-repeat.png`
+  - Holds one phrase card and waits to repeat it back.
+- `pet-{stage}-wish-tiny-quest.png`
+  - Peeks at a quest marker without rushing the user.
+- `pet-{stage}-wish-snack-share.png`
+  - Offers or asks for a tiny snack ritual.
+- `pet-{stage}-wish-rest-nest.png`
+  - Makes rest visibly count as care.
+- `pet-{stage}-wish-hyper-lap.png`
+  - Burns extra sparks in one bright lap, then settles.
+- `pet-{stage}-wish-focus-perch.png`
+  - Perches beside the first focused minute.
+- `pet-{stage}-wish-cipher-peek.png`
+  - Peeks at the daily cipher like a shiny puzzle toy.
+- `pet-{stage}-wish-upgrade-dream.png`
+  - Dreams over the next upgrade card or charm.
+- `pet-{stage}-wish-field-sketch.png`
+  - Sketches one found-object note for the album.
+- `pet-{stage}-wish-scout-wave.png`
+  - Waves at the scout path before it goes quiet.
+- `pet-{stage}-wish-night-thanks.png`
+  - Gives a small thank-you before night watch.
+- `pet-{stage}-journal-wishbook.png`
+  - Journal view showing fulfilled, offered, skipped, and album-saved wishes.
+
+### Batch 25: Toybox
+
+Generate these as object-play sheets for each growth stage. The object should be
+visible and reusable as a prop across the animation.
+
+- `pet-{stage}-toy-spark-ball.png`
+  - Bats a glowing spark ball across the desktop and returns to idle.
+- `pet-{stage}-toy-snack-bell.png`
+  - Rings a snack bell once, then waits politely.
+- `pet-{stage}-toy-phrase-ribbon.png`
+  - Waves a phrase ribbon while practicing a language echo.
+- `pet-{stage}-toy-quest-compass.png`
+  - Spins a compass until one safe route glows.
+- `pet-{stage}-toy-nap-blanket.png`
+  - Tucks a blanket and makes rest feel useful.
+- `pet-{stage}-toy-focus-pebble.png`
+  - Holds a focus pebble and settles beside one task.
+- `pet-{stage}-toy-cipher-cube.png`
+  - Turns a cipher cube and reacts to a puzzle click.
+- `pet-{stage}-toy-upgrade-kite.png`
+  - Flies a tiny upgrade kite and watches the next card shimmer.
+- `pet-{stage}-toy-scout-flag.png`
+  - Plants a little flag where the scout trail begins.
+- `pet-{stage}-toy-moon-lamp.png`
+  - Lights a moon lamp and softens the night watch.
+- `pet-{stage}-journal-toybox.png`
+  - Journal view showing played, offered, skipped, and album-saved toys.
+
+### Batch 26: Trickbook
+
+Generate these as growth-locked trick sheets. Tiny forms should look simple and
+vulnerable; guardian forms should look calmer and more capable.
+
+- `pet-{stage}-trick-hello-wave.png`
+  - Looks down, looks up, then gives a tiny hello wave.
+- `pet-{stage}-trick-spark-hop.png`
+  - Does one bright spark hop and lands cleanly.
+- `pet-{stage}-trick-cheek-clap.png`
+  - Claps cheek sparks softly, saving the charge instead of scattering it.
+- `pet-{stage}-trick-phrase-echo.png`
+  - Repeats a phrase echo and waits for the user's voice.
+- `pet-{stage}-trick-focus-sit.png`
+  - Sits beside the first minute and keeps the desk calm.
+- `pet-{stage}-trick-quest-point.png`
+  - Points at one safe quest route.
+- `pet-{stage}-trick-cipher-tilt.png`
+  - Tilts its head until a clue begins to make sense.
+- `pet-{stage}-trick-weather-dash.png`
+  - Dashes through a tiny storm and returns steady.
+- `pet-{stage}-trick-guardian-bow.png`
+  - Bows proudly after a finished care loop.
+- `pet-{stage}-trick-moon-guard.png`
+  - Guards a moon lamp and lowers the room's urgency.
+- `pet-{stage}-journal-trickbook.png`
+  - Journal view showing practiced, offered, skipped, and locked tricks.
+
+### Batch 27: Errand Board
+
+Generate these as short task-board sheets for each growth stage. These are the
+clean pet-care version of viral daily task mechanics.
+
+- `pet-{stage}-errand-spark-gather.png`
+  - Gathers loose desk sparks and tucks them into a safer glow.
+- `pet-{stage}-errand-snack-fetch.png`
+  - Finds a snack spark and saves it for low-energy moments.
+- `pet-{stage}-errand-phrase-courier.png`
+  - Carries one phrase card, repeats it softly, and returns proud.
+- `pet-{stage}-errand-map-scout.png`
+  - Checks the next trail marker and brings back a calmer route.
+- `pet-{stage}-errand-focus-guard.png`
+  - Stands guard beside one useful minute.
+- `pet-{stage}-errand-charm-sort.png`
+  - Sorts memory charms so the bond album feels easier to read.
+- `pet-{stage}-errand-moon-watch.png`
+  - Does a soft night watch and lowers the room noise.
+- `pet-{stage}-errand-cheer-courier.png`
+  - Carries a small cheer note and waits for the user to come back.
+- `pet-{stage}-journal-errand-board.png`
+  - Journal view showing done, offered, skipped, and album-saved errands.
+
+### Batch 28: Daypart Proactive Cheer Flow
+
+Generate these as the first "pet talks throughout the day" pack for each growth
+stage. These should be warm, readable check-in poses with no text baked into the
+art:
+
+- `pet-{stage}-cheer-daypart-sunrise-enter.png`
+  - Pet appears gently, looks down, looks up, and offers the morning check-in.
+- `pet-{stage}-cheer-daypart-focus-enter.png`
+  - Pet sits beside an invisible task and invites the first minute.
+- `pet-{stage}-cheer-daypart-afternoon-enter.png`
+  - Pet shows a soft energy dip, stretches, then asks for a reset.
+- `pet-{stage}-cheer-daypart-evening-enter.png`
+  - Pet holds a warm loop-closing glow for the evening.
+- `pet-{stage}-cheer-daypart-night-enter.png`
+  - Pet lowers into quiet night-watch posture.
+- `pet-{stage}-cheer-bubble-wait.png`
+  - Pet waits beside a speech bubble, attentive and alive.
+- `pet-{stage}-cheer-bubble-answer.png`
+  - Pet receives the user's answer and stores it as a tiny memory spark.
+- `pet-{stage}-cheer-bubble-dismiss.png`
+  - Pet accepts dismissal kindly, waves once, and returns to idle.
+- `pet-{stage}-journal-cheer-rhythm.png`
+  - Journal view showing sunrise, focus, afternoon, evening, and night check-ins.
+
+### Batch 29: Emotion Recovery Mini-Arcs
+
+Generate these as cause-care-resolution strips for each growth stage. Each sheet
+should visibly start in the feeling, receive a care cue, then settle:
+
+- `pet-{stage}-emotion-recovery-bright.png`
+  - Bright return, spark stored, steady happy idle.
+- `pet-{stage}-emotion-recovery-tired.png`
+  - Tired wobble, rest cue, calmer eyes.
+- `pet-{stage}-emotion-recovery-stuck.png`
+  - Confused block, one clue, small forward point.
+- `pet-{stage}-emotion-recovery-overwhelmed.png`
+  - Big swirl shrinks into one safe step.
+- `pet-{stage}-emotion-recovery-lonely.png`
+  - Pet waits, user returns, pet sits closer.
+- `pet-{stage}-emotion-recovery-proud.png`
+  - Small win becomes a saved spark charm.
+- `pet-{stage}-emotion-recovery-focused.png`
+  - Pet chooses a focus perch and guards the first minute.
+- `pet-{stage}-emotion-recovery-need-break.png`
+  - Fast sparks slow into a soft reset.
+- `pet-{stage}-journal-emotion-recovery.png`
+  - Journal view showing recovered feelings and locked feelings.
+
+### Batch 30: Growth Identity Closeups
+
+Generate these as identity-defining sheets for each growth stage. They are not
+generic moods; they sell the "small to big" relationship:
+
+- `pet-tiny-spark-first-trust.png`
+  - Tiny Spark looks down, looks up, notices the user, and smiles carefully.
+- `pet-pocket-pal-recognizes-user.png`
+  - Pocket Pal reacts faster because it knows the user's rhythm.
+- `pet-trail-buddy-walks-beside.png`
+  - Trail Buddy walks beside a tiny map and points to a safe step.
+- `pet-storm-scout-proactive-patrol.png`
+  - Storm Scout checks the screen edge before being asked.
+- `pet-storm-guardian-calm-oath.png`
+  - Storm Guardian holds a calm protective glow without pressure.
+- `pet-tiny-spark-evolve-glow.png`
+  - Early growth glow, still small and vulnerable.
+- `pet-pocket-pal-evolve-glow.png`
+  - Recognition turns into a warmer body language.
+- `pet-trail-buddy-evolve-glow.png`
+  - Trail map and steady stance mark the next form.
+- `pet-storm-scout-evolve-glow.png`
+  - Scout sparks become a guardian aura.
+- `pet-{stage}-journal-growth-identity.png`
+  - Journal view explaining the current stage identity.
+
+### Batch 31: Retention Economy Receipts
+
+Generate these as reward receipts for the non-crypto economy. They should feel
+like care proof, not casino or finance art:
+
+- `pet-{stage}-receipt-sparks-earned.png`
+  - Pet gathers Sparks and tucks them into a safe pouch.
+- `pet-{stage}-receipt-joy-earned.png`
+  - Pet glows warmly after a care action.
+- `pet-{stage}-receipt-bond-hp-earned.png`
+  - Pet stores a heart/spark receipt for daily care.
+- `pet-{stage}-receipt-energy-refill.png`
+  - Energy refills visibly and calmly.
+- `pet-{stage}-receipt-vital-refill.png`
+  - Snack, rest, play, or focus vital glows back up.
+- `pet-{stage}-receipt-combo-complete.png`
+  - Daily combo clicks into place and pet celebrates.
+- `pet-{stage}-receipt-cipher-solved.png`
+  - Cipher clue unlocks, pet stores the solved word.
+- `pet-{stage}-receipt-upgrade-bought.png`
+  - Upgrade card glows and becomes part of the pet's kit.
+- `pet-{stage}-journal-reward-receipts.png`
+  - Journal view showing why today's rewards happened.
+
+### Batch 32: Desktop Shell Interactions
+
+Generate these as small overlay-specific animations. These make the pet feel
+native on the desktop rather than pasted on top:
+
+- `pet-{stage}-shell-hover-controls.png`
+  - Pet notices hover and subtly acknowledges the hidden controls.
+- `pet-{stage}-shell-expand.png`
+  - Pet opens into chat mode with a quick friendly motion.
+- `pet-{stage}-shell-minimize.png`
+  - Pet tucks the panel away and returns to pet-only mode.
+- `pet-{stage}-shell-close-goodnight.png`
+  - Pet gives a short close/goodnight gesture.
+- `pet-{stage}-shell-drag-handle.png`
+  - Pet braces lightly as the overlay is dragged.
+- `pet-{stage}-shell-mute.png`
+  - Pet reacts to mute kindly without looking rejected.
+- `pet-{stage}-shell-unmute.png`
+  - Pet perks up when sound returns.
+- `pet-{stage}-shell-message-enter.png`
+  - Pet reacts the moment the user sends a message.
+- `pet-{stage}-shell-message-reply.png`
+  - Pet reacts as the answer arrives.
+
+### Batch 33: Pika Voice Mouth And Sound Cues
+
+Generate these as short mouth/body timing sheets for crisp original "Pikaa"
+audio. They should sync to the generated signature clips, not long English TTS:
+
+- `pet-{stage}-voice-pikaa-pikaa.png`
+  - Two clear syllable bounces, mouth opens and closes cleanly.
+- `pet-{stage}-voice-pikaa-question.png`
+  - Curious rising phrase with head tilt.
+- `pet-{stage}-voice-pikaa-excited.png`
+  - Bright success phrase with contained cheek sparks.
+- `pet-{stage}-voice-pikaa-sleepy.png`
+  - Slow sleepy phrase with soft eyelids.
+- `pet-{stage}-voice-pika-alert.png`
+  - Short alert chirp without panic.
+- `pet-{stage}-voice-pika-empathy.png`
+  - Softer empathy phrase for check-ins.
+- `pet-{stage}-voice-pika-reward.png`
+  - Reward chirp with small spark receipt.
+- `pet-{stage}-journal-voice-cues.png`
+  - Journal view showing voice cue variants.
+
+### Batch 34: First Minute Demo Path
+
+Generate these if the only goal is to make the hackathon demo feel coherent in
+the first minute:
+
+- `pet-buddy-demo-launch-idle.png`
+  - Pet-only launch: looks down, looks up, smiles at the user.
+- `pet-buddy-demo-hover-controls.png`
+  - Hover-only settings and close controls appear while pet reacts subtly.
+- `pet-buddy-demo-proactive-bubble.png`
+  - "How are you doing?" bubble pose with no text in art.
+- `pet-buddy-demo-answer-reward.png`
+  - User answers, pet stores a memory spark.
+- `pet-buddy-demo-pet-care.png`
+  - Daily care gives Joy, HP, and a warm receipt.
+- `pet-buddy-demo-pikaa-voice.png`
+  - Crisp `Pikaa Pikaa` body and mouth timing.
+- `pet-buddy-demo-next-loop.png`
+  - Pet points to the next loop: learn, hint, route, or care.
+- `pet-buddy-demo-minimize-return.png`
+  - Pet returns to desktop-only mode and keeps watching gently.
+
+### Batch 35: Expanded Cheer Dialogue And Script Pack
+
+Generate these for each growth stage to match the expanded proactive text deck.
+These are the "talks to the user throughout the day" assets:
+
+- `pet-{stage}-cheer-dialogue-body-check.png`
+  - Pet gently scans jaw, shoulders, and breath, then offers care.
+- `pet-{stage}-cheer-dialogue-name-one-thing.png`
+  - Pet catches one large messy thought and turns it into one named spark.
+- `pet-{stage}-cheer-dialogue-water-spark.png`
+  - Pet offers a tiny water/care spark and brightens after the sip.
+- `pet-{stage}-cheer-dialogue-tab-tamer.png`
+  - Pet looks at too many invisible tabs and helps choose one.
+- `pet-{stage}-cheer-dialogue-after-meeting.png`
+  - Pet shakes off meeting static and sorts keep/drop/next into tiny piles.
+- `pet-{stage}-cheer-dialogue-return-warmth.png`
+  - Pet welcomes the user back and warms up the next step slowly.
+- `pet-{stage}-cheer-dialogue-finish-line.png`
+  - Pet guards a final tiny push near the finish line.
+- `pet-{stage}-cheer-dialogue-permission-rest.png`
+  - Pet makes rest visibly count as care, with soft protective posture.
+- `pet-{stage}-cheer-script-sunrise-inventory.png`
+  - Morning inventory: pet asks what the user is carrying into the day.
+- `pet-{stage}-cheer-script-task-weather.png`
+  - Pet checks whether the task is sunny, foggy, or stormy.
+- `pet-{stage}-cheer-script-tab-rescue.png`
+  - Pet chooses one tab/door and lets the others wait.
+- `pet-{stage}-cheer-script-meeting-comedown.png`
+  - Pet sorts meeting residue into keep, drop, and next.
+- `pet-{stage}-cheer-script-water-and-blink.png`
+  - Pet leads water sip, two blinks, and a softer next edge.
+- `pet-{stage}-cheer-script-afternoon-proof.png`
+  - Pet saves one proof that the afternoon moved.
+- `pet-{stage}-cheer-script-evening-inventory.png`
+  - Pet packs one loose thought into the journal before evening closes.
+- `pet-{stage}-cheer-script-sleep-permission.png`
+  - Pet explicitly gives permission for rest to count as care.
+
+### Batch 36: Emotion Arc Triptychs
+
+Generate these for each growth stage. Each arc is a three-part mini animation:
+trigger, care, resolve. These are the deeper pet-emotion flows behind the
+Mood journal and proactive care loop.
+
+- `pet-{stage}-emotion-arc-first-trust-trigger.png`
+  - Pet looks down, looks up, and notices the user.
+- `pet-{stage}-emotion-arc-first-trust-care.png`
+  - Pet accepts one gentle daily care touch.
+- `pet-{stage}-emotion-arc-first-trust-resolve.png`
+  - Pet settles into a reliable warm hello.
+- `pet-{stage}-emotion-arc-brave-start-trigger.png`
+  - Pet hesitates at the edge of a task.
+- `pet-{stage}-emotion-arc-brave-start-care.png`
+  - Pet receives one named next action.
+- `pet-{stage}-emotion-arc-brave-start-resolve.png`
+  - Pet makes the first-step courage pose.
+- `pet-{stage}-emotion-arc-proud-glow-trigger.png`
+  - Pet holds a completed spark close to its chest.
+- `pet-{stage}-emotion-arc-proud-glow-care.png`
+  - Pet lets the user pause on the completed work.
+- `pet-{stage}-emotion-arc-proud-glow-resolve.png`
+  - Pet shows a saved proof-of-progress glow.
+- `pet-{stage}-emotion-arc-overcharge-ground-trigger.png`
+  - Pet crackles with too much energy.
+- `pet-{stage}-emotion-arc-overcharge-ground-care.png`
+  - Pet grounds the sparks through breath, water, or focus.
+- `pet-{stage}-emotion-arc-overcharge-ground-resolve.png`
+  - Pet contains the charge cleanly.
+- `pet-{stage}-emotion-arc-focus-perch-trigger.png`
+  - Pet climbs into a quiet work perch.
+- `pet-{stage}-emotion-arc-focus-perch-care.png`
+  - Pet watches one active task without interrupting.
+- `pet-{stage}-emotion-arc-focus-perch-resolve.png`
+  - Pet becomes calm company for focused work.
+- `pet-{stage}-emotion-arc-celebration-share-trigger.png`
+  - Pet notices a win that might get rushed past.
+- `pet-{stage}-emotion-arc-celebration-share-care.png`
+  - Pet invites a small shared cheer.
+- `pet-{stage}-emotion-arc-celebration-share-resolve.png`
+  - Pet stores the win as a warm memory.
+- `pet-{stage}-emotion-arc-night-guardian-trigger.png`
+  - Pet lowers its posture for late-night quiet.
+- `pet-{stage}-emotion-arc-night-guardian-care.png`
+  - Pet closes one loose thread and guards rest.
+- `pet-{stage}-emotion-arc-night-guardian-resolve.png`
+  - Pet gives explicit permission to stop.
+- `pet-{stage}-emotion-arc-gentle-repair-trigger.png`
+  - Pet sees a rough moment or failed attempt.
+- `pet-{stage}-emotion-arc-gentle-repair-care.png`
+  - Pet soothes first and shrinks the next step.
+- `pet-{stage}-emotion-arc-gentle-repair-resolve.png`
+  - Pet offers a kinder retry.
+- `pet-{stage}-emotion-arc-playful-sprint-trigger.png`
+  - Pet fidgets with playful motion.
+- `pet-{stage}-emotion-arc-playful-sprint-care.png`
+  - Pet spends one small burst of energy.
+- `pet-{stage}-emotion-arc-playful-sprint-resolve.png`
+  - Pet returns with playful momentum.
+- `pet-{stage}-emotion-arc-grateful-keepsake-trigger.png`
+  - Pet remembers repeated care from the user.
+- `pet-{stage}-emotion-arc-grateful-keepsake-care.png`
+  - Pet turns the care streak into a charm moment.
+- `pet-{stage}-emotion-arc-grateful-keepsake-resolve.png`
+  - Pet saves a grateful keepsake.
+- `pet-{stage}-emotion-arc-grow-ready-trigger.png`
+  - Pet stands taller because the bond is changing.
+- `pet-{stage}-emotion-arc-grow-ready-care.png`
+  - Pet previews the next form through a growth quest.
+- `pet-{stage}-emotion-arc-grow-ready-resolve.png`
+  - Pet settles into evolution readiness.
+- `pet-{stage}-emotion-arc-restless-redirect-trigger.png`
+  - Restless sparks circle around the pet.
+- `pet-{stage}-emotion-arc-restless-redirect-care.png`
+  - Pet converts the fidget energy into one upgrade choice.
+- `pet-{stage}-emotion-arc-restless-redirect-resolve.png`
+  - Pet shows the chosen upgrade route.
+- `pet-{stage}-emotion-arc-snack-rescue-trigger.png`
+  - Pet wobbles gently from low energy.
+- `pet-{stage}-emotion-arc-snack-rescue-care.png`
+  - Pet receives a small snack/refill cue.
+- `pet-{stage}-emotion-arc-snack-rescue-resolve.png`
+  - Pet slows down with refilled care.
+- `pet-{stage}-emotion-arc-sleep-nest-trigger.png`
+  - Pet becomes visibly tired.
+- `pet-{stage}-emotion-arc-sleep-nest-care.png`
+  - Pet curls into a protected nap nest.
+- `pet-{stage}-emotion-arc-sleep-nest-resolve.png`
+  - Pet marks rest as progress.
+- `pet-{stage}-emotion-arc-curious-trail-trigger.png`
+  - Pet notices a clue or question.
+- `pet-{stage}-emotion-arc-curious-trail-care.png`
+  - Pet follows one hint or tiny puzzle.
+- `pet-{stage}-emotion-arc-curious-trail-resolve.png`
+  - Pet saves a visible clue trail.
+- `pet-{stage}-emotion-arc-lonely-comeback-trigger.png`
+  - Pet waits without guilt while the user is away.
+- `pet-{stage}-emotion-arc-lonely-comeback-care.png`
+  - Pet brightens when the user returns.
+- `pet-{stage}-emotion-arc-lonely-comeback-resolve.png`
+  - Pet stores a warm comeback memory.
+
+### Batch 37: Daily Nudge Journey
+
+Generate these for each growth stage. This is the always-on "cheer the user"
+route that runs across the day while the pet is minimized. Each sheet should be
+a 12-frame transparent strip with no text, no border, and no background.
+
+- `pet-{stage}-daily-journey-wake-spark.png`
+  - Morning arrival: pet looks down, looks up, checks whether the user is bright, foggy, or sparking.
+- `pet-{stage}-daily-journey-first-step.png`
+  - First task door: pet closes extra doors/tabs and points to one tiny first step.
+- `pet-{stage}-daily-journey-focus-perch.png`
+  - Work perch: pet sits quietly beside one active task without distracting motion.
+- `pet-{stage}-daily-journey-snack-pulse.png`
+  - Care pulse: pet offers water/snack/stretch with a small refill glow.
+- `pet-{stage}-daily-journey-afternoon-rescue.png`
+  - Afternoon rescue: pet pulls one useful next step out of noisy scattered sparks.
+- `pet-{stage}-daily-journey-proof-pocket.png`
+  - Proof pocket: pet catches one proof of progress and tucks it into a tiny journal pocket.
+- `pet-{stage}-daily-journey-evening-pack.png`
+  - Evening pack: pet bundles one loose thought so tomorrow starts lighter.
+- `pet-{stage}-daily-journey-night-nest.png`
+  - Night nest: pet guards quiet rest, dims sparks, and gives permission to stop.
+
+### Batch 38: Spark Exchange Board
+
+Generate these for each growth stage. This is the Hamster-style retention board
+translated into pet-care language: no crypto, no casino feeling, no text in the
+image. Each sheet should be a 12-frame transparent strip with a clean alpha edge,
+soft 3D mascot lighting, and a readable action loop.
+
+- `pet-{stage}-exchange-care-tap.png`
+  - Pet receives one tiny care tap, lights a Bond HP spark, and looks safely recognized.
+- `pet-{stage}-exchange-combo-cards.png`
+  - Pet flips three abstract combo cards into place and celebrates only when all align.
+- `pet-{stage}-exchange-task-board.png`
+  - Pet studies a small daily board of charms, picks one task, and marks it complete.
+- `pet-{stage}-exchange-cipher-key.png`
+  - Pet decodes a glowing key/cipher stone, thinking pose into "aha" sparkle.
+- `pet-{stage}-exchange-spark-boost.png`
+  - Pet charges a controlled boost, releases a short burst, then settles calmly.
+- `pet-{stage}-exchange-upgrade-card.png`
+  - Pet polishes an upgrade card/charm and watches the loop become stronger.
+- `pet-{stage}-exchange-passive-scout.png`
+  - Pet goes into quiet scout mode, steps away, returns with a small Spark pouch.
+- `pet-{stage}-exchange-cheer-reply.png`
+  - Pet opens a tiny check-in bubble, receives the user's reply, and stores a warm memory.
+
+### Batch 39: Season Trail Weekly Event Arc
+
+Generate these for each growth stage. This is the longer event arc that gives the
+pet a weekly reason to return: one chapter unlocks per care day, then daily event
+play advances the current chapter. No text, no UI chrome, no crypto/money motifs.
+Use warm adventure/care imagery with clean transparent alpha.
+
+- `pet-{stage}-season-trail-day-1-signal-spark.png`
+  - Pet finds the week's first event signal, looks down, looks up, and marks the route.
+- `pet-{stage}-season-trail-day-2-supply-nest.png`
+  - Pet packs snack sparks, a rest cloth, and a small courage charm into a tiny nest pouch.
+- `pet-{stage}-season-trail-day-3-combo-gate.png`
+  - Pet arranges three abstract combo cards until a gentle event gate opens.
+- `pet-{stage}-season-trail-day-4-cipher-bridge.png`
+  - Pet solves a glowing clue and builds a small safe bridge across the event trail.
+- `pet-{stage}-season-trail-day-5-boost-run.png`
+  - Pet uses one controlled bright burst to cross the hardest part of the route.
+- `pet-{stage}-season-trail-day-6-campfire-proof.png`
+  - Pet sits by a small campfire and saves one proof that the week moved forward.
+- `pet-{stage}-season-trail-day-7-guardian-finale.png`
+  - Pet completes the event as a calm guardian, protective and proud without pressure.
+- `pet-{stage}-journal-season-trail.png`
+  - Journal view showing the seven event chapters as visual charms, with completed chapters glowing.
+
 ## Growth Stages
 
 Each stage should share the same personality but visibly grow:
@@ -1704,6 +2220,34 @@ room and growth stage:
 - `pet-{stage}-journal-home-rooms.png`
   - Pet opens a home album with visited and locked rooms.
 
+## Errand Board Sheets
+
+These support quick daily errands inspired by viral task-board loops, translated
+into pet care. Each errand should look like the pet briefly leaves, performs a
+tiny useful act, and returns with a care receipt. Generate one 12-frame
+transparent strip per errand and growth stage:
+
+- `pet-{stage}-errand-spark-gather.png`
+  - Pet gathers loose desk sparks, stuffs them into a safe glow pouch, and
+    returns proud.
+- `pet-{stage}-errand-snack-fetch.png`
+  - Pet finds a tiny snack spark, carries it carefully, and saves it for a
+    low-energy moment.
+- `pet-{stage}-errand-phrase-courier.png`
+  - Pet carries one language phrase card, repeats it softly, and trots back.
+- `pet-{stage}-errand-map-scout.png`
+  - Pet checks a miniature trail map, marks one route, and points forward.
+- `pet-{stage}-errand-focus-guard.png`
+  - Pet guards an invisible one-minute focus bubble with attentive eyes.
+- `pet-{stage}-errand-charm-sort.png`
+  - Pet sorts tiny memory charms into a neat album row.
+- `pet-{stage}-errand-moon-watch.png`
+  - Pet does a soft night patrol, lowers the room noise, and settles calmly.
+- `pet-{stage}-errand-cheer-courier.png`
+  - Pet carries a little cheer note, waits by the screen edge, and waves.
+- `pet-{stage}-journal-errand-board.png`
+  - Pet opens an Errand Board album with done, skipped, and locked errands.
+
 ## User Check-in Sheets
 
 These support the pet asking the user "How are you doing?" and remembering the
@@ -1820,26 +2364,385 @@ transparent strip for the stages where that trick is unlocked:
 - `pet-{stage}-journal-trickbook.png`
   - Pet opens a Trickbook album with practiced and locked tricks.
 
+### Batch 40: Feeling Rituals
+
+Purpose: give each emotional state a small care ritual so proactive bubbles
+feel like a living pet asking for a specific kind of help, not a generic
+notification.
+
+Generate one transparent 12-frame horizontal strip for every growth stage:
+
+- `pet-tiny-spark-feeling-ritual-morning-spark.png`
+- `pet-tiny-spark-feeling-ritual-eager-breadcrumb.png`
+- `pet-tiny-spark-feeling-ritual-proud-frame.png`
+- `pet-tiny-spark-feeling-ritual-charge-ground.png`
+- `pet-tiny-spark-feeling-ritual-focus-perch.png`
+- `pet-tiny-spark-feeling-ritual-victory-loop.png`
+- `pet-tiny-spark-feeling-ritual-guardian-circle.png`
+- `pet-tiny-spark-feeling-ritual-comfort-nest.png`
+- `pet-tiny-spark-feeling-ritual-play-wiggle.png`
+- `pet-tiny-spark-feeling-ritual-gratitude-boop.png`
+- `pet-tiny-spark-feeling-ritual-growth-oath.png`
+- `pet-tiny-spark-feeling-ritual-restless-sort.png`
+- `pet-tiny-spark-feeling-ritual-snack-signal.png`
+- `pet-tiny-spark-feeling-ritual-sleep-permission.png`
+- `pet-tiny-spark-feeling-ritual-curiosity-tap.png`
+- `pet-tiny-spark-feeling-ritual-lonely-reach.png`
+
+- `pet-pocket-pal-feeling-ritual-morning-spark.png`
+- `pet-pocket-pal-feeling-ritual-eager-breadcrumb.png`
+- `pet-pocket-pal-feeling-ritual-proud-frame.png`
+- `pet-pocket-pal-feeling-ritual-charge-ground.png`
+- `pet-pocket-pal-feeling-ritual-focus-perch.png`
+- `pet-pocket-pal-feeling-ritual-victory-loop.png`
+- `pet-pocket-pal-feeling-ritual-guardian-circle.png`
+- `pet-pocket-pal-feeling-ritual-comfort-nest.png`
+- `pet-pocket-pal-feeling-ritual-play-wiggle.png`
+- `pet-pocket-pal-feeling-ritual-gratitude-boop.png`
+- `pet-pocket-pal-feeling-ritual-growth-oath.png`
+- `pet-pocket-pal-feeling-ritual-restless-sort.png`
+- `pet-pocket-pal-feeling-ritual-snack-signal.png`
+- `pet-pocket-pal-feeling-ritual-sleep-permission.png`
+- `pet-pocket-pal-feeling-ritual-curiosity-tap.png`
+- `pet-pocket-pal-feeling-ritual-lonely-reach.png`
+
+- `pet-trail-buddy-feeling-ritual-morning-spark.png`
+- `pet-trail-buddy-feeling-ritual-eager-breadcrumb.png`
+- `pet-trail-buddy-feeling-ritual-proud-frame.png`
+- `pet-trail-buddy-feeling-ritual-charge-ground.png`
+- `pet-trail-buddy-feeling-ritual-focus-perch.png`
+- `pet-trail-buddy-feeling-ritual-victory-loop.png`
+- `pet-trail-buddy-feeling-ritual-guardian-circle.png`
+- `pet-trail-buddy-feeling-ritual-comfort-nest.png`
+- `pet-trail-buddy-feeling-ritual-play-wiggle.png`
+- `pet-trail-buddy-feeling-ritual-gratitude-boop.png`
+- `pet-trail-buddy-feeling-ritual-growth-oath.png`
+- `pet-trail-buddy-feeling-ritual-restless-sort.png`
+- `pet-trail-buddy-feeling-ritual-snack-signal.png`
+- `pet-trail-buddy-feeling-ritual-sleep-permission.png`
+- `pet-trail-buddy-feeling-ritual-curiosity-tap.png`
+- `pet-trail-buddy-feeling-ritual-lonely-reach.png`
+
+- `pet-storm-scout-feeling-ritual-morning-spark.png`
+- `pet-storm-scout-feeling-ritual-eager-breadcrumb.png`
+- `pet-storm-scout-feeling-ritual-proud-frame.png`
+- `pet-storm-scout-feeling-ritual-charge-ground.png`
+- `pet-storm-scout-feeling-ritual-focus-perch.png`
+- `pet-storm-scout-feeling-ritual-victory-loop.png`
+- `pet-storm-scout-feeling-ritual-guardian-circle.png`
+- `pet-storm-scout-feeling-ritual-comfort-nest.png`
+- `pet-storm-scout-feeling-ritual-play-wiggle.png`
+- `pet-storm-scout-feeling-ritual-gratitude-boop.png`
+- `pet-storm-scout-feeling-ritual-growth-oath.png`
+- `pet-storm-scout-feeling-ritual-restless-sort.png`
+- `pet-storm-scout-feeling-ritual-snack-signal.png`
+- `pet-storm-scout-feeling-ritual-sleep-permission.png`
+- `pet-storm-scout-feeling-ritual-curiosity-tap.png`
+- `pet-storm-scout-feeling-ritual-lonely-reach.png`
+
+- `pet-storm-guardian-feeling-ritual-morning-spark.png`
+- `pet-storm-guardian-feeling-ritual-eager-breadcrumb.png`
+- `pet-storm-guardian-feeling-ritual-proud-frame.png`
+- `pet-storm-guardian-feeling-ritual-charge-ground.png`
+- `pet-storm-guardian-feeling-ritual-focus-perch.png`
+- `pet-storm-guardian-feeling-ritual-victory-loop.png`
+- `pet-storm-guardian-feeling-ritual-guardian-circle.png`
+- `pet-storm-guardian-feeling-ritual-comfort-nest.png`
+- `pet-storm-guardian-feeling-ritual-play-wiggle.png`
+- `pet-storm-guardian-feeling-ritual-gratitude-boop.png`
+- `pet-storm-guardian-feeling-ritual-growth-oath.png`
+- `pet-storm-guardian-feeling-ritual-restless-sort.png`
+- `pet-storm-guardian-feeling-ritual-snack-signal.png`
+- `pet-storm-guardian-feeling-ritual-sleep-permission.png`
+- `pet-storm-guardian-feeling-ritual-curiosity-tap.png`
+- `pet-storm-guardian-feeling-ritual-lonely-reach.png`
+
+Animation notes:
+
+- Morning Spark: looks down, looks up, finds the user, then smiles.
+- Eager Breadcrumb: bounces, drops one tiny glowing breadcrumb, then waits.
+- Proud Frame: holds up a small win frame and beams.
+- Charge Ground: cheek sparks start bright, then settle into a calm pulse.
+- Focus Perch: hops into a seated focus perch and blinks slowly.
+- Victory Loop: tiny celebration loop, then saves the glow into the album.
+- Guardian Circle: draws a protective circle and settles into watch mode.
+- Comfort Nest: pulls a small nest/blanket close and breathes calmly.
+- Play Wiggle: happy wiggle with a clean return to idle.
+- Gratitude Boop: tiny grateful boop toward the screen.
+- Growth Oath: stands taller and makes a small oath spark.
+- Restless Sort: sorts little kit pieces instead of spinning.
+- Snack Signal: notices low energy and points to a tiny snack stash.
+- Sleep Permission: curls down, opens one eye, then accepts rest.
+- Curiosity Tap: taps the screen gently and tilts head.
+- Lonely Reach: waits quietly, then leans closer for a soft reach-back.
+
+Add one album sheet:
+
+- `pet-{stage}-journal-feeling-rituals.png`
+  - Pet opens a Feeling Rituals album with ritual stamps arranged by mood.
+
+### Batch 41: Daily Care Chests
+
+Purpose: add Hamster-style daily return rewards without breaking the pet
+fantasy. Each chest is a care moment the pet found, guarded, or saved for the
+user. These should feel like relationship rewards, not casino boxes.
+
+Generate one transparent 12-frame horizontal strip for every growth stage:
+
+- `pet-tiny-spark-care-chest-morning-spark.png`
+- `pet-tiny-spark-care-chest-focus-crate.png`
+- `pet-tiny-spark-care-chest-snack-cache.png`
+- `pet-tiny-spark-care-chest-play-box.png`
+- `pet-tiny-spark-care-chest-evening-coffer.png`
+- `pet-tiny-spark-care-chest-night-nest.png`
+- `pet-tiny-spark-care-chest-comeback-cache.png`
+
+- `pet-pocket-pal-care-chest-morning-spark.png`
+- `pet-pocket-pal-care-chest-focus-crate.png`
+- `pet-pocket-pal-care-chest-snack-cache.png`
+- `pet-pocket-pal-care-chest-play-box.png`
+- `pet-pocket-pal-care-chest-evening-coffer.png`
+- `pet-pocket-pal-care-chest-night-nest.png`
+- `pet-pocket-pal-care-chest-comeback-cache.png`
+
+- `pet-trail-buddy-care-chest-morning-spark.png`
+- `pet-trail-buddy-care-chest-focus-crate.png`
+- `pet-trail-buddy-care-chest-snack-cache.png`
+- `pet-trail-buddy-care-chest-play-box.png`
+- `pet-trail-buddy-care-chest-evening-coffer.png`
+- `pet-trail-buddy-care-chest-night-nest.png`
+- `pet-trail-buddy-care-chest-comeback-cache.png`
+
+- `pet-storm-scout-care-chest-morning-spark.png`
+- `pet-storm-scout-care-chest-focus-crate.png`
+- `pet-storm-scout-care-chest-snack-cache.png`
+- `pet-storm-scout-care-chest-play-box.png`
+- `pet-storm-scout-care-chest-evening-coffer.png`
+- `pet-storm-scout-care-chest-night-nest.png`
+- `pet-storm-scout-care-chest-comeback-cache.png`
+
+- `pet-storm-guardian-care-chest-morning-spark.png`
+- `pet-storm-guardian-care-chest-focus-crate.png`
+- `pet-storm-guardian-care-chest-snack-cache.png`
+- `pet-storm-guardian-care-chest-play-box.png`
+- `pet-storm-guardian-care-chest-evening-coffer.png`
+- `pet-storm-guardian-care-chest-night-nest.png`
+- `pet-storm-guardian-care-chest-comeback-cache.png`
+
+Action notes:
+
+- Morning Spark Chest: pet looks down, looks up, smiles, then nudges open a
+  tiny warm spark chest.
+- Focus Crate: pet perches beside a small work crate, taps it, and sits alert.
+- Snack Cache: pet shares a cheek-warming snack cache, happy but not frantic.
+- Play Box: pet opens a play box and does one hyper hop loop.
+- Evening Coffer: pet closes a small glowing coffer like saving the day's loop.
+- Night Nest Chest: pet tucks a small chest into a soft nest and settles down.
+- Comeback Cache: pet gently pushes forward a saved return cache with a warm
+  welcome-back expression.
+
+- `pet-{stage}-journal-care-chests.png`
+  - Pet opens a Care Chests album with claimed and locked chest stamps.
+
+### Batch 42: Bond Timeline Chapters
+
+Purpose: make growth feel like a real relationship over time. These are
+permanent story beats unlocked by HP, Sparks, streaks, and growth stage, not
+daily reward boxes.
+
+Generate one transparent 12-frame horizontal strip for the named minimum stage
+of each chapter:
+
+- `pet-tiny-spark-bond-timeline-first-hello.png`
+  - Tiny Spark looks down, looks up, and smiles at the user for the first time.
+- `pet-tiny-spark-bond-timeline-desk-nest.png`
+  - Tiny Spark builds a tiny desk nest and settles safely.
+- `pet-tiny-spark-bond-timeline-name-trust.png`
+  - Tiny Spark perks up as if recognizing its name and the user's rhythm.
+- `pet-pocket-pal-bond-timeline-morning-return.png`
+  - Pocket Pal greets the user's return with a warm morning bounce.
+- `pet-pocket-pal-bond-timeline-first-quest.png`
+  - Pocket Pal carries a tiny quest marker like a shared adventure.
+- `pet-pocket-pal-bond-timeline-language-spark.png`
+  - Pocket Pal practices a phrase with cheek-spark concentration.
+- `pet-trail-buddy-bond-timeline-brave-check.png`
+  - Trail Buddy sits beside a hard moment and offers a gentle brave check.
+- `pet-trail-buddy-bond-timeline-storm-map.png`
+  - Trail Buddy unfurls a small glowing storm map for future loops.
+- `pet-storm-scout-bond-timeline-focus-watch.png`
+  - Storm Scout quietly watches the desk during a protected focus moment.
+- `pet-storm-scout-bond-timeline-comeback-glow.png`
+  - Storm Scout welcomes the user back with a soft no-guilt glow.
+- `pet-storm-guardian-bond-timeline-guardian-oath.png`
+  - Storm Guardian makes a calm oath to guard the streak gently.
+- `pet-storm-guardian-bond-timeline-full-bond.png`
+  - Storm Guardian seals the full bond as a daily companion, proud and warm.
+
+- `pet-{stage}-journal-bond-timeline.png`
+  - Pet opens a Bond Timeline album with saved, eligible, and locked story
+    stamps.
+
+### Batch 43: Visit Log
+
+Purpose: make the desktop pet feel like it returns throughout the day on its
+own. These are proactive appearances, not chat replies. The pet notices time,
+care state, and user mood, then offers a small interaction.
+
+Generate one transparent 12-frame horizontal strip for each growth stage:
+
+- `pet-{stage}-visit-morning-peek.png`
+  - Pet peeks up from the lower screen edge, looks down, looks up, and smiles.
+- `pet-{stage}-visit-first-task.png`
+  - Pet taps the desk once and points gently toward one first task.
+- `pet-{stage}-visit-focus-sit.png`
+  - Pet sits beside the cursor in a quiet focus-guard pose.
+- `pet-{stage}-visit-snack-nudge.png`
+  - Pet nudges a tiny water/snack cue without looking pushy.
+- `pet-{stage}-visit-window-wave.png`
+  - Pet waves from the edge of the screen for quiet company.
+- `pet-{stage}-visit-pressure-guard.png`
+  - Pet steps protectively between the user and a noisy task cloud.
+- `pet-{stage}-visit-win-pocket.png`
+  - Pet pockets a small glowing proof/win and celebrates softly.
+- `pet-{stage}-visit-evening-return.png`
+  - Pet circles back in evening light to close one loop.
+- `pet-{stage}-visit-night-curl.png`
+  - Pet curls in a corner and guards rest with sleepy sparks.
+- `pet-{stage}-visit-comeback-glow.png`
+  - Pet glows warmly when the user returns, with no guilt or alarm.
+
+- `pet-{stage}-journal-visit-log.png`
+  - Pet opens a Visit Log album showing appeared, answered, skipped, and locked
+    visit stamps.
+
+### Batch 44: Spark Wheel Cycles
+
+Purpose: make passive Spark earning visible, game-like, and pet-centered. Each
+loop should show the pet winding a tiny wheel, waiting with energy stored, then
+returning with a Spark pouch.
+
+Generate one transparent 12-frame horizontal strip for each growth stage:
+
+- `pet-{stage}-spark-wheel-first-wind.png`
+- `pet-{stage}-spark-wheel-morning-charge.png`
+- `pet-{stage}-spark-wheel-focus-spin.png`
+- `pet-{stage}-spark-wheel-cheer-loop.png`
+- `pet-{stage}-spark-wheel-quest-coil.png`
+- `pet-{stage}-spark-wheel-night-drift.png`
+- `pet-{stage}-journal-spark-wheel.png`
+
+### Batch 45: Proactive Spark Route
+
+Purpose: turn the Hamster-style daily board into a pet-care circuit that can
+proactively visit the user throughout the day. These are route prompts and route
+receipts, not generic chat bubbles.
+
+Generate one transparent 12-frame horizontal strip for each growth stage:
+
+- `pet-{stage}-route-proactive-enter.png`
+  - Pet arrives with today's route board and points to the next care step.
+- `pet-{stage}-route-wake-spark.png`
+  - Pet looks down, looks up, and turns first attention into the day's anchor.
+- `pet-{stage}-route-care-tap.png`
+  - Pet leans into one visible care tap and stores a bond receipt.
+- `pet-{stage}-route-snack-stash.png`
+  - Pet checks a tiny stash and looks relieved that basic care exists.
+- `pet-{stage}-route-focus-perch.png`
+  - Pet perches beside one task and makes the desk feel calmer.
+- `pet-{stage}-route-lesson-spark.png`
+  - Pet repeats one phrase, glows, and saves it as shared practice.
+- `pet-{stage}-route-quest-trail.png`
+  - Pet opens a tiny trail marker and points to one adventure step.
+- `pet-{stage}-route-cipher-pulse.png`
+  - Pet taps a glowing secret and reacts when the puzzle clicks.
+- `pet-{stage}-route-upgrade-polish.png`
+  - Pet polishes one kit card so upgrades feel maintained.
+- `pet-{stage}-route-cheer-call.png`
+  - Pet asks how the user is doing and saves the answer warmly.
+- `pet-{stage}-route-boost-rush.png`
+  - Pet does one controlled burst and settles proudly.
+- `pet-{stage}-route-ambient-patrol.png`
+  - Pet walks the desktop edge and turns idle time into story value.
+- `pet-{stage}-route-bedtime-nest.png`
+  - Pet closes the route with a soft nest/rest cue.
+- `pet-{stage}-journal-spark-route.png`
+  - Pet opens a route album showing done, offered, skipped, locked, and saved
+    route stamps.
+
+### Batch 46: Care Pulse Needs
+
+Purpose: make low Snack, Rest, Play, and Focus feel like real pet needs. These
+are proactive care requests that appear when a vital is low, plus receipts for
+answering or skipping.
+
+Generate one transparent 12-frame horizontal strip for each growth stage:
+
+- `pet-{stage}-care-pulse-snack-low.png`
+  - Pet notices the snack bowl is low, looks down, looks up, and asks gently.
+- `pet-{stage}-care-pulse-rest-low.png`
+  - Pet slows its sparks, curls toward a tiny nest, then asks for rest.
+- `pet-{stage}-care-pulse-play-low.png`
+  - Pet wiggles at the desktop edge, asks for one tiny movement loop, then hops.
+- `pet-{stage}-care-pulse-focus-low.png`
+  - Pet points to the first small task and perches beside the cursor.
+- `pet-{stage}-care-pulse-answer.png`
+  - Pet receives care, brightens, and saves a warm care receipt.
+- `pet-{stage}-care-pulse-dismiss.png`
+  - Pet accepts a skip without guilt, lowers urgency, and waits quietly.
+- `pet-{stage}-journal-care-pulse.png`
+  - Pet opens an album showing answered, offered, skipped, and locked care
+    pulses.
+
+### Batch 47: Cheer Ping Day Rhythm
+
+Purpose: make the companion proactively talk throughout the day with short,
+useful, pet-like check-ins. These are lightweight "how are you doing / what is
+happening / one tiny next step" moments, separate from care vitals and heavier
+quest boards.
+
+Generate one transparent 12-frame horizontal strip for each growth stage:
+
+- `pet-{stage}-cheer-ping-wake-spark.png`
+  - Pet looks down, looks up, smiles at the user, and asks how the day is
+    starting.
+- `pet-{stage}-cheer-ping-first-step.png`
+  - Pet taps the desk and points to one tiny first step.
+- `pet-{stage}-cheer-ping-water-snack.png`
+  - Pet nudges a small water/snack/care signal without guilt.
+- `pet-{stage}-cheer-ping-focus-perch.png`
+  - Pet perches beside the cursor and guards one useful minute.
+- `pet-{stage}-cheer-ping-tiny-win.png`
+  - Pet sees a tiny win, pockets a glowing proof, and celebrates softly.
+- `pet-{stage}-cheer-ping-stretch-reset.png`
+  - Pet stretches, shakes off excess sparks, and turns noise into one reset.
+- `pet-{stage}-cheer-ping-evening-wrap.png`
+  - Pet returns in evening mode and helps close one loose loop.
+- `pet-{stage}-cheer-ping-night-nest.png`
+  - Pet curls into a night nest and makes rest feel like valid progress.
+- `pet-{stage}-journal-cheer-ping.png`
+  - Pet opens a Cheer Ping album showing answered, offered, skipped, and locked
+    day-rhythm stamps.
+
 ## Character Skin Modes
 
-The native companion can now run in two character modes:
+For the hackathon demo, the native companion is Pikachu-only again. The golden
+mascot mode is paused because the asset quality is not strong enough.
 
 - `--character pika`
-  - Uses the Pika-facing text prefix and a cuter, higher-pitched local voice
-    profile. The spoken catchphrase is queued as its own brighter utterance so
-    "Pika pika!" lands like a quick character chirp before the reply preview.
+  - Uses the Pika-facing text prefix and a cute, higher-pitched local female
+    voice profile for non-lesson pet moments.
 - `--character golden`
-  - Uses the original golden 3D mascot concept sheets from
-    `output/sprite-sheets/` when available and a softer sparkle voice profile.
+  - Deferred. The launch script now rejects this mode so the demo cannot drift
+    into the weaker skin by accident.
 
-The minimized pet now exposes a hover gear switcher as well as the expanded
-settings panel. Both surfaces show the active voice profile, slash command, and
-launch flag. Pika uses an original "pika-like" local TTS profile, not official
-sampled or cloned character audio.
+The minimized pet keeps settings and close controls hidden until hover, while
+the macOS menu bar shows a live Pika item with Show, Pet Only, Mute, and Close commands.
+Pika uses original local speech settings, not official sampled or cloned
+character audio.
 
-The same pet logic, albums, nudges, and care loops apply to both characters.
 Future skins should keep the same filename/action vocabulary so the app can
-switch characters without rewriting the game logic.
+switch characters without rewriting the game logic, but new skins should only
+ship once their sprite quality matches the Pikachu surface.
 
 ## Language Coach Sheets
 

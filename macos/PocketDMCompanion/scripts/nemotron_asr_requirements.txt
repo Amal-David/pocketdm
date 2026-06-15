@@ -1,0 +1,8 @@
+Cython
+packaging
+nemo_toolkit[asr] @ git+https://github.com/NVIDIA/NeMo.git@main
+nvidia-riva-client
+fastapi
+uvicorn
+python-multipart
+huggingface_hub

@@ -25,6 +25,10 @@
   <true/>
   <key>NSHighResolutionCapable</key>
   <true/>
+  <key>NSMicrophoneUsageDescription</key>
+  <string>Pikachu listens when you press Talk so it can turn your voice into a local companion reply.</string>
+  <key>NSSpeechRecognitionUsageDescription</key>
+  <string>Pikachu uses speech recognition when you press Talk to transcribe your daily check-in.</string>
   <key>NSSupportsAutomaticTermination</key>
   <true/>
   <key>NSSupportsSuddenTermination</key>

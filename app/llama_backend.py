@@ -14,6 +14,7 @@ from urllib import request as urlrequest
 from engine.generate import TurnBackend
 
 DEFAULT_GRAMMAR_PATH = Path(__file__).resolve().parents[1] / "engine" / "grammar.gbnf"
+DEFAULT_LLAMA_SERVER_MODEL = "pocketdm"
 
 
 @dataclass(frozen=True)
@@ -92,7 +93,10 @@ class LlamaCppBackend:
 class LlamaServerBackend:
     def __init__(self, config: LlamaServerConfig) -> None:
         self.config = config
-        self.model_label = os.environ.get("POCKETDM_LLAMA_SERVER_LABEL", "llama.cpp server")
+        self.model_label = os.environ.get(
+            "POCKETDM_LLAMA_SERVER_LABEL",
+            _verified_llama_server_label(config.base_url, config.model),
+        )
         self._grammar = config.grammar_path.read_text()
 
     def complete(self, messages: list[dict[str, str]], *, temperature: float) -> str:
@@ -141,7 +145,7 @@ class ManagedLlamaServerBackend(LlamaServerBackend):
 
 def configured_backend() -> TurnBackend | None:
     raw_server_bin = os.environ.get("POCKETDM_LLAMA_SERVER_BIN")
-    raw_server_url = os.environ.get("POCKETDM_LLAMA_SERVER_URL")
+    raw_server_url = configured_llama_server_url()
     if raw_server_bin:
         return ManagedLlamaServerBackend(_managed_server_config(raw_server_bin, raw_server_url))
 
@@ -151,7 +155,7 @@ def configured_backend() -> TurnBackend | None:
             LlamaServerConfig(
                 base_url=raw_server_url,
                 grammar_path=grammar_path,
-                model=os.environ.get("POCKETDM_LLAMA_SERVER_MODEL", "pocketdm"),
+                model=configured_llama_server_model(raw_server_url),
             )
         )
 
@@ -208,7 +212,7 @@ def _managed_server_config(
         port=port,
         draft_model_path=draft_model_path,
         grammar_path=Path(os.environ.get("POCKETDM_GRAMMAR", str(DEFAULT_GRAMMAR_PATH))),
-        model=os.environ.get("POCKETDM_LLAMA_SERVER_MODEL", "pocketdm"),
+        model=configured_llama_server_model(base_url),
         n_ctx=int(os.environ.get("POCKETDM_LLAMA_CTX", "2048")),
         n_threads=int(os.environ.get("POCKETDM_LLAMA_THREADS", "8")),
         n_gpu_layers=int(os.environ.get("POCKETDM_LLAMA_GPU_LAYERS", "999")),
@@ -222,6 +226,30 @@ def _managed_server_config(
             os.environ.get("POCKETDM_LLAMA_SERVER_LOG", "/tmp/pocketdm-llama-server.log")
         ),
     )
+
+
+def configured_llama_server_url() -> str | None:
+    return os.environ.get("POCKETDM_LLAMA_SERVER_URL") or os.environ.get("POCKETDM_ASSISTANT_LLAMA_URL")
+
+
+def configured_llama_server_model(base_url: str | None = None) -> str:
+    explicit = os.environ.get("POCKETDM_LLAMA_SERVER_MODEL") or os.environ.get("POCKETDM_ASSISTANT_LLAMA_MODEL")
+    if explicit:
+        return explicit
+    if base_url:
+        model_ids = _llama_server_model_ids(base_url)
+        if len(model_ids) == 1:
+            return model_ids[0]
+    return DEFAULT_LLAMA_SERVER_MODEL
+
+
+def _verified_llama_server_label(base_url: str, model: str) -> str:
+    model_ids = _llama_server_model_ids(base_url)
+    if model in model_ids:
+        return f"{_model_label(Path(model))} llama.cpp server"
+    if model == DEFAULT_LLAMA_SERVER_MODEL and len(model_ids) == 1:
+        return f"{_model_label(Path(model_ids[0]))} llama.cpp server"
+    return "llama.cpp server"
 
 
 def _ensure_llama_server(config: ManagedLlamaServerConfig) -> subprocess.Popen[bytes] | None:
@@ -445,6 +473,15 @@ def _use_chat_template(model_path: Path) -> bool:
 
 def _model_label(model_path: Path) -> str:
     name = model_path.name.casefold()
+    path_text = str(model_path).casefold()
+    if "minicpm5-1b" in name or "minicpm5-1b" in path_text:
+        return "MiniCPM5-1B Q4_K_M GGUF"
+    if "qwen3.5-2b" in name or "qwen3.5-2b" in path_text:
+        return "Qwen3.5-2B Q4_K_M GGUF"
+    if "qwen3.5-0.8b" in name or "qwen3.5-0.8b" in path_text:
+        return "Qwen3.5-0.8B Q4_K_M GGUF"
+    if "2b-v1-lora" in path_text:
+        return "PocketDM 2B Q4_K_M GGUF"
     if "gemma-4-e2b" in name and "bf16" in name:
         return "Gemma 4 E2B BF16 GGUF"
     if "gemma-4-e2b" in name and "q6_k" in name:
@@ -457,7 +494,7 @@ def _model_label(model_path: Path) -> str:
         return "Gemma 4 E2B GGUF"
     if "gemma" in name:
         return "Gemma GGUF"
-    if "2b-v1-lora" in str(model_path).casefold() or "qwen" in name:
+    if "qwen" in name:
         return "2B Q4_K_M GGUF"
     return model_path.stem
 
