@@ -109,7 +109,7 @@ if [[ "$backend" == "voxcpm" ]]; then
   fi
   export POCKETDM_PIKA_TTS_PITCH="${POCKETDM_PIKA_TTS_PITCH:-1.18}"
   export POCKETDM_PIKA_TTS_RATE="${POCKETDM_PIKA_TTS_RATE:-0.85}"
-  export POCKETDM_PIKA_TTS_STEPS="${POCKETDM_PIKA_TTS_STEPS:-16}"
+  export POCKETDM_PIKA_TTS_STEPS="${POCKETDM_PIKA_TTS_STEPS:-10}"
 fi
 
 args=(--host "$host" --port "$port" --backend "$backend")
