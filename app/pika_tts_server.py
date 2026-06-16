@@ -151,12 +151,16 @@ class KokoroPikaVoice:
                 "kokoro-onnx is not installed; start the sidecar with --backend kokoro first"
             ) from exc
 
-        onnx_path = Path(os.environ.get("POCKETDM_KOKORO_ONNX", "")).expanduser()
-        voices_path = Path(os.environ.get("POCKETDM_KOKORO_VOICES", "")).expanduser()
-        if not onnx_path.exists() or not voices_path.exists():
+        raw_onnx = os.environ.get("POCKETDM_KOKORO_ONNX", "").strip()
+        raw_voices = os.environ.get("POCKETDM_KOKORO_VOICES", "").strip()
+        onnx_path = Path(raw_onnx).expanduser()
+        voices_path = Path(raw_voices).expanduser()
+        # Guard the empty-env case: Path("") resolves to "." which always exists, so
+        # check the raw values are set AND each path is a real file.
+        if not raw_onnx or not raw_voices or not onnx_path.is_file() or not voices_path.is_file():
             raise PikaVoiceUnavailable(
                 "kokoro model files not found; set POCKETDM_KOKORO_ONNX and "
-                f"POCKETDM_KOKORO_VOICES (got {onnx_path!s}, {voices_path!s})"
+                f"POCKETDM_KOKORO_VOICES to the .onnx + voices files (got {onnx_path!s}, {voices_path!s})"
             )
 
         self.model = kokoro_class(str(onnx_path), str(voices_path))

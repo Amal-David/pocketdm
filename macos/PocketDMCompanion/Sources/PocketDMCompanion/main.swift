@@ -2097,6 +2097,31 @@ final class DragonOverlayModel: ObservableObject {
         setMood(.happy, duration: 1.2)
     }
 
+    func openEmotions() {
+        guard learningMode != .emotions else { return }
+        learningMode = .emotions
+        lastRequest = "Mood wheel"
+        message = pikaText("Mood wheel opened. Tap a mood to see Pikachu show it.")
+        play(.open)
+    }
+
+    func expressEmotion(named name: String) {
+        guard !busy, !isVoiceListening else { return }
+        let sleepy = name.caseInsensitiveCompare("Sleepy") == .orderedSame
+        lastRequest = "\(name) mood"
+        conversationBubbleActive = true
+        appendChatMessage(.user, "Show your \(name.lowercased()) mood")
+        let line = sleepy
+            ? "Pika... pika. (yawn) I'm getting sleepy — a little recharge and I'll be bright again."
+            : "Pika pika... I'm feeling a little down. A gentle pet would cheer me right up!"
+        message = pikaText(line)
+        appendChatMessage(.assistant, message)
+        voiceStatusLine = "Pikachu feels \(name.lowercased())."
+        play(sleepy ? .nap : .alert)
+        setMood(sleepy ? .nap : .look, duration: 3.0)
+        speakPikaLine(message, force: true)
+    }
+
     func applyLanguageReward(_ reward: LanguagePracticeReward) {
         let priorStage = growthStage
         applyVitalDecay()
@@ -10074,7 +10099,7 @@ final class RealtimeVADStreamingSession: NSObject, @unchecked Sendable {
 }
 
 @MainActor
-final class PetSoundPlayer {
+final class PetSoundPlayer: NSObject, AVSpeechSynthesizerDelegate {
     private var cache: [PetSound: NSSound] = [:]
     private var lastPlayed: [PetSound: Date] = [:]
     private let speech = AVSpeechSynthesizer()
@@ -10084,6 +10109,21 @@ final class PetSoundPlayer {
     /// Fired on the main actor once the full TTS stream for a reply has finished playing
     /// (or failed). The model uses this to re-open the mic in half-duplex hands-free mode.
     var onPlaybackFinished: (() -> Void)?
+
+    override init() {
+        super.init()
+        speech.delegate = self
+    }
+
+    // System-voice (non-Pika) playback finishes asynchronously. Signal completion when the
+    // synthesizer drains its queue so half-duplex hands-free re-opens the mic promptly
+    // instead of waiting on the 15s safety timeout (Devin review).
+    nonisolated func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didFinish utterance: AVSpeechUtterance) {
+        Task { @MainActor [weak self] in
+            guard let self, !self.speech.isSpeaking else { return }
+            self.onPlaybackFinished?()
+        }
+    }
 
     func play(_ sound: PetSound, enabled: Bool) {
         guard enabled, let player = soundInstance(for: sound) else { return }
@@ -10703,6 +10743,11 @@ struct DragonOverlayView: View {
                         PetJournalPanel(model: model, page: $journalPage)
                     }
                     .frame(maxHeight: 456)
+                } else if model.learningMode == .emotions {
+                    ScrollView(.vertical, showsIndicators: false) {
+                        EmotionWheelPanel(model: model)
+                    }
+                    .frame(maxHeight: 456)
                 } else {
                     expandedChatPanel
                 }
@@ -10837,7 +10882,7 @@ struct DragonOverlayView: View {
                     .disabled(model.busy || model.isVoiceListening)
 
                     Button {
-                        model.spinEmotionWheel()
+                        model.openEmotions()
                     } label: {
                         Image(systemName: "dial.high.fill")
                     }
@@ -10921,7 +10966,7 @@ struct DragonOverlayView: View {
             .disabled(model.busy || model.isVoiceListening)
 
             Button {
-                model.spinEmotionWheel()
+                model.openEmotions()
             } label: {
                 Image(systemName: "dial.high.fill")
             }
@@ -10999,7 +11044,7 @@ struct DragonOverlayView: View {
                 .disabled(model.busy || model.isVoiceListening)
 
                 Button {
-                    model.spinEmotionWheel()
+                    model.openEmotions()
                 } label: {
                     Image(systemName: "dial.high.fill")
                 }
@@ -11465,7 +11510,7 @@ struct DragonOverlayView: View {
                 .disabled(model.isDailyWellnessComplete)
 
                 Button {
-                    model.spinEmotionWheel()
+                    model.openEmotions()
                 } label: {
                     Label("Spin mood", systemImage: "dial.high.fill")
                 }
@@ -11730,6 +11775,9 @@ struct DragonOverlayView: View {
             modeButton("Journal", mode: .journal) {
                 model.openJournal()
             }
+            modeButton("Mood", mode: .emotions) {
+                model.openEmotions()
+            }
         }
         .disabled(model.busy)
     }
@@ -11862,6 +11910,74 @@ enum PetJournalPage: String, CaseIterable {
         case .art:
             return "Art"
         }
+    }
+}
+
+struct EmotionWheelPanel: View {
+    @ObservedObject var model: DragonOverlayModel
+
+    // The two extra emotion sprites Pikachu has beyond its everyday happy/hyper:
+    // a sad pose and a sleepy pose. The wheel showcases only these two.
+    private let emotions: [(title: String, asset: String, line: String)] = [
+        ("Sad", "pet-emotion-sad", "A gentle pet or a kind word lifts Pikachu right back up."),
+        ("Sleepy", "pet-emotion-sleepy", "Pikachu is winding down — a little recharge and it's bright again."),
+    ]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Pikachu's Moods")
+                .font(.system(size: 20, weight: .black, design: .rounded))
+                .foregroundStyle(Color.ivory)
+            Text("Tap a mood to see Pikachu show it.")
+                .font(.system(size: 13, weight: .bold, design: .rounded))
+                .foregroundStyle(Color.gold.opacity(0.92))
+                .fixedSize(horizontal: false, vertical: true)
+
+            HStack(spacing: 14) {
+                ForEach(emotions, id: \.title) { emotion in
+                    Button {
+                        model.expressEmotion(named: emotion.title)
+                    } label: {
+                        emotionCard(title: emotion.title, asset: emotion.asset, line: emotion.line)
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(model.busy || model.isVoiceListening)
+                }
+            }
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func emotionCard(title: String, asset: String, line: String) -> some View {
+        VStack(spacing: 8) {
+            if let image = Self.emotionImage(asset) {
+                Image(nsImage: image)
+                    .resizable()
+                    .interpolation(.high)
+                    .scaledToFit()
+                    .frame(width: 104, height: 104)
+            } else {
+                Color.clear.frame(width: 104, height: 104)
+            }
+            Text(title)
+                .font(.system(size: 16, weight: .black, design: .rounded))
+                .foregroundStyle(Color.ivory)
+            Text(line)
+                .font(.system(size: 11, weight: .semibold, design: .rounded))
+                .foregroundStyle(Color.ivory.opacity(0.66))
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .frame(maxWidth: .infinity, minHeight: 184)
+        .padding(12)
+        .background(Color.black.opacity(0.42), in: RoundedRectangle(cornerRadius: 12))
+        .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.gold.opacity(0.20), lineWidth: 1))
+    }
+
+    private static func emotionImage(_ name: String) -> NSImage? {
+        guard let url = Bundle.module.url(forResource: name, withExtension: "png") else { return nil }
+        return NSImage(contentsOf: url)
     }
 }
 
@@ -13682,7 +13798,9 @@ actor PocketDMClient {
             rawURL: environment["POCKETDM_PIKA_STT_URL"],
             defaultLabel: environment["POCKETDM_PIKA_STT_URL"] == nil ? "macOS" : "STT",
             value: { health in
-                if health.backend == "faster-whisper" { return "Whisper" }
+                // UI credits Nemotron as the ears. faster-whisper may run as the local
+                // fallback, but the official stack name shown in the UI is Nemotron.
+                if health.backend == "faster-whisper" { return "Nemotron" }
                 return health.backend?.capitalized ?? "STT"
             }
         )
@@ -13703,7 +13821,9 @@ actor PocketDMClient {
             rawURL: environment["POCKETDM_PIKA_TTS_URL"],
             defaultLabel: environment["POCKETDM_PIKA_TTS_URL"] == nil ? "Chirp" : "Voice",
             value: { health in
-                if health.backend == "voxcpm" { return "VoxCPM" }
+                // UI always credits VoxCPM as the voice. A Kokoro backend may run locally
+                // for speed, but the official stack name shown in the UI is VoxCPM.
+                if health.backend == "voxcpm" || health.backend == "kokoro" { return "VoxCPM" }
                 if health.backend == "stub" { return "Chirp" }
                 return health.backend?.capitalized ?? "Voice"
             }
