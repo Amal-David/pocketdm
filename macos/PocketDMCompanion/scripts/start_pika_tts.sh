@@ -60,14 +60,15 @@ while [[ $# -gt 0 ]]; do
       ;;
     -h|--help)
       cat <<'USAGE'
-Usage: scripts/start_pika_tts.sh [--host 127.0.0.1] [--port 7861] [--backend stub|voxcpm|chatterbox] [--model MODEL_ID] [--python PATH] [--warmup]
+Usage: scripts/start_pika_tts.sh [--host 127.0.0.1] [--port 7861] [--backend stub|voxcpm|kokoro|chatterbox] [--model MODEL_ID] [--python PATH] [--warmup]
 
 Starts the local Pika voice sidecar. The default backend is stub, which plays
-original chirps and is safe for smoke tests. Use --backend voxcpm to opt into
-model TTS. VoxCPM-0.5B is the default model; pass --model openbmb/VoxCPM2 for
-the heavier quality showcase. Model backends run from isolated environments so
-voice dependencies do not disturb the PocketDM web server. Use --warmup to load
-the model before the endpoint starts accepting requests.
+original chirps and is safe for smoke tests. Use --backend voxcpm for OpenBMB
+VoxCPM (cloned voice), or --backend kokoro for the fast torch-free kokoro-onnx
+voice (warm female "af_heart", RTF ~0.3 on CPU) — best for a snappy live demo.
+Model backends run from isolated environments so voice dependencies do not
+disturb the PocketDM web server. Use --warmup to load the model before the
+endpoint starts accepting requests.
 USAGE
       exit 0
       ;;
@@ -79,9 +80,9 @@ USAGE
 done
 
 case "$backend" in
-  chatterbox|voxcpm|stub) ;;
+  chatterbox|voxcpm|kokoro|stub) ;;
   *)
-    echo "--backend must be chatterbox, voxcpm, or stub" >&2
+    echo "--backend must be chatterbox, voxcpm, kokoro, or stub" >&2
     exit 64
     ;;
 esac
@@ -112,18 +113,29 @@ if [[ "$backend" == "voxcpm" ]]; then
   export POCKETDM_PIKA_TTS_STEPS="${POCKETDM_PIKA_TTS_STEPS:-8}"
 fi
 
+# Fast, torch-free Kokoro voice (kokoro-onnx, warm female "af_heart") for a snappy
+# live demo. Defaults to the model files bundled under space/, with the same cute
+# pitch-up / slow-down styling as VoxCPM so the pet keeps its consistent voice.
+if [[ "$backend" == "kokoro" ]]; then
+  export POCKETDM_KOKORO_ONNX="${POCKETDM_KOKORO_ONNX:-$repo_root/space/kokoro-v1.0.onnx}"
+  export POCKETDM_KOKORO_VOICES="${POCKETDM_KOKORO_VOICES:-$repo_root/space/voices-v1.0.bin}"
+  export POCKETDM_KOKORO_VOICE="${POCKETDM_KOKORO_VOICE:-af_heart}"
+  export POCKETDM_PIKA_TTS_PITCH="${POCKETDM_PIKA_TTS_PITCH:-1.18}"
+  export POCKETDM_PIKA_TTS_RATE="${POCKETDM_PIKA_TTS_RATE:-0.85}"
+fi
+
 args=(--host "$host" --port "$port" --backend "$backend")
 if [[ "$warmup" -eq 1 ]]; then
   args+=(--warmup)
 fi
 
-if [[ "$backend" == "chatterbox" || "$backend" == "voxcpm" ]]; then
+if [[ "$backend" == "chatterbox" || "$backend" == "voxcpm" || "$backend" == "kokoro" ]]; then
   if [[ -z "$voice_env" ]]; then
-    if [[ "$backend" == "voxcpm" ]]; then
-      voice_env="$repo_root/.pika-voxcpm-venv"
-    else
-      voice_env="$repo_root/.pika-voice-venv"
-    fi
+    case "$backend" in
+      voxcpm) voice_env="$repo_root/.pika-voxcpm-venv" ;;
+      kokoro) voice_env="$repo_root/.pika-kokoro-venv" ;;
+      *)      voice_env="$repo_root/.pika-voice-venv" ;;
+    esac
   fi
   if [[ -z "$voice_python" ]]; then
     voice_python="$voice_env/bin/python"
@@ -131,11 +143,11 @@ if [[ "$backend" == "chatterbox" || "$backend" == "voxcpm" ]]; then
   if [[ ! -x "$voice_python" ]]; then
     echo "Creating isolated Pika voice environment at $voice_env" >&2
     uv venv "$voice_env"
-    if [[ "$backend" == "voxcpm" ]]; then
-      uv pip install --python "$voice_python" -r "$script_dir/pika_voxcpm_requirements.txt"
-    else
-      uv pip install --python "$voice_python" -r "$script_dir/pika_voice_requirements.txt"
-    fi
+    case "$backend" in
+      voxcpm) uv pip install --python "$voice_python" -r "$script_dir/pika_voxcpm_requirements.txt" ;;
+      kokoro) uv pip install --python "$voice_python" -r "$script_dir/pika_kokoro_requirements.txt" ;;
+      *)      uv pip install --python "$voice_python" -r "$script_dir/pika_voice_requirements.txt" ;;
+    esac
   fi
   exec "$voice_python" -m app.pika_tts_server "${args[@]}"
 fi

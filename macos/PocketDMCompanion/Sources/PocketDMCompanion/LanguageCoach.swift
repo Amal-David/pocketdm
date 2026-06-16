@@ -95,6 +95,7 @@ enum LearningMode: String, Codable {
     case chat
     case lesson
     case journal
+    case emotions
 }
 
 struct LanguagePracticeReward {

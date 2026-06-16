@@ -141,7 +141,9 @@ def test_expanded_chat_defaults_to_pet_first_chat_with_tools_gated() -> None:
     assert "gameActionPanel" in chat_panel
     assert "frame(minWidth: 500, maxWidth: .infinity" in expanded
     assert "model.completeDailyWellness(action)" in daily_nudge
-    assert "model.spinEmotionWheel()" in daily_nudge
+    # The mood dial now opens the Mood wheel showcase (Sad + Sleepy) instead of
+    # spinning a daily feeling.
+    assert "model.openEmotions()" in daily_nudge
     assert "model.healthValueLine" in source
     assert "if !model.isVoiceListening" not in quick_actions
     assert 'Image(systemName: "book.fill")' in quick_actions

@@ -57,28 +57,41 @@ def test_native_companion_accepts_realtime_stt_url() -> None:
     assert "--realtime-stt-url" in source
     assert "POCKETDM_REALTIME_STT_URL" in source
     assert "URLSession.shared.webSocketTask" in source
-    assert "RealtimeSTTFrame" in source
+    assert "RealtimeVADStreamingSession" in source
     assert '"partial"' in source
     assert '"final"' in source
     assert "--realtime-stt-url" in launch_script
     assert "POCKETDM_REALTIME_STT_URL" in launch_script
 
 
-def test_native_realtime_stt_uses_chunked_websocket_protocol() -> None:
+def test_native_realtime_stt_streams_live_mic_into_vad_websocket() -> None:
+    # Realtime STT no longer records a whole turn to a WAV and replays it. It now
+    # streams the mic LIVE: an AVAudioEngine tap -> AVAudioConverter (16 kHz mono Int16)
+    # -> raw PCM frames pushed into an open VAD-gated WebSocket. Record-then-replay must
+    # be gone so the server's Silero VAD, not a client buffer, drives turn-taking.
     source = (
         ROOT
         / "macos/PocketDMCompanion/Sources/PocketDMCompanion/main.swift"
     ).read_text()
-    realtime = source[
-        source.index("private static func transcribeRealtimeRecording"):
-        source.index("private static func transcribeEndpoint")
+    session = source[
+        source.index("final class RealtimeVADStreamingSession"):
+        source.index("@MainActor\nfinal class PetSoundPlayer")
     ]
 
-    assert '#"{"type":"start","format":"wav","sample_rate":16000}"#' in realtime
-    assert "let chunkSize = 64 * 1024" in realtime
-    assert "while offset < audio.count" in realtime
-    assert "try await socket.send(.data(Data(audio[offset..<end])))" in realtime
-    assert '#"{"type":"end"}"#' in realtime
+    # Opens the VAD turn loop on the server.
+    assert '#"{"type":"start","sample_rate":16000,"vad":true}"#' in session
+    # Live capture + 16 kHz mono Int16 conversion.
+    assert "audioEngine.inputNode" in session
+    assert "installTap(onBus: 0" in session
+    assert "AVAudioConverter(from: inputFormat, to: targetFormat)" in session
+    assert "commonFormat: .pcmFormatInt16" in session
+    assert "sampleRate: 16_000" in session
+    # PCM frames pushed straight into the socket as they arrive.
+    assert "outBuffer.int16ChannelData" in session
+    assert "socket.send(.data(data))" in session
+    # The record-then-replay realtime path is removed.
+    assert "transcribeRealtimeRecording" not in source
+    assert '#"{"type":"start","format":"wav","sample_rate":16000}"#' not in source
 
 
 def test_demo_stack_launches_native_app_with_all_voice_models() -> None:
@@ -139,13 +152,15 @@ def test_native_voice_flow_has_opt_in_hands_free_conversation_loop() -> None:
 
     assert "@Published var handsFreeConversationEnabled" in source
     assert "func toggleHandsFreeConversation()" in source
-    assert "scheduleVoiceAutoSendIfNeeded()" in source
+    # Turn-taking is now server-VAD-driven: hands-free re-arms listening and the
+    # WebSocket stays open for the next utterance; the old local energy-meter
+    # auto-send loop is gone.
+    assert "scheduleVoiceAutoSendIfNeeded" not in source
     assert "scheduleHandsFreeRestart(after:" in source
     assert "Realtime listening. Speak naturally; I send after a pause." in source
-    assert "currentMeterPower()" in source
-    assert "quietFor >= 1.25" in source
-    assert "elapsed >= 10.0" in source
-    assert '"I hear you..."' in source
+    assert "currentMeterPower" not in source
+    assert "quietFor >= 1.25" not in source
+    assert "elapsed >= 10.0" not in source
     assert "stopVoiceConversation(sendTranscript: true)" in source
     assert "toggleHandsFreeFromExpanded()" in source
     assert "func toggleHandsFreeFromExpanded()" in source
@@ -156,12 +171,18 @@ def test_native_voice_flow_has_opt_in_hands_free_conversation_loop() -> None:
     assert 'keyboardShortcut("l", modifiers: [.command, .option])' in source
 
 
-def test_local_stt_recorder_enables_metering_for_pause_detection() -> None:
+def test_realtime_path_streams_live_instead_of_metered_recording() -> None:
+    # Pause detection no longer relies on AVAudioRecorder dB metering. The realtime
+    # path streams the live mic into the server's Silero VAD, and the non-realtime
+    # fallback just records-and-POSTs (no metering needed). All metering APIs are gone.
     source = (
         ROOT
         / "macos/PocketDMCompanion/Sources/PocketDMCompanion/main.swift"
     ).read_text()
 
-    assert "recorder.isMeteringEnabled = true" in source
-    assert "localRecorder.updateMeters()" in source
-    assert "localRecorder.averagePower(forChannel: 0)" in source
+    assert "isMeteringEnabled" not in source
+    assert "updateMeters()" not in source
+    assert "averagePower(forChannel: 0)" not in source
+    # The realtime turn detector is the live VAD streaming session.
+    assert "func startRealtimeStreaming(" in source
+    assert "RealtimeVADStreamingSession(" in source

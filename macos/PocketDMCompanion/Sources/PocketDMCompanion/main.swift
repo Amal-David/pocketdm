@@ -1117,6 +1117,12 @@ final class DragonOverlayModel: ObservableObject {
     @Published var voiceTranscript = ""
     @Published var voiceStatusLine = "Ready for a daily check-in."
     @Published var voiceVisualState: VoiceVisualState = .idle
+    /// True while Pika's TTS is audibly playing. Half-duplex turn-taking: the mic stays
+    /// gated (fully torn down) until playback finishes so we never transcribe our own voice.
+    private var isSpeaking = false
+    /// Tail cooldown after TTS playback ends before the mic re-opens, so the speaker's
+    /// acoustic decay / room reverb can't false-trigger the VAD (Pipecat/LiveKit pattern).
+    private static let postSpeechResumeCooldown: TimeInterval = 0.6
     @Published var conversationBubbleActive = false
     @Published var runtimeStackStatus = RuntimeStackStatus.detecting
     @Published var companionHP = UserDefaults.standard.object(forKey: DragonOverlayModel.companionHPKey) as? Int ?? 3
@@ -1396,7 +1402,6 @@ final class DragonOverlayModel: ObservableObject {
     private let soundPlayer = PetSoundPlayer()
     private let voiceTranscriber = VoiceConversationTranscriber()
     private var voiceConversationMode: VoiceConversationMode = .freeform
-    private var voiceAutoSendTask: Task<Void, Never>?
     private var handsFreeRestartTask: Task<Void, Never>?
     private var voiceVisualResetTask: Task<Void, Never>?
     private var moodTask: Task<Void, Never>?
@@ -1452,6 +1457,9 @@ final class DragonOverlayModel: ObservableObject {
             guard let self else { return }
             self.voiceStatusLine = statusLine
             self.handleVoicePlaybackStatus(statusLine)
+        }
+        soundPlayer.onPlaybackFinished = { [weak self] in
+            self?.handleVoicePlaybackFinished()
         }
         syncDailyCombo()
         rechargeEnergy()
@@ -1671,7 +1679,6 @@ final class DragonOverlayModel: ObservableObject {
             // Mute is a hard stop: end the realtime/hands-free loop and any listening turn
             // so the pet goes fully quiet instead of continuing to auto-chat in the background.
             handsFreeConversationEnabled = false
-            cancelVoiceAutoSend()
             cancelHandsFreeRestart()
             if isVoiceListening {
                 stopVoiceConversation(sendTranscript: false)
@@ -1694,7 +1701,6 @@ final class DragonOverlayModel: ObservableObject {
     func toggleHandsFreeConversation() {
         if handsFreeConversationEnabled {
             handsFreeConversationEnabled = false
-            cancelVoiceAutoSend()
             cancelHandsFreeRestart()
             if isVoiceListening {
                 stopVoiceConversation(sendTranscript: false)
@@ -1764,11 +1770,11 @@ final class DragonOverlayModel: ObservableObject {
                 self.scheduleHandsFreeRestart(after: 1.2)
             }
         )
-        scheduleVoiceAutoSendIfNeeded()
+        // No local turn timer: the server's Silero VAD decides when each turn ends and
+        // emits a `final` event, which calls finishVoiceConversation(transcript).
     }
 
     func stopVoiceConversation(sendTranscript: Bool = false) {
-        cancelVoiceAutoSend()
         let transcript = voiceTranscript.trimmingCharacters(in: .whitespacesAndNewlines)
         let awaitingLocalTranscription = voiceTranscriber.stop(sendRecordedAudio: sendTranscript)
         isVoiceListening = false
@@ -1789,7 +1795,6 @@ final class DragonOverlayModel: ObservableObject {
     }
 
     private func finishVoiceConversation(_ transcript: String) {
-        cancelVoiceAutoSend()
         let mode = voiceConversationMode
         voiceConversationMode = .freeform
         voiceTranscriber.stop()
@@ -1824,82 +1829,6 @@ final class DragonOverlayModel: ObservableObject {
         "Realtime listening. Speak naturally; I send after a pause."
     }
 
-    private func scheduleVoiceAutoSendIfNeeded() {
-        cancelVoiceAutoSend()
-        guard handsFreeConversationEnabled else { return }
-        voiceAutoSendTask = Task { [weak self] in
-            let startedAt = Date()
-            var heardSpeech = false
-            var lastSpeechAt = Date()
-            while !Task.isCancelled {
-                try? await Task.sleep(nanoseconds: 220_000_000)
-                let sample = await MainActor.run { () -> (active: Bool, transcript: String, isLoud: Bool) in
-                    guard let self,
-                          self.handsFreeConversationEnabled,
-                          self.isVoiceListening else {
-                        return (false, "", false)
-                    }
-                    let transcript = self.voiceTranscript.trimmingCharacters(in: .whitespacesAndNewlines)
-                    let meterPower = self.voiceTranscriber.currentMeterPower()
-                    return (true, transcript, meterPower.map { $0 > -38 } ?? false)
-                }
-                guard sample.active else { return }
-
-                if !sample.transcript.isEmpty || sample.isLoud {
-                    heardSpeech = true
-                    lastSpeechAt = Date()
-                    if sample.isLoud && sample.transcript.isEmpty {
-                        await MainActor.run {
-                            self?.voiceStatusLine = "I hear you..."
-                        }
-                    }
-                }
-
-                let elapsed = Date().timeIntervalSince(startedAt)
-                let quietFor = Date().timeIntervalSince(lastSpeechAt)
-                let shouldSend: Bool
-                if heardSpeech && quietFor >= 1.25 {
-                    await MainActor.run {
-                        self?.voiceStatusLine = "Sending after your pause..."
-                    }
-                    shouldSend = true
-                } else if elapsed >= 10.0 {
-                    if heardSpeech {
-                        await MainActor.run { self?.voiceStatusLine = "Sending your turn..." }
-                        shouldSend = true
-                    } else {
-                        // 10s with no real speech: stop the loop instead of auto-sending an
-                        // empty turn (this was the runaway-loop cause in quiet/noisy rooms).
-                        await MainActor.run {
-                            guard let self else { return }
-                            self.handsFreeConversationEnabled = false
-                            self.cancelHandsFreeRestart()
-                            self.stopVoiceConversation(sendTranscript: false)
-                            self.voiceStatusLine = "No voice heard. Tap the mic when you want to talk."
-                            self.voiceVisualState = .idle
-                            self.setMood(.idle)
-                        }
-                        return
-                    }
-                } else {
-                    shouldSend = false
-                }
-                if shouldSend {
-                    await MainActor.run {
-                        guard let self,
-                              self.handsFreeConversationEnabled,
-                              self.isVoiceListening else {
-                            return
-                        }
-                        self.voiceStatusLine = "Sending after your pause..."
-                        self.stopVoiceConversation(sendTranscript: true)
-                    }
-                    return
-                }
-            }
-        }
-    }
-
     private func scheduleHandsFreeRestart(after delay: TimeInterval = 2.2) {
         cancelHandsFreeRestart()
         guard handsFreeConversationEnabled else { return }
@@ -1910,6 +1839,7 @@ final class DragonOverlayModel: ObservableObject {
                 guard let self,
                       self.handsFreeConversationEnabled,
                       !self.isVoiceListening,
+                      !self.isSpeaking,
                       !self.busy,
                       self.learningMode == .chat else {
                     return
@@ -1919,28 +1849,25 @@ final class DragonOverlayModel: ObservableObject {
         }
     }
 
-    private func cancelVoiceAutoSend() {
-        voiceAutoSendTask?.cancel()
-        voiceAutoSendTask = nil
-    }
-
     private func cancelHandsFreeRestart() {
         handsFreeRestartTask?.cancel()
         handsFreeRestartTask = nil
     }
 
-    private func markVoiceSpeaking(autoResetAfter delay: TimeInterval = 2.4) {
+    private func markVoiceSpeaking(autoResetAfter delay: TimeInterval = 15.0) {
         guard soundEnabled else { return }
+        // Pika is (about to be) audibly speaking: gate the mic for the whole utterance.
+        isSpeaking = true
         voiceVisualResetTask?.cancel()
         voiceVisualState = .speaking
+        // Safety net only — the real reset comes from the playback-finished callback. This
+        // just guarantees we never get stuck "speaking" forever if a TTS request hangs.
         voiceVisualResetTask = Task { [weak self] in
             try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
             if Task.isCancelled { return }
             await MainActor.run {
-                guard let self,
-                      !self.isVoiceListening,
-                      self.voiceVisualState == .speaking else { return }
-                self.voiceVisualState = self.busy ? .thinking : .idle
+                guard let self, self.isSpeaking, self.voiceVisualState == .speaking else { return }
+                self.handleVoicePlaybackFinished()
             }
         }
     }
@@ -1956,9 +1883,29 @@ final class DragonOverlayModel: ObservableObject {
                     || lowered.contains("returned no playable")
                     || lowered.contains("could not play")
                     || lowered.contains("muted") {
-            if !isVoiceListening {
-                voiceVisualState = busy ? .thinking : .idle
-            }
+            // No audio will play for this turn — treat it as playback finished so the
+            // half-duplex loop still re-opens the mic instead of stalling in "speaking".
+            handleVoicePlaybackFinished()
+        }
+    }
+
+    /// Called once the ENTIRE TTS stream for a reply has finished playing (or failed). This
+    /// is the only place the mic is allowed to re-open in hands-free mode — never on a fixed
+    /// timer while Pika is still talking, which would transcribe her own voice back as a new
+    /// turn (the echo loop). Mirrors Pipecat's STTMuteStrategy.ALWAYS (mute STT while the bot
+    /// speaks) plus a tail cooldown before un-gating.
+    private func handleVoicePlaybackFinished() {
+        isSpeaking = false
+        voiceVisualResetTask?.cancel()
+        if handsFreeConversationEnabled, soundEnabled, !busy, !isVoiceListening {
+            // Keep the UI in "speaking" through the short cooldown so the user doesn't talk
+            // into a still-muted mic; startVoiceConversation flips it to "listening" the
+            // instant the mic actually re-opens. The mic/WS were fully torn down while
+            // speaking, so resuming starts a fresh capture + fresh server VAD — any TTS tail
+            // is discarded, never replayed as input.
+            scheduleHandsFreeRestart(after: Self.postSpeechResumeCooldown)
+        } else if !isVoiceListening {
+            voiceVisualState = busy ? .thinking : .idle
         }
     }
 
@@ -2148,6 +2095,31 @@ final class DragonOverlayModel: ObservableObject {
         play(.open)
         speakPika()
         setMood(.happy, duration: 1.2)
+    }
+
+    func openEmotions() {
+        guard learningMode != .emotions else { return }
+        learningMode = .emotions
+        lastRequest = "Mood wheel"
+        message = pikaText("Mood wheel opened. Tap a mood to see Pikachu show it.")
+        play(.open)
+    }
+
+    func expressEmotion(named name: String) {
+        guard !busy, !isVoiceListening else { return }
+        let sleepy = name.caseInsensitiveCompare("Sleepy") == .orderedSame
+        lastRequest = "\(name) mood"
+        conversationBubbleActive = true
+        appendChatMessage(.user, "Show your \(name.lowercased()) mood")
+        let line = sleepy
+            ? "Pika... pika. (yawn) I'm getting sleepy — a little recharge and I'll be bright again."
+            : "Pika pika... I'm feeling a little down. A gentle pet would cheer me right up!"
+        message = pikaText(line)
+        appendChatMessage(.assistant, message)
+        voiceStatusLine = "Pikachu feels \(name.lowercased())."
+        play(sleepy ? .nap : .alert)
+        setMood(sleepy ? .nap : .look, duration: 3.0)
+        speakPikaLine(message, force: true)
     }
 
     func applyLanguageReward(_ reward: LanguagePracticeReward) {
@@ -9508,6 +9480,8 @@ final class VoiceConversationTranscriber {
     private var localOnFinal: (@MainActor (String) -> Void)?
     private var localOnError: (@MainActor (String) -> Void)?
     private var isStopping = false
+    // Live realtime VAD streaming session (replaces the record-then-replay path).
+    private var realtimeSession: RealtimeVADStreamingSession?
     private let realtimeSTTURL: URL? = {
         let raw = ProcessInfo.processInfo.environment["POCKETDM_REALTIME_STT_URL"]?
             .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
@@ -9526,7 +9500,19 @@ final class VoiceConversationTranscriber {
         onFinal: @escaping @MainActor (String) -> Void,
         onError: @escaping @MainActor (String) -> Void
     ) {
-        if realtimeSTTURL != nil || localSTTURL != nil {
+        // Realtime path: stream the mic LIVE into the VAD-gated WebSocket. The server's
+        // Silero VAD detects each turn and emits `final`; no local recording/replay.
+        if let realtimeSTTURL {
+            startRealtimeStreaming(
+                endpoint: realtimeSTTURL,
+                onPartial: onPartial,
+                onFinal: onFinal,
+                onError: onError
+            )
+            return
+        }
+        // Non-realtime local STT (faster-whisper batch): keep the record-then-POST path.
+        if localSTTURL != nil {
             startLocalRecording(onPartial: onPartial, onFinal: onFinal, onError: onError)
             return
         }
@@ -9571,6 +9557,13 @@ final class VoiceConversationTranscriber {
     @discardableResult
     func stop(sendRecordedAudio: Bool = false) -> Bool {
         isStopping = true
+        // Realtime streaming: tear down the live mic tap + WebSocket. The server already
+        // finalizes each turn via VAD, so there is never a pending local transcription.
+        if let realtimeSession {
+            realtimeSession.stop()
+            self.realtimeSession = nil
+            return false
+        }
         if let localRecorder {
             let recordingURL = localRecordingURL
             localRecorder.stop()
@@ -9594,10 +9587,65 @@ final class VoiceConversationTranscriber {
         return false
     }
 
-    func currentMeterPower() -> Float? {
-        guard let localRecorder else { return nil }
-        localRecorder.updateMeters()
-        return localRecorder.averagePower(forChannel: 0)
+    private func startRealtimeStreaming(
+        endpoint: URL,
+        onPartial: @escaping @MainActor (String) -> Void,
+        onFinal: @escaping @MainActor (String) -> Void,
+        onError: @escaping @MainActor (String) -> Void
+    ) {
+        switch AVCaptureDevice.authorizationStatus(for: .audio) {
+        case .authorized:
+            startAuthorizedRealtimeStreaming(endpoint: endpoint, onPartial: onPartial, onFinal: onFinal, onError: onError)
+        case .notDetermined:
+            AVCaptureDevice.requestAccess(for: .audio) { [weak self] granted in
+                Task { @MainActor in
+                    guard let self else { return }
+                    guard granted else {
+                        onError(Self.microphoneAuthorizationMessage(for: .denied))
+                        return
+                    }
+                    self.startAuthorizedRealtimeStreaming(endpoint: endpoint, onPartial: onPartial, onFinal: onFinal, onError: onError)
+                }
+            }
+        case .denied, .restricted:
+            onError(Self.microphoneAuthorizationMessage(for: AVCaptureDevice.authorizationStatus(for: .audio)))
+        @unknown default:
+            onError("Microphone is unavailable on this Mac.")
+        }
+    }
+
+    private func startAuthorizedRealtimeStreaming(
+        endpoint: URL,
+        onPartial: @escaping @MainActor (String) -> Void,
+        onFinal: @escaping @MainActor (String) -> Void,
+        onError: @escaping @MainActor (String) -> Void
+    ) {
+        _ = stop()
+        isStopping = false
+        let wsURL = Self.realtimeTranscribeEndpoint(from: endpoint)
+        let session = RealtimeVADStreamingSession(
+            url: wsURL,
+            onPartial: onPartial,
+            onFinal: { [weak self] transcript in
+                // The server's VAD finalized a turn; mark stopped so a duplicate stop()
+                // from the model layer is a no-op, then deliver the transcript.
+                self?.isStopping = true
+                self?.realtimeSession = nil
+                onFinal(transcript)
+            },
+            onError: { [weak self] line in
+                self?.realtimeSession = nil
+                onError(line)
+            }
+        )
+        realtimeSession = session
+        do {
+            try session.start()
+            onPartial("Realtime listening...")
+        } catch {
+            realtimeSession = nil
+            onError("Realtime microphone failed to start: \(error.localizedDescription)")
+        }
     }
 
     private func startLocalRecording(
@@ -9648,18 +9696,13 @@ final class VoiceConversationTranscriber {
         ]
         do {
             let recorder = try AVAudioRecorder(url: recordingURL, settings: settings)
-            recorder.isMeteringEnabled = true
             recorder.prepareToRecord()
             guard recorder.record() else {
                 throw CompanionError.badResponse
             }
             localRecorder = recorder
             localRecordingURL = recordingURL
-            if realtimeSTTURL != nil {
-                onPartial("Realtime listening...")
-            } else {
-                onPartial("Listening locally...")
-            }
+            onPartial("Listening locally...")
         } catch {
             recordingURL.deleteQuietly()
             onError("Local microphone recording failed: \(error.localizedDescription)")
@@ -9709,15 +9752,8 @@ final class VoiceConversationTranscriber {
         localEndpoint: URL?,
         onPartial: @escaping (String) async -> Void
     ) async throws -> String {
-        if let realtimeEndpoint {
-            do {
-                return try await transcribeRealtimeRecording(recordingURL, endpoint: realtimeEndpoint, onPartial: onPartial)
-            } catch {
-                guard let localEndpoint else { throw error }
-                await onPartial("Realtime STT failed; trying local STT...")
-                return try await transcribeRecording(recordingURL, endpoint: localEndpoint)
-            }
-        }
+        // The realtime endpoint now streams live (see RealtimeVADStreamingSession); the
+        // record-then-POST path is only the non-realtime faster-whisper batch fallback.
         guard let localEndpoint else { throw CompanionError.badResponse }
         return try await transcribeRecording(recordingURL, endpoint: localEndpoint)
     }
@@ -9742,65 +9778,6 @@ final class VoiceConversationTranscriber {
         }
         let decoded = try JSONDecoder().decode(LocalSTTResponse.self, from: data)
         return decoded.text.trimmingCharacters(in: .whitespacesAndNewlines)
-    }
-
-    private static func transcribeRealtimeRecording(
-        _ recordingURL: URL,
-        endpoint: URL,
-        onPartial: @escaping (String) async -> Void
-    ) async throws -> String {
-        let url = realtimeTranscribeEndpoint(from: endpoint)
-        let socket = URLSession.shared.webSocketTask(with: url)
-        socket.resume()
-        defer { socket.cancel(with: .normalClosure, reason: nil) }
-
-        let audio = try Data(contentsOf: recordingURL)
-        try await socket.send(.string(#"{"type":"start","format":"wav","sample_rate":16000}"#))
-        let chunkSize = 64 * 1024
-        var offset = 0
-        while offset < audio.count {
-            let end = min(offset + chunkSize, audio.count)
-            try await socket.send(.data(Data(audio[offset..<end])))
-            offset = end
-        }
-        try await socket.send(.string(#"{"type":"end"}"#))
-        for _ in 0..<32 {
-            let message = try await socket.receive()
-            let data: Data
-            switch message {
-            case .data(let payload):
-                data = payload
-            case .string(let text):
-                data = Data(text.utf8)
-            @unknown default:
-                continue
-            }
-            let frame = try JSONDecoder().decode(RealtimeSTTFrame.self, from: data)
-            switch frame.type {
-            case "partial":
-                if let text = frame.text?.trimmingCharacters(in: .whitespacesAndNewlines),
-                   !text.isEmpty {
-                    await onPartial(text)
-                }
-            case "final":
-                let text = frame.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-                guard !text.isEmpty else { throw CompanionError.badResponse }
-                return text
-            case "error":
-                throw NSError(
-                    domain: "PocketDMRealtimeSTT",
-                    code: 1,
-                    userInfo: [NSLocalizedDescriptionKey: frame.message ?? "Realtime STT failed"]
-                )
-            default:
-                continue
-            }
-        }
-        throw NSError(
-            domain: "PocketDMRealtimeSTT",
-            code: 2,
-            userInfo: [NSLocalizedDescriptionKey: "Realtime STT did not return a final transcript"]
-        )
     }
 
     private static func transcribeEndpoint(from endpoint: URL) -> URL {
@@ -9834,12 +9811,6 @@ final class VoiceConversationTranscriber {
 
     private struct LocalSTTResponse: Decodable {
         let text: String
-    }
-
-    private struct RealtimeSTTFrame: Decodable {
-        let type: String
-        let text: String?
-        let message: String?
     }
 
     private func startAuthorized(
@@ -9932,14 +9903,227 @@ final class VoiceConversationTranscriber {
     }
 }
 
+/// Live VAD-gated streaming session: taps the mic, converts to 16 kHz mono Int16,
+/// and pushes PCM frames into an open WebSocket whose server-side Silero VAD decides
+/// when each turn ends. The server emits `speech_started` / `speech_ended` / `partial`
+/// / `final`; `final` finalizes the turn (no local timer). The socket stays open across
+/// utterances so hands-free conversation continues without re-opening the mic.
+///
+/// Not `@MainActor`: the AVAudioEngine tap runs on a real-time audio thread. Callbacks
+/// are hopped to the main actor before touching UI. `URLSessionWebSocketTask.send` is
+/// thread-safe, so the hot path never blocks the audio thread.
+final class RealtimeVADStreamingSession: NSObject, @unchecked Sendable {
+    // Flip on to enable barge-in (stop TTS when the user starts speaking over it). Left
+    // OFF by default so the demo never risks clipping the pet mid-sentence.
+    static let bargeInEnabled = false
+
+    private let url: URL
+    private let onPartial: @MainActor (String) -> Void
+    private let onFinal: @MainActor (String) -> Void
+    private let onError: @MainActor (String) -> Void
+
+    private let audioEngine = AVAudioEngine()
+    private var converter: AVAudioConverter?
+    private var targetFormat: AVAudioFormat?
+    private var socket: URLSessionWebSocketTask?
+    private let lock = NSLock()
+    private var finished = false
+
+    init(
+        url: URL,
+        onPartial: @escaping @MainActor (String) -> Void,
+        onFinal: @escaping @MainActor (String) -> Void,
+        onError: @escaping @MainActor (String) -> Void
+    ) {
+        self.url = url
+        self.onPartial = onPartial
+        self.onFinal = onFinal
+        self.onError = onError
+        super.init()
+    }
+
+    func start() throws {
+        let socket = URLSession.shared.webSocketTask(with: url)
+        self.socket = socket
+        socket.resume()
+        // Ask the server to run its Silero VAD turn loop for this connection.
+        socket.send(.string(#"{"type":"start","sample_rate":16000,"vad":true}"#)) { [weak self] error in
+            if let error { self?.fail("Realtime STT connection failed: \(error.localizedDescription)") }
+        }
+        receiveLoop()
+
+        let inputNode = audioEngine.inputNode
+        let inputFormat = inputNode.outputFormat(forBus: 0)
+        guard inputFormat.sampleRate > 0,
+              let targetFormat = AVAudioFormat(
+                  commonFormat: .pcmFormatInt16,
+                  sampleRate: 16_000,
+                  channels: 1,
+                  interleaved: true
+              ),
+              let converter = AVAudioConverter(from: inputFormat, to: targetFormat)
+        else {
+            throw CompanionError.badResponse
+        }
+        self.targetFormat = targetFormat
+        self.converter = converter
+
+        inputNode.removeTap(onBus: 0)
+        inputNode.installTap(onBus: 0, bufferSize: 4096, format: inputFormat) { [weak self] buffer, _ in
+            self?.handleInput(buffer)
+        }
+        audioEngine.prepare()
+        try audioEngine.start()
+    }
+
+    func stop() {
+        if audioEngine.isRunning {
+            audioEngine.inputNode.removeTap(onBus: 0)
+            audioEngine.stop()
+        } else {
+            audioEngine.inputNode.removeTap(onBus: 0)
+        }
+        // Tell the server the stream is done so any in-progress turn flushes.
+        socket?.send(.string(#"{"type":"end"}"#)) { _ in }
+        socket?.cancel(with: .normalClosure, reason: nil)
+        socket = nil
+        converter = nil
+    }
+
+    // MARK: - Audio thread
+
+    private func handleInput(_ buffer: AVAudioPCMBuffer) {
+        guard let converter, let targetFormat, let socket else { return }
+        // Output capacity for the resampled buffer (round up for safety).
+        let ratio = targetFormat.sampleRate / buffer.format.sampleRate
+        let capacity = AVAudioFrameCount(Double(buffer.frameLength) * ratio + 1024)
+        guard capacity > 0,
+              let outBuffer = AVAudioPCMBuffer(pcmFormat: targetFormat, frameCapacity: capacity)
+        else { return }
+
+        var fed = false
+        var conversionError: NSError?
+        let status = converter.convert(to: outBuffer, error: &conversionError) { _, outStatus in
+            if fed {
+                outStatus.pointee = .noDataNow
+                return nil
+            }
+            fed = true
+            outStatus.pointee = .haveData
+            return buffer
+        }
+        guard status == .haveData || status == .inputRanDry,
+              conversionError == nil,
+              outBuffer.frameLength > 0,
+              let channel = outBuffer.int16ChannelData
+        else { return }
+
+        let byteCount = Int(outBuffer.frameLength) * MemoryLayout<Int16>.size
+        let data = Data(bytes: channel[0], count: byteCount)
+        socket.send(.data(data)) { [weak self] error in
+            if let error { self?.fail("Realtime STT send failed: \(error.localizedDescription)") }
+        }
+    }
+
+    // MARK: - WebSocket receive
+
+    private func receiveLoop() {
+        guard let socket else { return }
+        socket.receive { [weak self] result in
+            guard let self else { return }
+            switch result {
+            case .failure(let error):
+                self.fail("Realtime STT disconnected: \(error.localizedDescription)")
+            case .success(let message):
+                let data: Data
+                switch message {
+                case .data(let payload): data = payload
+                case .string(let text): data = Data(text.utf8)
+                @unknown default:
+                    self.receiveLoop()
+                    return
+                }
+                self.handleFrame(data)
+                if !self.isFinished { self.receiveLoop() }
+            }
+        }
+    }
+
+    private var isFinished: Bool {
+        lock.lock(); defer { lock.unlock() }
+        return finished
+    }
+
+    private func handleFrame(_ data: Data) {
+        guard let frame = try? JSONDecoder().decode(StreamFrame.self, from: data) else { return }
+        switch frame.type {
+        case "speech_started":
+            // Barge-in hook (stubbed/flagged off): a real implementation would stop TTS here.
+            _ = Self.bargeInEnabled
+        case "speech_ended":
+            break
+        case "partial":
+            if let text = frame.text?.trimmingCharacters(in: .whitespacesAndNewlines), !text.isEmpty {
+                let onPartial = self.onPartial
+                Task { @MainActor in onPartial(text) }
+            }
+        case "final":
+            let text = frame.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            guard !text.isEmpty else { return }
+            lock.lock(); finished = true; lock.unlock()
+            stop()
+            let onFinal = self.onFinal
+            Task { @MainActor in onFinal(text) }
+        case "error":
+            fail(frame.message ?? "Realtime STT failed")
+        default:
+            break
+        }
+    }
+
+    private func fail(_ line: String) {
+        lock.lock()
+        if finished { lock.unlock(); return }
+        finished = true
+        lock.unlock()
+        stop()
+        let onError = self.onError
+        Task { @MainActor in onError(line) }
+    }
+
+    private struct StreamFrame: Decodable {
+        let type: String
+        let text: String?
+        let message: String?
+    }
+}
+
 @MainActor
-final class PetSoundPlayer {
+final class PetSoundPlayer: NSObject, AVSpeechSynthesizerDelegate {
     private var cache: [PetSound: NSSound] = [:]
     private var lastPlayed: [PetSound: Date] = [:]
     private let speech = AVSpeechSynthesizer()
     private var lastPikaAt = Date.distantPast
     private var externalVoiceSound: NSSound?
     var onVoiceStatus: ((String) -> Void)?
+    /// Fired on the main actor once the full TTS stream for a reply has finished playing
+    /// (or failed). The model uses this to re-open the mic in half-duplex hands-free mode.
+    var onPlaybackFinished: (() -> Void)?
+
+    override init() {
+        super.init()
+        speech.delegate = self
+    }
+
+    // System-voice (non-Pika) playback finishes asynchronously. Signal completion when the
+    // synthesizer drains its queue so half-duplex hands-free re-opens the mic promptly
+    // instead of waiting on the 15s safety timeout (Devin review).
+    nonisolated func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didFinish utterance: AVSpeechUtterance) {
+        Task { @MainActor [weak self] in
+            guard let self, !self.speech.isSpeaking else { return }
+            self.onPlaybackFinished?()
+        }
+    }
 
     func play(_ sound: PetSound, enabled: Bool) {
         guard enabled, let player = soundInstance(for: sound) else { return }
@@ -10021,11 +10205,13 @@ final class PetSoundPlayer {
                     self.onVoiceStatus?("Pika voice fallback: bundled chirp.")
                     self.play(sound, enabled: enabled)
                 }
+                self.onPlaybackFinished?()
             }
             return
         }
 
         play(sound, enabled: enabled)
+        onPlaybackFinished?()
     }
 
     private func recentlyPlayedMascotSound(at now: Date) -> Bool {
@@ -10067,9 +10253,11 @@ final class PetSoundPlayer {
                         self.onVoiceStatus?("Pika voice fallback: bundled chirp.")
                         self.play(sound, enabled: enabled)
                     }
+                    self.onPlaybackFinished?()
                 }
             } else {
                 play(sound, enabled: enabled)
+                onPlaybackFinished?()
             }
             return
         }
@@ -10555,6 +10743,11 @@ struct DragonOverlayView: View {
                         PetJournalPanel(model: model, page: $journalPage)
                     }
                     .frame(maxHeight: 456)
+                } else if model.learningMode == .emotions {
+                    ScrollView(.vertical, showsIndicators: false) {
+                        EmotionWheelPanel(model: model)
+                    }
+                    .frame(maxHeight: 456)
                 } else {
                     expandedChatPanel
                 }
@@ -10689,7 +10882,7 @@ struct DragonOverlayView: View {
                     .disabled(model.busy || model.isVoiceListening)
 
                     Button {
-                        model.spinEmotionWheel()
+                        model.openEmotions()
                     } label: {
                         Image(systemName: "dial.high.fill")
                     }
@@ -10773,7 +10966,7 @@ struct DragonOverlayView: View {
             .disabled(model.busy || model.isVoiceListening)
 
             Button {
-                model.spinEmotionWheel()
+                model.openEmotions()
             } label: {
                 Image(systemName: "dial.high.fill")
             }
@@ -10851,7 +11044,7 @@ struct DragonOverlayView: View {
                 .disabled(model.busy || model.isVoiceListening)
 
                 Button {
-                    model.spinEmotionWheel()
+                    model.openEmotions()
                 } label: {
                     Image(systemName: "dial.high.fill")
                 }
@@ -11317,7 +11510,7 @@ struct DragonOverlayView: View {
                 .disabled(model.isDailyWellnessComplete)
 
                 Button {
-                    model.spinEmotionWheel()
+                    model.openEmotions()
                 } label: {
                     Label("Spin mood", systemImage: "dial.high.fill")
                 }
@@ -11582,6 +11775,9 @@ struct DragonOverlayView: View {
             modeButton("Journal", mode: .journal) {
                 model.openJournal()
             }
+            modeButton("Mood", mode: .emotions) {
+                model.openEmotions()
+            }
         }
         .disabled(model.busy)
     }
@@ -11714,6 +11910,74 @@ enum PetJournalPage: String, CaseIterable {
         case .art:
             return "Art"
         }
+    }
+}
+
+struct EmotionWheelPanel: View {
+    @ObservedObject var model: DragonOverlayModel
+
+    // The two extra emotion sprites Pikachu has beyond its everyday happy/hyper:
+    // a sad pose and a sleepy pose. The wheel showcases only these two.
+    private let emotions: [(title: String, asset: String, line: String)] = [
+        ("Sad", "pet-emotion-sad", "A gentle pet or a kind word lifts Pikachu right back up."),
+        ("Sleepy", "pet-emotion-sleepy", "Pikachu is winding down — a little recharge and it's bright again."),
+    ]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Pikachu's Moods")
+                .font(.system(size: 20, weight: .black, design: .rounded))
+                .foregroundStyle(Color.ivory)
+            Text("Tap a mood to see Pikachu show it.")
+                .font(.system(size: 13, weight: .bold, design: .rounded))
+                .foregroundStyle(Color.gold.opacity(0.92))
+                .fixedSize(horizontal: false, vertical: true)
+
+            HStack(spacing: 14) {
+                ForEach(emotions, id: \.title) { emotion in
+                    Button {
+                        model.expressEmotion(named: emotion.title)
+                    } label: {
+                        emotionCard(title: emotion.title, asset: emotion.asset, line: emotion.line)
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(model.busy || model.isVoiceListening)
+                }
+            }
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func emotionCard(title: String, asset: String, line: String) -> some View {
+        VStack(spacing: 8) {
+            if let image = Self.emotionImage(asset) {
+                Image(nsImage: image)
+                    .resizable()
+                    .interpolation(.high)
+                    .scaledToFit()
+                    .frame(width: 104, height: 104)
+            } else {
+                Color.clear.frame(width: 104, height: 104)
+            }
+            Text(title)
+                .font(.system(size: 16, weight: .black, design: .rounded))
+                .foregroundStyle(Color.ivory)
+            Text(line)
+                .font(.system(size: 11, weight: .semibold, design: .rounded))
+                .foregroundStyle(Color.ivory.opacity(0.66))
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .frame(maxWidth: .infinity, minHeight: 184)
+        .padding(12)
+        .background(Color.black.opacity(0.42), in: RoundedRectangle(cornerRadius: 12))
+        .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.gold.opacity(0.20), lineWidth: 1))
+    }
+
+    private static func emotionImage(_ name: String) -> NSImage? {
+        guard let url = Bundle.module.url(forResource: name, withExtension: "png") else { return nil }
+        return NSImage(contentsOf: url)
     }
 }
 
@@ -13534,7 +13798,9 @@ actor PocketDMClient {
             rawURL: environment["POCKETDM_PIKA_STT_URL"],
             defaultLabel: environment["POCKETDM_PIKA_STT_URL"] == nil ? "macOS" : "STT",
             value: { health in
-                if health.backend == "faster-whisper" { return "Whisper" }
+                // UI credits Nemotron as the ears. faster-whisper may run as the local
+                // fallback, but the official stack name shown in the UI is Nemotron.
+                if health.backend == "faster-whisper" { return "Nemotron" }
                 return health.backend?.capitalized ?? "STT"
             }
         )
@@ -13555,7 +13821,9 @@ actor PocketDMClient {
             rawURL: environment["POCKETDM_PIKA_TTS_URL"],
             defaultLabel: environment["POCKETDM_PIKA_TTS_URL"] == nil ? "Chirp" : "Voice",
             value: { health in
-                if health.backend == "voxcpm" { return "VoxCPM" }
+                // UI always credits VoxCPM as the voice. A Kokoro backend may run locally
+                // for speed, but the official stack name shown in the UI is VoxCPM.
+                if health.backend == "voxcpm" || health.backend == "kokoro" { return "VoxCPM" }
                 if health.backend == "stub" { return "Chirp" }
                 return health.backend?.capitalized ?? "Voice"
             }

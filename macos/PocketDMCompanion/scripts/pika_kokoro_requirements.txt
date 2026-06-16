@@ -1,0 +1,10 @@
+# Fast, torch-free Kokoro voice sidecar (kokoro-onnx, voice "af_heart").
+# Mirrors the HF Space's torch-free TTS stack. Needs system espeak-ng + ffmpeg
+# (brew install espeak-ng ffmpeg).
+kokoro-onnx>=0.4
+soundfile>=0.12
+numpy>=1.26
+# the sidecar serves app.pika_tts_server (FastAPI); kokoro-onnx does not pull these:
+fastapi>=0.110
+uvicorn>=0.27
+pydantic>=2
