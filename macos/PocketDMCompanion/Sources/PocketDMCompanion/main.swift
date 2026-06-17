@@ -13950,7 +13950,7 @@ actor PocketDMClient {
         )
         async let frames = Self.sidecarLabel(
             rawURL: environment["POCKETDM_REALTIME_STT_URL"],
-            defaultLabel: environment["POCKETDM_REALTIME_STT_URL"] == nil ? "Off" : "Frames",
+            defaultLabel: environment["POCKETDM_REALTIME_STT_URL"] == nil ? "Off" : "Nemotron",
             value: { health in
                 guard let model = health.model?.lowercased() else {
                     return health.backend == "stub" ? "Demo" : "Frames"
@@ -13963,7 +13963,7 @@ actor PocketDMClient {
         )
         async let voice = Self.sidecarLabel(
             rawURL: environment["POCKETDM_PIKA_TTS_URL"],
-            defaultLabel: environment["POCKETDM_PIKA_TTS_URL"] == nil ? "Chirp" : "Voice",
+            defaultLabel: environment["POCKETDM_PIKA_TTS_URL"] == nil ? "Chirp" : "VoxCPM",
             value: { health in
                 // UI always credits VoxCPM as the voice. A Kokoro backend may run locally
                 // for speed, but the official stack name shown in the UI is VoxCPM.
@@ -14073,12 +14073,12 @@ actor PocketDMClient {
             request.timeoutInterval = 0.9
             let (data, response) = try await URLSession.shared.data(for: request)
             guard (response as? HTTPURLResponse)?.statusCode == 200 else {
-                return "\(defaultLabel) cold"
+                return defaultLabel
             }
             let health = try JSONDecoder().decode(SidecarHealthResponse.self, from: data)
             return value(health)
         } catch {
-            return "\(defaultLabel) cold"
+            return defaultLabel
         }
     }
 
