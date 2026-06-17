@@ -3,6 +3,8 @@ __pycache__/
 *.pyc
 .env
 *.gguf
+*.onnx
+space/voices-v1.0.bin
 *.wav
 !macos/PocketDMCompanion/Sources/PocketDMCompanion/Resources/chirp-*.wav
 !macos/PocketDMCompanion/Sources/PocketDMCompanion/Resources/pika-voice-*.wav

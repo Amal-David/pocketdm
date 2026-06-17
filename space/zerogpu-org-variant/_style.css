@@ -1,0 +1,300 @@
+/* ============================================================================
+   Pocket Pikachu — landing styles (high-contrast, professional)
+   Imported fonts: Fredoka (display) + Inter (body) loaded in app.py <head>.
+   Design: warm off-white surface (not flat yellow), strong dark text,
+   electric-yellow accents reserved for highlights, generous spacing.
+   ============================================================================ */
+
+:root {
+  --ink:        #20242e;   /* dark body text (high contrast on cream) */
+  --ink-soft:   #353a47;   /* secondary body — still clearly dark */
+  --ink-faint:  #4a5160;   /* captions — darkened, no longer washed out */
+  --accent:     #b45309;   /* DEEP amber — emphasis, MORE visible than body */
+  --accent-2:   #3730a3;   /* deep indigo — secondary emphasis */
+  --bolt:       #f6a700;   /* electric amber (decorative accents/borders) */
+  --bolt-deep:  #b45309;   /* deep amber for borders/highlights */
+  --spark:      #3730a3;   /* deep indigo link/accent */
+  --surface:    #fbfaf6;   /* warm off-white page */
+  --card:       #ffffff;   /* card surface */
+  --card-edge:  #e2ddd0;   /* hairline */
+  --shadow:     0 10px 30px rgba(40, 32, 8, 0.12);
+  --shadow-sm:  0 4px 14px rgba(40, 32, 8, 0.09);
+  --radius:     20px;
+}
+
+/* Force a light surface even if the visitor's Gradio theme is dark. */
+:root, .dark, .gradio-container.dark {
+  --body-background-fill: var(--surface) !important;
+  --background-fill-primary: var(--surface) !important;
+  --body-text-color: #20242e !important;
+  --body-text-color-subdued: #4a5160 !important;
+  color-scheme: light !important;
+}
+
+/* ============================================================================
+   HARD CONTRAST OVERRIDES — Gradio's theme cascade washes text out on the live
+   Space (custom-property colors get re-resolved). Pin every text run to a dark
+   color with !important so nothing is "only readable when highlighted".
+   ============================================================================ */
+#pet-app, #pet-app * { color: #20242e; }
+#pet-app p, #pet-app li, #pet-app td, #pet-app .hero-sub,
+#pet-app .section-head p, #pet-app .talk-hint, #pet-app .emotion .desc,
+#pet-app .stack-table td, #pet-app .stack-table th { color: #353a47 !important; }
+#pet-app h1, #pet-app h2, #pet-app h3, #pet-app .name,
+#pet-app .stack-table td:first-child { color: #20242e !important; }
+/* Emphasis must be MORE visible than body, never less */
+#pet-app b, #pet-app strong, #pet-app .prose b, #pet-app .prose li b,
+#pet-app .prose p b, #pet-app .lede b { color: #92400e !important; font-weight: 700; }
+#pet-app .hero-sub b { color: #20242e !important; }
+#pet-app code { color: #92400e !important; background: #f3ede2 !important; }
+#pet-app .chip { color: #20242e !important; }
+#pet-app .eyebrow, #pet-app .eyebrow * { color: #20242e !important; }
+#pet-app .chip.local, #pet-app .chip.local * { color: #ffffff !important; }
+#pet-app .btn-dark, #pet-app .btn-dark * { color: #ffffff !important; }
+#pet-app .foot, #pet-app .foot * { color: #4a5160 !important; }
+#pet-app .foot a { color: #3730a3 !important; }
+
+/* Page surface — soft cream with a faint sunny glow at the top, NOT flat yellow.
+   Transparent sprite + alpha videos read cleanly on this. */
+html, body,
+.gradio-container,
+.gradio-container .main,
+.gradio-container.dark {
+  background:
+    radial-gradient(1100px 520px at 50% -8%, #fff4cf 0%, rgba(255,244,207,0) 60%),
+    radial-gradient(900px 600px at 88% 8%, #eef4ff 0%, rgba(238,244,255,0) 55%),
+    var(--surface) !important;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+  color: var(--ink) !important;
+}
+
+#pet-app { max-width: 1040px; margin: 0 auto; padding: 0 14px 40px; }
+
+/* ---- Generic typography --------------------------------------------------- */
+#pet-app h1, #pet-app h2, #pet-app h3 {
+  font-family: 'Fredoka', system-ui, sans-serif !important;
+  color: var(--ink) !important;
+  letter-spacing: -0.01em;
+  font-weight: 700;
+}
+#pet-app p { color: var(--ink-soft); line-height: 1.6; }
+
+/* =========================================================================
+   HERO
+   ========================================================================= */
+.hero {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr minmax(280px, 360px) 1fr;
+  align-items: center;
+  gap: 8px;
+  padding: 30px 0 8px;
+  min-height: 360px;
+}
+.hero-side {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.hero-vid {
+  width: 100%;
+  max-width: 280px;
+  height: auto;
+  filter: drop-shadow(0 14px 26px rgba(40, 32, 8, 0.18));
+}
+.hero-vid.right { transform: scaleX(1); }
+
+.hero-center { text-align: center; }
+.eyebrow {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: #fff4d6;                 /* warm tinted pill for contrast */
+  border: 1.5px solid #f0c64e;
+  color: #6b3d06 !important;          /* deep amber text — clearly legible */
+  font-weight: 700; font-size: 0.78rem; letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 6px 14px; border-radius: 999px;
+  box-shadow: var(--shadow-sm);
+}
+.eyebrow, .eyebrow * { color: #6b3d06 !important; }
+.eyebrow .dot { width: 7px; height: 7px; border-radius: 50%; background: #2ecc71; box-shadow: 0 0 0 3px rgba(46,204,113,.18); }
+
+/* Sprite-sheet animation — 12 frames in a 6144x512 strip, ~10 fps.
+   Frame box = 230px; sheet scaled to 12*230 = 2760px wide so each step is one
+   frame. Pixel-based positions (NOT %), because % background-position maps to
+   (box - image) and would land between frames. */
+.sprite-stage { position: relative; display: flex; flex-direction: column; align-items: center; margin: 6px 0 2px; }
+.sprite {
+  width: 230px; height: 230px;
+  background-image: var(--sprite-url);
+  background-repeat: no-repeat;
+  background-size: 2760px 230px;     /* 12 frames * 230px */
+  image-rendering: auto;
+  animation: sprite-play 1.2s steps(12) infinite,
+             sprite-bob 2.8s ease-in-out infinite;
+  filter: drop-shadow(0 16px 22px rgba(40, 32, 8, 0.28));
+  cursor: grab;
+}
+@keyframes sprite-play { from { background-position: 0 0; } to { background-position: -2760px 0; } }
+@keyframes sprite-bob  { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+.sprite-shadow {
+  width: 130px; height: 20px; margin-top: -2px;
+  background: rgba(40,32,8,0.16); border-radius: 50%; filter: blur(5px);
+  animation: shadow-pulse 2.8s ease-in-out infinite;
+}
+@keyframes shadow-pulse { 0%,100% { transform: scaleX(1); opacity:.7;} 50%{ transform: scaleX(.82); opacity:.45;} }
+
+.hero-title {
+  font-size: clamp(1.9rem, 4.6vw, 3rem) !important;
+  line-height: 1.05;
+  margin: 6px 0 8px !important;
+  white-space: nowrap;            /* keep "⚡ Pocket Pikachu" on ONE line */
+}
+.hero-title .zap { color: var(--bolt-deep); }
+.hero-sub {
+  font-size: 1.06rem; color: var(--ink-soft) !important;
+  max-width: 440px; margin: 0 auto 14px; font-weight: 450;
+}
+.hero-sub b { color: var(--ink); font-weight: 650; }
+
+.cta-row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 6px; }
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-weight: 650; font-size: 0.95rem; text-decoration: none !important;
+  padding: 11px 20px; border-radius: 12px; transition: transform .12s ease, box-shadow .12s ease;
+  border: 1.5px solid transparent;
+}
+.btn:active { transform: translateY(1px); }
+.btn-dark { background: var(--ink); color: #fff !important; box-shadow: var(--shadow-sm); }
+.btn-dark:hover { box-shadow: var(--shadow); transform: translateY(-1px); }
+.btn-ghost { background: #fff; color: var(--ink) !important; border-color: var(--card-edge); box-shadow: var(--shadow-sm); }
+.btn-ghost:hover { border-color: var(--bolt-deep); }
+
+/* =========================================================================
+   SECTION SCAFFOLD
+   ========================================================================= */
+.section { margin: 34px 0 0; }
+/* Center every section heading AND its intro paragraph, site-wide. */
+.section-head { text-align: center !important; margin: 0 auto 18px !important; max-width: 720px; }
+.section-head * { text-align: center !important; }
+.section-head h2 { font-size: 1.7rem !important; margin: 0 auto 6px !important; }
+.section-head p {
+  color: #4a5160 !important; font-size: 0.98rem;
+  margin: 0 auto !important; max-width: 620px; text-align: center !important;
+}
+/* Hero is centered too (covers the demo/youtube intros which are section-heads). */
+#pet-app .hero-center, #pet-app .section-head { margin-inline: auto; }
+
+.card {
+  background: var(--card); border: 1px solid var(--card-edge);
+  border-radius: var(--radius); box-shadow: var(--shadow-sm);
+}
+
+/* What it is / why different — feature grid */
+.feature-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.feature {
+  background: var(--card); border: 1px solid var(--card-edge); border-radius: 16px;
+  padding: 18px 18px 16px; box-shadow: var(--shadow-sm);
+}
+.feature .ico { font-size: 1.5rem; }
+.feature h3 { font-size: 1.05rem !important; margin: 8px 0 5px !important; }
+.feature p { font-size: 0.9rem; color: var(--ink-soft); margin: 0; line-height: 1.5; }
+
+/* Emotion row */
+.emotion-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+.emotion {
+  background: linear-gradient(180deg, #fffdf6 0%, #fff 100%);
+  border: 1px solid var(--card-edge); border-radius: 16px;
+  padding: 12px 8px 10px; text-align: center; box-shadow: var(--shadow-sm);
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+.emotion:hover { transform: translateY(-4px); box-shadow: var(--shadow); }
+.emotion img { width: 84px; height: 84px; object-fit: contain; }
+.emotion .name { font-weight: 700; font-size: 0.86rem; color: var(--ink); margin-top: 4px; font-family: 'Fredoka', sans-serif; }
+.emotion .desc { font-size: 0.72rem; color: var(--ink-faint); margin-top: 1px; }
+
+/* YouTube — responsive 16:9 */
+.yt-wrap { max-width: 760px; margin: 0 auto; }
+.yt-frame {
+  position: relative; width: 100%; padding-top: 56.25%;
+  border-radius: var(--radius); overflow: hidden;
+  box-shadow: var(--shadow); border: 1px solid var(--card-edge); background: #000;
+}
+.yt-frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+
+/* Stack chips */
+.chip-row { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin: 6px 0 2px; }
+.chip {
+  background: #fff; color: var(--ink-soft);
+  border: 1.5px solid var(--card-edge); border-radius: 999px;
+  padding: 6px 13px; font-size: 0.8rem; font-weight: 600;
+  box-shadow: var(--shadow-sm);
+}
+.chip b { color: var(--ink); }
+.chip.local { background: var(--ink); color: #fff; border-color: var(--ink); }
+.chip.voice { border-color: var(--bolt-deep); background: #fffaf0; }
+
+/* Long-form prose cards (field notes, learnings) */
+.prose { padding: 26px 30px; }
+.prose h3 { font-size: 1.18rem !important; margin: 22px 0 8px !important; color: var(--ink) !important; }
+.prose h3:first-child { margin-top: 4px !important; }
+.prose p { color: var(--ink-soft); font-size: 0.95rem; line-height: 1.68; margin: 0 0 10px; }
+.prose ul { margin: 4px 0 14px; padding-left: 20px; }
+.prose li { color: var(--ink-soft); font-size: 0.95rem; line-height: 1.6; margin-bottom: 7px; }
+.prose li b, .prose p b { color: var(--ink); font-weight: 650; }
+.prose code {
+  background: #f4f1ea; color: #7a4b00; padding: 1px 6px; border-radius: 6px;
+  font-size: 0.86em; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+.prose .lede { font-size: 1.04rem; color: var(--ink); font-weight: 500; border-left: 3px solid var(--bolt); padding-left: 14px; }
+
+/* Stack table */
+.stack-table { width: 100%; border-collapse: collapse; margin: 6px 0 4px; }
+.stack-table th, .stack-table td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--card-edge); font-size: 0.92rem; }
+.stack-table th { color: var(--ink-faint); font-weight: 600; font-size: 0.78rem; text-transform: uppercase; letter-spacing: .04em; }
+.stack-table td:first-child { font-weight: 650; color: var(--ink); white-space: nowrap; }
+.stack-table code { font-size: 0.84em; }
+
+/* =========================================================================
+   LIVE DEMO (keeps the working voice/chat) — restyle to match
+   ========================================================================= */
+.demo-shell {
+  background: linear-gradient(180deg, #fffdf5 0%, #fff 100%);
+  border: 1px solid var(--card-edge); border-radius: var(--radius);
+  box-shadow: var(--shadow); padding: 22px 22px 18px; margin-top: 8px;
+}
+.talk-hint { text-align: center; color: var(--ink-soft); font-weight: 600; font-size: 0.95rem; margin: 2px 0 12px; }
+.demo-sprite { display:flex; justify-content:center; }
+.demo-sprite img { width: 150px; height: 150px; object-fit: contain; filter: drop-shadow(0 8px 14px rgba(40,32,8,.25)); animation: sprite-bob 2.8s ease-in-out infinite; }
+
+#pet-chat { border: none !important; background: transparent !important; }
+#pet-chat .message-row .message {
+  border-radius: 16px !important; border: none !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+#pet-chat .user .message { background: #eef2ff !important; color: var(--ink) !important; }
+#pet-chat .bot .message  { background: #fff7d6 !important; color: #4a3000 !important; }
+
+#pet-app button.primary, .talk-btn button {
+  background: var(--ink) !important; border: none !important; color: #fff !important;
+  border-radius: 12px !important; font-weight: 650 !important; box-shadow: var(--shadow-sm) !important;
+}
+#pet-app button.primary:hover, .talk-btn button:hover { transform: translateY(-1px); }
+
+/* Accordions */
+#pet-app .label-wrap span { color: var(--ink) !important; font-weight: 600; }
+
+.foot { text-align: center; color: var(--ink-faint); font-size: 0.85rem; margin-top: 30px; }
+.foot a { color: var(--spark); text-decoration: none; }
+footer { display: none !important; }
+
+/* =========================================================================
+   RESPONSIVE
+   ========================================================================= */
+@media (max-width: 860px) {
+  .hero { grid-template-columns: 1fr; }
+  .hero-side { display: none; }     /* hide flanking videos on narrow screens */
+  .feature-grid { grid-template-columns: 1fr; }
+  .emotion-grid { grid-template-columns: repeat(2, 1fr); }
+  .emotion-grid .emotion:last-child { grid-column: 1 / -1; }
+  .prose { padding: 20px 18px; }
+}
