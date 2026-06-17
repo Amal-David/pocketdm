@@ -2107,18 +2107,18 @@ final class DragonOverlayModel: ObservableObject {
 
     func expressEmotion(named name: String) {
         guard !busy, !isVoiceListening else { return }
-        let sleepy = name.caseInsensitiveCompare("Sleepy") == .orderedSame
+        let scared = name.caseInsensitiveCompare("Scared") == .orderedSame
         lastRequest = "\(name) mood"
         conversationBubbleActive = true
         appendChatMessage(.user, "Show your \(name.lowercased()) mood")
-        let line = sleepy
-            ? "Pika... pika. (yawn) I'm getting sleepy — a little recharge and I'll be bright again."
+        let line = scared
+            ? "Pika...! That startled me. A calm, steady voice helps me feel safe again."
             : "Pika pika... I'm feeling a little down. A gentle pet would cheer me right up!"
         message = pikaText(line)
         appendChatMessage(.assistant, message)
         voiceStatusLine = "Pikachu feels \(name.lowercased())."
-        play(sleepy ? .nap : .alert)
-        setMood(sleepy ? .nap : .look, duration: 3.0)
+        play(scared ? .alert : .nap)
+        setMood(scared ? .scared : .sad, duration: 3.0)
         speakPikaLine(message, force: true)
     }
 
@@ -9186,6 +9186,8 @@ enum PetMood: String, CaseIterable {
     case spark
     case sleepGuard
     case peek
+    case sad
+    case scared
 
     var dailyWheelTitle: String {
         switch self {
@@ -9201,6 +9203,10 @@ enum PetMood: String, CaseIterable {
             return "Reset"
         case .nap:
             return "Sleepy"
+        case .sad:
+            return "Sad"
+        case .scared:
+            return "Scared"
         default:
             return "Bright"
         }
@@ -9222,6 +9228,10 @@ enum PetMood: String, CaseIterable {
             return "fresh after a tiny reset"
         case .nap:
             return "soft and sleepy"
+        case .sad:
+            return "a little down"
+        case .scared:
+            return "startled"
         default:
             return "bright"
         }
@@ -9237,6 +9247,10 @@ enum PetMood: String, CaseIterable {
             return "pet-hyper"
         case .alert, .thinking, .sleepGuard:
             return "pet-alert"
+        case .sad:
+            return "pet-sad"
+        case .scared:
+            return "pet-scared"
         }
     }
 
@@ -9327,6 +9341,18 @@ enum PetMood: String, CaseIterable {
                 "\(prefix)-ambient-journal-peek",
                 "\(prefix)-journal-open",
                 "\(prefix)-proud"
+            ]
+        case .sad:
+            stageCandidates = [
+                "\(prefix)-sad",
+                "\(prefix)-lonely",
+                "\(prefix)-need-rest"
+            ]
+        case .scared:
+            stageCandidates = [
+                "\(prefix)-scared",
+                "\(prefix)-protective",
+                "\(prefix)-alert"
             ]
         }
         return stageCandidates + [fallbackAssetName]
@@ -11916,11 +11942,11 @@ enum PetJournalPage: String, CaseIterable {
 struct EmotionWheelPanel: View {
     @ObservedObject var model: DragonOverlayModel
 
-    // The two extra emotion sprites Pikachu has beyond its everyday happy/hyper:
-    // a sad pose and a sleepy pose. The wheel showcases only these two.
-    private let emotions: [(title: String, asset: String, line: String)] = [
-        ("Sad", "pet-emotion-sad", "A gentle pet or a kind word lifts Pikachu right back up."),
-        ("Sleepy", "pet-emotion-sleepy", "Pikachu is winding down — a little recharge and it's bright again."),
+    // The two extra emotion sprite sheets beyond the everyday happy/hyper: Sad and
+    // Scared. The wheel animates the real 12-frame strips (not static poses).
+    private let emotions: [(title: String, mood: PetMood, line: String)] = [
+        ("Sad", .sad, "A gentle pet or a kind word lifts Pikachu right back up."),
+        ("Scared", .scared, "A calm, steady voice helps Pikachu feel safe again."),
     ]
 
     var body: some View {
@@ -11938,7 +11964,7 @@ struct EmotionWheelPanel: View {
                     Button {
                         model.expressEmotion(named: emotion.title)
                     } label: {
-                        emotionCard(title: emotion.title, asset: emotion.asset, line: emotion.line)
+                        emotionCard(title: emotion.title, mood: emotion.mood, line: emotion.line)
                     }
                     .buttonStyle(.plain)
                     .disabled(model.busy || model.isVoiceListening)
@@ -11949,17 +11975,15 @@ struct EmotionWheelPanel: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    private func emotionCard(title: String, asset: String, line: String) -> some View {
+    private func emotionCard(title: String, mood: PetMood, line: String) -> some View {
         VStack(spacing: 8) {
-            if let image = Self.emotionImage(asset) {
-                Image(nsImage: image)
-                    .resizable()
-                    .interpolation(.high)
-                    .scaledToFit()
-                    .frame(width: 104, height: 104)
-            } else {
-                Color.clear.frame(width: 104, height: 104)
-            }
+            AnimatedPetSprite(
+                character: model.companionCharacter,
+                stage: model.growthStage,
+                mood: mood,
+                size: 104
+            )
+            .frame(width: 104, height: 104)
             Text(title)
                 .font(.system(size: 16, weight: .black, design: .rounded))
                 .foregroundStyle(Color.ivory)
@@ -11973,11 +11997,6 @@ struct EmotionWheelPanel: View {
         .padding(12)
         .background(Color.black.opacity(0.42), in: RoundedRectangle(cornerRadius: 12))
         .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.gold.opacity(0.20), lineWidth: 1))
-    }
-
-    private static func emotionImage(_ name: String) -> NSImage? {
-        guard let url = Bundle.module.url(forResource: name, withExtension: "png") else { return nil }
-        return NSImage(contentsOf: url)
     }
 }
 
