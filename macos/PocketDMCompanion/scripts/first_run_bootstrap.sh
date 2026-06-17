@@ -16,7 +16,7 @@
 #   POCKETDM_WORKDIR         writable working dir (default: Application Support)
 set -uo pipefail
 
-TOTAL=6
+TOTAL=7
 step() { echo "PROGRESS: $1/$TOTAL $2"; }
 fail() { echo "ERROR: $1"; exit 1; }
 
@@ -76,7 +76,17 @@ if [[ ! -x "$STT_VENV/bin/python" ]]; then
     -r "$WORK/$REQ_DIR_REL/pika_stt_requirements.txt" || fail "ears install failed"
 fi
 
-step 6 "Downloading the brain weights (~700 MB, one time)"
+step 6 "Setting up the companion server"
+WEB_VENV="$WORK/.pika-web-venv"
+if [[ ! -x "$WEB_VENV/bin/python" ]]; then
+  "$UV" venv "$WEB_VENV" --python "$PYVER" || fail "server venv create failed"
+  # The companion server (app/server.py) is torch-free: FastAPI + Gradio's Server.
+  "$UV" pip install --python "$WEB_VENV/bin/python" \
+    "fastapi>=0.115" "gradio==6.17.3" "pydantic>=2" "python-multipart>=0.0.9" "httpx" \
+    || fail "server deps failed"
+fi
+
+step 7 "Downloading the brain weights (~700 MB, one time)"
 BRAIN="$WORK/models/minicpm5-1b/MiniCPM5-1B-Q4_K_M.gguf"
 if [[ ! -f "$BRAIN" ]]; then
   "$UV" run --with huggingface-hub hf download openbmb/MiniCPM5-1B-GGUF MiniCPM5-1B-Q4_K_M.gguf \

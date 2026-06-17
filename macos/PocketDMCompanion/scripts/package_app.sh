@@ -104,6 +104,24 @@ if [[ "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$bundle/Content
   exit 65
 fi
 
+# Bundle the torch-free Python runtime payload so the app can self-bootstrap the
+# local stack on first launch (build venvs + download weights). Kept lean: app
+# source + sidecar scripts + the bundled Kokoro voice weights; no tests/models/venvs.
+repo_root="$(cd "$project_dir/../.." >/dev/null 2>&1 && pwd -P)"
+runtime_payload="$bundle/Contents/Resources/pocketdm-runtime"
+echo "Bundling Python runtime payload into Resources/pocketdm-runtime" >&2
+mkdir -p "$runtime_payload/macos/PocketDMCompanion" "$runtime_payload/space"
+payload_excludes=(--exclude '__pycache__' --exclude '*.pyc' --exclude '.venv' --exclude '.pika-*-venv' \
+  --exclude 'voices/models' --exclude 'voices/auditions')
+rsync -a "${payload_excludes[@]}" "$repo_root/app" "$runtime_payload/"
+[[ -d "$repo_root/engine" ]] && rsync -a "${payload_excludes[@]}" "$repo_root/engine" "$runtime_payload/"
+rsync -a "${payload_excludes[@]}" "$repo_root/macos/PocketDMCompanion/scripts" "$runtime_payload/macos/PocketDMCompanion/"
+cp "$repo_root/app.py" "$runtime_payload/" 2>/dev/null || true
+cp "$repo_root/pyproject.toml" "$runtime_payload/" 2>/dev/null || true
+cp "$repo_root/uv.lock" "$runtime_payload/" 2>/dev/null || true
+cp "$repo_root/space/kokoro-v1.0.onnx" "$runtime_payload/space/" 2>/dev/null || echo "WARN: kokoro-v1.0.onnx missing from payload" >&2
+cp "$repo_root/space/voices-v1.0.bin" "$runtime_payload/space/" 2>/dev/null || echo "WARN: voices-v1.0.bin missing from payload" >&2
+
 # Code-sign with a stable Apple Development identity so macOS (TCC) remembers the
 # microphone/speech permission grant across rebuilds and relaunches. An ad-hoc
 # signature changes every build, which is why the mic permission kept re-prompting.
