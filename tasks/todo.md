@@ -100,3 +100,27 @@ streaming Silero-VAD turn loop. Demo sidecars (7861/7862/7863) untouched.
 - Confirm AVAudioConverter resampling on the real input device (48k→16k) yields clean
   STT (the conversion path is the riskiest unverified spot).
 - Confirm no double-finalize / dropped first word at turn boundaries.
+
+---
+
+# Workstream 3 — Native first-run flow + stack orchestration
+
+## Part A — start_stack.sh (new)
+- [ ] Write `macos/PocketDMCompanion/scripts/start_stack.sh`
+- [ ] Start ONLY brain(8081) + Kokoro TTS(7861) + faster-whisper STT(7862) + web(7860)
+- [ ] Skip Nemotron ASR sidecar (avoids multi-GB NeMo install)
+- [ ] Idempotent (skip if port already live), emit `STACK_STARTED`
+
+## Part B — native first-run flow (main.swift)
+- [ ] Distributed-build detection (Bundle.main.resourceURL has pocketdm-runtime)
+- [ ] Gate applicationDidFinishLaunching: dev path unchanged; distributed bootstrap
+- [ ] BootstrapModel: ObservableObject (Process + Pipe + PROGRESS parsing)
+- [ ] BootstrapView (SwiftUI, design system) + BootstrapWindow (NSWindow)
+- [ ] State machine: bootstrap -> start_stack -> poll 7860 health -> pet
+- [ ] PocketDMServerProcess honors POCKETDM_WEB_VENV (or distributed path owns web)
+
+## Part C — verification
+- [ ] swift build -c release green between parts
+- [ ] uv run --group dev pytest -q green
+- [ ] Commit each part w/ Co-Authored-By trailer; push branch
+- [ ] Do NOT relaunch user's running app / sidecars
