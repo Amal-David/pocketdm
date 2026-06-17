@@ -17,6 +17,7 @@ data/out/
 eval/results/
 models/
 output/
+dist/
 tmp/
 .superplan/changes/
 .superplan/runtime/
