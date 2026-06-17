@@ -2122,6 +2122,50 @@ final class DragonOverlayModel: ObservableObject {
         speakPikaLine(message, force: true)
     }
 
+    func openReminders() {
+        guard learningMode != .reminders else { return }
+        learningMode = .reminders
+        lastRequest = "Reminders"
+        message = pikaText("Reminders opened. Drink water, stand up, take a short walk — tap one when you do it!")
+        play(.open)
+    }
+
+    func isReminderDone(_ action: DailyWellnessAction) -> Bool {
+        dailyWellnessMask & action.rawValue != 0
+    }
+
+    func markReminder(_ action: DailyWellnessAction) {
+        guard !busy, !isVoiceListening else { return }
+        applyVitalDecay()
+        lastRequest = action.title
+        conversationBubbleActive = true
+        guard !isReminderDone(action) else {
+            message = pikaText("Pika! You already did '\(action.title)' today — lovely care streak!")
+            appendChatMessage(.assistant, message)
+            voiceStatusLine = "\(action.title) already done today."
+            setMood(.happy, duration: 1.0)
+            return
+        }
+        appendChatMessage(.user, action.actionTitle)
+        dailyWellnessMask |= action.rawValue
+        companionHP = min(10, companionHP + 1)
+        awardCompanionHealth(15)
+        happiness = min(5, happiness + 1)
+        earnSparkDust(1)
+        celebrationBurstID += 1
+        var line = "Pika pika! Nice care — '\(action.title)' done! Bond HP up."
+        if let vitalNote = refillVital(action.vital, by: 1) {
+            line += " \(vitalNote)"
+        }
+        message = pikaText(line)
+        appendChatMessage(.assistant, message)
+        voiceStatusLine = "\(action.title) done. Health up."
+        persistCare()
+        play(.happy)
+        setMood(.happy, duration: 1.4)
+        speakPikaLine(message, force: true)
+    }
+
     func applyLanguageReward(_ reward: LanguagePracticeReward) {
         let priorStage = growthStage
         applyVitalDecay()
@@ -10774,6 +10818,11 @@ struct DragonOverlayView: View {
                         EmotionWheelPanel(model: model)
                     }
                     .frame(maxHeight: 456)
+                } else if model.learningMode == .reminders {
+                    ScrollView(.vertical, showsIndicators: false) {
+                        RemindersPanel(model: model)
+                    }
+                    .frame(maxHeight: 456)
                 } else {
                     expandedChatPanel
                 }
@@ -11804,6 +11853,9 @@ struct DragonOverlayView: View {
             modeButton("Mood", mode: .emotions) {
                 model.openEmotions()
             }
+            modeButton("Reminders", mode: .reminders) {
+                model.openReminders()
+            }
         }
         .disabled(model.busy)
     }
@@ -11936,6 +11988,66 @@ enum PetJournalPage: String, CaseIterable {
         case .art:
             return "Art"
         }
+    }
+}
+
+struct RemindersPanel: View {
+    @ObservedObject var model: DragonOverlayModel
+
+    // Physical wellness nudges (the affirmation check-in lives in its own flow).
+    private let reminders: [DailyWellnessAction] = [.water, .stand, .walk]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Reminders")
+                .font(.system(size: 20, weight: .black, design: .rounded))
+                .foregroundStyle(Color.ivory)
+            Text("Little nudges to keep you healthy. Tap one when you've done it.")
+                .font(.system(size: 13, weight: .bold, design: .rounded))
+                .foregroundStyle(Color.gold.opacity(0.92))
+                .fixedSize(horizontal: false, vertical: true)
+
+            ForEach(reminders, id: \.self) { reminder in
+                reminderRow(reminder)
+            }
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func reminderRow(_ reminder: DailyWellnessAction) -> some View {
+        let done = model.isReminderDone(reminder)
+        return Button {
+            model.markReminder(reminder)
+        } label: {
+            HStack(spacing: 12) {
+                Image(systemName: reminder.systemImage)
+                    .font(.system(size: 20, weight: .bold))
+                    .foregroundStyle(done ? Color.gold : Color.ivory)
+                    .frame(width: 30)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(reminder.question)
+                        .font(.system(size: 14, weight: .black, design: .rounded))
+                        .foregroundStyle(Color.ivory)
+                    Text(done ? "Done today — nice care streak!" : "Tap when you've done it.")
+                        .font(.system(size: 11, weight: .semibold, design: .rounded))
+                        .foregroundStyle(Color.ivory.opacity(0.62))
+                }
+                Spacer(minLength: 0)
+                Image(systemName: done ? "checkmark.circle.fill" : "circle")
+                    .font(.system(size: 20))
+                    .foregroundStyle(done ? Color.gold : Color.ivory.opacity(0.4))
+            }
+            .padding(12)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Color.black.opacity(0.42), in: RoundedRectangle(cornerRadius: 10))
+            .overlay(
+                RoundedRectangle(cornerRadius: 10)
+                    .stroke(done ? Color.gold.opacity(0.5) : Color.gold.opacity(0.18), lineWidth: 1)
+            )
+        }
+        .buttonStyle(.plain)
+        .disabled(model.busy || model.isVoiceListening)
     }
 }
 
