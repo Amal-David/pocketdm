@@ -23,12 +23,23 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var overlayController: DragonOverlayController?
     private var serverProcess: PocketDMServerProcess?
     private var statusItem: NSStatusItem?
+    private var bootstrapWindow: BootstrapWindowController?
+    private var bootstrapModel: BootstrapModel?
 
     init(arguments: CompanionArguments) {
         self.arguments = arguments
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        // Distributed build: the bundled Python runtime payload lives in Resources.
+        // It owns its own first-run bootstrap + stack startup, so it runs a separate
+        // flow. Dev builds (launched via launch_app.sh --attach with the stack
+        // already up) keep the original attach-and-show behavior below unchanged.
+        if let payload = DistributedRuntime.payloadDirectory() {
+            startDistributedFlow(payloadDirectory: payload)
+            return
+        }
+
         if arguments.launchServer {
             let process = PocketDMServerProcess(repoRoot: arguments.repoRoot)
             process.start()
@@ -49,6 +60,110 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationWillTerminate(_ notification: Notification) {
         serverProcess?.stop()
+    }
+
+    // MARK: - Distributed first-run flow
+
+    static let didBootstrapKey = "PocketDMCompanion.didBootstrap"
+
+    /// Drives the distributed build: (first run) show the bootstrap window and build
+    /// the on-device stack, then start the stack and reveal the pet; (subsequent runs)
+    /// just start the stack and reveal the pet. The working dir is writable, unlike the
+    /// signed app's read-only Resources, so all venvs + weights live there.
+    private func startDistributedFlow(payloadDirectory: URL) {
+        let workingDir = DistributedRuntime.workingDirectory
+        configureDistributedEnvironment(workingDir: workingDir)
+
+        if UserDefaults.standard.bool(forKey: Self.didBootstrapKey) {
+            runStackThenShowPet(payloadDirectory: payloadDirectory, workingDir: workingDir)
+            return
+        }
+
+        let model = BootstrapModel(payloadDirectory: payloadDirectory, workingDir: workingDir)
+        bootstrapModel = model
+        let controller = BootstrapWindowController(model: model)
+        bootstrapWindow = controller
+        controller.showWindow()
+
+        model.onFinished = { [weak self] in
+            guard let self else { return }
+            self.runStackThenShowPet(payloadDirectory: payloadDirectory, workingDir: workingDir)
+        }
+        model.onRetry = { [weak self] in
+            self?.bootstrapModel?.runBootstrap()
+        }
+        model.runBootstrap()
+    }
+
+    /// Starts the four-service torch-free stack (start_stack.sh in the working dir),
+    /// polls the companion web server's health, marks bootstrap complete, dismisses the
+    /// bootstrap window, and shows the pet overlay rooted at the writable working dir.
+    private func runStackThenShowPet(payloadDirectory: URL, workingDir: URL) {
+        let model = bootstrapModel ?? BootstrapModel(payloadDirectory: payloadDirectory, workingDir: workingDir)
+        bootstrapModel = model
+        model.startStackAndWaitForHealth(baseURL: arguments.baseURL) { [weak self] result in
+            guard let self else { return }
+            switch result {
+            case .success:
+                UserDefaults.standard.set(true, forKey: Self.didBootstrapKey)
+                self.presentPet(workingDir: workingDir)
+                self.bootstrapWindow?.close()
+                self.bootstrapWindow = nil
+                self.bootstrapModel = nil
+            case .failure(let message):
+                // Keep (or create) the window so the user sees the failure + Retry.
+                if self.bootstrapWindow == nil {
+                    let controller = BootstrapWindowController(model: model)
+                    self.bootstrapWindow = controller
+                    controller.showWindow()
+                }
+                model.reportFailure(message)
+                model.onRetry = { [weak self] in
+                    self?.runStackThenShowPet(payloadDirectory: payloadDirectory, workingDir: workingDir)
+                }
+            }
+        }
+    }
+
+    /// Builds the overlay rooted at the writable working dir (its `output/sprite-sheets`
+    /// and weights live there, not in the signed read-only bundle) and reveals it.
+    private func presentPet(workingDir: URL) {
+        guard overlayController == nil else {
+            overlayController?.show()
+            return
+        }
+        let client = PocketDMClient(baseURL: arguments.baseURL)
+        let launcher = GameLauncher(baseURL: arguments.baseURL)
+        let controller = DragonOverlayController(
+            client: client,
+            launcher: launcher,
+            character: arguments.character,
+            repoRoot: workingDir
+        )
+        overlayController = controller
+        controller.show()
+        installStatusItem()
+    }
+
+    /// Point the native app's voice/STT/brain clients at the local torch-free stack the
+    /// distributed build runs. Mirrors the defaults pika_demo_stack.sh's launch path sets,
+    /// minus the Nemotron realtime URL (that sidecar is intentionally not started, so the
+    /// realtime path stays unset and the app uses batch STT on 7862).
+    private func configureDistributedEnvironment(workingDir: URL) {
+        setenv("POCKETDM_REPO", workingDir.path, 1)
+        let env = ProcessInfo.processInfo.environment
+        if env["POCKETDM_PIKA_TTS_URL"] == nil {
+            setenv("POCKETDM_PIKA_TTS_URL", "http://127.0.0.1:7861/tts", 1)
+        }
+        if env["POCKETDM_PIKA_STT_URL"] == nil {
+            setenv("POCKETDM_PIKA_STT_URL", "http://127.0.0.1:7862", 1)
+        }
+        if env["POCKETDM_ASSISTANT_LLAMA_URL"] == nil {
+            setenv("POCKETDM_ASSISTANT_LLAMA_URL", "http://127.0.0.1:8081", 1)
+        }
+        if env["POCKETDM_ASSISTANT_LLAMA_MODEL"] == nil {
+            setenv("POCKETDM_ASSISTANT_LLAMA_MODEL", "minicpm5-1b-q4", 1)
+        }
     }
 
     private func installStatusItem() {
@@ -14198,8 +14313,23 @@ final class PocketDMServerProcess {
     func start() {
         guard process == nil else { return }
         let next = Process()
-        next.executableURL = URL(fileURLWithPath: "/usr/bin/env")
-        next.arguments = ["uv", "run", "python", "app.py"]
+        // When POCKETDM_WEB_VENV points at a prebuilt venv (the distributed build's
+        // torch-free .pika-web-venv), run "<venv>/bin/python app.py" directly so no
+        // compiler/uv resolution is needed. Otherwise keep the dev path: uv run python.
+        if let webVenv = ProcessInfo.processInfo.environment["POCKETDM_WEB_VENV"],
+           !webVenv.isEmpty {
+            let venvPython = URL(fileURLWithPath: webVenv).appendingPathComponent("bin/python")
+            if FileManager.default.isExecutableFile(atPath: venvPython.path) {
+                next.executableURL = venvPython
+                next.arguments = ["app.py"]
+            } else {
+                next.executableURL = URL(fileURLWithPath: "/usr/bin/env")
+                next.arguments = ["uv", "run", "python", "app.py"]
+            }
+        } else {
+            next.executableURL = URL(fileURLWithPath: "/usr/bin/env")
+            next.arguments = ["uv", "run", "python", "app.py"]
+        }
         next.currentDirectoryURL = repoRoot
         next.environment = ProcessInfo.processInfo.environment
         do {
@@ -14213,6 +14343,390 @@ final class PocketDMServerProcess {
     func stop() {
         process?.terminate()
         process = nil
+    }
+}
+
+// MARK: - Distributed runtime layout
+
+/// Resolves the bundled Python runtime payload and the writable working dir used by
+/// the distributed (self-bootstrapping) build. A dev build has no payload, so
+/// `payloadDirectory()` returns nil and the app keeps its attach-and-show behavior.
+enum DistributedRuntime {
+    static let payloadName = "pocketdm-runtime"
+
+    /// The bundled runtime tree inside the signed app's Resources, or nil for dev builds.
+    static func payloadDirectory() -> URL? {
+        guard let resources = Bundle.main.resourceURL else { return nil }
+        let payload = resources.appendingPathComponent(payloadName, isDirectory: true)
+        var isDir: ObjCBool = false
+        guard FileManager.default.fileExists(atPath: payload.path, isDirectory: &isDir),
+              isDir.boolValue else { return nil }
+        return payload
+    }
+
+    /// Writable home for venvs + downloaded weights (Resources are read-only when signed).
+    static var workingDirectory: URL {
+        let base = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
+            ?? URL(fileURLWithPath: NSHomeDirectory()).appendingPathComponent("Library/Application Support")
+        return base.appendingPathComponent("PocketDM/runtime", isDirectory: true)
+    }
+
+    static func bootstrapScript(in payload: URL) -> URL {
+        payload.appendingPathComponent("macos/PocketDMCompanion/scripts/first_run_bootstrap.sh")
+    }
+
+    static func startStackScript(in workingDir: URL) -> URL {
+        workingDir.appendingPathComponent("macos/PocketDMCompanion/scripts/start_stack.sh")
+    }
+}
+
+// MARK: - First-run bootstrap model + view
+
+/// Result of starting the local stack and waiting for the pet server to come online.
+enum BootstrapOutcome {
+    case success
+    case failure(String)
+}
+
+/// Drives the bundled first_run_bootstrap.sh and start_stack.sh as child processes,
+/// streaming their stdout into `@Published` progress for the SwiftUI BootstrapView.
+@MainActor
+final class BootstrapModel: ObservableObject {
+    @Published var fraction: Double = 0
+    @Published var stepLabel: String = "Preparing..."
+    @Published var logTail: String = ""
+    @Published var failed: Bool = false
+    @Published var finished: Bool = false
+
+    var onFinished: (() -> Void)?
+    var onRetry: (() -> Void)?
+
+    private let payloadDirectory: URL
+    private let workingDir: URL
+    private var process: Process?
+    private var logLines: [String] = []
+
+    init(payloadDirectory: URL, workingDir: URL) {
+        self.payloadDirectory = payloadDirectory
+        self.workingDir = workingDir
+    }
+
+    /// Run first_run_bootstrap.sh from the bundled payload, parsing its PROGRESS lines.
+    func runBootstrap() {
+        resetState()
+        let script = DistributedRuntime.bootstrapScript(in: payloadDirectory)
+        var env = ProcessInfo.processInfo.environment
+        env["POCKETDM_BUNDLE_RUNTIME"] = payloadDirectory.path
+        env["POCKETDM_WORKDIR"] = workingDir.path
+
+        runScript(at: script, environment: env, cwd: payloadDirectory) { [weak self] success in
+            guard let self else { return }
+            if success {
+                self.fraction = 1.0
+                self.stepLabel = "Setup complete"
+                self.finished = true
+                self.onFinished?()
+            } else if !self.failed {
+                self.reportFailure("Setup did not finish. Check your internet connection and try again.")
+            }
+        }
+    }
+
+    /// Run start_stack.sh (working-dir copy), then poll the web server health.
+    func startStackAndWaitForHealth(
+        baseURL: URL,
+        completion: @escaping (BootstrapOutcome) -> Void
+    ) {
+        resetState(keepProgress: true)
+        stepLabel = "Starting the local stack..."
+        let script = DistributedRuntime.startStackScript(in: workingDir)
+        guard FileManager.default.fileExists(atPath: script.path) else {
+            let message = "Stack launcher missing at \(script.path)."
+            reportFailure(message)
+            completion(.failure(message))
+            return
+        }
+        var env = ProcessInfo.processInfo.environment
+        env["POCKETDM_WORKDIR"] = workingDir.path
+
+        runScript(at: script, environment: env, cwd: workingDir) { [weak self] launched in
+            guard let self else { return }
+            guard launched else {
+                let message = "The local stack failed to start. See the log above."
+                completion(.failure(message))
+                return
+            }
+            self.stepLabel = "Waiting for the pet to wake up..."
+            Task {
+                let healthy = await Self.pollHealth(baseURL: baseURL)
+                if healthy {
+                    completion(.success)
+                } else {
+                    completion(.failure("The pet server did not come online in time."))
+                }
+            }
+        }
+    }
+
+    func reportFailure(_ message: String) {
+        failed = true
+        finished = false
+        stepLabel = "Something went wrong"
+        appendLog(message)
+    }
+
+    func retry() {
+        onRetry?()
+    }
+
+    // MARK: Process plumbing
+
+    private func resetState(keepProgress: Bool = false) {
+        failed = false
+        finished = false
+        if !keepProgress {
+            fraction = 0
+            logLines.removeAll()
+            logTail = ""
+        }
+    }
+
+    /// Spawn a shell script, stream stdout+stderr line-by-line on a background reader,
+    /// and hop each line back to the main actor for parsing/display.
+    private func runScript(
+        at script: URL,
+        environment: [String: String],
+        cwd: URL,
+        completion: @escaping (Bool) -> Void
+    ) {
+        let task = Process()
+        task.executableURL = URL(fileURLWithPath: "/bin/bash")
+        task.arguments = [script.path]
+        task.currentDirectoryURL = cwd
+        task.environment = environment
+
+        let pipe = Pipe()
+        task.standardOutput = pipe
+        task.standardError = pipe
+        process = task
+
+        let handle = pipe.fileHandleForReading
+        handle.readabilityHandler = { fh in
+            let data = fh.availableData
+            guard !data.isEmpty, let chunk = String(data: data, encoding: .utf8) else { return }
+            for line in chunk.split(whereSeparator: { $0 == "\n" || $0 == "\r" }) {
+                let text = String(line)
+                Task { @MainActor [weak self] in
+                    self?.consume(line: text)
+                }
+            }
+        }
+
+        task.terminationHandler = { proc in
+            handle.readabilityHandler = nil
+            let ok = proc.terminationStatus == 0
+            Task { @MainActor [weak self] in
+                self?.process = nil
+                completion(ok)
+            }
+        }
+
+        do {
+            try task.run()
+        } catch {
+            handle.readabilityHandler = nil
+            process = nil
+            completion(false)
+        }
+    }
+
+    /// Parse one stdout line: "PROGRESS: n/total label", "DONE", "ERROR: msg",
+    /// "STACK_STARTED", or generic log noise (kept as a small scrolling tail).
+    private func consume(line: String) {
+        let trimmed = line.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty else { return }
+
+        if trimmed.hasPrefix("PROGRESS:") {
+            let body = trimmed.dropFirst("PROGRESS:".count).trimmingCharacters(in: .whitespaces)
+            let parts = body.split(separator: " ", maxSplits: 1, omittingEmptySubsequences: true)
+            if let counts = parts.first {
+                let nm = counts.split(separator: "/")
+                if nm.count == 2, let done = Double(nm[0]), let total = Double(nm[1]), total > 0 {
+                    fraction = min(max(done / total, 0), 1)
+                }
+            }
+            if parts.count == 2 {
+                stepLabel = String(parts[1])
+            }
+            appendLog(trimmed)
+            return
+        }
+        if trimmed.hasPrefix("ERROR:") {
+            let message = trimmed.dropFirst("ERROR:".count).trimmingCharacters(in: .whitespaces)
+            reportFailure(message.isEmpty ? "Setup failed." : message)
+            return
+        }
+        if trimmed == "DONE" || trimmed == "STACK_STARTED" {
+            appendLog(trimmed)
+            return
+        }
+        appendLog(trimmed)
+    }
+
+    private func appendLog(_ line: String) {
+        logLines.append(line)
+        if logLines.count > 6 {
+            logLines.removeFirst(logLines.count - 6)
+        }
+        logTail = logLines.joined(separator: "\n")
+    }
+
+    private static func pollHealth(baseURL: URL) async -> Bool {
+        let url = baseURL.appendingPathComponent("health")
+        for _ in 0..<60 {
+            do {
+                let (_, response) = try await URLSession.shared.data(from: url)
+                if (response as? HTTPURLResponse)?.statusCode == 200 {
+                    return true
+                }
+            } catch {
+                // not up yet
+            }
+            try? await Task.sleep(nanoseconds: 1_000_000_000)
+        }
+        return false
+    }
+}
+
+/// Honest, on-brand first-run setup screen. Reuses the companion design tokens
+/// (Color.ivory / Color.gold) and the bundled pet-happy sprite hero.
+struct BootstrapView: View {
+    @ObservedObject var model: BootstrapModel
+
+    private var heroImage: NSImage? {
+        if let url = Bundle.module.url(forResource: "pet-happy", withExtension: "png"),
+           let image = NSImage(contentsOf: url) {
+            return image
+        }
+        return nil
+    }
+
+    var body: some View {
+        VStack(spacing: 18) {
+            if let hero = heroImage {
+                Image(nsImage: hero)
+                    .resizable()
+                    .interpolation(.high)
+                    .scaledToFit()
+                    .frame(width: 120, height: 120)
+            }
+
+            Text("Setting up Pocket Pikachu")
+                .font(.system(size: 19, weight: .black, design: .rounded))
+                .foregroundStyle(Color.ivory)
+
+            Text("First run downloads ~700 MB and sets up the on-device models — a few minutes, one time.")
+                .font(.system(size: 12, weight: .medium, design: .rounded))
+                .foregroundStyle(Color.ivory.opacity(0.7))
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.horizontal, 8)
+
+            if model.failed {
+                failureBlock
+            } else {
+                progressBlock
+            }
+        }
+        .padding(26)
+        .frame(width: 420)
+        .background(Color(red: 0.10, green: 0.08, blue: 0.05))
+    }
+
+    private var progressBlock: some View {
+        VStack(spacing: 10) {
+            ProgressView(value: model.fraction)
+                .progressViewStyle(.linear)
+                .tint(Color.gold)
+                .frame(height: 6)
+
+            HStack(spacing: 8) {
+                if !model.finished {
+                    ThinkingDotsView()
+                }
+                Text(model.stepLabel)
+                    .font(.system(size: 12.5, weight: .semibold, design: .rounded))
+                    .foregroundStyle(Color.gold)
+            }
+
+            if !model.logTail.isEmpty {
+                ScrollView {
+                    Text(model.logTail)
+                        .font(.system(size: 9.5, weight: .regular, design: .monospaced))
+                        .foregroundStyle(Color.ivory.opacity(0.42))
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .textSelection(.enabled)
+                }
+                .frame(height: 64)
+            }
+        }
+    }
+
+    private var failureBlock: some View {
+        VStack(spacing: 12) {
+            Text(model.stepLabel)
+                .font(.system(size: 13, weight: .bold, design: .rounded))
+                .foregroundStyle(Color.dangerRed)
+            if !model.logTail.isEmpty {
+                ScrollView {
+                    Text(model.logTail)
+                        .font(.system(size: 9.5, weight: .regular, design: .monospaced))
+                        .foregroundStyle(Color.ivory.opacity(0.55))
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .textSelection(.enabled)
+                }
+                .frame(height: 72)
+            }
+            Button("Retry") { model.retry() }
+                .buttonStyle(.borderedProminent)
+                .tint(Color.gold)
+        }
+    }
+}
+
+/// Hosts BootstrapView in a small, centered, non-activating window shown before the pet.
+@MainActor
+final class BootstrapWindowController {
+    private let window: NSWindow
+
+    init(model: BootstrapModel) {
+        let hosting = NSHostingView(rootView: BootstrapView(model: model))
+        window = NSWindow(
+            contentRect: NSRect(x: 0, y: 0, width: 420, height: 460),
+            styleMask: [.titled, .fullSizeContentView],
+            backing: .buffered,
+            defer: false
+        )
+        window.title = "Pocket Pikachu"
+        window.titlebarAppearsTransparent = true
+        window.titleVisibility = .hidden
+        window.isMovableByWindowBackground = true
+        window.isReleasedWhenClosed = false
+        window.contentView = hosting
+        window.center()
+    }
+
+    func showWindow() {
+        NSApp.setActivationPolicy(.regular)
+        window.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
+    }
+
+    func close() {
+        window.orderOut(nil)
+        window.close()
+        // Return to the menu-bar/accessory presentation the pet overlay expects.
+        NSApp.setActivationPolicy(.accessory)
     }
 }
 
