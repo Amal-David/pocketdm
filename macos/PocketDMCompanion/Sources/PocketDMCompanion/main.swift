@@ -31,11 +31,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        // Distributed build: the bundled Python runtime payload lives in Resources.
-        // It owns its own first-run bootstrap + stack startup, so it runs a separate
-        // flow. Dev builds (launched via launch_app.sh --attach with the stack
-        // already up) keep the original attach-and-show behavior below unchanged.
-        if let payload = DistributedRuntime.payloadDirectory() {
+        // Distributed build: the bundled Python runtime payload lives in Resources AND
+        // the app was double-clicked (no POCKETDM_REPO in the environment). It owns its
+        // own first-run bootstrap + stack startup, so it runs a separate flow. Dev runs
+        // go through launch_app.sh, which always exports POCKETDM_REPO and attaches to an
+        // already-running stack, so they keep the original attach-and-show behavior below.
+        if let payload = DistributedRuntime.distributedPayloadIfLaunchedStandalone() {
             startDistributedFlow(payloadDirectory: payload)
             return
         }
@@ -14354,7 +14355,7 @@ final class PocketDMServerProcess {
 enum DistributedRuntime {
     static let payloadName = "pocketdm-runtime"
 
-    /// The bundled runtime tree inside the signed app's Resources, or nil for dev builds.
+    /// The bundled runtime tree inside the app's Resources, or nil if it isn't present.
     static func payloadDirectory() -> URL? {
         guard let resources = Bundle.main.resourceURL else { return nil }
         let payload = resources.appendingPathComponent(payloadName, isDirectory: true)
@@ -14362,6 +14363,21 @@ enum DistributedRuntime {
         guard FileManager.default.fileExists(atPath: payload.path, isDirectory: &isDir),
               isDir.boolValue else { return nil }
         return payload
+    }
+
+    /// The payload only when this is a true standalone (distributed) launch.
+    ///
+    /// `package_app.sh` always bundles the payload, so a dev run via launch_app.sh would
+    /// also have one — but launch_app.sh always exports POCKETDM_REPO (pointing at the
+    /// source tree) before `open`, while a user double-clicking the distributed .app has
+    /// no such variable. Requiring POCKETDM_REPO to be ABSENT keeps the dev flow on its
+    /// existing attach-and-show path and reserves the bootstrap flow for real installs.
+    static func distributedPayloadIfLaunchedStandalone() -> URL? {
+        let env = ProcessInfo.processInfo.environment
+        if let repo = env["POCKETDM_REPO"], !repo.isEmpty {
+            return nil
+        }
+        return payloadDirectory()
     }
 
     /// Writable home for venvs + downloaded weights (Resources are read-only when signed).
