@@ -578,6 +578,19 @@ enum PetDaypartAffirmation: Int, CaseIterable {
         }
     }
 
+    var prompt: String {
+        switch self {
+        case .morning:
+            return "Hey, good morning! How are you feeling today?"
+        case .afternoon:
+            return "Hey! How's your day going so far?"
+        case .evening:
+            return "Hey, how was your day?"
+        case .night:
+            return "Hey, how are you winding down tonight?"
+        }
+    }
+
     var mood: PetMood {
         switch self {
         case .morning:
@@ -1739,7 +1752,7 @@ final class DragonOverlayModel: ObservableObject {
         lastRequest = mode.requestLabel
         if mode == .dailyCheckIn {
             let affirmation = currentAffirmation
-            message = pikaText("\(affirmation.title): \(affirmation.line)")
+            message = pikaText("\(affirmation.prompt) \(affirmation.line)")
         }
         play(.open)
         setMood(.look)
@@ -2308,7 +2321,7 @@ final class DragonOverlayModel: ObservableObject {
 
         var body = "\(action.spokenLine) Health +1."
         if action == .affirm {
-            body += " \(currentAffirmation.title): \(currentAffirmation.line)"
+            body += " \(currentAffirmation.prompt) \(currentAffirmation.line)"
         }
         if let vitalNote {
             body += " \(vitalNote)"
@@ -11654,10 +11667,10 @@ struct DragonOverlayView: View {
             }
 
             if showingDailyDetails {
-                Text("\(affirmation.title): \(affirmation.line)")
+                Text("\(affirmation.prompt) \(affirmation.line)")
                     .font(.system(size: 17, weight: .black, design: .rounded))
                     .foregroundStyle(Color.black)
-                    .lineLimit(2)
+                    .lineLimit(3)
                     .frame(maxWidth: .infinity, minHeight: 50, alignment: .leading)
                     .padding(.horizontal, 11)
                     .padding(.vertical, 8)

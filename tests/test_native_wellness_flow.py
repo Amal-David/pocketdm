@@ -165,7 +165,9 @@ def test_expanded_chat_keeps_routine_details_out_of_default_path() -> None:
     assert 'Text(model.isVoiceListening ? "Listening" : "Voice")' in voice_panel
     assert 'Label(showingDailyDetails ? "Less" : "Routine"' in voice_panel
     assert "if showingDailyDetails" in voice_panel
-    assert 'Text("\\(affirmation.title): \\(affirmation.line)")' in voice_panel
+    # Affirmation card now leads with the daypart's proactive check-in prompt
+    # (e.g. evening "Hey, how was your day?") followed by the affirmation line.
+    assert 'Text("\\(affirmation.prompt) \\(affirmation.line)")' in voice_panel
     assert "beginVoiceFromExpanded(mode: .dailyCheckIn)" in voice_panel
     assert "toggleHandsFreeFromExpanded()" in voice_panel
 
