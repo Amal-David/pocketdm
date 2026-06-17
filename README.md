@@ -151,7 +151,7 @@ Deterministic local facts (time, date, weather, pet state) are resolved *before*
 - ✅ Gradio web app (`app/web_pet.py`) + self‑contained Space (`space/`).
 - ✅ All models local, all ≤ 1 B, OpenBMB brain + voice.
 - ⚙️ **Brain backend:** ships scripted by default; set `POCKETDM_GGUF=...` to serve the MiniCPM5‑1B GGUF (the app honestly reports which backend is live).
-- 📦 **Install the macOS app:** see the GitHub Releases page for a `.dmg` + one‑command `setup-and-launch.sh` (downloads models, starts the local sidecars).
+- 📦 **Install the macOS app (self‑setup):** download `PocketDM-Companion.dmg` from GitHub Releases, drag it to Applications, then **right‑click → Open** the first time (the app is dev‑signed, not notarized). On first launch it sets itself up — installs a tiny Python runtime, downloads the on‑device models (~700 MB), and starts the local stack — then the pet appears. One time, a few minutes, internet required; ~6 GB free disk. Everything runs locally afterward. The distributable runs the torch‑free subset (MiniCPM5‑1B + Kokoro + faster‑whisper); VoxCPM/Nemotron are the developer stack.
 - 🎥 Demo video & social post: see the **See it working** links above and [`docs/hackathon-submission.md`](docs/hackathon-submission.md).
 
 Built tiny, on purpose. ⚡
