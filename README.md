@@ -9,6 +9,11 @@ app_file: app.py
 pinned: true
 license: apache-2.0
 short_description: On-device talking Pikachu — MiniCPM5 + VoxCPM + Nemotron, all local
+models:
+  - openbmb/MiniCPM5-1B-GGUF
+  - openbmb/VoxCPM-0.5B
+  - nvidia/nemotron-speech-streaming-en-0.6b
+  - Systran/faster-whisper-small.en
 tags:
   - track:wood
   - sponsor:openbmb
@@ -28,9 +33,19 @@ tags:
 
 # ⚡ Pocket Pikachu — a Pokémon you can actually talk to, 100% on your own machine
 
+<p align="center"><img src="docs/pika-demo.png" alt="Pocket Pikachu — a 100% on-device talking desktop pet" width="260"></p>
+
 **Pocket Pikachu is a living desktop companion you talk to with your voice — and every word of it runs on‑device.** No cloud, no API keys, no internet. Pull the WiFi and it still listens, thinks, and talks back. It greets you in the morning, asks how you're doing, reminds you to drink water, learns your daily rhythm, and helps you practice a new language — all powered by a stack of *tiny* open‑weight models small enough to live on a laptop.
 
 > **Build Small in one line:** the whole brain → voice → ears loop is **three open models, each ≤ 1 B parameters, running locally.** Take the network away and nothing breaks. That's the whole point.
+
+### 🔗 See it working
+
+- 🎬 **Demo video:** [Watch on YouTube](https://youtu.be/MAsgEj7ywh8) — WiFi off, talk to Pikachu, it answers out loud.
+- 🤗 **Live Space:** [build-small-hackathon/pocket-pikachu](https://huggingface.co/spaces/build-small-hackathon/pocket-pikachu) — click and talk, no install.
+- 🐙 **Code:** [github.com/Amal-David/pocketdm](https://github.com/Amal-David/pocketdm)
+- 𝕏 **Social:** [Posted on X](https://x.com/Cyrka_ai/status/2066659743444369797)
+- 📓 **Field notes:** [How we fit a talking pet onto a laptop](docs/field-notes-draft.md)
 
 ---
 
@@ -135,6 +150,8 @@ Deterministic local facts (time, date, weather, pet state) are resolved *before*
 - ✅ Native macOS companion: full voice loop, daily care, language coach, greeting/nap animations, one cloned voice.
 - ✅ Gradio web app (`app/web_pet.py`) + self‑contained Space (`space/`).
 - ✅ All models local, all ≤ 1 B, OpenBMB brain + voice.
-- 🎥 Demo video & social post: see [`docs/hackathon-submission.md`](docs/hackathon-submission.md).
+- ⚙️ **Brain backend:** ships scripted by default; set `POCKETDM_GGUF=...` to serve the MiniCPM5‑1B GGUF (the app honestly reports which backend is live).
+- 📦 **Install the macOS app:** see the GitHub Releases page for a `.dmg` + one‑command `setup-and-launch.sh` (downloads models, starts the local sidecars).
+- 🎥 Demo video & social post: see the **See it working** links above and [`docs/hackathon-submission.md`](docs/hackathon-submission.md).
 
 Built tiny, on purpose. ⚡
