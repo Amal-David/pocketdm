@@ -49,15 +49,19 @@ tags:
 
 ---
 
-## 🎬 The 15‑second pitch (what the demo opens on)
+## 📸 Screenshots
 
-1. **Turn WiFi off.** On camera.
-2. **Click the pet and say "Good morning."** Pikachu rises, perks up, and answers you out loud — in a cute, consistent voice — in a couple of seconds.
-3. **"What's the weather? What time is it?"** It checks real tools and tells you.
-4. **"I drank water."** Confetti, the bond HP bar fills, the pet does a happy hop.
-5. **On‑screen the whole time:** `MiniCPM5‑1B · VoxCPM · Nemotron — all ≤ 1B, all on‑device.`
+The pet reacts with a different animated mood depending on what's happening — happy when you check in, hyper after a win, alert when it's listening, and a sleepy nap when you tell it to rest.
 
-A talking desktop pet is *literally* the example the hackathon gives for the whimsical track. We built the canonical one — and made it run with zero cloud.
+<p align="center">
+  <img src="docs/pika-happy.png" alt="Happy" width="150">
+  <img src="docs/pika-hyper.png" alt="Hyper" width="150">
+  <img src="docs/pika-alert.png" alt="Alert / listening" width="150">
+  <img src="docs/pika-nap.png" alt="Nap" width="150">
+</p>
+<p align="center"><em>Moods: happy · hyper · alert · nap</em></p>
+
+It also has a tiny **mini mode** — a one-click "Tiny" control shrinks Pikachu to a ~1/10-size sprite that tucks into the corner of your screen; double-click it and it "evolves" back to full size with a glow-and-confetti burst.
 
 ---
 
