@@ -1,57 +1,26 @@
----
-title: Pocket Pikachu — A Pokémon You Talk To, 100% Local
-emoji: ⚡
-colorFrom: yellow
-colorTo: red
-sdk: gradio
-sdk_version: 6.17.3
-app_file: app.py
-pinned: true
-license: apache-2.0
-short_description: On-device talking Pikachu — MiniCPM5 + VoxCPM + Nemotron, all local
-models:
-  - openbmb/MiniCPM5-1B-GGUF
-  - openbmb/VoxCPM-0.5B
-  - nvidia/nemotron-speech-streaming-en-0.6b
-  - Systran/faster-whisper-small.en
-tags:
-  - track:wood
-  - sponsor:openbmb
-  - achievement:offbrand
-  - achievement:offgrid
-  - achievement:fieldnotes
-  - tiny-titan
-  - achievement:tinytitan
-  - build-small-hackathon
-  - minicpm
-  - voxcpm
-  - nemotron
-  - on-device
-  - local-llm
-  - gradio
----
+# ⚡ Pocket Pikachu
 
-# ⚡ Pocket Pikachu — a Pokémon you can actually talk to, 100% on your own machine
+*A Pokémon you can actually talk to, running 100% on your own machine.*
 
-<p align="center"><img src="docs/pika-demo.png" alt="Pocket Pikachu — a 100% on-device talking desktop pet" width="260"></p>
+<p align="center"><img src="docs/pika-demo.png" alt="Pocket Pikachu, a 100% on-device talking desktop pet" width="260"></p>
 
-**Pocket Pikachu is a living desktop companion you talk to with your voice — and every word of it runs on‑device.** No cloud, no API keys, no internet. Pull the WiFi and it still listens, thinks, and talks back. It greets you in the morning, asks how you're doing, reminds you to drink water, learns your daily rhythm, and helps you practice a new language — all powered by a stack of *tiny* open‑weight models small enough to live on a laptop.
+Say hi to Pocket Pikachu: a little desktop buddy you chat with by voice, and every single word of it runs right there on your laptop. No cloud, no API keys, no internet needed. Yank the WiFi out and it happily keeps listening, thinking, and talking back. It greets you in the morning, asks how you're doing, nudges you to drink water, learns your daily rhythm, and even helps you practice a new language. All of it runs on a stack of tiny open-weight models small enough to live on a laptop.
 
-> **Build Small in one line:** the whole brain → voice → ears loop is **three open models, each ≤ 1 B parameters, running locally.** Take the network away and nothing breaks. That's the whole point.
+> **Build Small, in one line:** the whole brain, voice, and ears loop is three open models, each 1B parameters or smaller, all running locally. Take the network away and nothing breaks. That's the whole point. ⚡
 
-### 🔗 See it working
+### 🔗 See it in action
 
-- 🎬 **Demo video:** [Watch on YouTube](https://youtu.be/MAsgEj7ywh8) — WiFi off, talk to Pikachu, it answers out loud.
-- 🤗 **Live Space:** [build-small-hackathon/pocket-pikachu](https://huggingface.co/spaces/build-small-hackathon/pocket-pikachu) — click and talk, no install.
+- 🎬 **Demo video:** [Watch on YouTube](https://youtu.be/MAsgEj7ywh8) (WiFi off, talk to Pikachu, it answers out loud)
+- 🤗 **Live Space:** [build-small-hackathon/pocket-pikachu](https://huggingface.co/spaces/build-small-hackathon/pocket-pikachu) (click and talk, no install)
 - 🐙 **Code:** [github.com/Amal-David/pocketdm](https://github.com/Amal-David/pocketdm)
 - 𝕏 **Social:** [Posted on X](https://x.com/Cyrka_ai/status/2066659743444369797)
 - 📓 **Field notes:** [How we fit a talking pet onto a laptop](docs/field-notes-draft.md)
 
 ---
 
-## 📸 Screenshots
+## 📸 Meet the moods
 
-The pet reacts with a different animated mood depending on what's happening — happy when you check in, hyper after a win, alert when it's listening, and a sleepy nap when you tell it to rest.
+Pikachu pulls a different animated face depending on what's going on: happy when you check in, hyper after a win, alert when it's listening, and a sleepy little nap when you tell it to rest.
 
 <p align="center">
   <img src="docs/pika-happy.png" alt="Happy" width="150">
@@ -59,58 +28,63 @@ The pet reacts with a different animated mood depending on what's happening — 
   <img src="docs/pika-alert.png" alt="Alert / listening" width="150">
   <img src="docs/pika-nap.png" alt="Nap" width="150">
 </p>
-<p align="center"><em>Moods: happy · hyper · alert · nap</em></p>
+<p align="center"><em>happy · hyper · alert · nap</em></p>
 
-It also has a tiny **mini mode** — a one-click "Tiny" control shrinks Pikachu to a ~1/10-size sprite that tucks into the corner of your screen; double-click it and it "evolves" back to full size with a glow-and-confetti burst.
+There's a fun **mini mode** too. One click (menu bar, then "Shrink to Tiny") shrinks Pikachu down to a teeny ~1/10-size sprite that tucks into the corner of your screen. Double-click the little guy and it "evolves" back to full size with a glow and a confetti burst. ✨
 
 ---
 
-## 🧠 The model stack (this is where "AI is load‑bearing")
+## 🧠 The model stack (where the AI does the heavy lifting)
 
-There is no Pocket Pikachu without the models. They aren't decoration — they *are* the product.
+There's no Pocket Pikachu without the models. They aren't decoration; they *are* the product.
 
 | Job | Model | Size | Why it matters |
 |---|---|---|---|
-| **Brain** (conversation, tool use, personality) | **OpenBMB MiniCPM5‑1B** (GGUF, Q4) via llama.cpp | **1 B** | Genuinely tiny — well under the 4 B Tiny Titan bar. Drives every reply, daily check‑in, and the "learns your patterns" loop. |
-| **Voice** (text → speech) | **OpenBMB VoxCPM‑0.5B** | **0.5 B** | One consistent, cloned, high‑energy female voice across the whole app. Cute‑tuned, never a robotic system voice. |
-| **Ears** (speech → text) | **NVIDIA Nemotron‑Speech‑Streaming‑0.6B** (native), faster‑whisper fallback | **0.6 B** | Real on‑device ASR with Silero VAD trimming for fast, clean turns. |
+| **Brain** (conversation, tool use, personality) | **OpenBMB MiniCPM5-1B** (GGUF, Q4) via llama.cpp | **1B** | Genuinely tiny, well under the 4B Tiny Titan bar. Drives every reply, daily check-in, and the "learns your patterns" loop. |
+| **Voice** (text to speech) | **OpenBMB VoxCPM-0.5B** | **0.5B** | One consistent, cloned, high-energy voice across the whole app. Cute-tuned, never a robotic system voice. |
+| **Ears** (speech to text) | **NVIDIA Nemotron-Speech-Streaming-0.6B** (native), faster-whisper fallback | **0.6B** | Real on-device speech recognition with Silero VAD trimming for fast, clean turns. |
 
-**Two OpenBMB models doing the core work** (brain *and* voice) → **Best MiniCPM Build**. **Every model ≤ 1 B** → **Tiny Titan**. **Zero cloud inference** → **Off the Grid**. A fully custom animated 3D‑Pikachu UI (native *and* web) → **Off Brand**.
+Two OpenBMB models carry the core experience (brain *and* voice), which earns **Best MiniCPM Build**. Every model is 1B or under, so **Tiny Titan**. Zero cloud inference means **Off the Grid**. And a fully custom animated 3D-Pikachu UI, native *and* web, makes it **Off Brand**.
 
 ---
 
 ## ✨ What it actually does
 
-- **Talk to it anytime** — push‑to‑talk, hands‑free voice‑to‑voice, or type. Two clean mic icons; chat bubbles show every turn.
-- **Daily morning check‑ins & affirmations** — "Hey, how are you doing? I hope you have a wonderful day!" in a cheerful voice, generated by the local brain, not a hardcoded string.
-- **Gentle wellness loop** — drink‑water nudges, mood spins, and a Bond‑HP care meter that grows when you pet it (with confetti and a slow fill animation).
-- **A little bit intelligent** — it tracks your streaks, moods, and daily patterns locally to feel like it actually knows you, and it can reach **real tools** (time, live weather via Open‑Meteo, web search) — all keyless.
-- **Language practice on the side** — beginner Spanish & Mandarin phrases with a single consistent voice, never an external API.
-- **Personality that reacts** — original mood states (happy / hyper / nap / alert), a transparent first‑launch greeting animation, and a nap animation when you tell it to rest.
+- **Chat anytime, your way:** push-to-talk, hands-free voice-to-voice, or just typing. Two clean mic icons, and chat bubbles for every turn.
+- **Morning check-ins and affirmations** like "Hey, how are you doing? I hope you have a wonderful day!" in a cheerful voice, generated fresh by the local brain (not a hardcoded string).
+- **A gentle wellness loop:** drink-water nudges, mood spins, and a Bond-HP care meter that fills up when you pet it, confetti and all.
+- **It actually remembers you.** Pikachu keeps your streaks, moods, and durable facts (your name, your goals) in a little local memory and weaves them back into replies, with proactive check-ins when it notices a pattern. It can also reach real keyless tools: the time, live weather via Open-Meteo, and web search.
+- **Language practice on the side:** beginner Spanish and Mandarin phrases, same friendly voice, never an external API.
+- **A personality that reacts:** original mood states (happy, hyper, nap, alert), a sweet first-launch greeting animation, and a nap animation when you tell it to rest.
 
 ---
 
-## 🔒 Off the Grid — prove it yourself
+## 🔒 Off the Grid: prove it yourself
 
 Everything that matters runs locally:
 
-- **Brain:** MiniCPM5‑1B on llama.cpp (CPU/Metal).
-- **Voice:** VoxCPM‑0.5B in‑process.
-- **Ears:** Nemotron / faster‑whisper sidecars.
+- **Brain:** MiniCPM5-1B on llama.cpp (CPU or Metal).
+- **Voice:** VoxCPM-0.5B in-process.
+- **Ears:** Nemotron, with faster-whisper as a fallback.
 
-Disconnect from the internet after the models are cached and the entire loop still works. The only thing that ever touches the network is the optional weather/web‑search tools — and the pet degrades gracefully without them.
+Cache the models once, then pull the plug on the internet and the whole loop still works. The only thing that ever touches the network is the optional weather and web-search tools, and the pet just shrugs and carries on gracefully without them.
 
 ---
 
 ## ▶️ Run it
 
-**The Gradio web app (the submission):**
+**Grab the macOS app (easiest):** download `PocketDM-Companion.dmg` from the [latest release](https://github.com/Amal-David/pocketdm/releases/latest), drag it to Applications, then **right-click, Open** the first time (it's dev-signed, not notarized). On first launch it sets itself up: a tiny Python runtime, the on-device models (~700 MB), and the local stack, then the pet pops up. One time, a few minutes, needs internet and ~6 GB free disk. After that it's all local. Once it's installed, just search **"Pocket Pikachu"** in Spotlight to launch it.
+
+**Prefer the browser?** The Gradio web app:
+
 ```bash
 uv run python -m app.web_pet      # http://127.0.0.1:7870
 ```
-A centered, bobbing Pikachu you click to talk to — mic in the browser, chat bubbles, daily check‑in, the model stack chip row.
 
-**The full native macOS companion + all local sidecars:**
+A centered, bobbing Pikachu you click to talk to: browser mic, chat bubbles, daily check-in, and the model-stack chip row.
+
+**Hacking on the full native stack?**
+
 ```bash
 # Start the local stack (MiniCPM5 brain, Nemotron ASR, VoxCPM voice)
 POCKETDM_PIKA_TTS_BACKEND=voxcpm macos/PocketDMCompanion/scripts/pika_demo_stack.sh start
@@ -118,7 +92,8 @@ POCKETDM_PIKA_TTS_BACKEND=voxcpm macos/PocketDMCompanion/scripts/pika_demo_stack
 POCKETDM_ASSISTANT_LLAMA_MODEL=minicpm5-1b-q4 \
   macos/PocketDMCompanion/scripts/pika_demo_stack.sh launch
 ```
-Full runbook: [`docs/pika-voice-stack.md`](docs/pika-voice-stack.md). Submission details + verified tags: [`docs/hackathon-submission.md`](docs/hackathon-submission.md).
+
+Full runbook: [`docs/pika-voice-stack.md`](docs/pika-voice-stack.md). Submission details and verified tags: [`docs/hackathon-submission.md`](docs/hackathon-submission.md).
 
 ---
 
@@ -126,36 +101,36 @@ Full runbook: [`docs/pika-voice-stack.md`](docs/pika-voice-stack.md). Submission
 
 | Prize / badge | Why we qualify |
 |---|---|
-| **Thousand Token Wood** (whimsical track) | A delightful talking desktop pet — the track's own example, built for real. |
-| **Best MiniCPM Build** (OpenBMB) | MiniCPM5‑1B brain **and** VoxCPM‑0.5B voice carry the whole experience. |
-| **Tiny Titan** (≤ 4 B) | Every model is ≤ 1 B. The brain is 1 B. |
-| **Off the Grid** | 100% local inference — runs with WiFi off. |
-| **Off Brand** | Fully custom animated Pikachu UI (native AppKit + custom Gradio), nothing stock. |
-| **Field Notes** | Public build write‑up of how we shrank a talking companion onto a laptop. |
+| **Thousand Token Wood** (whimsical track) | A delightful talking desktop pet, which is literally the track's own example, built for real. |
+| **Best MiniCPM Build** (OpenBMB) | MiniCPM5-1B brain **and** VoxCPM-0.5B voice carry the whole experience. |
+| **Tiny Titan** (4B or under) | Every model is 1B or under. The brain is 1B. |
+| **Off the Grid** | 100% local inference that runs with the WiFi off. |
+| **Off Brand** | Fully custom animated Pikachu UI (native AppKit plus custom Gradio), nothing stock. |
+| **Field Notes** | A public build write-up of how we shrank a talking companion onto a laptop. |
 
 ---
 
-## 🧱 Architecture (short version)
+## 🧱 Architecture (the short version)
 
 ```
 You (voice)
-  └─▶ Nemotron / faster-whisper  ── speech → text (on-device, VAD-trimmed)
-        └─▶ MiniCPM5-1B (llama.cpp) ── reply + tools (time / weather / search)
-              └─▶ VoxCPM-0.5B ── text → one consistent cute voice (pitch/rate-styled)
-                    └─▶ Pikachu talks back, reacts, and remembers your day
+  -> Nemotron / faster-whisper ...... speech to text (on-device, VAD-trimmed)
+       -> MiniCPM5-1B (llama.cpp) .... reply + tools (time / weather / search)
+            -> VoxCPM-0.5B ........... text to one consistent cute voice
+                 -> Pikachu talks back, reacts, and remembers your day
 ```
 
-Deterministic local facts (time, date, weather, pet state) are resolved *before* the model so the pet is reliable; the model owns the personality and phrasing, never the game logic.
+Deterministic local facts (time, date, weather, pet state) get resolved *before* the model, so the pet stays reliable. The model owns the personality and the phrasing, never the game logic.
 
 ---
 
 ## 📦 Status
 
-- ✅ Native macOS companion: full voice loop, daily care, language coach, greeting/nap animations, one cloned voice.
-- ✅ Gradio web app (`app/web_pet.py`) + self‑contained Space (`space/`).
-- ✅ All models local, all ≤ 1 B, OpenBMB brain + voice.
-- ⚙️ **Brain backend:** ships scripted by default; set `POCKETDM_GGUF=...` to serve the MiniCPM5‑1B GGUF (the app honestly reports which backend is live).
-- 📦 **Install the macOS app (self‑setup):** download `PocketDM-Companion.dmg` from GitHub Releases, drag it to Applications, then **right‑click → Open** the first time (the app is dev‑signed, not notarized). On first launch it sets itself up — installs a tiny Python runtime, downloads the on‑device models (~700 MB), and starts the local stack — then the pet appears. One time, a few minutes, internet required; ~6 GB free disk. Everything runs locally afterward. The distributable runs the torch‑free subset (MiniCPM5‑1B + Kokoro + faster‑whisper); VoxCPM/Nemotron are the developer stack.
-- 🎥 Demo video & social post: see the **See it working** links above and [`docs/hackathon-submission.md`](docs/hackathon-submission.md).
+- ✅ Native macOS companion: full voice loop, daily care, language coach, greeting and nap animations, one cloned voice, plus the tiny mini mode.
+- ✅ Gradio web app (`app/web_pet.py`) and a self-contained Space (`space/`).
+- ✅ All models local, all 1B or under, OpenBMB brain and voice.
+- 🧠 Local memory: streaks, moods, and durable facts feed back into replies, with proactive pattern-aware check-ins.
+- ⚙️ Brain backend: set `POCKETDM_GGUF=...` to serve the MiniCPM5-1B GGUF (the app honestly reports which backend is live).
+- 🎥 Demo video and social post: see the **See it in action** links above.
 
 Built tiny, on purpose. ⚡
