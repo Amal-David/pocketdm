@@ -1676,7 +1676,7 @@ final class DragonOverlayModel: ObservableObject {
         UserDefaults.standard.set(value, forKey: Self.petOnlyKey)
         play(value ? .minimize : .open)
         if value {
-            showCheerIfReady()
+            Task { await showCheerIfReady() }
         }
     }
 
@@ -8639,9 +8639,9 @@ final class DragonOverlayModel: ObservableObject {
         cheerTask = Task { [weak self] in
             try? await Task.sleep(nanoseconds: 6_000_000_000)
             while !Task.isCancelled {
-                await MainActor.run {
-                    guard self?.showWellnessBreakIfReady() != true else { return }
-                    self?.showCheerIfReady()
+                guard let self else { break }
+                if self.showWellnessBreakIfReady() != true {
+                    await self.showCheerIfReady()
                 }
                 try? await Task.sleep(nanoseconds: 5 * 60_000_000_000)
             }
@@ -8668,9 +8668,7 @@ final class DragonOverlayModel: ObservableObject {
         scoutTripTask = Task { [weak self] in
             try? await Task.sleep(nanoseconds: UInt64(max(1, remaining)) * 1_000_000_000)
             if Task.isCancelled { return }
-            await MainActor.run {
-                self?.showCheerIfReady()
-            }
+            await self?.showCheerIfReady()
         }
     }
 
@@ -8721,7 +8719,7 @@ final class DragonOverlayModel: ObservableObject {
         return true
     }
 
-    private func showCheerIfReady() {
+    private func showCheerIfReady() async {
         syncDailyCombo()
         guard !launchQuietPeriodActive else { return }
         guard minimized, cheerBubble == nil else { return }
@@ -8956,9 +8954,14 @@ final class DragonOverlayModel: ObservableObject {
                 intent: journey.intent
             )
         } else if shouldUseDaypart {
+            // Before emitting today's generic daypart cheer, ask the server whether a
+            // recurring-pattern line (afternoon slump / welcome-back) should speak
+            // instead. On any failure, empty reply, or use_generic_cheer == true we
+            // keep daypart.body unchanged — best-effort, never blocking the nudge.
+            let body = await proactiveDaypartBody(default: daypart.body)
             prompt = PetNudgeLibrary.PetCheerPrompt(
                 title: daypart.title,
-                body: daypart.body,
+                body: body,
                 action: daypart.action,
                 rewardLine: daypart.rewardLine
             )
@@ -9357,6 +9360,26 @@ final class DragonOverlayModel: ObservableObject {
             promptMood = .hyper
         }
         setMood(promptMood, duration: 1.2)
+    }
+
+    /// Resolve the body for today's generic daypart cheer, letting the server swap in
+    /// a recurring-pattern line when one fires. Returns `fallback` on any network or
+    /// server failure, an empty reply, or `use_generic_cheer == true`, so the cheer
+    /// path degrades cleanly to today's behavior (same best-effort error style as the
+    /// assistant path, which swallows server errors into a fallback).
+    private func proactiveDaypartBody(default fallback: String) async -> String {
+        let snapshot = currentPetStateSnapshot()
+        do {
+            guard
+                let response = try await client.proactiveLine(daypart: snapshot.daypart, userState: snapshot),
+                !response.use_generic_cheer,
+                let reply = response.reply?.trimmingCharacters(in: .whitespacesAndNewlines),
+                !reply.isEmpty
+            else { return fallback }
+            return reply
+        } catch {
+            return fallback
+        }
     }
 
     private var launchQuietPeriodActive: Bool {
@@ -14133,6 +14156,18 @@ actor PocketDMClient {
         return response.reply
     }
 
+    /// Ask the server whether a recurring-pattern proactive line should replace the
+    /// generic daypart cheer. Returns the decoded response (the caller keeps the
+    /// generic cheer when `use_generic_cheer` is true, the reply is empty, or this
+    /// throws). Mirrors `assistantReply`'s session handling and best-effort style.
+    func proactiveLine(daypart: String?, userState: PetStateSnapshot? = nil) async throws -> ProactiveResponse? {
+        if sessionID == nil {
+            sessionID = try await startSession()
+        }
+        let payload = ProactiveRequest(session_id: sessionID!, daypart: daypart, user_state: userState)
+        return try await post(payload, path: "api/proactive")
+    }
+
     private func startSession() async throws -> String {
         let response: StartResponse = try await post(
             StartRequest(
@@ -14311,6 +14346,28 @@ struct AssistantRequest: Encodable {
 
 struct AssistantResponse: Decodable {
     let reply: String
+}
+
+/// Request body for `/api/proactive`. The server reads `session_id`, the current
+/// `daypart`, and the optional `user_state` snapshot (same shape as the assistant
+/// path) to decide whether a recurring-pattern line should replace today's generic
+/// daypart cheer. Field names mirror `app/server.py` (`_proactive_payload`).
+struct ProactiveRequest: Encodable {
+    let session_id: String
+    let daypart: String?
+    /// Omitted from the JSON body when nil, matching the assistant request's
+    /// best-effort, partial-snapshot contract.
+    let user_state: PetStateSnapshot?
+}
+
+/// Response from `/api/proactive`. When `use_generic_cheer` is true the caller
+/// keeps today's generic daypart cheer; when false, `reply` carries a
+/// brain-generated pattern line to speak instead. `reply` is absent in the
+/// generic-cheer case, so it is optional. (`intent` is server-side telemetry the
+/// native surface does not need, so it is intentionally not decoded.)
+struct ProactiveResponse: Decodable {
+    let use_generic_cheer: Bool
+    let reply: String?
 }
 
 enum CompanionError: Error {
