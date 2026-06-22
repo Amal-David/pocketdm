@@ -133,4 +133,32 @@ Deterministic local facts (time, date, weather, pet state) get resolved *before*
 - ⚙️ Brain backend: set `POCKETDM_GGUF=...` to serve the MiniCPM5-1B GGUF (the app honestly reports which backend is live).
 - 🎥 Demo video and social post: see the **See it in action** links above.
 
+---
+
+## 🤝 Contributing
+
+Contributions are very welcome, whether it's a bug fix, a new pet mood, a fresh tool, or just an idea. The guiding rule is simple: keep it tiny and keep it on-device. No cloud calls at inference time, and every model stays small enough to run on a laptop.
+
+**Get set up:**
+
+```bash
+git clone https://github.com/Amal-David/pocketdm.git
+cd pocketdm
+uv sync                         # Python deps
+uv run --group dev pytest -q    # run the test suite (should be green)
+swift build -c release --package-path macos/PocketDMCompanion   # build the native app
+```
+
+See the **Run it** section above to launch the web app or the full native stack.
+
+**A few friendly guidelines:**
+
+- Open an issue first for anything big, so we can talk through the approach.
+- Keep pull requests small and focused, with the tests passing.
+- Add or update a test when you change behavior, so the pet does not regress.
+- Match the existing style, and keep the tone of the app warm and playful.
+- New voices, models, or tools must run locally and keep the offline promise intact.
+
+By contributing you agree your work ships under the project's Apache-2.0 license. Thanks for helping a tiny Pikachu stay tiny. ⚡
+
 Built tiny, on purpose. ⚡
