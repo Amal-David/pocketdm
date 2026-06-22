@@ -161,3 +161,10 @@ def test_mini_mode_and_evolve_are_wired() -> None:
 
     # The evolve flash view exists.
     assert "struct EvolveGlow: View" in source
+
+    # Mini is reachable from the menu bar (discoverable), not just the buried gear.
+    menu = _block(source, "private func rebuildStatusMenu()", "@objc private func showPanelFromMenu")
+    assert "#selector(toggleMiniFromMenu)" in menu
+    assert '"Shrink to Tiny"' in menu
+    assert "func toggleMini()" in controller
+    assert "@objc private func toggleMiniFromMenu()" in source

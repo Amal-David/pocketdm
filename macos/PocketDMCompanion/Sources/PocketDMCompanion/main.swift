@@ -190,6 +190,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let petOnly = NSMenuItem(title: "Hide to Pet", action: #selector(showPetOnlyFromMenu), keyEquivalent: "m")
         petOnly.target = self
         menu.addItem(petOnly)
+        let miniTitle = overlayController?.isMini == true ? "Restore Pet Size" : "Shrink to Tiny"
+        let mini = NSMenuItem(title: miniTitle, action: #selector(toggleMiniFromMenu), keyEquivalent: "t")
+        mini.target = self
+        mini.state = overlayController?.isMini == true ? .on : .off
+        menu.addItem(mini)
         let soundTitle = overlayController?.soundEnabled == true ? "Mute Sounds" : "Unmute Sounds"
         let sound = NSMenuItem(title: soundTitle, action: #selector(toggleSoundFromMenu), keyEquivalent: "")
         sound.target = self
@@ -217,6 +222,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     @objc private func toggleSoundFromMenu() {
         overlayController?.toggleSound()
+        rebuildStatusMenu()
+    }
+
+    @objc private func toggleMiniFromMenu() {
+        overlayController?.toggleMini()
         rebuildStatusMenu()
     }
 
@@ -520,6 +530,15 @@ final class DragonOverlayController {
         panel.orderFrontRegardless()
         model.setMinimized(true)
         setMinimized(true, animated: false)
+    }
+
+    var isMini: Bool { model.miniMode }
+
+    /// Toggle the tiny "pocket" pet from outside the SwiftUI view (status menu).
+    func toggleMini() {
+        panel.orderFrontRegardless()
+        model.setMiniMode(!model.miniMode)
+        setMinimized(model.minimized, animated: true)
     }
 
     func toggleSound() {
