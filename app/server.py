@@ -112,8 +112,22 @@ async def assistant_chat(request: Request) -> JSONResponse:
     payload = await request.json()
     session = _session(payload.get("session_id"))
     message = _clean_text(payload.get("message"), limit=180)
+    # Optional pet-state snapshot (streak, bond_hp, mood, daypart, last_seen_gap).
+    # When present, persist it so the brain can personalize tone across restarts;
+    # absent or partial input degrades cleanly to today's stateless behavior.
+    _persist_user_state(payload.get("user_state"))
     reply = _dragon_reply(session, message)
+    # Best-effort durable-fact extraction: learn name/goal/mood/event from this
+    # turn so future replies can recall it. Never let it break the chat reply.
+    _extract_and_store_facts(message)
     return JSONResponse({"reply": reply})
+
+
+@app.post("/api/proactive")
+async def proactive_checkin(request: Request) -> JSONResponse:
+    payload = await request.json()
+    session = _session(payload.get("session_id"))
+    return JSONResponse(_proactive_payload(session, payload))
 
 
 @app.post("/api/tts")
@@ -284,6 +298,110 @@ def _clean_text(value: Any, *, limit: int) -> str:
 
 def _truthy_env(name: str) -> bool:
     return str(os.environ.get(name, "")).casefold() in {"1", "true", "yes", "on"}
+
+
+# Pet-state fields the companion brain may receive on /api/assistant requests.
+# These mirror app.memory_store._STATE_FIELDS; all are optional.
+_PET_STATE_FIELDS = ("streak", "bond_hp", "mood", "daypart", "last_seen_gap")
+
+
+def _persist_user_state(raw_state: Any) -> None:
+    """Persist an optional pet-state snapshot from the request to the store.
+
+    Accepts a partial dict; non-dict or empty input is ignored so the path
+    stays a clean no-op for today's stateless callers.
+    """
+    if not isinstance(raw_state, dict):
+        return
+    snapshot = {field: raw_state[field] for field in _PET_STATE_FIELDS if raw_state.get(field) is not None}
+    if not snapshot:
+        return
+    try:
+        from app.memory_store import DEFAULT_USER_ID, add_observation, save_state
+
+        save_state(DEFAULT_USER_ID, snapshot)
+        # Append a timestamped (daypart, mood) row so proactive pattern detection
+        # has history. save_state overwrites the latest snapshot; this accrues.
+        add_observation(DEFAULT_USER_ID, snapshot.get("daypart"), snapshot.get("mood"))
+    except Exception:
+        # Memory persistence is best-effort; never break a chat reply over it.
+        return
+
+
+def _proactive_payload(session: PlaySession, payload: dict[str, Any]) -> dict[str, Any]:
+    """Select and (if warranted) generate a pattern-aware proactive line.
+
+    Reads the current daypart + last-seen gap (from the request, falling back to
+    the persisted pet-state snapshot), runs ``select_proactive_intent`` over the
+    stored observation history, and:
+
+    * if an intent fires, generates a short personalized line THROUGH THE BRAIN
+      (same ``_local_companion_llm_reply`` path, so pet_state + recalled
+      memories + the intent are injected and the no-recite guard applies);
+    * if no intent fires -- or the brain is unavailable / produces nothing --
+      returns ``{"use_generic_cheer": True}`` so the caller uses its existing
+      generic daypart cheer rather than this endpoint fabricating a pattern.
+
+    This endpoint only SELECTS/GENERATES a line. Cadence and the 45-min cooldown
+    already live in the native cheer path; we deliberately do not duplicate them.
+    Best-effort throughout: any failure degrades to the generic-cheer signal.
+    """
+    # Persist any state the caller passed so future proactive runs have history.
+    _persist_user_state(payload.get("user_state"))
+
+    raw_state = payload.get("user_state") if isinstance(payload.get("user_state"), dict) else {}
+    persisted = _persisted_pet_state()
+    current_daypart = (
+        payload.get("daypart")
+        or raw_state.get("daypart")
+        or persisted.get("daypart")
+    )
+    last_seen_gap = raw_state.get("last_seen_gap", persisted.get("last_seen_gap"))
+
+    try:
+        from app.memory_store import DEFAULT_USER_ID
+        from app.proactive import select_proactive_intent
+
+        intent = select_proactive_intent(
+            DEFAULT_USER_ID, current_daypart, last_seen_gap, time.time()
+        )
+    except Exception:
+        intent = None
+
+    if not intent:
+        return {"use_generic_cheer": True}
+
+    prompt = _proactive_prompt(intent, current_daypart)
+    line = _local_companion_llm_reply(
+        session, prompt, purpose="proactive check-in", intent=intent
+    )
+    if not line:
+        # Brain unavailable or empty -> caller falls back to generic cheer.
+        return {"use_generic_cheer": True}
+    return {"use_generic_cheer": False, "intent": intent["intent"], "reply": line}
+
+
+def _proactive_prompt(intent: dict[str, Any], daypart: Any) -> str:
+    """Build the brain user-prompt for a selected proactive intent.
+
+    The prompt describes the *moment* to react to (not the raw data) so the brain
+    composes a fresh line; the structured intent itself rides in the private
+    Context block for tone, never to be recited.
+    """
+    when = str(daypart or "now").strip() or "now"
+    if intent["intent"] == "welcome_back":
+        return (
+            "Open a warm, brief proactive check-in: the user has been away for a "
+            "little while and just came back. Welcome them back gently and invite "
+            "one tiny next step. Do not mention how long they were gone."
+        )
+    if intent["intent"] == "preempt_slump":
+        return (
+            f"Open a gentle, brief proactive check-in for the {when}. This is a "
+            "time the user often feels low, so get ahead of the dip with warmth "
+            "and one tiny, doable lift. Do not state that they usually feel low."
+        )
+    return "Open a short, warm proactive check-in and invite one tiny next step."
 
 
 def _assistant_opening(genre: str) -> str:
@@ -537,7 +655,63 @@ def _daily_checkin_reply(lowered: str) -> str:
     return _pika("Daily check-in logged. I am with you; choose one tiny next step and make it easy to start.")
 
 
-def _local_companion_llm_reply(session: PlaySession, message: str, *, purpose: str) -> str | None:
+def _persisted_pet_state() -> dict[str, Any]:
+    """Read the latest persisted pet-state snapshot for the local user.
+
+    Returns an empty dict when nothing has been saved or the store is
+    unavailable, so the brain context falls back to today's stateless shape.
+    """
+    try:
+        from app.memory_store import DEFAULT_USER_ID, get_state
+
+        return get_state(DEFAULT_USER_ID)
+    except Exception:
+        return {}
+
+
+# Char budget for recalled durable facts injected into the brain prompt. Kept
+# small (~400 chars, a few short facts) so the recalled block stays a sliver of
+# POCKETDM_LLAMA_CTX (default 2048 tokens) alongside the system + user turns.
+_MEMORY_RECALL_MAX_CHARS = 400
+
+
+def _extract_and_store_facts(message: str) -> None:
+    """Best-effort: persist durable facts detected in a user turn.
+
+    Extraction is cheap and local; any failure (store unavailable, bad input)
+    is swallowed so a memory write never breaks the companion reply.
+    """
+    try:
+        from app.memory_extract import extract_facts
+        from app.memory_store import DEFAULT_USER_ID, add_fact
+
+        for kind, text, weight in extract_facts(message):
+            add_fact(DEFAULT_USER_ID, kind, text, weight)
+    except Exception:
+        return
+
+
+def _recalled_memories() -> list[dict[str, Any]]:
+    """Return the most relevant durable facts for the local user, within budget.
+
+    Empty list when nothing has been learned or the store is unavailable, so the
+    brain context falls back to today's shape.
+    """
+    try:
+        from app.memory_store import DEFAULT_USER_ID, recall_facts
+
+        return recall_facts(DEFAULT_USER_ID, max_chars=_MEMORY_RECALL_MAX_CHARS)
+    except Exception:
+        return []
+
+
+def _local_companion_llm_reply(
+    session: PlaySession,
+    message: str,
+    *,
+    purpose: str,
+    intent: dict[str, Any] | None = None,
+) -> str | None:
     from app.llama_backend import configured_llama_server_model, configured_llama_server_url
 
     base_url = configured_llama_server_url()
@@ -553,6 +727,21 @@ def _local_companion_llm_reply(session: PlaySession, message: str, *, purpose: s
     }
     if tool_facts := gather_tool_facts(message):
         context["tool_facts"] = tool_facts
+    # A selected proactive intent (welcome_back / preempt_slump) personalizes the
+    # check-in. Like pet_state/memories it is PRIVATE background the brain uses to
+    # shape tone, never reads back -- covered by the same no-recite guard below.
+    if intent:
+        context["proactive_intent"] = intent
+    # Persisted pet-state snapshot personalizes tone (e.g. low Bond HP -> gentler).
+    # Kept tiny on purpose: 5 short fields + an optional small extra dict serialize
+    # to ~100-160 bytes of JSON (well under POCKETDM_LLAMA_CTX, default 2048 tokens
+    # ~= 8 KB; the whole prompt with system + user stays a few hundred tokens).
+    if pet_state := _persisted_pet_state():
+        context["pet_state"] = pet_state
+    # Durable facts recalled from past turns (name, goals, moods, events), capped
+    # to a small char budget so they stay well inside the model's context window.
+    if memories := _recalled_memories():
+        context["memories"] = memories
     payload = {
         "model": configured_llama_server_model(base_url),
         "messages": [
@@ -562,8 +751,12 @@ def _local_companion_llm_reply(session: PlaySession, message: str, *, purpose: s
                     "You are Pikachu, a cheerful, high-energy desktop pet companion. "
                     "Answer the user's actual message directly, warmly, and briefly (one or two short sentences). "
                     "Start with 'Pika pika!' exactly once, then a genuine, upbeat, helpful reply. "
-                    "The Context line is PRIVATE background only: never repeat, recite, quote, mention, or "
-                    "describe it. Do not talk about timezones, runtime, models, or being 'scripted' or a 'demo' "
+                    "The Context line (including any pet_state, memories, proactive_intent, tool facts, or profile) "
+                    "is PRIVATE background only: never repeat, recite, quote, mention, or describe it. Use pet_state, "
+                    "memories, and proactive_intent only to color your tone and keep continuity (warmer when energy is "
+                    "low, brighter on a long streak, a warm welcome after time away, a gentle lift before a usual dip, "
+                    "naturally aware of what the user told you before); never read them back verbatim. "
+                    "Do not talk about timezones, runtime, models, or being 'scripted' or a 'demo' "
                     "unless the user explicitly asks. Use the tool facts exactly for time/weather/search questions "
                     "and never invent facts. Only give a hint or clue if the user explicitly asks for one. "
                     "Be encouraging without asking for extra details. "

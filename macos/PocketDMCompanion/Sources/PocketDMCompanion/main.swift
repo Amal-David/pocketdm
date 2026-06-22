@@ -2489,8 +2489,9 @@ final class DragonOverlayModel: ObservableObject {
         Requirements: reply as Pikachu in one compact line, include Pika pika, keep the full answer useful as text, and ask exactly one check-in invitation. Do not give an adventure hint.
         """
         let fallback = "\(morningWeatherLine) \(affirmation.title): \(affirmation.line) Want to do a check-in with me? Joy +1, Sparks +4."
+        let snapshot = currentPetStateSnapshot()
         do {
-            message = pikaText(try await client.assistantReply(for: prompt))
+            message = pikaText(try await client.assistantReply(for: prompt, userState: snapshot))
             voiceStatusLine = pikaVoiceStatusLine(prefix: "Morning check-in ready")
         } catch {
             message = pikaText(fallback)
@@ -2623,8 +2624,9 @@ final class DragonOverlayModel: ObservableObject {
         play(.send)
         setMood(.thinking)
         defer { busy = false }
+        let snapshot = currentPetStateSnapshot()
         do {
-            message = pikaText(try await client.assistantReply(for: prompt))
+            message = pikaText(try await client.assistantReply(for: prompt, userState: snapshot))
             let cleanReply = message
             awardCompanionHealth(30)
             voiceStatusLine = pikaVoiceStatusLine(prefix: "Pikachu replied")
@@ -3650,6 +3652,30 @@ final class DragonOverlayModel: ObservableObject {
     var currentAffirmation: PetDaypartAffirmation {
         let hour = Calendar.current.component(.hour, from: Date())
         return PetDaypartAffirmation.current(hour: hour)
+    }
+
+    /// Build the optional pet-state snapshot sent to the server store on each
+    /// `/api/assistant` request. Reads only existing live state — Bond HP, streak,
+    /// current mood, derived daypart, and the day-gap since the last pet day — so
+    /// the server stays the single source of truth for both the web and native
+    /// surfaces. All fields degrade cleanly: a missing/unparseable last-pet day
+    /// just omits the gap rather than guessing.
+    private func currentPetStateSnapshot() -> PetStateSnapshot {
+        let gap: String?
+        if lastPetDay.isEmpty {
+            gap = "first visit"
+        } else if let days = Self.dayGap(from: lastPetDay, to: Date()) {
+            gap = days == 1 ? "1 day" : "\(days) days"
+        } else {
+            gap = nil
+        }
+        return PetStateSnapshot(
+            streak: petStreak,
+            bond_hp: companionHP,
+            mood: mood.rawValue,
+            daypart: currentAffirmation.actionTitle.lowercased(),
+            last_seen_gap: gap
+        )
     }
 
     var affirmationLine: String {
@@ -14098,11 +14124,11 @@ actor PocketDMClient {
         )
     }
 
-    func assistantReply(for message: String) async throws -> String {
+    func assistantReply(for message: String, userState: PetStateSnapshot? = nil) async throws -> String {
         if sessionID == nil {
             sessionID = try await startSession()
         }
-        let payload = AssistantRequest(session_id: sessionID!, message: message)
+        let payload = AssistantRequest(session_id: sessionID!, message: message, user_state: userState)
         let response: AssistantResponse = try await post(payload, path: "api/assistant")
         return response.reply
     }
@@ -14262,9 +14288,25 @@ struct StartResponse: Decodable {
     let session_id: String
 }
 
+/// Optional pet-state snapshot the native companion attaches to `/api/assistant`
+/// requests. Mirrors the server-side store fields (app/memory_store.py:
+/// streak, bond_hp, mood, daypart, last_seen_gap) so the server stays the single
+/// source of truth for BOTH the web and native surfaces. Every field is optional;
+/// a partial or absent snapshot degrades cleanly to today's stateless behavior.
+struct PetStateSnapshot: Encodable {
+    let streak: Int?
+    let bond_hp: Int?
+    let mood: String?
+    let daypart: String?
+    let last_seen_gap: String?
+}
+
 struct AssistantRequest: Encodable {
     let session_id: String
     let message: String
+    /// Omitted from the JSON body when nil so non-state callers send the exact
+    /// same payload as before (no behavior change for the stateless path).
+    let user_state: PetStateSnapshot?
 }
 
 struct AssistantResponse: Decodable {
