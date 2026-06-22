@@ -1,0 +1,44 @@
+# ZeroGPU requirements for the org Space build-small-hackathon/pocket-pikachu
+# (hardware: zero-a10g). Stack: MiniCPM5-1B brain + VoxCPM-0.5B voice +
+# faster-whisper ears.
+#
+# HARD RULES (proven across the org's working VoxCPM ZeroGPU Spaces —
+# airwaves / echoyard / paw-talk — and HF ZeroGPU docs):
+#   * torch / torchvision are PREINSTALLED on ZeroGPU (currently 2.8.0). Do NOT
+#     pin torch and do NOT add an --extra-index-url for it: that re-downloads
+#     ~5GB CUDA wheels and OOM-kills the CPU build container (exit 137). A +cpu
+#     torch would dodge the OOM but silently break @spaces.GPU at runtime.
+#   * Pin torchaudio/torchcodec to MATCH preinstalled torch 2.8.0 so voxcpm does
+#     not drag torch up to 2.11 (which re-downloads CUDA torch -> OOM).
+#   * Do NOT pin gradio/spaces — the Spaces image manages them (gradio via the
+#     README sdk_version).
+#   * NeMo / Nemotron REMOVED: nemo_toolkit[asr] cannot build on a ZeroGPU
+#     Gradio Space (multi-GB tree + CUDA torch = OOM) and the streaming model has
+#     no transformers path. ASR here is faster-whisper; Nemotron runs in the
+#     native macOS app.
+
+spaces
+huggingface_hub
+
+# --- TTS: OpenBMB VoxCPM-0.5B (runs in-process on the ZeroGPU) ---------------
+voxcpm>=0.4
+torchaudio==2.8.*
+torchcodec==0.7.*
+transformers>=4.36.2
+accelerate
+einops
+safetensors
+
+# --- Brain: MiniCPM5-1B via llama.cpp (CPU wheel; the ZeroGPU base hides
+#     libcudart from llama.cpp, so the brain runs on CPU) ---------------------
+--extra-index-url https://abetlen.github.io/llama-cpp-python/whl/cpu
+llama-cpp-python>=0.3.2
+
+# --- STT: faster-whisper small.en (CTranslate2; light, builds clean) ---------
+faster-whisper>=1.0
+
+# --- audio I/O ---------------------------------------------------------------
+soundfile
+librosa
+numpy
+scipy

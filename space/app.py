@@ -4,12 +4,20 @@ A single Gradio Blocks app: a big, centered Pikachu you click (mic) or type to.
 Speech is transcribed, the pet replies, and the reply is spoken back — 100% local,
 all models loaded IN-PROCESS (no localhost sidecars), lazy-loaded on first request.
 
-Stack (every model on-device, all <= 4B params):
-  * Brain : openbmb/MiniCPM5-1B-GGUF (Q4_K_M) via llama-cpp-python
-  * STT   : nvidia/nemotron-speech-streaming-en-0.6b via NVIDIA NeMo
-            (faster-whisper small.en is a silent fallback so the demo never breaks)
-  * TTS   : openbmb/VoxCPM-0.5B, single cute high-pitch female voice
-            (bundled female reference clip + pitch/rate ffmpeg styling)
+Stack on this free-CPU Space (every model on-device, all <= 4B params):
+  * Brain : openbmb/MiniCPM5-1B-GGUF (Q4_K_M) via llama-cpp-python (OpenBMB)
+  * STT   : Systran/faster-whisper-small.en (CTranslate2) — runs on free CPU
+  * TTS   : kokoro-onnx, cute warm female voice "af_heart" + pitch/rate styling
+
+Why these picks: the Space runs on free HF cpu-basic (2 vCPU / 16 GB). Two of
+the native macOS app's models cannot run there:
+  * NVIDIA Nemotron ASR — installing NeMo OOM-kills the build (exit 137).
+  * OpenBMB VoxCPM-0.5B — pulls torch + funasr + a CUDA stack that OOM-kills the
+    build, and CPU inference is too slow to be interactive.
+So the hosted Space substitutes faster-whisper (ears) and kokoro-onnx (voice),
+both torch-light and CPU-friendly. The native app runs Nemotron + VoxCPM for
+real. This file does NOT claim to run Nemotron or VoxCPM on the Space. The
+OpenBMB/MiniCPM brain still runs here in full.
 
 This file mirrors app/web_pet.py's UI/CSS and reuses app/server.py's system prompt +
 app/agent_tools.gather_tool_facts injection and app/pika_tts_server._style_voice styling.
@@ -38,21 +46,27 @@ from agent_tools import gather_tool_facts
 
 HERE = Path(__file__).parent
 
-# --- Sprites + voice reference (shipped alongside this file) -------------------
+# --- Sprites (shipped alongside this file) -------------------------------------
 PIKA_HAPPY = str(HERE / "pika-happy.png")
 PIKA_HYPER = str(HERE / "pika-hyper.png")
 PIKA_NAP = str(HERE / "pika-nap.png")
 PIKA_ALERT = str(HERE / "pika-alert.png")
 
-VOICE_REF_WAV = HERE / "pika-female-ref.wav"
-VOICE_REF_TXT = HERE / "pika-female-ref.txt"
-
 # --- Model ids ----------------------------------------------------------------
 BRAIN_REPO = "openbmb/MiniCPM5-1B-GGUF"
 BRAIN_GGUF = "MiniCPM5-1B-Q4_K_M.gguf"
-TTS_REPO = "openbmb/VoxCPM-0.5B"
-NEMOTRON_MODEL = "nvidia/nemotron-speech-streaming-en-0.6b"
+# STT on the Space is faster-whisper small.en (CPU-friendly). The native macOS
+# app uses NVIDIA Nemotron; NeMo OOM-kills the free Space build, so it is not
+# installed here. See the module docstring.
 WHISPER_MODEL = "small.en"
+# TTS on the Space is kokoro-onnx (ONNX, torch-free) — light enough to run on
+# free CPU. The native macOS app uses VoxCPM-0.5B (OpenBMB); VoxCPM needs a GPU
+# and OOM-kills the free Space build, so the Space uses Kokoro instead. The cute
+# voice is Kokoro's warm female "af_heart", plus the same pitch/rate styling.
+KOKORO_ONNX = HERE / "kokoro-v1.0.onnx"
+KOKORO_VOICES = HERE / "voices-v1.0.bin"
+KOKORO_VOICE = "af_heart"
+KOKORO_LANG = "en-us"
 
 # --- Pika voice styling (matches app/pika_tts_server._style_voice) ------------
 # Cute high-pitch, slow/deliberate female voice: pitch up, tempo down, independent.
@@ -63,7 +77,6 @@ PIKA_RATE = 0.85
 MAX_TOKENS = 72
 TEMPERATURE = 0.35
 
-DEFAULT_SAMPLE_RATE = 24_000
 MAX_TEXT_CHARS = 320
 
 
@@ -102,10 +115,11 @@ def _load_brain() -> Any:
 
 
 def _load_stt() -> Any:
-    """Primary STT = NVIDIA Nemotron (NeMo). Falls back silently to faster-whisper.
+    """STT = faster-whisper small.en (CTranslate2 int8) — fast/accurate on CPU.
 
-    Returns a callable ``transcribe(wav_path) -> (text, backend_label)`` so the
-    visible/credited STT is Nemotron, but the demo never breaks if NeMo can't load.
+    Returns a callable ``transcribe(wav_path) -> (text, backend_label)``. NeMo /
+    Nemotron is intentionally NOT used here: it OOM-kills the free-CPU Space build.
+    Nemotron runs in the native macOS PocketDM app instead.
     """
     global _stt
     if _stt is not None:
@@ -113,91 +127,35 @@ def _load_stt() -> Any:
     with _STT_LOCK:
         if _stt is not None:
             return _stt
-        _stt = _build_stt()
+        from faster_whisper import WhisperModel
+
+        model = WhisperModel(WHISPER_MODEL, device="cpu", compute_type="int8")
+
+        def transcribe(wav_path: str) -> tuple[str, str]:
+            try:
+                segments, _info = model.transcribe(
+                    wav_path, language="en", vad_filter=True, beam_size=1
+                )
+            except TypeError:
+                segments, _info = model.transcribe(wav_path, language="en")
+            text = " ".join(seg.text.strip() for seg in segments if seg.text.strip())
+            return " ".join(text.split()), "faster-whisper small.en"
+
+        _stt = transcribe
     return _stt
 
 
-def _build_stt() -> Any:
-    nemo_model = None
-    try:
-        import nemo.collections.asr as nemo_asr  # type: ignore
-
-        nemo_model = nemo_asr.models.ASRModel.from_pretrained(model_name=NEMOTRON_MODEL)
-        if hasattr(nemo_model, "eval"):
-            nemo_model.eval()
-        print(f"[stt] Nemotron ASR loaded ({NEMOTRON_MODEL})", flush=True)
-    except Exception as exc:  # NeMo heavy / GPU-only — fall back, but log loudly
-        print(f"[stt] Nemotron ASR unavailable, using faster-whisper fallback: {exc}", flush=True)
-        nemo_model = None
-
-    whisper_model = None
-
-    def _whisper():
-        nonlocal whisper_model
-        if whisper_model is None:
-            from faster_whisper import WhisperModel
-
-            whisper_model = WhisperModel(WHISPER_MODEL, device="cpu", compute_type="int8")
-        return whisper_model
-
-    def transcribe(wav_path: str) -> tuple[str, str]:
-        # Primary: Nemotron.
-        if nemo_model is not None:
-            try:
-                text = _nemo_transcribe(nemo_model, wav_path)
-                if text:
-                    return text, "Nemotron ASR"
-            except Exception as exc:
-                print(f"[stt] Nemotron transcribe failed, falling back: {exc}", flush=True)
-        # Silent fallback: faster-whisper.
-        model = _whisper()
-        try:
-            segments, _info = model.transcribe(wav_path, language="en", vad_filter=True, beam_size=1)
-        except TypeError:
-            segments, _info = model.transcribe(wav_path, language="en")
-        text = " ".join(seg.text.strip() for seg in segments if seg.text.strip())
-        return " ".join(text.split()), "faster-whisper (fallback)"
-
-    return transcribe
-
-
-def _nemo_transcribe(model: Any, wav_path: str) -> str:
-    try:
-        result = model.transcribe([wav_path], batch_size=1)
-    except TypeError:
-        result = model.transcribe(paths2audio_files=[wav_path], batch_size=1)
-    return _extract_nemo_transcript(result)
-
-
-def _extract_nemo_transcript(result: Any) -> str:
-    if isinstance(result, str):
-        return result.strip()
-    if isinstance(result, (list, tuple)):
-        if not result:
-            return ""
-        return _extract_nemo_transcript(result[0])
-    if isinstance(result, dict):
-        for key in ("text", "transcript", "pred_text"):
-            if key in result:
-                return str(result[key]).strip()
-    for attr in ("text", "transcript", "pred_text"):
-        value = getattr(result, attr, None)
-        if value:
-            return str(value).strip()
-    return str(result).strip()
-
-
 def _load_tts() -> Any:
-    """VoxCPM-0.5B with the bundled female reference clip for a single cute voice."""
+    """kokoro-onnx (torch-free, CPU) loaded from the bundled model + voices files."""
     global _tts
     if _tts is not None:
         return _tts
     with _TTS_LOCK:
         if _tts is not None:
             return _tts
-        from voxcpm import VoxCPM
+        from kokoro_onnx import Kokoro
 
-        _tts = VoxCPM.from_pretrained(TTS_REPO)
+        _tts = Kokoro(str(KOKORO_ONNX), str(KOKORO_VOICES))
     return _tts
 
 
@@ -307,7 +265,8 @@ def _compact(content: str, *, limit: int = 180) -> str:
 
 
 # ---------------------------------------------------------------------------
-# TTS — VoxCPM generate + _style_voice pitch/rate styling (from pika_tts_server)
+# TTS — kokoro-onnx (af_heart) + _style_voice pitch/rate styling
+# (same cute-voice styling as app/pika_tts_server._style_voice)
 # ---------------------------------------------------------------------------
 def speak(text: str) -> str | None:
     text = " ".join((text or "").split())[:MAX_TEXT_CHARS].strip()
@@ -316,33 +275,19 @@ def speak(text: str) -> str | None:
     try:
         model = _load_tts()
     except Exception as exc:
-        print(f"[tts] VoxCPM unavailable: {exc}", flush=True)
+        print(f"[tts] kokoro-onnx unavailable: {exc}", flush=True)
         return None
 
-    prompt_text = VOICE_REF_TXT.read_text(encoding="utf-8").strip() if VOICE_REF_TXT.exists() else None
-    kwargs: dict[str, Any] = {
-        "text": text,
-        "cfg_value": 2.0,
-        "inference_timesteps": 8,
-        "normalize": False,
-        "denoise": False,
-    }
-    if VOICE_REF_WAV.exists():
-        kwargs["prompt_wav_path"] = str(VOICE_REF_WAV)
-        kwargs["prompt_text"] = prompt_text
     try:
-        generated = model.generate(**kwargs)
-    except TypeError:
-        generated = model.generate(text=text)
+        samples, sample_rate = model.create(
+            text, voice=KOKORO_VOICE, speed=1.0, lang=KOKORO_LANG
+        )
     except Exception as exc:
-        print(f"[tts] VoxCPM generate failed: {exc}", flush=True)
+        print(f"[tts] kokoro-onnx create failed: {exc}", flush=True)
         return None
 
-    sample_rate = int(
-        getattr(getattr(model, "tts_model", None), "sample_rate", DEFAULT_SAMPLE_RATE)
-    )
-    wav_bytes = _wav_bytes(_float_samples(generated), sample_rate)
-    wav_bytes = _style_voice(wav_bytes, sample_rate)
+    wav_bytes = _wav_bytes(_float_samples(samples), int(sample_rate))
+    wav_bytes = _style_voice(wav_bytes, int(sample_rate))
 
     tmp = tempfile.NamedTemporaryFile(suffix=".wav", delete=False)
     tmp.write(wav_bytes)
@@ -542,6 +487,20 @@ CUSTOM_CSS = """
 }
 .talk-btn button:active { transform: translateY(2px); box-shadow: 0 2px 0 #b32626 !important; }
 footer { display: none !important; }
+/* --- "Wow" UI additions --- */
+.pet-hero {
+  color: #6b4a00; margin: 6px auto 10px; max-width: 560px;
+  font-size: 1.02rem; font-weight: 600; line-height: 1.45;
+}
+.talk-hint {
+  text-align: center; color: #7a5600; font-weight: 700;
+  font-size: 0.95rem; margin: 4px 0 8px;
+}
+.yt-section { text-align: center; margin: 18px 0 6px; }
+.yt-title { color: #5b3a00; font-weight: 800; margin: 6px 0; }
+.yt-section iframe { max-width: 100%; border-radius: 14px; box-shadow: 0 6px 18px rgba(160,110,0,0.25); }
+.yt-note { color: #8a6400; font-size: 0.8rem; margin: 4px 0 0; }
+.yt-note code { background: #fff3c4; padding: 1px 5px; border-radius: 5px; }
 """
 
 # Force Gradio's light theme so the sunny styling holds in dark mode.
@@ -564,6 +523,54 @@ FORCE_LIGHT_HEAD = """
 </script>
 """
 
+# --- Marketing copy (honest; this free Space runs MiniCPM + Whisper + Kokoro) -
+HERO_HTML = (
+    "<div class='pet-header'>"
+    "<h1 class='pet-title'>⚡ Pocket Pikachu</h1>"
+    "<p class='pet-hero'>The Pokémon you actually talk to — 100% on your own machine. "
+    "No cloud, no internet. Pull the WiFi and it still listens, thinks, and talks back.</p>"
+    "</div>"
+)
+
+CHIP_ROW_HTML = (
+    "<div class='chip-row'>"
+    "<span class='chip'>MiniCPM5-1B</span>"
+    "<span class='chip'>Kokoro voice</span>"
+    "<span class='chip'>Whisper</span>"
+    "<span class='chip local'>100% local</span>"
+    "</div>"
+)
+
+# Published demo video (matches the README and the zerogpu Space variant).
+YOUTUBE_VIDEO_ID = "MAsgEj7ywh8"
+YOUTUBE_HTML = (
+    "<div class='yt-section'>"
+    "<h3 class='yt-title'>🎥 Watch the story</h3>"
+    "<div style='text-align:center;margin:14px 0;'>"
+    f"<iframe width='560' height='315' src='https://www.youtube.com/embed/{YOUTUBE_VIDEO_ID}' "
+    "title='Pocket Pikachu' frameborder='0' allow='accelerometer; autoplay; clipboard-write; "
+    "encrypted-media; gyroscope; picture-in-picture' allowfullscreen></iframe></div>"
+    "</div>"
+)
+
+ABOUT_MD = (
+    "- 🎤 **Talk to it anytime** — by voice or text. It answers out loud in a cute, high-energy voice.\n"
+    "- ☀️ **Starts your day right** — cheerful morning check-ins and affirmations that keep you positive and moving.\n"
+    "- 💧 **Looks after you** — drink-water nudges, a bond that grows when you care for it, and it learns your daily patterns so it genuinely feels like it knows you.\n"
+    "- 📓 **Remembers with you** — a built-in journal for your moods, wins, and memories.\n"
+    "- 🗣️ **Teaches you** — practice a new language (Spanish & Mandarin) with one friendly voice.\n"
+    "- 🎭 **More moods coming** — today it's your hyper-positive cheerleader; emotion-aware modes for your whole range are next."
+)
+
+# CPU Space honestly credits its actual stack (Kokoro voice + Whisper ears);
+# the native app / org GPU Space run VoxCPM + Nemotron.
+WHY_MD = (
+    "- **100% LOCAL** — every model runs on-device. No API keys, no servers, nothing leaves your machine. Works in airplane mode.\n"
+    "- **Tiny by design** — MiniCPM5-1B brain (OpenBMB) + Kokoro voice + Whisper ears, each ≤1B. A whole talking companion that fits on a laptop. "
+    "(The native app and the org GPU build use OpenBMB's VoxCPM voice + NVIDIA Nemotron ears.)\n"
+    "- **A character, not a chatbot** — it reacts, remembers, cheers you on, and has a personality built to make your day brighter."
+)
+
 
 def build_app() -> gr.Blocks:
     with gr.Blocks(title="Pocket Pikachu — Talking Pet") as demo:
@@ -572,21 +579,14 @@ def build_app() -> gr.Blocks:
         # without our css/head args, so we cannot rely on those alone.
         gr.HTML(f"<style>{CUSTOM_CSS}</style>{FORCE_LIGHT_HEAD}")
         with gr.Column(elem_id="pet-app"):
-            gr.HTML(
-                "<div class='pet-header'>"
-                "<h1 class='pet-title'>⚡ Pocket Pikachu</h1>"
-                "<p class='pet-subtitle'>Click the mic or type — your pocket pet talks back. "
-                "First message wakes the models (downloads on first run).</p>"
-                "<div class='chip-row'>"
-                "<span class='chip'>MiniCPM5-1B</span>"
-                "<span class='chip'>VoxCPM</span>"
-                "<span class='chip'>Nemotron ASR</span>"
-                "<span class='chip local'>100% local</span>"
-                "</div>"
-                "</div>"
-            )
+            gr.HTML(HERO_HTML + CHIP_ROW_HTML)
 
             sprite = gr.HTML(sprite_html(PIKA_HAPPY))
+
+            gr.HTML(
+                "<p class='talk-hint'>🎤 Tap record and talk — Pikachu talks back out loud. "
+                "Or 💬 type below. (First message wakes the models.)</p>"
+            )
 
             reply_audio = gr.Audio(
                 label="Pikachu says",
@@ -607,13 +607,13 @@ def build_app() -> gr.Blocks:
                 mic = gr.Audio(
                     sources=["microphone"],
                     type="filepath",
-                    label="Talk to Pikachu",
-                    show_label=False,
+                    label="🎤 Talk to Pikachu",
+                    show_label=True,
                 )
 
             with gr.Row():
                 textbox = gr.Textbox(
-                    placeholder="…or type something to Pikachu",
+                    placeholder="💬 …or type something to Pikachu",
                     show_label=False,
                     scale=4,
                     container=False,
@@ -622,6 +622,13 @@ def build_app() -> gr.Blocks:
 
             with gr.Row():
                 checkin_btn = gr.Button("☀️ Daily check-in", elem_classes="talk-btn")
+
+            gr.HTML(YOUTUBE_HTML)
+
+            with gr.Accordion("✨ What can it do?", open=False):
+                gr.Markdown(ABOUT_MD)
+            with gr.Accordion("🔒 Why is it different?", open=False):
+                gr.Markdown(WHY_MD)
 
         # --- Wiring -----------------------------------------------------------
         mic.stop_recording(

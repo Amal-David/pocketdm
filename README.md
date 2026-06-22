@@ -9,6 +9,11 @@ app_file: app.py
 pinned: true
 license: apache-2.0
 short_description: On-device talking Pikachu — MiniCPM5 + VoxCPM + Nemotron, all local
+models:
+  - openbmb/MiniCPM5-1B-GGUF
+  - openbmb/VoxCPM-0.5B
+  - nvidia/nemotron-speech-streaming-en-0.6b
+  - Systran/faster-whisper-small.en
 tags:
   - track:wood
   - sponsor:openbmb
@@ -28,21 +33,35 @@ tags:
 
 # ⚡ Pocket Pikachu — a Pokémon you can actually talk to, 100% on your own machine
 
+<p align="center"><img src="docs/pika-demo.png" alt="Pocket Pikachu — a 100% on-device talking desktop pet" width="260"></p>
+
 **Pocket Pikachu is a living desktop companion you talk to with your voice — and every word of it runs on‑device.** No cloud, no API keys, no internet. Pull the WiFi and it still listens, thinks, and talks back. It greets you in the morning, asks how you're doing, reminds you to drink water, learns your daily rhythm, and helps you practice a new language — all powered by a stack of *tiny* open‑weight models small enough to live on a laptop.
 
 > **Build Small in one line:** the whole brain → voice → ears loop is **three open models, each ≤ 1 B parameters, running locally.** Take the network away and nothing breaks. That's the whole point.
 
+### 🔗 See it working
+
+- 🎬 **Demo video:** [Watch on YouTube](https://youtu.be/MAsgEj7ywh8) — WiFi off, talk to Pikachu, it answers out loud.
+- 🤗 **Live Space:** [build-small-hackathon/pocket-pikachu](https://huggingface.co/spaces/build-small-hackathon/pocket-pikachu) — click and talk, no install.
+- 🐙 **Code:** [github.com/Amal-David/pocketdm](https://github.com/Amal-David/pocketdm)
+- 𝕏 **Social:** [Posted on X](https://x.com/Cyrka_ai/status/2066659743444369797)
+- 📓 **Field notes:** [How we fit a talking pet onto a laptop](docs/field-notes-draft.md)
+
 ---
 
-## 🎬 The 15‑second pitch (what the demo opens on)
+## 📸 Screenshots
 
-1. **Turn WiFi off.** On camera.
-2. **Click the pet and say "Good morning."** Pikachu rises, perks up, and answers you out loud — in a cute, consistent voice — in a couple of seconds.
-3. **"What's the weather? What time is it?"** It checks real tools and tells you.
-4. **"I drank water."** Confetti, the bond HP bar fills, the pet does a happy hop.
-5. **On‑screen the whole time:** `MiniCPM5‑1B · VoxCPM · Nemotron — all ≤ 1B, all on‑device.`
+The pet reacts with a different animated mood depending on what's happening — happy when you check in, hyper after a win, alert when it's listening, and a sleepy nap when you tell it to rest.
 
-A talking desktop pet is *literally* the example the hackathon gives for the whimsical track. We built the canonical one — and made it run with zero cloud.
+<p align="center">
+  <img src="docs/pika-happy.png" alt="Happy" width="150">
+  <img src="docs/pika-hyper.png" alt="Hyper" width="150">
+  <img src="docs/pika-alert.png" alt="Alert / listening" width="150">
+  <img src="docs/pika-nap.png" alt="Nap" width="150">
+</p>
+<p align="center"><em>Moods: happy · hyper · alert · nap</em></p>
+
+It also has a tiny **mini mode** — a one-click "Tiny" control shrinks Pikachu to a ~1/10-size sprite that tucks into the corner of your screen; double-click it and it "evolves" back to full size with a glow-and-confetti burst.
 
 ---
 
@@ -135,6 +154,8 @@ Deterministic local facts (time, date, weather, pet state) are resolved *before*
 - ✅ Native macOS companion: full voice loop, daily care, language coach, greeting/nap animations, one cloned voice.
 - ✅ Gradio web app (`app/web_pet.py`) + self‑contained Space (`space/`).
 - ✅ All models local, all ≤ 1 B, OpenBMB brain + voice.
-- 🎥 Demo video & social post: see [`docs/hackathon-submission.md`](docs/hackathon-submission.md).
+- ⚙️ **Brain backend:** ships scripted by default; set `POCKETDM_GGUF=...` to serve the MiniCPM5‑1B GGUF (the app honestly reports which backend is live).
+- 📦 **Install the macOS app (self‑setup):** download `PocketDM-Companion.dmg` from GitHub Releases, drag it to Applications, then **right‑click → Open** the first time (the app is dev‑signed, not notarized). On first launch it sets itself up — installs a tiny Python runtime, downloads the on‑device models (~700 MB), and starts the local stack — then the pet appears. One time, a few minutes, internet required; ~6 GB free disk. Everything runs locally afterward. The distributable runs the torch‑free subset (MiniCPM5‑1B + Kokoro + faster‑whisper); VoxCPM/Nemotron are the developer stack.
+- 🎥 Demo video & social post: see the **See it working** links above and [`docs/hackathon-submission.md`](docs/hackathon-submission.md).
 
 Built tiny, on purpose. ⚡

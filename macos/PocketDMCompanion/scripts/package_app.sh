@@ -87,6 +87,12 @@ rm -rf "$bundle"
 mkdir -p "$bundle/Contents/MacOS" "$bundle/Contents/Resources"
 cp "$executable" "$bundle/Contents/MacOS/PocketDMCompanion"
 cp "$project_dir/Info.plist" "$bundle/Contents/Info.plist"
+# App icon (Pikachu). Info.plist sets CFBundleIconFile=AppIcon -> this file.
+if [[ -f "$project_dir/Resources/AppIcon.icns" ]]; then
+  cp "$project_dir/Resources/AppIcon.icns" "$bundle/Contents/Resources/AppIcon.icns"
+else
+  echo "WARN: Resources/AppIcon.icns missing — app will have no icon" >&2
+fi
 if [[ ! -d "$resource_bundle" ]]; then
   echo "SwiftPM did not produce the expected resource bundle: $resource_bundle" >&2
   exit 66
@@ -103,6 +109,24 @@ if [[ "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$bundle/Content
   echo "Info.plist CFBundleExecutable does not match PocketDMCompanion" >&2
   exit 65
 fi
+
+# Bundle the torch-free Python runtime payload so the app can self-bootstrap the
+# local stack on first launch (build venvs + download weights). Kept lean: app
+# source + sidecar scripts + the bundled Kokoro voice weights; no tests/models/venvs.
+repo_root="$(cd "$project_dir/../.." >/dev/null 2>&1 && pwd -P)"
+runtime_payload="$bundle/Contents/Resources/pocketdm-runtime"
+echo "Bundling Python runtime payload into Resources/pocketdm-runtime" >&2
+mkdir -p "$runtime_payload/macos/PocketDMCompanion" "$runtime_payload/space"
+payload_excludes=(--exclude '__pycache__' --exclude '*.pyc' --exclude '.venv' --exclude '.pika-*-venv' \
+  --exclude 'voices/models' --exclude 'voices/auditions')
+rsync -a "${payload_excludes[@]}" "$repo_root/app" "$runtime_payload/"
+[[ -d "$repo_root/engine" ]] && rsync -a "${payload_excludes[@]}" "$repo_root/engine" "$runtime_payload/"
+rsync -a "${payload_excludes[@]}" "$repo_root/macos/PocketDMCompanion/scripts" "$runtime_payload/macos/PocketDMCompanion/"
+cp "$repo_root/app.py" "$runtime_payload/" 2>/dev/null || true
+cp "$repo_root/pyproject.toml" "$runtime_payload/" 2>/dev/null || true
+cp "$repo_root/uv.lock" "$runtime_payload/" 2>/dev/null || true
+cp "$repo_root/space/kokoro-v1.0.onnx" "$runtime_payload/space/" 2>/dev/null || echo "WARN: kokoro-v1.0.onnx missing from payload" >&2
+cp "$repo_root/space/voices-v1.0.bin" "$runtime_payload/space/" 2>/dev/null || echo "WARN: voices-v1.0.bin missing from payload" >&2
 
 # Code-sign with a stable Apple Development identity so macOS (TCC) remembers the
 # microphone/speech permission grant across rebuilds and relaunches. An ad-hoc

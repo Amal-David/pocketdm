@@ -158,6 +158,26 @@ if [[ ! -f "$model_path" ]]; then
   exit 66
 fi
 
+# Distributed app path: run the OpenAI-compatible server from a pre-built venv that has
+# llama-cpp-python installed from the prebuilt Apple-Silicon Metal wheel (no compiler).
+# The first-run bootstrap creates this venv and sets POCKETDM_LLAMA_VENV.
+llama_venv="${POCKETDM_LLAMA_VENV:-}"
+if [[ -n "$llama_venv" && -x "$llama_venv/bin/python" ]]; then
+  # NOTE: the pinned prebuilt Metal wheel (llama-cpp-python 0.3.2) does not accept
+  # --chat_template_kwargs (newer source builds do). Omit it here; the companion
+  # server strips any <think> output, and the system prompt already forbids it.
+  exec "$llama_venv/bin/python" -m llama_cpp.server \
+    --model "$model_path" \
+    --model_alias "$model_alias" \
+    --host "$host" \
+    --port "$port" \
+    --n_ctx "$n_ctx" \
+    --n_gpu_layers "$n_gpu_layers" \
+    --n_threads "$n_threads" \
+    --flash_attn true \
+    --verbose false
+fi
+
 exec uv run \
   --with sse-starlette \
   --with starlette-context \

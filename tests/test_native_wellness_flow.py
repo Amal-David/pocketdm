@@ -141,8 +141,8 @@ def test_expanded_chat_defaults_to_pet_first_chat_with_tools_gated() -> None:
     assert "gameActionPanel" in chat_panel
     assert "frame(minWidth: 500, maxWidth: .infinity" in expanded
     assert "model.completeDailyWellness(action)" in daily_nudge
-    # The mood dial now opens the Mood wheel showcase (Sad + Sleepy) instead of
-    # spinning a daily feeling.
+    # The mood dial now opens the Mood wheel showcase (Sad + Scared, animated)
+    # instead of spinning a daily feeling.
     assert "model.openEmotions()" in daily_nudge
     assert "model.healthValueLine" in source
     assert "if !model.isVoiceListening" not in quick_actions
@@ -165,7 +165,9 @@ def test_expanded_chat_keeps_routine_details_out_of_default_path() -> None:
     assert 'Text(model.isVoiceListening ? "Listening" : "Voice")' in voice_panel
     assert 'Label(showingDailyDetails ? "Less" : "Routine"' in voice_panel
     assert "if showingDailyDetails" in voice_panel
-    assert 'Text("\\(affirmation.title): \\(affirmation.line)")' in voice_panel
+    # Affirmation card now leads with the daypart's proactive check-in prompt
+    # (e.g. evening "Hey, how was your day?") followed by the affirmation line.
+    assert 'Text("\\(affirmation.prompt) \\(affirmation.line)")' in voice_panel
     assert "beginVoiceFromExpanded(mode: .dailyCheckIn)" in voice_panel
     assert "toggleHandsFreeFromExpanded()" in voice_panel
 

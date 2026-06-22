@@ -23,12 +23,24 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var overlayController: DragonOverlayController?
     private var serverProcess: PocketDMServerProcess?
     private var statusItem: NSStatusItem?
+    private var bootstrapWindow: BootstrapWindowController?
+    private var bootstrapModel: BootstrapModel?
 
     init(arguments: CompanionArguments) {
         self.arguments = arguments
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        // Distributed build: the bundled Python runtime payload lives in Resources AND
+        // the app was double-clicked (no POCKETDM_REPO in the environment). It owns its
+        // own first-run bootstrap + stack startup, so it runs a separate flow. Dev runs
+        // go through launch_app.sh, which always exports POCKETDM_REPO and attaches to an
+        // already-running stack, so they keep the original attach-and-show behavior below.
+        if let payload = DistributedRuntime.distributedPayloadIfLaunchedStandalone() {
+            startDistributedFlow(payloadDirectory: payload)
+            return
+        }
+
         if arguments.launchServer {
             let process = PocketDMServerProcess(repoRoot: arguments.repoRoot)
             process.start()
@@ -49,6 +61,110 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationWillTerminate(_ notification: Notification) {
         serverProcess?.stop()
+    }
+
+    // MARK: - Distributed first-run flow
+
+    static let didBootstrapKey = "PocketDMCompanion.didBootstrap"
+
+    /// Drives the distributed build: (first run) show the bootstrap window and build
+    /// the on-device stack, then start the stack and reveal the pet; (subsequent runs)
+    /// just start the stack and reveal the pet. The working dir is writable, unlike the
+    /// signed app's read-only Resources, so all venvs + weights live there.
+    private func startDistributedFlow(payloadDirectory: URL) {
+        let workingDir = DistributedRuntime.workingDirectory
+        configureDistributedEnvironment(workingDir: workingDir)
+
+        if UserDefaults.standard.bool(forKey: Self.didBootstrapKey) {
+            runStackThenShowPet(payloadDirectory: payloadDirectory, workingDir: workingDir)
+            return
+        }
+
+        let model = BootstrapModel(payloadDirectory: payloadDirectory, workingDir: workingDir)
+        bootstrapModel = model
+        let controller = BootstrapWindowController(model: model)
+        bootstrapWindow = controller
+        controller.showWindow()
+
+        model.onFinished = { [weak self] in
+            guard let self else { return }
+            self.runStackThenShowPet(payloadDirectory: payloadDirectory, workingDir: workingDir)
+        }
+        model.onRetry = { [weak self] in
+            self?.bootstrapModel?.runBootstrap()
+        }
+        model.runBootstrap()
+    }
+
+    /// Starts the four-service torch-free stack (start_stack.sh in the working dir),
+    /// polls the companion web server's health, marks bootstrap complete, dismisses the
+    /// bootstrap window, and shows the pet overlay rooted at the writable working dir.
+    private func runStackThenShowPet(payloadDirectory: URL, workingDir: URL) {
+        let model = bootstrapModel ?? BootstrapModel(payloadDirectory: payloadDirectory, workingDir: workingDir)
+        bootstrapModel = model
+        model.startStackAndWaitForHealth(baseURL: arguments.baseURL) { [weak self] result in
+            guard let self else { return }
+            switch result {
+            case .success:
+                UserDefaults.standard.set(true, forKey: Self.didBootstrapKey)
+                self.presentPet(workingDir: workingDir)
+                self.bootstrapWindow?.close()
+                self.bootstrapWindow = nil
+                self.bootstrapModel = nil
+            case .failure(let message):
+                // Keep (or create) the window so the user sees the failure + Retry.
+                if self.bootstrapWindow == nil {
+                    let controller = BootstrapWindowController(model: model)
+                    self.bootstrapWindow = controller
+                    controller.showWindow()
+                }
+                model.reportFailure(message)
+                model.onRetry = { [weak self] in
+                    self?.runStackThenShowPet(payloadDirectory: payloadDirectory, workingDir: workingDir)
+                }
+            }
+        }
+    }
+
+    /// Builds the overlay rooted at the writable working dir (its `output/sprite-sheets`
+    /// and weights live there, not in the signed read-only bundle) and reveals it.
+    private func presentPet(workingDir: URL) {
+        guard overlayController == nil else {
+            overlayController?.show()
+            return
+        }
+        let client = PocketDMClient(baseURL: arguments.baseURL)
+        let launcher = GameLauncher(baseURL: arguments.baseURL)
+        let controller = DragonOverlayController(
+            client: client,
+            launcher: launcher,
+            character: arguments.character,
+            repoRoot: workingDir
+        )
+        overlayController = controller
+        controller.show()
+        installStatusItem()
+    }
+
+    /// Point the native app's voice/STT/brain clients at the local torch-free stack the
+    /// distributed build runs. Mirrors the defaults pika_demo_stack.sh's launch path sets,
+    /// minus the Nemotron realtime URL (that sidecar is intentionally not started, so the
+    /// realtime path stays unset and the app uses batch STT on 7862).
+    private func configureDistributedEnvironment(workingDir: URL) {
+        setenv("POCKETDM_REPO", workingDir.path, 1)
+        let env = ProcessInfo.processInfo.environment
+        if env["POCKETDM_PIKA_TTS_URL"] == nil {
+            setenv("POCKETDM_PIKA_TTS_URL", "http://127.0.0.1:7861/tts", 1)
+        }
+        if env["POCKETDM_PIKA_STT_URL"] == nil {
+            setenv("POCKETDM_PIKA_STT_URL", "http://127.0.0.1:7862", 1)
+        }
+        if env["POCKETDM_ASSISTANT_LLAMA_URL"] == nil {
+            setenv("POCKETDM_ASSISTANT_LLAMA_URL", "http://127.0.0.1:8081", 1)
+        }
+        if env["POCKETDM_ASSISTANT_LLAMA_MODEL"] == nil {
+            setenv("POCKETDM_ASSISTANT_LLAMA_MODEL", "minicpm5-1b-q4", 1)
+        }
     }
 
     private func installStatusItem() {
@@ -74,6 +190,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let petOnly = NSMenuItem(title: "Hide to Pet", action: #selector(showPetOnlyFromMenu), keyEquivalent: "m")
         petOnly.target = self
         menu.addItem(petOnly)
+        let miniTitle = overlayController?.isMini == true ? "Restore Pet Size" : "Shrink to Tiny"
+        let mini = NSMenuItem(title: miniTitle, action: #selector(toggleMiniFromMenu), keyEquivalent: "t")
+        mini.target = self
+        mini.state = overlayController?.isMini == true ? .on : .off
+        menu.addItem(mini)
         let soundTitle = overlayController?.soundEnabled == true ? "Mute Sounds" : "Unmute Sounds"
         let sound = NSMenuItem(title: soundTitle, action: #selector(toggleSoundFromMenu), keyEquivalent: "")
         sound.target = self
@@ -101,6 +222,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     @objc private func toggleSoundFromMenu() {
         overlayController?.toggleSound()
+        rebuildStatusMenu()
+    }
+
+    @objc private func toggleMiniFromMenu() {
+        overlayController?.toggleMini()
         rebuildStatusMenu()
     }
 
@@ -348,6 +474,9 @@ final class DragonOverlayController {
     private static let minimizedSize = NSSize(width: 216, height: 224)
     private static let expandedSize = NSSize(width: 620, height: 620)
     private static let expandedMinimumSize = NSSize(width: 520, height: 430)
+    // Tiny "pocket" pet window — roughly a tenth of the pet-only footprint. The
+    // sprite is smaller still; the surrounding window stays the double-click target.
+    private static let miniSize = NSSize(width: 60, height: 60)
 
     private let panel: NSPanel
     private let model: DragonOverlayModel
@@ -403,6 +532,15 @@ final class DragonOverlayController {
         setMinimized(true, animated: false)
     }
 
+    var isMini: Bool { model.miniMode }
+
+    /// Toggle the tiny "pocket" pet from outside the SwiftUI view (status menu).
+    func toggleMini() {
+        panel.orderFrontRegardless()
+        model.setMiniMode(!model.miniMode)
+        setMinimized(model.minimized, animated: true)
+    }
+
     func toggleSound() {
         model.toggleSound()
     }
@@ -417,7 +555,21 @@ final class DragonOverlayController {
 
     private func setMinimized(_ minimized: Bool, animated: Bool = true) {
         var frame = panel.frame
-        let size = fittedSize(minimized ? Self.minimizedSize : Self.expandedSize, minimum: minimized ? Self.minimizedSize : Self.expandedMinimumSize, relativeTo: frame)
+        // Mini overrides the minimized/expanded footprint when active. The model's
+        // miniMode is updated before this runs, so reading it here is current.
+        let target: NSSize
+        let minimum: NSSize
+        if model.miniMode {
+            target = Self.miniSize
+            minimum = Self.miniSize
+        } else if minimized {
+            target = Self.minimizedSize
+            minimum = Self.minimizedSize
+        } else {
+            target = Self.expandedSize
+            minimum = Self.expandedMinimumSize
+        }
+        let size = fittedSize(target, minimum: minimum, relativeTo: frame)
         let top = frame.maxY
         frame.size = size
         frame.origin.y = top - size.height
@@ -575,6 +727,19 @@ enum PetDaypartAffirmation: Int, CaseIterable {
             return "Close one loose thread and let tomorrow begin lighter."
         case .night:
             return "Rest is care. Your spark can wait safely until morning."
+        }
+    }
+
+    var prompt: String {
+        switch self {
+        case .morning:
+            return "Hey, good morning! How are you feeling today?"
+        case .afternoon:
+            return "Hey! How's your day going so far?"
+        case .evening:
+            return "Hey, how was your day?"
+        case .night:
+            return "Hey, how are you winding down tonight?"
         }
     }
 
@@ -801,6 +966,7 @@ struct MorningWeatherReport: Decodable {
 @MainActor
 final class DragonOverlayModel: ObservableObject {
     private static let petOnlyKey = "PocketDMCompanion.petOnly"
+    private static let miniModeKey = "PocketDMCompanion.miniMode"
     private static let soundEnabledKey = "PocketDMCompanion.soundEnabled"
     private static let chatMessagesKey = "PocketDMCompanion.chatMessages"
     private static let companionHPKey = "PocketDMCompanion.companionHP"
@@ -1106,6 +1272,11 @@ final class DragonOverlayModel: ObservableObject {
     @Published var chatMessages = DragonOverlayModel.loadChatMessages()
     @Published var serverLine = "Checking PocketDM..."
     @Published var minimized = true
+    /// Tiny "pocket" sub-state of the minimized pet: a ~1/10-size sprite the user
+    /// double-clicks to restore. Only meaningful while `minimized` is true.
+    @Published var miniMode = UserDefaults.standard.bool(forKey: DragonOverlayModel.miniModeKey)
+    /// Bumped to fire the Pokemon-style "evolve" flash/glow on a size transition.
+    @Published var evolvePulse = 0
     @Published var introVideoActive: Bool = !UserDefaults.standard.bool(forKey: "PocketDMCompanion.hasSeenIntro")
     @Published var napVideoActive = false
     @Published var soundEnabled = UserDefaults.standard.object(forKey: DragonOverlayModel.soundEnabledKey) as? Bool ?? true
@@ -1547,8 +1718,29 @@ final class DragonOverlayModel: ObservableObject {
         UserDefaults.standard.set(value, forKey: Self.petOnlyKey)
         play(value ? .minimize : .open)
         if value {
-            showCheerIfReady()
+            Task { await showCheerIfReady() }
         }
+    }
+
+    /// Toggle the tiny "pocket" pet. Mini is always a sub-state of the minimized
+    /// pet (never the expanded panel), and both directions play the evolve effect.
+    func setMiniMode(_ value: Bool) {
+        guard miniMode != value else { return }
+        if value && !minimized {
+            setMinimized(true)
+        }
+        miniMode = value
+        UserDefaults.standard.set(value, forKey: Self.miniModeKey)
+        play(value ? .minimize : .open)
+        triggerEvolve()
+    }
+
+    /// Fire the Pokemon-style evolve beat: glow flash (via `evolvePulse`), a
+    /// celebratory burst, and a happy mood pop — all reusing existing idioms.
+    func triggerEvolve() {
+        evolvePulse += 1
+        celebrationBurstID += 1
+        setMood(.happy, duration: 1.2)
     }
 
     func refreshMorningWeatherIfNeeded(force: Bool = false) async {
@@ -1739,7 +1931,7 @@ final class DragonOverlayModel: ObservableObject {
         lastRequest = mode.requestLabel
         if mode == .dailyCheckIn {
             let affirmation = currentAffirmation
-            message = pikaText("\(affirmation.title): \(affirmation.line)")
+            message = pikaText("\(affirmation.prompt) \(affirmation.line)")
         }
         play(.open)
         setMood(.look)
@@ -2107,18 +2299,62 @@ final class DragonOverlayModel: ObservableObject {
 
     func expressEmotion(named name: String) {
         guard !busy, !isVoiceListening else { return }
-        let sleepy = name.caseInsensitiveCompare("Sleepy") == .orderedSame
+        let scared = name.caseInsensitiveCompare("Scared") == .orderedSame
         lastRequest = "\(name) mood"
         conversationBubbleActive = true
         appendChatMessage(.user, "Show your \(name.lowercased()) mood")
-        let line = sleepy
-            ? "Pika... pika. (yawn) I'm getting sleepy — a little recharge and I'll be bright again."
+        let line = scared
+            ? "Pika...! That startled me. A calm, steady voice helps me feel safe again."
             : "Pika pika... I'm feeling a little down. A gentle pet would cheer me right up!"
         message = pikaText(line)
         appendChatMessage(.assistant, message)
         voiceStatusLine = "Pikachu feels \(name.lowercased())."
-        play(sleepy ? .nap : .alert)
-        setMood(sleepy ? .nap : .look, duration: 3.0)
+        play(scared ? .alert : .nap)
+        setMood(scared ? .scared : .sad, duration: 3.0)
+        speakPikaLine(message, force: true)
+    }
+
+    func openReminders() {
+        guard learningMode != .reminders else { return }
+        learningMode = .reminders
+        lastRequest = "Reminders"
+        message = pikaText("Reminders opened. Drink water, stand up, take a short walk — tap one when you do it!")
+        play(.open)
+    }
+
+    func isReminderDone(_ action: DailyWellnessAction) -> Bool {
+        dailyWellnessMask & action.rawValue != 0
+    }
+
+    func markReminder(_ action: DailyWellnessAction) {
+        guard !busy, !isVoiceListening else { return }
+        applyVitalDecay()
+        lastRequest = action.title
+        conversationBubbleActive = true
+        guard !isReminderDone(action) else {
+            message = pikaText("Pika! You already did '\(action.title)' today — lovely care streak!")
+            appendChatMessage(.assistant, message)
+            voiceStatusLine = "\(action.title) already done today."
+            setMood(.happy, duration: 1.0)
+            return
+        }
+        appendChatMessage(.user, action.actionTitle)
+        dailyWellnessMask |= action.rawValue
+        companionHP = min(10, companionHP + 1)
+        awardCompanionHealth(15)
+        happiness = min(5, happiness + 1)
+        earnSparkDust(1)
+        celebrationBurstID += 1
+        var line = "Pika pika! Nice care — '\(action.title)' done! Bond HP up."
+        if let vitalNote = refillVital(action.vital, by: 1) {
+            line += " \(vitalNote)"
+        }
+        message = pikaText(line)
+        appendChatMessage(.assistant, message)
+        voiceStatusLine = "\(action.title) done. Health up."
+        persistCare()
+        play(.happy)
+        setMood(.happy, duration: 1.4)
         speakPikaLine(message, force: true)
     }
 
@@ -2264,7 +2500,7 @@ final class DragonOverlayModel: ObservableObject {
 
         var body = "\(action.spokenLine) Health +1."
         if action == .affirm {
-            body += " \(currentAffirmation.title): \(currentAffirmation.line)"
+            body += " \(currentAffirmation.prompt) \(currentAffirmation.line)"
         }
         if let vitalNote {
             body += " \(vitalNote)"
@@ -2316,8 +2552,9 @@ final class DragonOverlayModel: ObservableObject {
         Requirements: reply as Pikachu in one compact line, include Pika pika, keep the full answer useful as text, and ask exactly one check-in invitation. Do not give an adventure hint.
         """
         let fallback = "\(morningWeatherLine) \(affirmation.title): \(affirmation.line) Want to do a check-in with me? Joy +1, Sparks +4."
+        let snapshot = currentPetStateSnapshot()
         do {
-            message = pikaText(try await client.assistantReply(for: prompt))
+            message = pikaText(try await client.assistantReply(for: prompt, userState: snapshot))
             voiceStatusLine = pikaVoiceStatusLine(prefix: "Morning check-in ready")
         } catch {
             message = pikaText(fallback)
@@ -2450,8 +2687,9 @@ final class DragonOverlayModel: ObservableObject {
         play(.send)
         setMood(.thinking)
         defer { busy = false }
+        let snapshot = currentPetStateSnapshot()
         do {
-            message = pikaText(try await client.assistantReply(for: prompt))
+            message = pikaText(try await client.assistantReply(for: prompt, userState: snapshot))
             let cleanReply = message
             awardCompanionHealth(30)
             voiceStatusLine = pikaVoiceStatusLine(prefix: "Pikachu replied")
@@ -3477,6 +3715,30 @@ final class DragonOverlayModel: ObservableObject {
     var currentAffirmation: PetDaypartAffirmation {
         let hour = Calendar.current.component(.hour, from: Date())
         return PetDaypartAffirmation.current(hour: hour)
+    }
+
+    /// Build the optional pet-state snapshot sent to the server store on each
+    /// `/api/assistant` request. Reads only existing live state — Bond HP, streak,
+    /// current mood, derived daypart, and the day-gap since the last pet day — so
+    /// the server stays the single source of truth for both the web and native
+    /// surfaces. All fields degrade cleanly: a missing/unparseable last-pet day
+    /// just omits the gap rather than guessing.
+    private func currentPetStateSnapshot() -> PetStateSnapshot {
+        let gap: String?
+        if lastPetDay.isEmpty {
+            gap = "first visit"
+        } else if let days = Self.dayGap(from: lastPetDay, to: Date()) {
+            gap = days == 1 ? "1 day" : "\(days) days"
+        } else {
+            gap = nil
+        }
+        return PetStateSnapshot(
+            streak: petStreak,
+            bond_hp: companionHP,
+            mood: mood.rawValue,
+            daypart: currentAffirmation.actionTitle.lowercased(),
+            last_seen_gap: gap
+        )
     }
 
     var affirmationLine: String {
@@ -8440,9 +8702,9 @@ final class DragonOverlayModel: ObservableObject {
         cheerTask = Task { [weak self] in
             try? await Task.sleep(nanoseconds: 6_000_000_000)
             while !Task.isCancelled {
-                await MainActor.run {
-                    guard self?.showWellnessBreakIfReady() != true else { return }
-                    self?.showCheerIfReady()
+                guard let self else { break }
+                if self.showWellnessBreakIfReady() != true {
+                    await self.showCheerIfReady()
                 }
                 try? await Task.sleep(nanoseconds: 5 * 60_000_000_000)
             }
@@ -8469,9 +8731,7 @@ final class DragonOverlayModel: ObservableObject {
         scoutTripTask = Task { [weak self] in
             try? await Task.sleep(nanoseconds: UInt64(max(1, remaining)) * 1_000_000_000)
             if Task.isCancelled { return }
-            await MainActor.run {
-                self?.showCheerIfReady()
-            }
+            await self?.showCheerIfReady()
         }
     }
 
@@ -8522,7 +8782,7 @@ final class DragonOverlayModel: ObservableObject {
         return true
     }
 
-    private func showCheerIfReady() {
+    private func showCheerIfReady() async {
         syncDailyCombo()
         guard !launchQuietPeriodActive else { return }
         guard minimized, cheerBubble == nil else { return }
@@ -8757,9 +9017,14 @@ final class DragonOverlayModel: ObservableObject {
                 intent: journey.intent
             )
         } else if shouldUseDaypart {
+            // Before emitting today's generic daypart cheer, ask the server whether a
+            // recurring-pattern line (afternoon slump / welcome-back) should speak
+            // instead. On any failure, empty reply, or use_generic_cheer == true we
+            // keep daypart.body unchanged — best-effort, never blocking the nudge.
+            let body = await proactiveDaypartBody(default: daypart.body)
             prompt = PetNudgeLibrary.PetCheerPrompt(
                 title: daypart.title,
-                body: daypart.body,
+                body: body,
                 action: daypart.action,
                 rewardLine: daypart.rewardLine
             )
@@ -9160,6 +9425,26 @@ final class DragonOverlayModel: ObservableObject {
         setMood(promptMood, duration: 1.2)
     }
 
+    /// Resolve the body for today's generic daypart cheer, letting the server swap in
+    /// a recurring-pattern line when one fires. Returns `fallback` on any network or
+    /// server failure, an empty reply, or `use_generic_cheer == true`, so the cheer
+    /// path degrades cleanly to today's behavior (same best-effort error style as the
+    /// assistant path, which swallows server errors into a fallback).
+    private func proactiveDaypartBody(default fallback: String) async -> String {
+        let snapshot = currentPetStateSnapshot()
+        do {
+            guard
+                let response = try await client.proactiveLine(daypart: snapshot.daypart, userState: snapshot),
+                !response.use_generic_cheer,
+                let reply = response.reply?.trimmingCharacters(in: .whitespacesAndNewlines),
+                !reply.isEmpty
+            else { return fallback }
+            return reply
+        } catch {
+            return fallback
+        }
+    }
+
     private var launchQuietPeriodActive: Bool {
         Date().timeIntervalSince1970 - launchedAt < Self.initialPetOnlyQuietSeconds
     }
@@ -9186,6 +9471,8 @@ enum PetMood: String, CaseIterable {
     case spark
     case sleepGuard
     case peek
+    case sad
+    case scared
 
     var dailyWheelTitle: String {
         switch self {
@@ -9201,6 +9488,10 @@ enum PetMood: String, CaseIterable {
             return "Reset"
         case .nap:
             return "Sleepy"
+        case .sad:
+            return "Sad"
+        case .scared:
+            return "Scared"
         default:
             return "Bright"
         }
@@ -9222,6 +9513,10 @@ enum PetMood: String, CaseIterable {
             return "fresh after a tiny reset"
         case .nap:
             return "soft and sleepy"
+        case .sad:
+            return "a little down"
+        case .scared:
+            return "startled"
         default:
             return "bright"
         }
@@ -9237,6 +9532,10 @@ enum PetMood: String, CaseIterable {
             return "pet-hyper"
         case .alert, .thinking, .sleepGuard:
             return "pet-alert"
+        case .sad:
+            return "pet-sad"
+        case .scared:
+            return "pet-scared"
         }
     }
 
@@ -9327,6 +9626,18 @@ enum PetMood: String, CaseIterable {
                 "\(prefix)-ambient-journal-peek",
                 "\(prefix)-journal-open",
                 "\(prefix)-proud"
+            ]
+        case .sad:
+            stageCandidates = [
+                "\(prefix)-sad",
+                "\(prefix)-lonely",
+                "\(prefix)-need-rest"
+            ]
+        case .scared:
+            stageCandidates = [
+                "\(prefix)-scared",
+                "\(prefix)-protective",
+                "\(prefix)-alert"
             ]
         }
         return stageCandidates + [fallbackAssetName]
@@ -10512,14 +10823,16 @@ struct DragonOverlayView: View {
     var body: some View {
         ZStack {
             if model.minimized {
-                petOnlyBody
-                    .transition(.scale(scale: 0.84, anchor: .center).combined(with: .opacity))
+                minimizedContent
+                    .overlay(EvolveGlow(trigger: model.evolvePulse))
+                    .overlay(ConfettiBurstView(trigger: model.celebrationBurstID).allowsHitTesting(false))
             } else {
                 expandedBody
                     .transition(.scale(scale: 0.92, anchor: .topLeading).combined(with: .opacity))
             }
         }
         .animation(.spring(response: 0.26, dampingFraction: 0.78), value: model.minimized)
+        .animation(.spring(response: 0.34, dampingFraction: 0.66), value: model.miniMode)
         .onChange(of: model.minimized) { _, minimized in
             showingSettings = false
             showingDemoTools = false
@@ -10529,6 +10842,39 @@ struct DragonOverlayView: View {
             petControlsHovering = false
             onSizeChange(minimized)
         }
+        .onChange(of: model.miniMode) { _, _ in
+            showingSettings = false
+            onSizeChange(model.minimized)
+        }
+    }
+
+    @ViewBuilder private var minimizedContent: some View {
+        if model.miniMode {
+            miniPetBody
+                .transition(.scale(scale: 0.36, anchor: .center).combined(with: .opacity))
+        } else {
+            petOnlyBody
+                .transition(.scale(scale: 0.84, anchor: .center).combined(with: .opacity))
+        }
+    }
+
+    private var miniPetBody: some View {
+        AnimatedPetSprite(
+            character: model.companionCharacter,
+            stage: model.growthStage,
+            mood: model.mood,
+            size: 38
+        )
+        .frame(width: 60, height: 60)
+        .contentShape(Rectangle())
+        .simultaneousGesture(dragGesture)
+        .onTapGesture(count: 2) {
+            withAnimation(.spring(response: 0.34, dampingFraction: 0.66)) {
+                model.setMiniMode(false)
+            }
+        }
+        .help("Double-click to grow \(model.companionCharacter.title) back")
+        .accessibilityLabel("Tiny \(model.companionCharacter.title) — double-click to restore")
     }
 
     private var petOnlyBody: some View {
@@ -10691,6 +11037,16 @@ struct DragonOverlayView: View {
                 .buttonStyle(MiniPanelButtonStyle(kind: .primary))
 
                 Button {
+                    withAnimation(.spring(response: 0.34, dampingFraction: 0.66)) {
+                        showingSettings = false
+                        model.setMiniMode(true)
+                    }
+                } label: {
+                    Label("Tiny", systemImage: "arrow.down.right.and.arrow.up.left")
+                }
+                .buttonStyle(MiniPanelButtonStyle(kind: .primary))
+
+                Button {
                     closeCompanion()
                 } label: {
                     Label("Close", systemImage: "xmark")
@@ -10746,6 +11102,11 @@ struct DragonOverlayView: View {
                 } else if model.learningMode == .emotions {
                     ScrollView(.vertical, showsIndicators: false) {
                         EmotionWheelPanel(model: model)
+                    }
+                    .frame(maxHeight: 456)
+                } else if model.learningMode == .reminders {
+                    ScrollView(.vertical, showsIndicators: false) {
+                        RemindersPanel(model: model)
                     }
                     .frame(maxHeight: 456)
                 } else {
@@ -11579,10 +11940,10 @@ struct DragonOverlayView: View {
             }
 
             if showingDailyDetails {
-                Text("\(affirmation.title): \(affirmation.line)")
+                Text("\(affirmation.prompt) \(affirmation.line)")
                     .font(.system(size: 17, weight: .black, design: .rounded))
                     .foregroundStyle(Color.black)
-                    .lineLimit(2)
+                    .lineLimit(3)
                     .frame(maxWidth: .infinity, minHeight: 50, alignment: .leading)
                     .padding(.horizontal, 11)
                     .padding(.vertical, 8)
@@ -11778,6 +12139,9 @@ struct DragonOverlayView: View {
             modeButton("Mood", mode: .emotions) {
                 model.openEmotions()
             }
+            modeButton("Reminders", mode: .reminders) {
+                model.openReminders()
+            }
         }
         .disabled(model.busy)
     }
@@ -11913,14 +12277,74 @@ enum PetJournalPage: String, CaseIterable {
     }
 }
 
+struct RemindersPanel: View {
+    @ObservedObject var model: DragonOverlayModel
+
+    // Physical wellness nudges (the affirmation check-in lives in its own flow).
+    private let reminders: [DailyWellnessAction] = [.water, .stand, .walk]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Reminders")
+                .font(.system(size: 20, weight: .black, design: .rounded))
+                .foregroundStyle(Color.ivory)
+            Text("Little nudges to keep you healthy. Tap one when you've done it.")
+                .font(.system(size: 13, weight: .bold, design: .rounded))
+                .foregroundStyle(Color.gold.opacity(0.92))
+                .fixedSize(horizontal: false, vertical: true)
+
+            ForEach(reminders, id: \.self) { reminder in
+                reminderRow(reminder)
+            }
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func reminderRow(_ reminder: DailyWellnessAction) -> some View {
+        let done = model.isReminderDone(reminder)
+        return Button {
+            model.markReminder(reminder)
+        } label: {
+            HStack(spacing: 12) {
+                Image(systemName: reminder.systemImage)
+                    .font(.system(size: 20, weight: .bold))
+                    .foregroundStyle(done ? Color.gold : Color.ivory)
+                    .frame(width: 30)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(reminder.question)
+                        .font(.system(size: 14, weight: .black, design: .rounded))
+                        .foregroundStyle(Color.ivory)
+                    Text(done ? "Done today — nice care streak!" : "Tap when you've done it.")
+                        .font(.system(size: 11, weight: .semibold, design: .rounded))
+                        .foregroundStyle(Color.ivory.opacity(0.62))
+                }
+                Spacer(minLength: 0)
+                Image(systemName: done ? "checkmark.circle.fill" : "circle")
+                    .font(.system(size: 20))
+                    .foregroundStyle(done ? Color.gold : Color.ivory.opacity(0.4))
+            }
+            .padding(12)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Color.black.opacity(0.42), in: RoundedRectangle(cornerRadius: 10))
+            .overlay(
+                RoundedRectangle(cornerRadius: 10)
+                    .stroke(done ? Color.gold.opacity(0.5) : Color.gold.opacity(0.18), lineWidth: 1)
+            )
+        }
+        .buttonStyle(.plain)
+        .disabled(model.busy || model.isVoiceListening)
+    }
+}
+
 struct EmotionWheelPanel: View {
     @ObservedObject var model: DragonOverlayModel
 
-    // The two extra emotion sprites Pikachu has beyond its everyday happy/hyper:
-    // a sad pose and a sleepy pose. The wheel showcases only these two.
-    private let emotions: [(title: String, asset: String, line: String)] = [
-        ("Sad", "pet-emotion-sad", "A gentle pet or a kind word lifts Pikachu right back up."),
-        ("Sleepy", "pet-emotion-sleepy", "Pikachu is winding down — a little recharge and it's bright again."),
+    // The two extra emotion sprite sheets beyond the everyday happy/hyper: Sad and
+    // Scared. The wheel animates the real 12-frame strips (not static poses).
+    private let emotions: [(title: String, mood: PetMood, line: String)] = [
+        ("Sad", .sad, "A gentle pet or a kind word lifts Pikachu right back up."),
+        ("Scared", .scared, "A calm, steady voice helps Pikachu feel safe again."),
     ]
 
     var body: some View {
@@ -11938,7 +12362,7 @@ struct EmotionWheelPanel: View {
                     Button {
                         model.expressEmotion(named: emotion.title)
                     } label: {
-                        emotionCard(title: emotion.title, asset: emotion.asset, line: emotion.line)
+                        emotionCard(title: emotion.title, mood: emotion.mood, line: emotion.line)
                     }
                     .buttonStyle(.plain)
                     .disabled(model.busy || model.isVoiceListening)
@@ -11949,17 +12373,15 @@ struct EmotionWheelPanel: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    private func emotionCard(title: String, asset: String, line: String) -> some View {
+    private func emotionCard(title: String, mood: PetMood, line: String) -> some View {
         VStack(spacing: 8) {
-            if let image = Self.emotionImage(asset) {
-                Image(nsImage: image)
-                    .resizable()
-                    .interpolation(.high)
-                    .scaledToFit()
-                    .frame(width: 104, height: 104)
-            } else {
-                Color.clear.frame(width: 104, height: 104)
-            }
+            AnimatedPetSprite(
+                character: model.companionCharacter,
+                stage: model.growthStage,
+                mood: mood,
+                size: 104
+            )
+            .frame(width: 104, height: 104)
             Text(title)
                 .font(.system(size: 16, weight: .black, design: .rounded))
                 .foregroundStyle(Color.ivory)
@@ -11973,11 +12395,6 @@ struct EmotionWheelPanel: View {
         .padding(12)
         .background(Color.black.opacity(0.42), in: RoundedRectangle(cornerRadius: 12))
         .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.gold.opacity(0.20), lineWidth: 1))
-    }
-
-    private static func emotionImage(_ name: String) -> NSImage? {
-        guard let url = Bundle.module.url(forResource: name, withExtension: "png") else { return nil }
-        return NSImage(contentsOf: url)
     }
 }
 
@@ -13080,6 +13497,55 @@ struct ConfettiBurstView: View {
     }
 }
 
+/// Pokemon-style "evolve" flash: a white-gold radial bloom + expanding ring that
+/// fires whenever `trigger` changes. Layered over the pet during a size morph so
+/// shrinking to mini (or growing back) reads as a transformation, not a resize.
+struct EvolveGlow: View {
+    let trigger: Int
+
+    @State private var animate = false
+    @State private var visible = false
+
+    var body: some View {
+        ZStack {
+            Circle()
+                .fill(
+                    RadialGradient(
+                        colors: [Color.white.opacity(0.95), Color.gold.opacity(0.65), .clear],
+                        center: .center,
+                        startRadius: 1,
+                        endRadius: animate ? 130 : 10
+                    )
+                )
+                .scaleEffect(animate ? 1.5 : 0.25)
+                .opacity(visible ? (animate ? 0 : 0.95) : 0)
+
+            Circle()
+                .stroke(Color.white.opacity(0.9), lineWidth: animate ? 0.5 : 5)
+                .scaleEffect(animate ? 1.7 : 0.3)
+                .opacity(visible ? (animate ? 0 : 0.85) : 0)
+        }
+        .frame(width: 150, height: 150)
+        .allowsHitTesting(false)
+        .onChange(of: trigger) {
+            fire()
+        }
+    }
+
+    private func fire() {
+        animate = false
+        visible = true
+        DispatchQueue.main.async {
+            withAnimation(.easeOut(duration: 0.6)) {
+                animate = true
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+                visible = false
+            }
+        }
+    }
+}
+
 final class TransparentVideoNSView: NSView {
     private var player: AVPlayer?
     private var playerLayer: AVPlayerLayer?
@@ -13806,7 +14272,7 @@ actor PocketDMClient {
         )
         async let frames = Self.sidecarLabel(
             rawURL: environment["POCKETDM_REALTIME_STT_URL"],
-            defaultLabel: environment["POCKETDM_REALTIME_STT_URL"] == nil ? "Off" : "Frames",
+            defaultLabel: environment["POCKETDM_REALTIME_STT_URL"] == nil ? "Off" : "Nemotron",
             value: { health in
                 guard let model = health.model?.lowercased() else {
                     return health.backend == "stub" ? "Demo" : "Frames"
@@ -13819,7 +14285,7 @@ actor PocketDMClient {
         )
         async let voice = Self.sidecarLabel(
             rawURL: environment["POCKETDM_PIKA_TTS_URL"],
-            defaultLabel: environment["POCKETDM_PIKA_TTS_URL"] == nil ? "Chirp" : "Voice",
+            defaultLabel: environment["POCKETDM_PIKA_TTS_URL"] == nil ? "Chirp" : "VoxCPM",
             value: { health in
                 // UI always credits VoxCPM as the voice. A Kokoro backend may run locally
                 // for speed, but the official stack name shown in the UI is VoxCPM.
@@ -13838,13 +14304,25 @@ actor PocketDMClient {
         )
     }
 
-    func assistantReply(for message: String) async throws -> String {
+    func assistantReply(for message: String, userState: PetStateSnapshot? = nil) async throws -> String {
         if sessionID == nil {
             sessionID = try await startSession()
         }
-        let payload = AssistantRequest(session_id: sessionID!, message: message)
+        let payload = AssistantRequest(session_id: sessionID!, message: message, user_state: userState)
         let response: AssistantResponse = try await post(payload, path: "api/assistant")
         return response.reply
+    }
+
+    /// Ask the server whether a recurring-pattern proactive line should replace the
+    /// generic daypart cheer. Returns the decoded response (the caller keeps the
+    /// generic cheer when `use_generic_cheer` is true, the reply is empty, or this
+    /// throws). Mirrors `assistantReply`'s session handling and best-effort style.
+    func proactiveLine(daypart: String?, userState: PetStateSnapshot? = nil) async throws -> ProactiveResponse? {
+        if sessionID == nil {
+            sessionID = try await startSession()
+        }
+        let payload = ProactiveRequest(session_id: sessionID!, daypart: daypart, user_state: userState)
+        return try await post(payload, path: "api/proactive")
     }
 
     private func startSession() async throws -> String {
@@ -13929,12 +14407,12 @@ actor PocketDMClient {
             request.timeoutInterval = 0.9
             let (data, response) = try await URLSession.shared.data(for: request)
             guard (response as? HTTPURLResponse)?.statusCode == 200 else {
-                return "\(defaultLabel) cold"
+                return defaultLabel
             }
             let health = try JSONDecoder().decode(SidecarHealthResponse.self, from: data)
             return value(health)
         } catch {
-            return "\(defaultLabel) cold"
+            return defaultLabel
         }
     }
 
@@ -14002,13 +14480,51 @@ struct StartResponse: Decodable {
     let session_id: String
 }
 
+/// Optional pet-state snapshot the native companion attaches to `/api/assistant`
+/// requests. Mirrors the server-side store fields (app/memory_store.py:
+/// streak, bond_hp, mood, daypart, last_seen_gap) so the server stays the single
+/// source of truth for BOTH the web and native surfaces. Every field is optional;
+/// a partial or absent snapshot degrades cleanly to today's stateless behavior.
+struct PetStateSnapshot: Encodable {
+    let streak: Int?
+    let bond_hp: Int?
+    let mood: String?
+    let daypart: String?
+    let last_seen_gap: String?
+}
+
 struct AssistantRequest: Encodable {
     let session_id: String
     let message: String
+    /// Omitted from the JSON body when nil so non-state callers send the exact
+    /// same payload as before (no behavior change for the stateless path).
+    let user_state: PetStateSnapshot?
 }
 
 struct AssistantResponse: Decodable {
     let reply: String
+}
+
+/// Request body for `/api/proactive`. The server reads `session_id`, the current
+/// `daypart`, and the optional `user_state` snapshot (same shape as the assistant
+/// path) to decide whether a recurring-pattern line should replace today's generic
+/// daypart cheer. Field names mirror `app/server.py` (`_proactive_payload`).
+struct ProactiveRequest: Encodable {
+    let session_id: String
+    let daypart: String?
+    /// Omitted from the JSON body when nil, matching the assistant request's
+    /// best-effort, partial-snapshot contract.
+    let user_state: PetStateSnapshot?
+}
+
+/// Response from `/api/proactive`. When `use_generic_cheer` is true the caller
+/// keeps today's generic daypart cheer; when false, `reply` carries a
+/// brain-generated pattern line to speak instead. `reply` is absent in the
+/// generic-cheer case, so it is optional. (`intent` is server-side telemetry the
+/// native surface does not need, so it is intentionally not decoded.)
+struct ProactiveResponse: Decodable {
+    let use_generic_cheer: Bool
+    let reply: String?
 }
 
 enum CompanionError: Error {
@@ -14054,8 +14570,23 @@ final class PocketDMServerProcess {
     func start() {
         guard process == nil else { return }
         let next = Process()
-        next.executableURL = URL(fileURLWithPath: "/usr/bin/env")
-        next.arguments = ["uv", "run", "python", "app.py"]
+        // When POCKETDM_WEB_VENV points at a prebuilt venv (the distributed build's
+        // torch-free .pika-web-venv), run "<venv>/bin/python app.py" directly so no
+        // compiler/uv resolution is needed. Otherwise keep the dev path: uv run python.
+        if let webVenv = ProcessInfo.processInfo.environment["POCKETDM_WEB_VENV"],
+           !webVenv.isEmpty {
+            let venvPython = URL(fileURLWithPath: webVenv).appendingPathComponent("bin/python")
+            if FileManager.default.isExecutableFile(atPath: venvPython.path) {
+                next.executableURL = venvPython
+                next.arguments = ["app.py"]
+            } else {
+                next.executableURL = URL(fileURLWithPath: "/usr/bin/env")
+                next.arguments = ["uv", "run", "python", "app.py"]
+            }
+        } else {
+            next.executableURL = URL(fileURLWithPath: "/usr/bin/env")
+            next.arguments = ["uv", "run", "python", "app.py"]
+        }
         next.currentDirectoryURL = repoRoot
         next.environment = ProcessInfo.processInfo.environment
         do {
@@ -14069,6 +14600,405 @@ final class PocketDMServerProcess {
     func stop() {
         process?.terminate()
         process = nil
+    }
+}
+
+// MARK: - Distributed runtime layout
+
+/// Resolves the bundled Python runtime payload and the writable working dir used by
+/// the distributed (self-bootstrapping) build. A dev build has no payload, so
+/// `payloadDirectory()` returns nil and the app keeps its attach-and-show behavior.
+enum DistributedRuntime {
+    static let payloadName = "pocketdm-runtime"
+
+    /// The bundled runtime tree inside the app's Resources, or nil if it isn't present.
+    static func payloadDirectory() -> URL? {
+        guard let resources = Bundle.main.resourceURL else { return nil }
+        let payload = resources.appendingPathComponent(payloadName, isDirectory: true)
+        var isDir: ObjCBool = false
+        guard FileManager.default.fileExists(atPath: payload.path, isDirectory: &isDir),
+              isDir.boolValue else { return nil }
+        return payload
+    }
+
+    /// The payload only when this is a true standalone (distributed) launch.
+    ///
+    /// `package_app.sh` always bundles the payload, so a dev run via launch_app.sh would
+    /// also have one — but launch_app.sh always exports POCKETDM_REPO (pointing at the
+    /// source tree) before `open`, while a user double-clicking the distributed .app has
+    /// no such variable. Requiring POCKETDM_REPO to be ABSENT keeps the dev flow on its
+    /// existing attach-and-show path and reserves the bootstrap flow for real installs.
+    static func distributedPayloadIfLaunchedStandalone() -> URL? {
+        let env = ProcessInfo.processInfo.environment
+        if let repo = env["POCKETDM_REPO"], !repo.isEmpty {
+            return nil
+        }
+        return payloadDirectory()
+    }
+
+    /// Writable home for venvs + downloaded weights (Resources are read-only when signed).
+    static var workingDirectory: URL {
+        let base = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
+            ?? URL(fileURLWithPath: NSHomeDirectory()).appendingPathComponent("Library/Application Support")
+        return base.appendingPathComponent("PocketDM/runtime", isDirectory: true)
+    }
+
+    static func bootstrapScript(in payload: URL) -> URL {
+        payload.appendingPathComponent("macos/PocketDMCompanion/scripts/first_run_bootstrap.sh")
+    }
+
+    static func startStackScript(in workingDir: URL) -> URL {
+        workingDir.appendingPathComponent("macos/PocketDMCompanion/scripts/start_stack.sh")
+    }
+}
+
+// MARK: - First-run bootstrap model + view
+
+/// Result of starting the local stack and waiting for the pet server to come online.
+enum BootstrapOutcome {
+    case success
+    case failure(String)
+}
+
+/// Drives the bundled first_run_bootstrap.sh and start_stack.sh as child processes,
+/// streaming their stdout into `@Published` progress for the SwiftUI BootstrapView.
+@MainActor
+final class BootstrapModel: ObservableObject {
+    @Published var fraction: Double = 0
+    @Published var stepLabel: String = "Preparing..."
+    @Published var logTail: String = ""
+    @Published var failed: Bool = false
+    @Published var finished: Bool = false
+
+    var onFinished: (() -> Void)?
+    var onRetry: (() -> Void)?
+
+    private let payloadDirectory: URL
+    private let workingDir: URL
+    private var process: Process?
+    private var logLines: [String] = []
+
+    init(payloadDirectory: URL, workingDir: URL) {
+        self.payloadDirectory = payloadDirectory
+        self.workingDir = workingDir
+    }
+
+    /// Run first_run_bootstrap.sh from the bundled payload, parsing its PROGRESS lines.
+    func runBootstrap() {
+        resetState()
+        let script = DistributedRuntime.bootstrapScript(in: payloadDirectory)
+        var env = ProcessInfo.processInfo.environment
+        env["POCKETDM_BUNDLE_RUNTIME"] = payloadDirectory.path
+        env["POCKETDM_WORKDIR"] = workingDir.path
+
+        runScript(at: script, environment: env, cwd: payloadDirectory) { [weak self] success in
+            guard let self else { return }
+            if success {
+                self.fraction = 1.0
+                self.stepLabel = "Setup complete"
+                self.finished = true
+                self.onFinished?()
+            } else if !self.failed {
+                self.reportFailure("Setup did not finish. Check your internet connection and try again.")
+            }
+        }
+    }
+
+    /// Run start_stack.sh (working-dir copy), then poll the web server health.
+    func startStackAndWaitForHealth(
+        baseURL: URL,
+        completion: @escaping (BootstrapOutcome) -> Void
+    ) {
+        resetState(keepProgress: true)
+        stepLabel = "Starting the local stack..."
+        let script = DistributedRuntime.startStackScript(in: workingDir)
+        guard FileManager.default.fileExists(atPath: script.path) else {
+            let message = "Stack launcher missing at \(script.path)."
+            reportFailure(message)
+            completion(.failure(message))
+            return
+        }
+        var env = ProcessInfo.processInfo.environment
+        env["POCKETDM_WORKDIR"] = workingDir.path
+
+        runScript(at: script, environment: env, cwd: workingDir) { [weak self] launched in
+            guard let self else { return }
+            guard launched else {
+                let message = "The local stack failed to start. See the log above."
+                completion(.failure(message))
+                return
+            }
+            self.stepLabel = "Waiting for the pet to wake up..."
+            Task {
+                let healthy = await Self.pollHealth(baseURL: baseURL)
+                if healthy {
+                    completion(.success)
+                } else {
+                    completion(.failure("The pet server did not come online in time."))
+                }
+            }
+        }
+    }
+
+    func reportFailure(_ message: String) {
+        failed = true
+        finished = false
+        stepLabel = "Something went wrong"
+        appendLog(message)
+    }
+
+    func retry() {
+        onRetry?()
+    }
+
+    // MARK: Process plumbing
+
+    private func resetState(keepProgress: Bool = false) {
+        failed = false
+        finished = false
+        if !keepProgress {
+            fraction = 0
+            logLines.removeAll()
+            logTail = ""
+        }
+    }
+
+    /// Spawn a shell script, stream stdout+stderr line-by-line on a background reader,
+    /// and hop each line back to the main actor for parsing/display.
+    private func runScript(
+        at script: URL,
+        environment: [String: String],
+        cwd: URL,
+        completion: @escaping (Bool) -> Void
+    ) {
+        let task = Process()
+        task.executableURL = URL(fileURLWithPath: "/bin/bash")
+        task.arguments = [script.path]
+        task.currentDirectoryURL = cwd
+        task.environment = environment
+
+        let pipe = Pipe()
+        task.standardOutput = pipe
+        task.standardError = pipe
+        process = task
+
+        let handle = pipe.fileHandleForReading
+        handle.readabilityHandler = { fh in
+            let data = fh.availableData
+            guard !data.isEmpty, let chunk = String(data: data, encoding: .utf8) else { return }
+            for line in chunk.split(whereSeparator: { $0 == "\n" || $0 == "\r" }) {
+                let text = String(line)
+                Task { @MainActor [weak self] in
+                    self?.consume(line: text)
+                }
+            }
+        }
+
+        task.terminationHandler = { proc in
+            handle.readabilityHandler = nil
+            let ok = proc.terminationStatus == 0
+            Task { @MainActor [weak self] in
+                self?.process = nil
+                completion(ok)
+            }
+        }
+
+        do {
+            try task.run()
+        } catch {
+            handle.readabilityHandler = nil
+            process = nil
+            completion(false)
+        }
+    }
+
+    /// Parse one stdout line: "PROGRESS: n/total label", "DONE", "ERROR: msg",
+    /// "STACK_STARTED", or generic log noise (kept as a small scrolling tail).
+    private func consume(line: String) {
+        let trimmed = line.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty else { return }
+
+        if trimmed.hasPrefix("PROGRESS:") {
+            let body = trimmed.dropFirst("PROGRESS:".count).trimmingCharacters(in: .whitespaces)
+            let parts = body.split(separator: " ", maxSplits: 1, omittingEmptySubsequences: true)
+            if let counts = parts.first {
+                let nm = counts.split(separator: "/")
+                if nm.count == 2, let done = Double(nm[0]), let total = Double(nm[1]), total > 0 {
+                    fraction = min(max(done / total, 0), 1)
+                }
+            }
+            if parts.count == 2 {
+                stepLabel = String(parts[1])
+            }
+            appendLog(trimmed)
+            return
+        }
+        if trimmed.hasPrefix("ERROR:") {
+            let message = trimmed.dropFirst("ERROR:".count).trimmingCharacters(in: .whitespaces)
+            reportFailure(message.isEmpty ? "Setup failed." : message)
+            return
+        }
+        if trimmed == "DONE" || trimmed == "STACK_STARTED" {
+            appendLog(trimmed)
+            return
+        }
+        appendLog(trimmed)
+    }
+
+    private func appendLog(_ line: String) {
+        logLines.append(line)
+        if logLines.count > 6 {
+            logLines.removeFirst(logLines.count - 6)
+        }
+        logTail = logLines.joined(separator: "\n")
+    }
+
+    private static func pollHealth(baseURL: URL) async -> Bool {
+        let url = baseURL.appendingPathComponent("health")
+        for _ in 0..<60 {
+            do {
+                let (_, response) = try await URLSession.shared.data(from: url)
+                if (response as? HTTPURLResponse)?.statusCode == 200 {
+                    return true
+                }
+            } catch {
+                // not up yet
+            }
+            try? await Task.sleep(nanoseconds: 1_000_000_000)
+        }
+        return false
+    }
+}
+
+/// Honest, on-brand first-run setup screen. Reuses the companion design tokens
+/// (Color.ivory / Color.gold) and the bundled pet-happy sprite hero.
+struct BootstrapView: View {
+    @ObservedObject var model: BootstrapModel
+
+    private var heroImage: NSImage? {
+        if let url = Bundle.module.url(forResource: "pet-happy", withExtension: "png"),
+           let image = NSImage(contentsOf: url) {
+            return image
+        }
+        return nil
+    }
+
+    var body: some View {
+        VStack(spacing: 18) {
+            if let hero = heroImage {
+                Image(nsImage: hero)
+                    .resizable()
+                    .interpolation(.high)
+                    .scaledToFit()
+                    .frame(width: 120, height: 120)
+            }
+
+            Text("Setting up Pocket Pikachu")
+                .font(.system(size: 19, weight: .black, design: .rounded))
+                .foregroundStyle(Color.ivory)
+
+            Text("First run downloads ~700 MB and sets up the on-device models — a few minutes, one time.")
+                .font(.system(size: 12, weight: .medium, design: .rounded))
+                .foregroundStyle(Color.ivory.opacity(0.7))
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.horizontal, 8)
+
+            if model.failed {
+                failureBlock
+            } else {
+                progressBlock
+            }
+        }
+        .padding(26)
+        .frame(width: 420)
+        .background(Color(red: 0.10, green: 0.08, blue: 0.05))
+    }
+
+    private var progressBlock: some View {
+        VStack(spacing: 10) {
+            ProgressView(value: model.fraction)
+                .progressViewStyle(.linear)
+                .tint(Color.gold)
+                .frame(height: 6)
+
+            HStack(spacing: 8) {
+                if !model.finished {
+                    ThinkingDotsView()
+                }
+                Text(model.stepLabel)
+                    .font(.system(size: 12.5, weight: .semibold, design: .rounded))
+                    .foregroundStyle(Color.gold)
+            }
+
+            if !model.logTail.isEmpty {
+                ScrollView {
+                    Text(model.logTail)
+                        .font(.system(size: 9.5, weight: .regular, design: .monospaced))
+                        .foregroundStyle(Color.ivory.opacity(0.42))
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .textSelection(.enabled)
+                }
+                .frame(height: 64)
+            }
+        }
+    }
+
+    private var failureBlock: some View {
+        VStack(spacing: 12) {
+            Text(model.stepLabel)
+                .font(.system(size: 13, weight: .bold, design: .rounded))
+                .foregroundStyle(Color.dangerRed)
+            if !model.logTail.isEmpty {
+                ScrollView {
+                    Text(model.logTail)
+                        .font(.system(size: 9.5, weight: .regular, design: .monospaced))
+                        .foregroundStyle(Color.ivory.opacity(0.55))
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .textSelection(.enabled)
+                }
+                .frame(height: 72)
+            }
+            Button("Retry") { model.retry() }
+                .buttonStyle(.borderedProminent)
+                .tint(Color.gold)
+        }
+    }
+}
+
+/// Hosts BootstrapView in a small, centered, non-activating window shown before the pet.
+@MainActor
+final class BootstrapWindowController {
+    private let window: NSWindow
+
+    init(model: BootstrapModel) {
+        let hosting = NSHostingView(rootView: BootstrapView(model: model))
+        window = NSWindow(
+            contentRect: NSRect(x: 0, y: 0, width: 420, height: 460),
+            styleMask: [.titled, .fullSizeContentView],
+            backing: .buffered,
+            defer: false
+        )
+        window.title = "Pocket Pikachu"
+        window.titlebarAppearsTransparent = true
+        window.titleVisibility = .hidden
+        window.isMovableByWindowBackground = true
+        window.isReleasedWhenClosed = false
+        window.contentView = hosting
+        window.center()
+    }
+
+    func showWindow() {
+        NSApp.setActivationPolicy(.regular)
+        window.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
+    }
+
+    func close() {
+        window.orderOut(nil)
+        window.close()
+        // Return to the menu-bar/accessory presentation the pet overlay expects.
+        NSApp.setActivationPolicy(.accessory)
     }
 }
 

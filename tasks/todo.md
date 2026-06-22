@@ -100,3 +100,47 @@ streaming Silero-VAD turn loop. Demo sidecars (7861/7862/7863) untouched.
 - Confirm AVAudioConverter resampling on the real input device (48k→16k) yields clean
   STT (the conversion path is the riskiest unverified spot).
 - Confirm no double-finalize / dropped first word at turn boundaries.
+
+---
+
+# Workstream 3 — Native first-run flow + stack orchestration
+
+## Part A — start_stack.sh (new)
+- [ ] Write `macos/PocketDMCompanion/scripts/start_stack.sh`
+- [ ] Start ONLY brain(8081) + Kokoro TTS(7861) + faster-whisper STT(7862) + web(7860)
+- [ ] Skip Nemotron ASR sidecar (avoids multi-GB NeMo install)
+- [ ] Idempotent (skip if port already live), emit `STACK_STARTED`
+
+## Part B — native first-run flow (main.swift)
+- [ ] Distributed-build detection (Bundle.main.resourceURL has pocketdm-runtime)
+- [ ] Gate applicationDidFinishLaunching: dev path unchanged; distributed bootstrap
+- [ ] BootstrapModel: ObservableObject (Process + Pipe + PROGRESS parsing)
+- [ ] BootstrapView (SwiftUI, design system) + BootstrapWindow (NSWindow)
+- [ ] State machine: bootstrap -> start_stack -> poll 7860 health -> pet
+- [ ] PocketDMServerProcess honors POCKETDM_WEB_VENV (or distributed path owns web)
+
+## Part C — verification
+- [x] swift build -c release green between parts (clean, 0 warnings)
+- [x] uv run --group dev pytest -q green (182 passed, 5 skipped, 1 xfailed)
+- [x] Commit each part w/ Co-Authored-By trailer; push branch
+- [x] Do NOT relaunch user's running app / sidecars (verified by build+read only)
+
+## Review (Workstream 3)
+- start_stack.sh: brain 8081 / Kokoro 7861 / faster-whisper 7862 / web 7860;
+  Nemotron 7863 intentionally skipped (auto backend pulls multi-GB NeMo+torch;
+  realtime path falls back to batch STT). Idempotent per-port; emits STACK_STARTED.
+- Distributed gate: payload present AND POCKETDM_REPO absent. Dev (launch_app.sh
+  always exports POCKETDM_REPO) keeps the existing attach-and-show path verbatim,
+  so test_native_lifecycle_flow still passes (overlayController?.show() present,
+  showExpanded() absent in applicationDidFinishLaunching).
+- State machine: detect -> [first run] BootstrapWindow + first_run_bootstrap.sh
+  (PROGRESS streamed) -> start_stack.sh -> poll 7860 /health -> didBootstrap=true
+  -> pet; [later] start_stack.sh -> health -> pet. ERROR/health-timeout -> Retry.
+- PocketDMServerProcess honors POCKETDM_WEB_VENV; distributed path lets
+  start_stack.sh own the web server (no --launch-server).
+
+### Caveats (need a real fresh-Mac launch test — not possible here)
+- End-to-end first run (uv install, Metal wheel, MiniCPM download, all 4 venvs,
+  espeak-ng for Kokoro) is unverified on a clean machine.
+- BootstrapWindow visuals (hero, gold progress, scrolling log) unverified live.
+- Web venv import of app.server confirmed torch-free by reading imports only.
