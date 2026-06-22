@@ -129,3 +129,35 @@ def test_pet_only_and_expanded_transitions_are_wired() -> None:
     assert "onSizeChange(minimized)" in view_body
     assert "model.setMinimized(false)" in pet_only
     assert "model.setMinimized(true)" in expanded_header
+
+
+def test_mini_mode_and_evolve_are_wired() -> None:
+    source = _source()
+    controller = _block(source, "final class DragonOverlayController", "private extension NSRect")
+    view_body = _block(source, "var body: some View", "private var petOnlyBody")
+    settings = _block(source, "private var petOnlySettingsPanel", "private var expandedBody")
+
+    # Mini is a sub-state of the minimized pet, added alongside the existing flag.
+    assert "@Published var minimized = true" in source  # unchanged
+    assert "@Published var miniMode" in source
+    assert "func setMiniMode(_ value: Bool)" in source
+    assert "func triggerEvolve()" in source
+    assert 'UserDefaults.standard.set(value, forKey: Self.miniModeKey)' in source
+
+    # Controller has a tiny window footprint and stays mini-aware on resize.
+    assert "miniSize = NSSize" in controller
+    assert "model.miniMode" in controller
+
+    # The view nests a tiny pet, double-click restores it, and the size change is
+    # pushed to the controller. Existing minimized wiring is preserved.
+    assert "if model.minimized" in view_body
+    assert "miniPetBody" in view_body
+    assert ".onChange(of: model.miniMode)" in view_body
+    assert "onSizeChange(model.minimized)" in view_body
+    assert "EvolveGlow(trigger: model.evolvePulse)" in view_body
+    assert ".onTapGesture(count: 2)" in source
+    assert "model.setMiniMode(false)" in source  # double-click restore
+    assert "model.setMiniMode(true)" in settings  # "Tiny" control
+
+    # The evolve flash view exists.
+    assert "struct EvolveGlow: View" in source

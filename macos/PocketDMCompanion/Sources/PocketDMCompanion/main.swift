@@ -464,6 +464,9 @@ final class DragonOverlayController {
     private static let minimizedSize = NSSize(width: 216, height: 224)
     private static let expandedSize = NSSize(width: 620, height: 620)
     private static let expandedMinimumSize = NSSize(width: 520, height: 430)
+    // Tiny "pocket" pet window — roughly a tenth of the pet-only footprint. The
+    // sprite is smaller still; the surrounding window stays the double-click target.
+    private static let miniSize = NSSize(width: 60, height: 60)
 
     private let panel: NSPanel
     private let model: DragonOverlayModel
@@ -533,7 +536,21 @@ final class DragonOverlayController {
 
     private func setMinimized(_ minimized: Bool, animated: Bool = true) {
         var frame = panel.frame
-        let size = fittedSize(minimized ? Self.minimizedSize : Self.expandedSize, minimum: minimized ? Self.minimizedSize : Self.expandedMinimumSize, relativeTo: frame)
+        // Mini overrides the minimized/expanded footprint when active. The model's
+        // miniMode is updated before this runs, so reading it here is current.
+        let target: NSSize
+        let minimum: NSSize
+        if model.miniMode {
+            target = Self.miniSize
+            minimum = Self.miniSize
+        } else if minimized {
+            target = Self.minimizedSize
+            minimum = Self.minimizedSize
+        } else {
+            target = Self.expandedSize
+            minimum = Self.expandedMinimumSize
+        }
+        let size = fittedSize(target, minimum: minimum, relativeTo: frame)
         let top = frame.maxY
         frame.size = size
         frame.origin.y = top - size.height
@@ -930,6 +947,7 @@ struct MorningWeatherReport: Decodable {
 @MainActor
 final class DragonOverlayModel: ObservableObject {
     private static let petOnlyKey = "PocketDMCompanion.petOnly"
+    private static let miniModeKey = "PocketDMCompanion.miniMode"
     private static let soundEnabledKey = "PocketDMCompanion.soundEnabled"
     private static let chatMessagesKey = "PocketDMCompanion.chatMessages"
     private static let companionHPKey = "PocketDMCompanion.companionHP"
@@ -1235,6 +1253,11 @@ final class DragonOverlayModel: ObservableObject {
     @Published var chatMessages = DragonOverlayModel.loadChatMessages()
     @Published var serverLine = "Checking PocketDM..."
     @Published var minimized = true
+    /// Tiny "pocket" sub-state of the minimized pet: a ~1/10-size sprite the user
+    /// double-clicks to restore. Only meaningful while `minimized` is true.
+    @Published var miniMode = UserDefaults.standard.bool(forKey: DragonOverlayModel.miniModeKey)
+    /// Bumped to fire the Pokemon-style "evolve" flash/glow on a size transition.
+    @Published var evolvePulse = 0
     @Published var introVideoActive: Bool = !UserDefaults.standard.bool(forKey: "PocketDMCompanion.hasSeenIntro")
     @Published var napVideoActive = false
     @Published var soundEnabled = UserDefaults.standard.object(forKey: DragonOverlayModel.soundEnabledKey) as? Bool ?? true
@@ -1678,6 +1701,27 @@ final class DragonOverlayModel: ObservableObject {
         if value {
             Task { await showCheerIfReady() }
         }
+    }
+
+    /// Toggle the tiny "pocket" pet. Mini is always a sub-state of the minimized
+    /// pet (never the expanded panel), and both directions play the evolve effect.
+    func setMiniMode(_ value: Bool) {
+        guard miniMode != value else { return }
+        if value && !minimized {
+            setMinimized(true)
+        }
+        miniMode = value
+        UserDefaults.standard.set(value, forKey: Self.miniModeKey)
+        play(value ? .minimize : .open)
+        triggerEvolve()
+    }
+
+    /// Fire the Pokemon-style evolve beat: glow flash (via `evolvePulse`), a
+    /// celebratory burst, and a happy mood pop — all reusing existing idioms.
+    func triggerEvolve() {
+        evolvePulse += 1
+        celebrationBurstID += 1
+        setMood(.happy, duration: 1.2)
     }
 
     func refreshMorningWeatherIfNeeded(force: Bool = false) async {
@@ -10760,14 +10804,16 @@ struct DragonOverlayView: View {
     var body: some View {
         ZStack {
             if model.minimized {
-                petOnlyBody
-                    .transition(.scale(scale: 0.84, anchor: .center).combined(with: .opacity))
+                minimizedContent
+                    .overlay(EvolveGlow(trigger: model.evolvePulse))
+                    .overlay(ConfettiBurstView(trigger: model.celebrationBurstID).allowsHitTesting(false))
             } else {
                 expandedBody
                     .transition(.scale(scale: 0.92, anchor: .topLeading).combined(with: .opacity))
             }
         }
         .animation(.spring(response: 0.26, dampingFraction: 0.78), value: model.minimized)
+        .animation(.spring(response: 0.34, dampingFraction: 0.66), value: model.miniMode)
         .onChange(of: model.minimized) { _, minimized in
             showingSettings = false
             showingDemoTools = false
@@ -10777,6 +10823,39 @@ struct DragonOverlayView: View {
             petControlsHovering = false
             onSizeChange(minimized)
         }
+        .onChange(of: model.miniMode) { _, _ in
+            showingSettings = false
+            onSizeChange(model.minimized)
+        }
+    }
+
+    @ViewBuilder private var minimizedContent: some View {
+        if model.miniMode {
+            miniPetBody
+                .transition(.scale(scale: 0.36, anchor: .center).combined(with: .opacity))
+        } else {
+            petOnlyBody
+                .transition(.scale(scale: 0.84, anchor: .center).combined(with: .opacity))
+        }
+    }
+
+    private var miniPetBody: some View {
+        AnimatedPetSprite(
+            character: model.companionCharacter,
+            stage: model.growthStage,
+            mood: model.mood,
+            size: 38
+        )
+        .frame(width: 60, height: 60)
+        .contentShape(Rectangle())
+        .simultaneousGesture(dragGesture)
+        .onTapGesture(count: 2) {
+            withAnimation(.spring(response: 0.34, dampingFraction: 0.66)) {
+                model.setMiniMode(false)
+            }
+        }
+        .help("Double-click to grow \(model.companionCharacter.title) back")
+        .accessibilityLabel("Tiny \(model.companionCharacter.title) — double-click to restore")
     }
 
     private var petOnlyBody: some View {
@@ -10935,6 +11014,16 @@ struct DragonOverlayView: View {
                     }
                 } label: {
                     Label("Show", systemImage: "arrow.up.left.and.arrow.down.right")
+                }
+                .buttonStyle(MiniPanelButtonStyle(kind: .primary))
+
+                Button {
+                    withAnimation(.spring(response: 0.34, dampingFraction: 0.66)) {
+                        showingSettings = false
+                        model.setMiniMode(true)
+                    }
+                } label: {
+                    Label("Tiny", systemImage: "arrow.down.right.and.arrow.up.left")
                 }
                 .buttonStyle(MiniPanelButtonStyle(kind: .primary))
 
@@ -13384,6 +13473,55 @@ struct ConfettiBurstView: View {
         DispatchQueue.main.async {
             withAnimation(.easeOut(duration: 1.15)) {
                 animate = true
+            }
+        }
+    }
+}
+
+/// Pokemon-style "evolve" flash: a white-gold radial bloom + expanding ring that
+/// fires whenever `trigger` changes. Layered over the pet during a size morph so
+/// shrinking to mini (or growing back) reads as a transformation, not a resize.
+struct EvolveGlow: View {
+    let trigger: Int
+
+    @State private var animate = false
+    @State private var visible = false
+
+    var body: some View {
+        ZStack {
+            Circle()
+                .fill(
+                    RadialGradient(
+                        colors: [Color.white.opacity(0.95), Color.gold.opacity(0.65), .clear],
+                        center: .center,
+                        startRadius: 1,
+                        endRadius: animate ? 130 : 10
+                    )
+                )
+                .scaleEffect(animate ? 1.5 : 0.25)
+                .opacity(visible ? (animate ? 0 : 0.95) : 0)
+
+            Circle()
+                .stroke(Color.white.opacity(0.9), lineWidth: animate ? 0.5 : 5)
+                .scaleEffect(animate ? 1.7 : 0.3)
+                .opacity(visible ? (animate ? 0 : 0.85) : 0)
+        }
+        .frame(width: 150, height: 150)
+        .allowsHitTesting(false)
+        .onChange(of: trigger) {
+            fire()
+        }
+    }
+
+    private func fire() {
+        animate = false
+        visible = true
+        DispatchQueue.main.async {
+            withAnimation(.easeOut(duration: 0.6)) {
+                animate = true
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+                visible = false
             }
         }
     }
