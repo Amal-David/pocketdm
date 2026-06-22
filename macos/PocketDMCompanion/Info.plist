@@ -10,9 +10,11 @@
   <key>CFBundleInfoDictionaryVersion</key>
   <string>6.0</string>
   <key>CFBundleName</key>
-  <string>PocketDM Companion</string>
+  <string>Pocket Pikachu</string>
   <key>CFBundleDisplayName</key>
-  <string>PocketDM Companion</string>
+  <string>Pocket Pikachu</string>
+  <key>CFBundleIconFile</key>
+  <string>AppIcon</string>
   <key>CFBundlePackageType</key>
   <string>APPL</string>
   <key>CFBundleShortVersionString</key>

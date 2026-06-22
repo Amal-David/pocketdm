@@ -87,6 +87,12 @@ rm -rf "$bundle"
 mkdir -p "$bundle/Contents/MacOS" "$bundle/Contents/Resources"
 cp "$executable" "$bundle/Contents/MacOS/PocketDMCompanion"
 cp "$project_dir/Info.plist" "$bundle/Contents/Info.plist"
+# App icon (Pikachu). Info.plist sets CFBundleIconFile=AppIcon -> this file.
+if [[ -f "$project_dir/Resources/AppIcon.icns" ]]; then
+  cp "$project_dir/Resources/AppIcon.icns" "$bundle/Contents/Resources/AppIcon.icns"
+else
+  echo "WARN: Resources/AppIcon.icns missing — app will have no icon" >&2
+fi
 if [[ ! -d "$resource_bundle" ]]; then
   echo "SwiftPM did not produce the expected resource bundle: $resource_bundle" >&2
   exit 66
