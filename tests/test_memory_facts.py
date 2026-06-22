@@ -57,6 +57,30 @@ def test_extract_persist_recall_survives_restart(monkeypatch, tmp_path):
     assert any(f["kind"] == "name" and f["text"] == "Amal" for f in recalled)
 
 
+def test_facts_stored_from_unescaped_text_not_html_entities(monkeypatch, tmp_path):
+    # The /api/assistant message is HTML-escaped before storage; durable facts
+    # must hold the user's original words, not entities like "&amp;".
+    from fastapi.testclient import TestClient
+
+    _fresh_store(monkeypatch, tmp_path)
+    from app import memory_store as store
+    from app.server import app
+
+    client = TestClient(app)
+    session_id = client.post("/api/start", json={"genre": "whispering_wood"}).json()[
+        "session_id"
+    ]
+    resp = client.post(
+        "/api/assistant",
+        json={"session_id": session_id, "message": "I want to launch Ben & Jerry"},
+    )
+    assert resp.status_code == 200
+
+    goals = [f["text"] for f in store.recall_facts("default") if f["kind"] == "goal"]
+    assert goals, "expected a goal fact to be extracted"
+    assert any("&" in t and "&amp;" not in t for t in goals)
+
+
 def test_add_fact_deduplicates_near_identical_text(monkeypatch, tmp_path):
     store, _ = _fresh_store(monkeypatch, tmp_path)
 

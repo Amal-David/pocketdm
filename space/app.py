@@ -541,8 +541,8 @@ CHIP_ROW_HTML = (
     "</div>"
 )
 
-# YouTube ID is a clear placeholder until the demo video is published.
-YOUTUBE_VIDEO_ID = "REPLACE_WITH_VIDEO_ID"
+# Published demo video (matches the README and the zerogpu Space variant).
+YOUTUBE_VIDEO_ID = "MAsgEj7ywh8"
 YOUTUBE_HTML = (
     "<div class='yt-section'>"
     "<h3 class='yt-title'>🎥 Watch the story</h3>"
@@ -550,7 +550,6 @@ YOUTUBE_HTML = (
     f"<iframe width='560' height='315' src='https://www.youtube.com/embed/{YOUTUBE_VIDEO_ID}' "
     "title='Pocket Pikachu' frameborder='0' allow='accelerometer; autoplay; clipboard-write; "
     "encrypted-media; gyroscope; picture-in-picture' allowfullscreen></iframe></div>"
-    "<p class='yt-note'>Replace <code>REPLACE_WITH_VIDEO_ID</code> with the YouTube video ID.</p>"
     "</div>"
 )
 

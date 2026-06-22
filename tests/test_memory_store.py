@@ -146,3 +146,14 @@ def test_assistant_endpoint_persists_user_state(monkeypatch, tmp_path):
     assert response.status_code == 200
 
     assert store.get_state("default") == {"streak": 3, "bond_hp": 8, "mood": "bright"}
+
+
+def test_partial_state_update_preserves_prior_fields(monkeypatch, tmp_path):
+    # A partial snapshot must merge, not wipe fields it omits. Regression for the
+    # ON CONFLICT overwrite that nulled prior values on partial updates.
+    store, _ = _fresh_store(monkeypatch, tmp_path)
+    store.save_state("default", {"streak": 7, "bond_hp": 42, "mood": "calm"})
+
+    store.save_state("default", {"mood": "bright"})
+
+    assert store.get_state("default") == {"streak": 7, "bond_hp": 42, "mood": "bright"}

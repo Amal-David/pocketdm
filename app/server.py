@@ -119,7 +119,9 @@ async def assistant_chat(request: Request) -> JSONResponse:
     reply = _dragon_reply(session, message)
     # Best-effort durable-fact extraction: learn name/goal/mood/event from this
     # turn so future replies can recall it. Never let it break the chat reply.
-    _extract_and_store_facts(message)
+    # Extract from the un-escaped text so stored facts hold the user's original
+    # words ("Ben & Co"), not HTML entities ("Ben &amp; Co").
+    _extract_and_store_facts(html.unescape(message))
     return JSONResponse({"reply": reply})
 
 

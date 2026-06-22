@@ -110,6 +110,8 @@ def save_state(user_id: str, state: dict[str, Any], *, db_path: str | None = Non
 
     Known fields (streak, bond_hp, mood, daypart, last_seen_gap) land in their
     own columns; any other keys are preserved under a free-form JSON blob.
+    Partial updates are merged: a field that is absent/None in ``state`` keeps
+    its previously stored value (COALESCE) rather than being nulled out.
     Returns the persisted state as a plain dict (the same shape ``get_state``
     returns).
     """
@@ -127,12 +129,12 @@ def save_state(user_id: str, state: dict[str, Any], *, db_path: str | None = Non
             INSERT INTO pet_state (user_id, streak, bond_hp, mood, daypart, last_seen_gap, extra)
             VALUES (:user_id, :streak, :bond_hp, :mood, :daypart, :last_seen_gap, :extra)
             ON CONFLICT(user_id) DO UPDATE SET
-                streak = excluded.streak,
-                bond_hp = excluded.bond_hp,
-                mood = excluded.mood,
-                daypart = excluded.daypart,
-                last_seen_gap = excluded.last_seen_gap,
-                extra = excluded.extra
+                streak = COALESCE(excluded.streak, pet_state.streak),
+                bond_hp = COALESCE(excluded.bond_hp, pet_state.bond_hp),
+                mood = COALESCE(excluded.mood, pet_state.mood),
+                daypart = COALESCE(excluded.daypart, pet_state.daypart),
+                last_seen_gap = COALESCE(excluded.last_seen_gap, pet_state.last_seen_gap),
+                extra = COALESCE(excluded.extra, pet_state.extra)
             """,
             {
                 "user_id": user_id,
