@@ -1,5 +1,6 @@
 import importlib
 import json
+import sqlite3
 
 from app import memory_store
 from app.server import (
@@ -157,3 +158,106 @@ def test_partial_state_update_preserves_prior_fields(monkeypatch, tmp_path):
     store.save_state("default", {"mood": "bright"})
 
     assert store.get_state("default") == {"streak": 7, "bond_hp": 42, "mood": "bright"}
+
+
+def test_delete_user_memory_is_atomic_and_preserves_other_users(monkeypatch, tmp_path):
+    store, _ = _fresh_store(monkeypatch, tmp_path)
+    store.save_state("default", {"mood": "calm"})
+    store.add_fact("default", "goal", "I want to finish my book")
+    store.add_observation("default", "evening", "tired", now=100.0)
+    store.save_state("other", {"mood": "bright"})
+    store.add_fact("other", "name", "My name is Sam")
+    store.add_observation("other", "morning", "happy", now=100.0)
+
+    deleted = store.delete_user_memory("default")
+
+    assert deleted == {"pet_state": 1, "facts": 1, "observations": 1}
+    assert store.get_state("default") == {}
+    assert store.recall_facts("default") == []
+    assert store.mood_counts_by_daypart("default", now=100.0) == {}
+    assert store.get_state("other") == {"mood": "bright"}
+    assert store.recall_facts("other", now=100.0) == [
+        {"kind": "name", "text": "My name is Sam", "weight": 1.0}
+    ]
+    assert store.mood_counts_by_daypart("other", now=100.0) == {
+        "morning": {"happy": 1}
+    }
+
+
+def test_delete_user_memory_rolls_back_when_any_table_delete_fails(monkeypatch, tmp_path):
+    store, db_path = _fresh_store(monkeypatch, tmp_path)
+    store.save_state("default", {"mood": "calm"})
+    store.add_fact("default", "goal", "I want to finish my book")
+    store.add_observation("default", "evening", "tired", now=100.0)
+
+    connection = sqlite3.connect(db_path)
+    try:
+        connection.execute(
+            """
+            CREATE TRIGGER fail_fact_delete
+            BEFORE DELETE ON facts
+            BEGIN
+                SELECT RAISE(ABORT, 'forced failure');
+            END
+            """
+        )
+        connection.commit()
+    finally:
+        connection.close()
+
+    try:
+        store.delete_user_memory("default")
+    except sqlite3.DatabaseError as exc:
+        assert "forced failure" in str(exc)
+    else:
+        raise AssertionError("delete_user_memory unexpectedly ignored a database failure")
+
+    assert store.get_state("default") == {"mood": "calm"}
+    assert store.recall_facts("default", now=100.0) == [
+        {"kind": "goal", "text": "I want to finish my book", "weight": 1.0}
+    ]
+    assert store.mood_counts_by_daypart("default", now=100.0) == {
+        "evening": {"tired": 1}
+    }
+
+
+def test_memory_delete_endpoint_clears_default_user_and_rejects_remote_clients(
+    monkeypatch, tmp_path
+):
+    from fastapi.testclient import TestClient
+
+    store, _ = _fresh_store(monkeypatch, tmp_path)
+    store.save_state("default", {"mood": "calm"})
+    store.add_fact("default", "goal", "I want to finish my book")
+    store.add_observation("default", "evening", "tired", now=100.0)
+
+    from app.server import app
+
+    remote = TestClient(app, client=("192.168.1.10", 50000))
+    assert remote.post("/api/memory/delete").status_code == 403
+    assert store.get_state("default") == {"mood": "calm"}
+
+    local = TestClient(app, client=("127.0.0.1", 50000))
+    session_id = local.post(
+        "/api/start", json={"genre": "whispering_wood"}
+    ).json()["session_id"]
+    assert local.post("/api/memory/delete").status_code == 403
+    assert store.get_state("default") == {"mood": "calm"}
+
+    response = local.post(
+        "/api/memory/delete",
+        headers={"x-pocketdm-local-action": "delete-memory-v1"},
+    )
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "deleted": True,
+        "counts": {"pet_state": 1, "facts": 1, "observations": 1},
+    }
+    assert store.get_state("default") == {}
+    assert store.recall_facts("default") == []
+    assert store.mood_counts_by_daypart("default", now=100.0) == {}
+    assert local.post(
+        "/api/assistant",
+        json={"session_id": session_id, "message": "hello after reset"},
+    ).status_code == 404

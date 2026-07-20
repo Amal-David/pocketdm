@@ -80,11 +80,38 @@ def test_status_menu_actions_drive_open_hide_quit_and_delete_paths() -> None:
     )
     assert 'alert.addButton(withTitle: "Delete")' in delete_action
     assert 'alert.addButton(withTitle: "Cancel")' in delete_action
+    assert "Task {" in delete_action
+    assert "try await PocketDMClient(baseURL: arguments.baseURL).deleteMemory()" in delete_action
     assert "Self.resetCompanionDefaults()" in delete_action
     assert "overlayController?.prepareClose()" in delete_action
     assert "NSApplication.shared.terminate(nil)" in delete_action
+    assert delete_action.index("try await PocketDMClient") < delete_action.index(
+        "Self.resetCompanionDefaults()"
+    )
+    assert delete_action.index("overlayController?.prepareClose()") < delete_action.index(
+        "Self.resetCompanionDefaults()"
+    )
+    assert delete_action.index("Self.resetCompanionDefaults()") < delete_action.index(
+        "NSApplication.shared.terminate(nil)"
+    )
+    assert "showDeleteFailureAlert()" in delete_action
     assert 'key.hasPrefix("PocketDMCompanion.")' in reset_defaults
     assert "defaults.removeObject(forKey: key)" in reset_defaults
+
+
+def test_native_memory_delete_client_calls_local_reset_endpoint() -> None:
+    source = _source()
+    client = _block(source, "actor PocketDMClient", "private struct SidecarHealthResponse")
+
+    assert "func deleteMemory() async throws" in client
+    assert 'baseURL.appending(path: "api/memory/delete")' in client
+    assert 'request.httpMethod = "POST"' in client
+    assert (
+        'request.setValue("delete-memory-v1", forHTTPHeaderField: "x-pocketdm-local-action")'
+        in client
+    )
+    assert "DeleteMemoryResponse" in client
+    assert "guard decoded.deleted" in client
 
 
 def test_close_paths_prepare_pet_before_terminating() -> None:

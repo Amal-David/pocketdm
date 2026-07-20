@@ -121,7 +121,7 @@ else
     echo "ERROR: companion web venv python missing: $web_python" >&2
     exit 1
   fi
-  # app.py binds 0.0.0.0:7860 and blocks, so background it and detach.
+  # app.py binds loopback-only on 127.0.0.1:7860 and blocks, so background it and detach.
   (
     cd "$WORK" || exit 1
     exec "$web_python" app.py
