@@ -117,7 +117,9 @@ tags:
 **Field notes on the front-matter:**
 
 - `sdk_version: 6.17.3` matches our pinned `gradio==6.17.3` in `pyproject.toml`. Keep these in sync; if HF rejects 6.17.3 as too new, drop to the latest version HF supports and re-pin `pyproject.toml`.
-- `app_file: app.py` is correct — the repo's `app.py` imports `app.server:app` and is the Gradio entry. (If you rename the canonical entry to `app/web_pet.py`, change this to `app_file: app/web_pet.py`.)
+- `app_file: app.py` refers to `space/app.py`. Deploy the contents of `space/`,
+  not the root local-companion server; the root server is intentionally
+  loopback-only and rejects public clients.
 - `pinned: true` so judges see us on the org grid.
 - The `models:` block is optional metadata but strengthens the Tiny Titan / Best MiniCPM story and links our model cards on the Space page.
 - **Unverified items, clearly labeled:** the *exact* Tiny Titan namespaced string is not standardized in the org (variants seen: `achievement:tinytitan`, `achievement:tiny-titan`, `badge-tiny-titan`, `badge:tiny-titan`). The free-form `tiny-titan` is the safest single bet; we include the namespaced `achievement:tinytitan` alongside it. Likewise `best-minicpm-build` is a free-form alias — the authoritative sponsor tag is `sponsor:openbmb`.
@@ -151,12 +153,10 @@ Then push the code. Two options — Option A (git) is the most reliable.
 git clone https://huggingface.co/spaces/build-small-hackathon/pika-local-pet /tmp/pika-space
 cd /tmp/pika-space
 
-# 2b. Copy in the app. Make sure README.md has the YAML front-matter from section 1,
-#     and that requirements.txt / pyproject pins gradio==6.17.3 + the model deps.
-#     (rsync, excluding local model weights / venvs / caches that are too big or local-only)
-rsync -av --exclude '.git' --exclude 'models/' --exclude '.venv' \
-  --exclude '.pika-voxcpm-venv' --exclude '__pycache__' \
-  /Users/amal/listenowl/experiments/build-small/ /tmp/pika-space/
+# 2b. Copy the self-contained hosted app. Make sure its README.md has the YAML
+#     front-matter from section 1 and requirements.txt keeps Gradio/model pins.
+rsync -av --exclude '__pycache__' \
+  /Users/amal/listenowl/experiments/build-small/space/ /tmp/pika-space/
 
 # 2c. Large binaries (sprites, audio) must go through Git LFS
 cd /tmp/pika-space

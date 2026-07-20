@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import html
+import ipaddress
 import io
 import json
 import os
@@ -93,6 +94,51 @@ async def homepage() -> HTMLResponse:
 @app.get("/health")
 async def health() -> dict[str, str]:
     return {"status": "ok"}
+
+
+def _require_loopback(request: Request) -> None:
+    client = request.client
+    if client is None:
+        raise HTTPException(status_code=403, detail="local request required")
+    try:
+        is_loopback = ipaddress.ip_address(client.host).is_loopback
+    except ValueError:
+        # ``testclient`` is Starlette's in-process ASGI test transport, never a
+        # network hostname supplied by an HTTP header.
+        is_loopback = client.host in {"localhost", "testclient"}
+    if not is_loopback:
+        raise HTTPException(status_code=403, detail="local request required")
+
+
+@app.middleware("http")
+async def local_requests_only(request: Request, call_next):
+    try:
+        _require_loopback(request)
+    except HTTPException as exc:
+        return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})
+    return await call_next(request)
+
+
+@app.post("/api/memory/delete")
+async def delete_memory(request: Request) -> JSONResponse:
+    """Delete the local user's durable companion memory.
+
+    This destructive endpoint is deliberately local-only even though the
+    standard launcher also binds the whole app to loopback. The peer check
+    protects a future direct rebind; the non-simple header also prevents a web
+    page from triggering deletion with a cross-origin form or no-CORS request.
+    """
+    _require_loopback(request)
+    if request.headers.get("x-pocketdm-local-action") != "delete-memory-v1":
+        raise HTTPException(status_code=403, detail="local action header required")
+    from app.memory_store import DEFAULT_USER_ID, delete_user_memory
+
+    counts = delete_user_memory(DEFAULT_USER_ID)
+    # All current sessions belong to the one local profile. Invalidating them
+    # turns deletion into a barrier: an already-queued request with a stale
+    # session cannot immediately repopulate the freshly cleared memory.
+    _SESSIONS.clear()
+    return JSONResponse({"deleted": True, "counts": counts})
 
 
 @app.post("/api/start")

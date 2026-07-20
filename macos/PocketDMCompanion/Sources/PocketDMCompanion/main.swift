@@ -241,15 +241,30 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let alert = NSAlert()
         alert.alertStyle = .warning
         alert.messageText = "Delete Pikachu data?"
-        alert.informativeText = "This clears bond stats, Sparks, language progress, and window position. The app will quit so the next launch starts fresh."
+        alert.informativeText = "This clears saved memories, mood history, bond stats, Sparks, language progress, and window position. The app will quit only after the local memory reset is confirmed."
         alert.addButton(withTitle: "Delete")
         alert.addButton(withTitle: "Cancel")
         guard alert.runModal() == .alertFirstButtonReturn else { return }
-        Self.resetCompanionDefaults()
-        overlayController?.prepareClose()
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.18) {
-            NSApplication.shared.terminate(nil)
+
+        Task {
+            do {
+                try await PocketDMClient(baseURL: arguments.baseURL).deleteMemory()
+                overlayController?.prepareClose()
+                Self.resetCompanionDefaults()
+                NSApplication.shared.terminate(nil)
+            } catch {
+                showDeleteFailureAlert()
+            }
         }
+    }
+
+    private func showDeleteFailureAlert() {
+        let alert = NSAlert()
+        alert.alertStyle = .critical
+        alert.messageText = "Couldn’t confirm the reset"
+        alert.informativeText = "Pikachu’s local pet data was left unchanged. The memory service may already have completed the request, so it is safe to try Delete Pet Data again."
+        alert.addButton(withTitle: "OK")
+        alert.runModal()
     }
 
     private static func resetCompanionDefaults() {
@@ -14325,6 +14340,22 @@ actor PocketDMClient {
         return try await post(payload, path: "api/proactive")
     }
 
+    func deleteMemory() async throws {
+        var request = URLRequest(url: baseURL.appending(path: "api/memory/delete"))
+        request.httpMethod = "POST"
+        request.setValue("delete-memory-v1", forHTTPHeaderField: "x-pocketdm-local-action")
+
+        let (data, response) = try await URLSession.shared.data(for: request)
+        guard (response as? HTTPURLResponse)?.statusCode == 200 else {
+            throw CompanionError.badResponse
+        }
+        let decoded = try JSONDecoder().decode(DeleteMemoryResponse.self, from: data)
+        guard decoded.deleted else {
+            throw CompanionError.badResponse
+        }
+        sessionID = nil
+    }
+
     private func startSession() async throws -> String {
         let response: StartResponse = try await post(
             StartRequest(
@@ -14468,6 +14499,10 @@ private struct SidecarHealthResponse: Decodable {
     let loaded: Bool?
     let model: String?
     let fallback_backend: String?
+}
+
+private struct DeleteMemoryResponse: Decodable {
+    let deleted: Bool
 }
 
 struct StartRequest: Encodable {

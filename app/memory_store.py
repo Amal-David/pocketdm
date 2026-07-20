@@ -413,3 +413,37 @@ def observations_by_daypart(
     finally:
         connection.close()
     return [(mood, float(created_at)) for mood, created_at in rows]
+
+
+def delete_user_memory(
+    user_id: str = DEFAULT_USER_ID,
+) -> dict[str, int]:
+    """Delete one user's state, facts, and observations in one transaction.
+
+    The database file is intentionally preserved: deleting rows avoids racing a
+    live server connection, respects ``POCKETDM_MEMORY_DB``, and leaves any
+    other local profiles untouched. ``BEGIN IMMEDIATE`` ensures another writer
+    cannot interleave a partial reset. Any failure rolls the whole reset back.
+    """
+    user_id = user_id or DEFAULT_USER_ID
+    connection = _connect()
+    try:
+        connection.execute("BEGIN IMMEDIATE")
+        counts = {
+            table: int(
+                connection.execute(
+                    f"SELECT COUNT(*) FROM {table} WHERE user_id = ?",
+                    (user_id,),
+                ).fetchone()[0]
+            )
+            for table in ("pet_state", "facts", "observations")
+        }
+        for table in ("pet_state", "facts", "observations"):
+            connection.execute(f"DELETE FROM {table} WHERE user_id = ?", (user_id,))
+        connection.commit()
+        return counts
+    except Exception:
+        connection.rollback()
+        raise
+    finally:
+        connection.close()

@@ -1,22 +1,26 @@
 from __future__ import annotations
 
 import socket
+from pathlib import Path
 
 from fastapi.testclient import TestClient
 
 from app.server import app
 
 
-def test_scripted_play_loop_and_dragon_need_no_outbound_sockets(monkeypatch) -> None:
+def test_scripted_play_loop_and_dragon_need_no_outbound_sockets(
+    monkeypatch, tmp_path: Path
+) -> None:
     attempted: list[tuple[object, object]] = []
     original_connect = socket.socket.connect
+    client = TestClient(app)
+    monkeypatch.setenv("POCKETDM_TTS_DIR", str(tmp_path / "missing-tts-assets"))
 
     def guarded_connect(self: socket.socket, address: object) -> None:
         attempted.append((self, address))
         raise AssertionError(f"unexpected outbound socket connect: {address!r}")
 
     monkeypatch.setattr(socket.socket, "connect", guarded_connect)
-    client = TestClient(app)
     start = client.post(
         "/api/start",
         json={"genre": "cursed_dungeon", "premise": "The offline door blinks."},
